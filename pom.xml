@@ -1,0 +1,714 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.mvv.study</groupId>
+  <artifactId>study-project-05-orders</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Study projects parent 05</name>
+  <url>https://www.example.mvv123456.com</url>
+
+  <properties>
+
+    <!-- General/language properties -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- Cheap easy operation, we can keep it enabled by default. Set it to 'none' to skip. -->
+    <phase.process-version-file>generate-resources</phase.process-version-file>
+    <!-- Cheap easy operation, we can keep it enabled by default. Set it to 'none' to skip. -->
+    <phase.process-java-templates>generate-sources</phase.process-java-templates>
+
+    <!-- java minimal version should be <= 12 (code for maven plugins should use java <= 12) -->
+    <java.min.version>12</java.min.version>
+    <java.max.version>17</java.max.version>
+
+    <java.version>${java.max.version}</java.version>
+    <java.release>${java.version}</java.release>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+
+    <!-- It is also designed for reusing in gradle.
+         Gradle uses its own a bit old version of kotlin :-(
+      -->
+    <kotlin.build.version>1.5.0</kotlin.build.version>
+    <kotlin.build.lang.version>1.5</kotlin.build.lang.version>
+
+    <kotlin.min.version>1.6.0</kotlin.min.version>
+    <kotlin.lang.min.version>1.6</kotlin.lang.min.version>
+
+    <kotlin.max.version>1.6.21</kotlin.max.version>
+    <kotlin.lang.max.version>1.6</kotlin.lang.max.version>
+
+    <!-- It is experimental, It is set to 'false' to avoid warning in build log -->
+    <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
+    <kotlin.compiler.languageVersion>${kotlin.lang.min.version}</kotlin.compiler.languageVersion>
+    <kotlin.compiler.apiVersion>${kotlin.lang.min.version}</kotlin.compiler.apiVersion>
+    <kotlin.compiler.jvmTarget>${java.min.version}</kotlin.compiler.jvmTarget>
+
+    <lombok.version>1.18.22</lombok.version>
+    <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
+
+    <!-- Unique build value (for example, timestamp as long).
+         It can be used for launching docker integration tests simultaneously
+         with other build of this project.
+         This BUILD_ID can be used as part of docker-compose project-name (docker container name prefix)
+         and part of network name. In this case these docker-compose configurations can
+         work simultaneously.
+    -->
+
+    <!--
+    <generated-dev-certs-dir>${project.build.directory}/generated-test-resources/certs/dev-self-signed</generated-dev-certs-dir>
+    <spring-boot-ssl-shared-system-pros>
+      -Dserver.ssl.key-store="${generated-dev-certs-dir}/key-store.p12"
+      -Dserver.ssl.key-store-type=pkcs12
+      -Dserver.ssl.key-store_password=changeit
+      -Dserver.ssl.key-password=changeit
+      -Dserver.ssl.trust-store="${generated-dev-certs-dir}/trust-store.p12"
+      -Dserver.ssl.trust-store-password=changeit
+    </spring-boot-ssl-shared-system-pros>
+
+    <SERVER_SSL_KEYSTORE>/certs/dev-self-signed/key-store.p12</SERVER_SSL_KEYSTORE>
+    <SERVER_SSL_KEYSTORETYPE>pkcs12</SERVER_SSL_KEYSTORETYPE>
+    <SERVER_SSL_KEYSTOREPASSWORD>changeit</SERVER_SSL_KEYSTOREPASSWORD>
+    <SERVER_SSL_KEYPASSWORD>changeit</SERVER_SSL_KEYPASSWORD>
+    <SERVER_SSL_TRUSTSTORE>/certs/dev-self-signed/trust-store.p12</SERVER_SSL_TRUSTSTORE>
+    <SERVER_SSL_TRUSTSTOREPASSWORD>changeit</SERVER_SSL_TRUSTSTOREPASSWORD>
+
+    <SPRING_BOOT_VERSION>${spring-boot.version}</SPRING_BOOT_VERSION>
+    -->
+
+    <spring-boot.version>2.7.0</spring-boot.version>
+    <!-- spring version of spring-boot 2.7.0 -->
+    <!-- is used in only for 'provided' dependencies -->
+    <spring.version>5.3.20</spring.version>
+    <!-- is used in only for 'provided' dependencies and tests -->
+    <spring-security.version>5.7.1</spring-security.version>
+    <spring-cloud.version>1.4.7.RELEASE</spring-cloud.version>
+    <!-- is used in only for 'provided' dependencies -->
+    <tomcat.version>9.0.63</tomcat.version>
+    <!-- jersey version of spring-boot 2.5.6 -->
+    <!-- is used in only for 'provided' dependencies -->
+    <jersey.version>2.35</jersey.version>
+    <javax.ws.rs-api.version>2.1.1</javax.ws.rs-api.version>
+    <!-- is used in only for 'provided' dependencies -->
+    <jakarta.jakartaee-api.version>9.1.0</jakarta.jakartaee-api.version>
+
+    <mapstruct.version>1.4.2.Final</mapstruct.version>
+
+    <grpc.version>1.46.0</grpc.version>
+
+    <!-- Actually only this version is available in maven repository. 7.X is not available -->
+    <gradle.version>6.1.1</gradle.version>
+    <maven-custom-plugin.version>3.6.0</maven-custom-plugin.version>
+
+    <jackson.version>2.13.3</jackson.version>
+    <gson.version>2.9.0</gson.version>
+
+    <swagger-jaxrs2.version>2.2.0</swagger-jaxrs2.version>
+
+    <ribbon.version>2.7.18</ribbon.version>
+
+    <!-- Tests -->
+    <jupiter.version>5.8.2</jupiter.version>
+    <assertj.version>3.22.0</assertj.version>
+    <jsonassert.version>1.5.1</jsonassert.version>
+    <mockito-kotlin.version>4.0.0</mockito-kotlin.version>
+    <mockito.version>4.6.1</mockito.version>
+    <net-byte-buddy.version>1.12.10</net-byte-buddy.version>
+    <!--<h2.version>2.0.204</h2.version>-->
+    <h2.version>2.1.212</h2.version>
+
+    <!-- LTS version -->
+    <node.version>v14.18.0</node.version>
+    <yarn.version>v1.22.15</yarn.version>
+
+    <!-- To shut up Idea. -->
+    <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+    <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+    <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
+    <maven-failsafe-plugin.version>3.0.0-M7</maven-failsafe-plugin.version>
+    <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+    <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
+    <build-helper-maven-plugin.version>3.2.0</build-helper-maven-plugin.version>
+    <maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
+    <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+    <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+    <maven-site-plugin.version>3.8.2</maven-site-plugin.version>
+    <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
+    <templating-maven-plugin.version>1.0.0</templating-maven-plugin.version>
+    <git-commit-id-maven-plugin.version>5.0.0</git-commit-id-maven-plugin.version>
+    <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>
+    <frontend-maven-plugin.version>1.12.0</frontend-maven-plugin.version>
+    <swagger-maven-plugin.version>2.1.11</swagger-maven-plugin.version>
+    <swagger-codegen-maven-plugin.version>3.0.28</swagger-codegen-maven-plugin.version>
+    <openapi-generator-maven-plugin.version>5.3.0</openapi-generator-maven-plugin.version>
+    <spotify.dockerfile-maven-plugin.version>1.4.13</spotify.dockerfile-maven-plugin.version>
+    <fabric8.docker-maven-plugin.version>0.38.0</fabric8.docker-maven-plugin.version>
+    <dkanejs.docker-compose-maven-plugin.version>4.0.0</dkanejs.docker-compose-maven-plugin.version>
+    <groovy-maven-plugin.version>2.1.1</groovy-maven-plugin.version>
+  </properties>
+
+  <modules>
+    <module>hello-world-samples/scala01</module>
+  </modules>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>${findbugs.jsr305.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.microutils</groupId>
+        <artifactId>kotlin-logging-jvm</artifactId>
+        <version>${kotlin-logging-jvm.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${mapstruct.version}</version>
+      </dependency>
+
+
+      <!-- Utilities -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${apache-commons-lang3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-collections4</artifactId>
+        <version>${apache-commons-collections4.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${apache-commons-io.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-text</artifactId>
+        <version>${apache-commons-text.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-exec</artifactId>
+        <version>${apache-commons-exec.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-cli</groupId>
+        <artifactId>commons-cli</artifactId>
+        <version>${apache-commons-cli.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+        <version>${commons-beanutils.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+
+      <!-- Tests -->
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${jupiter.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.skyscreamer</groupId>
+        <artifactId>jsonassert</artifactId>
+        <version>${jsonassert.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-bom</artifactId>
+        <version>${mockito.version}</version>
+        <type>pom</type>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-inline</artifactId>
+        <version>${mockito.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-junit-jupiter</artifactId>
+        <version>${mockito.version}</version>
+      </dependency>
+      <!-- Hm... Needed for mockito -->
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy</artifactId>
+        <version>${net-byte-buddy.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy-agent</artifactId>
+        <version>${net-byte-buddy.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito.kotlin</groupId>
+        <artifactId>mockito-kotlin</artifactId>
+        <version>${mockito-kotlin.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <version>${h2.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <!-- lock down plugins versions to avoid using Maven defaults. -->
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_war_packaging -->
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.0.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin.version}</version>
+          <configuration>
+            <release>${java.release}</release>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${maven-failsafe-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>3.3.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>3.0.0-M1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.0.0-M1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${maven-dependency-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>${maven-assembly-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>${maven-site-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${build-helper-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>${exec-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>io.github.git-commit-id</groupId>
+          <artifactId>git-commit-id-maven-plugin</artifactId>
+          <version>${git-commit-id-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.openapitools</groupId>
+          <artifactId>openapi-generator-maven-plugin</artifactId>
+          <version>${openapi-generator-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>${fabric8.docker-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.dkanejs.maven.plugins</groupId>
+          <artifactId>docker-compose-maven-plugin</artifactId>
+          <version>4.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven-jar-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>${maven-antrun-plugin.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>ant-contrib</groupId>
+              <artifactId>ant-contrib</artifactId>
+              <version>1.0b3</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>ant</groupId>
+                  <artifactId>ant</artifactId>
+                </exclusion>
+              </exclusions>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.ant</groupId>
+              <artifactId>ant-nodeps</artifactId>
+              <version>1.8.1</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.ant</groupId>
+              <artifactId>ant-apache-bsf</artifactId>
+              <version>1.10.12</version>
+            </dependency>
+            <dependency>
+              <groupId>org.mozilla</groupId>
+              <artifactId>rhino</artifactId>
+              <version>1.7.13</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.gmaven</groupId>
+          <artifactId>groovy-maven-plugin</artifactId>
+          <version>${groovy-maven-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-certs-root-directory-to-test-resources</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>add-test-resource</goal>
+            </goals>
+            <configuration>
+              <resources>
+                <resource>
+                  <directory>${project.build.directory}/generated-test-resources</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>init-build-id</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>bsh-property</goal>
+            </goals>
+            <configuration>
+              <source><![CDATA[
+                import java.nio.file.OpenOption;
+                import java.nio.file.Files;
+
+                String buildId = project.getProperties().getProperty("BUILD_ID");
+                if (buildId == null || buildId.isEmpty()) {
+                  File projectBaseDir = project.getBasedir();
+                  File buildIdFile = new File(projectBaseDir, "target/buildId");
+                  if (buildIdFile.exists()) {
+                    buildId = Files.readString(buildIdFile.toPath()).trim();
+
+                    if (buildId.isEmpty()) {
+                      throw new IllegalStateException(buildIdFile + " became empty.");
+                    }
+                  }
+                  else {
+                    buildId = "" + (System.currentTimeMillis() / 1000); // seconds will be enough
+                    buildIdFile.getParentFile().mkdirs();
+                    Files.writeString(buildIdFile.toPath(), buildId, new OpenOption[0]);
+                  }
+                  project.getProperties().setProperty("BUILD_ID", buildId);
+                  project.getProperties().setProperty("buildId", buildId);
+                }
+              ]]></source>
+            </configuration>
+          </execution>
+          <execution>
+            <id>init-skip-from-enable-properties</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>bsh-property</goal>
+            </goals>
+            <configuration>
+              <source><![CDATA[
+                void enableToSkipProperty(String enablePropertyName) {
+                  String prefix = "enable.";
+                  int enablePrefixIndex = enablePropertyName.indexOf(prefix);
+                  if (enablePrefixIndex != 0) {
+                    throw new IllegalArgumentException("Property [" + enablePropertyName + "] does not start with '" + prefix + "'.");
+                  }
+                  String enableValue = project.getProperties().getProperty(enablePropertyName);
+                  if (enableValue != null && !enableValue.trim().isEmpty()) {
+                    String skipPropertyName = "skip." + enablePropertyName.substring(prefix.length());
+                    boolean toEnable = "true".equalsIgnoreCase(enableValue.trim());
+                    String skipValue = !toEnable + "";
+
+                    project.getProperties().setProperty(skipPropertyName, skipValue);
+                    System.out.println("Setting '" + skipPropertyName + "' = " + skipValue);
+                  }
+                }
+
+                void enableToPhaseProperty(String enablePropertyName, String activePhase) {
+                  String prefix = "enable.";
+                  int enablePrefixIndex = enablePropertyName.indexOf(prefix);
+                  if (enablePrefixIndex != 0) {
+                    throw new IllegalArgumentException("Property [" + enablePropertyName + "] does not start with '" + prefix + "'.");
+                  }
+                  String enableValue = project.getProperties().getProperty(enablePropertyName);
+                  if (enableValue != null && !enableValue.trim().isEmpty()) {
+                    String phasePropertyName = "phase." + enablePropertyName.substring(prefix.length());
+                    boolean toEnable = "true".equalsIgnoreCase(enableValue.trim());
+                    String phase = toEnable ? activePhase : "none";
+
+                    project.getProperties().setProperty("phase." + propertyNameWithoutPrefix, phase);
+                    System.out.println("Setting '" + phasePropertyName + "' = " + phase);
+                  }
+                }
+
+                enableToSkipProperty("enable.generate-docker-workspace-mode-dependencies-classpath");
+                enableToSkipProperty("enable.generate-git-properties-file");
+                enableToSkipProperty("enable.generate-self-signed-certs");
+                enableToSkipProperty("enable.generate-docker-compose-env-file");
+                enableToSkipProperty("enable.build-docker-image");
+                enableToSkipProperty("enable.push-docker-image");
+
+                // Unfortunately it does not make sense. Too late!
+                //enableToPhaseProperty("enable.process-version-file", "generate-resources");
+                //enableToPhaseProperty("enable.process-java-templates", "generate-sources");
+              ]]></source>
+            </configuration>
+          </execution>
+          <execution>
+            <id>process-version-file</id>
+            <phase>${phase.process-version-file}</phase>
+            <goals>
+              <goal>add-resource</goal>
+            </goals>
+            <configuration>
+              <resources>
+                <resource>
+                  <directory>src/main/resources</directory>
+                  <includes>
+                    <include>version.properties</include>
+                  </includes>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <parameters>true</parameters>
+        </configuration>
+      </plugin>
+      -->
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>${maven-source-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+        <version>${git-commit-id-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <verbose>true</verbose>
+          <!--suppress MavenModelInspection. It is taken from 'enable.generate-git-properties-file'. -->
+          <skip>${skip.generate-git-properties-file}</skip>
+          <prefix>git</prefix>
+          <offline>true</offline>
+          <includeOnlyProperties>
+            <prop>git.commit.id</prop> <prop>git.commit.id.abbrev</prop>
+            <prop>git.total.commit.count</prop> <prop>git.branch</prop>
+            <prop>git.build.time</prop> <prop>git.build.version</prop>
+            <prop>git.commit.author.time</prop> <prop>git.commit.time</prop>
+            <prop>git.commit.message.full</prop> <prop>git.commit.message.short</prop>
+          </includeOnlyProperties>
+          <injectAllReactorProjects>true</injectAllReactorProjects>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>templating-maven-plugin</artifactId>
+        <version>${templating-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <!-- Mainly is used to generate version class. -->
+            <id>process-java-templates</id>
+            <phase>${phase.process-java-templates}</phase>
+            <goals>
+              <goal>filter-sources</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <detail>true</detail>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>${maven-antrun-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>print-all-properties-before-compilation</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <echo level="info">Conditional properties:</echo>
+                <echoproperties prefix="enable."/>
+                <echoproperties prefix="skip."/>
+                <echoproperties prefix="phase."/>
+
+                <!--<fail message="Test failure."/>-->
+              </target>
+            </configuration>
+          </execution>
+
+          <!-- Just fix of 'Source root doesn't exist: target/generated-test-resources/test-annotations'.
+               If you know better solution, please remove this one and use your own better one :-)
+            -->
+          <execution>
+            <id>create-dir-test-annotations</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <!--suppress MavenModelInspection. It is taken from 'enable.generate-docker-compose-env-file'. -->
+              <skip>${skip.create-dir-test-annotations:false}</skip>
+              <target>
+                <mkdir dir="${project.build.directory}/generated-test-sources/test-annotations"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- It is located there BEFORE 'docker-build' to have 'spring-boot repackage' before docker image creation
+           (to have fixed spring-boot jar file).
+        -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+      </plugin>
+
+    </plugins>
+  </build>
+</project>
