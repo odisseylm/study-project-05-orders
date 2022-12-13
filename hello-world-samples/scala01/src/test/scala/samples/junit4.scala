@@ -8,7 +8,9 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 //noinspection ScalaFileName
-class AppTest_JUnit4 {
+// To have it picked up by maven surefire you need to add pattern to configuration,
+// by default only *Test/Test* are picked up.
+class AppScalaTest_JUnit4 {
 
   @Test
   def testOK(): Unit = { assertTrue(true) }
@@ -30,4 +32,9 @@ class AppTest_JUnit4 {
       "concise".charAt(1111111)
     }
   }
+}
+
+class AppScalaJUnit4Test {
+  @Test
+  def testOK(): Unit = { assertTrue(true) }
 }

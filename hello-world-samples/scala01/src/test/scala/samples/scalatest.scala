@@ -1,5 +1,7 @@
 package samples
 
+// !!! These test are run by scalatest-maven-plugin !!!
+
 
 /*
 ScalaTest facilitates different styles of testing by providing traits you can mix
@@ -19,7 +21,7 @@ import org.specs2.matcher.Matchers.beEmpty
 
 class StackSuite extends Assertions {
 
-  @Test def stackShouldPopValuesIinLastInFirstOutOrder() = {
+  @Test def stackShouldPopValuesIinLastInFirstOutOrder(): Unit = {
     val stack = new mutable.Stack[Int]
     stack.push(1)
     stack.push(2)
@@ -27,7 +29,7 @@ class StackSuite extends Assertions {
     assert(stack.pop() === 1)
   }
 
-  @Test def stackShouldThrowRuntimeExceptionIfAnEmptyArrayStackIsPopped() = {
+  @Test def stackShouldThrowRuntimeExceptionIfAnEmptyArrayStackIsPopped(): Unit = {
     val emptyStack = new mutable.Stack[String]
     intercept[RuntimeException] {
       emptyStack.pop()
@@ -81,7 +83,7 @@ A Map
 //import org.scalatest.FunSpec
 import org.scalatest.funspec.AnyFunSpec
 
-class ExampleSpec22 extends AnyFunSpec {
+class Example22Spec extends AnyFunSpec {
 
   describe("An ArrayStack") {
 
@@ -110,7 +112,7 @@ import matchers.*
 
 import scala.collection.mutable
 
-class ExampleSpec23 extends AnyFlatSpec with org.scalatest.matchers.should.Matchers {
+class Example23Spec extends AnyFlatSpec with org.scalatest.matchers.should.Matchers {
 
   "A Stack" should "pop values in last-in-first-out order" in {
     val stack = new mutable.Stack[Int]

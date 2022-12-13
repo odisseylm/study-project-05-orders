@@ -26,6 +26,9 @@
     <!--<scala.compat.version>2.12</scala.compat.version>-->
     <scala.compat.version>3</scala.compat.version>
     <spec2.version>4.17.0</spec2.version>
+
+    <scala.scalatest-version>3.2.14</scala.scalatest-version>
+    <scala.spec2-version>5.2.0</scala.spec2-version>
   </properties>
 
   <dependencies>
@@ -55,12 +58,13 @@
     <!-- ************************************************************************* -->
     <!--                                 Test                                      -->
     <!-- ************************************************************************* -->
-    <!--<dependency>-->
-    <!--  <groupId>junit</groupId>-->
-    <!--  <artifactId>junit</artifactId>-->
-    <!--  <version>4.13.2</version>-->
-    <!--  <scope>test</scope>-->
-    <!--</dependency>-->
+    <dependency>
+      <!-- Used by scalatest library. -->
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -74,164 +78,159 @@
     <!--  <scope>test</scope>-->
     <!--</dependency>-->
 
-    <!--<dependency>-->
-    <!--  <groupId>org.scalatest</groupId>-->
-    <!--  <artifactId>scalatest_${scala.compat.version}</artifactId>-->
-    <!--  <version>3.2.14</version>-->
-    <!--  <scope>test</scope>-->
-    <!--</dependency>-->
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_3</artifactId>
-      <version>3.2.14</version>
+      <version>${scala.scalatest-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest-core_3</artifactId>
-      <version>3.2.14</version>
+      <version>${scala.scalatest-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest-funsuite_3</artifactId>
-      <version>3.2.14</version>
+      <version>${scala.scalatest-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest-flatspec_3</artifactId>
-      <version>3.2.14</version>
+      <version>${scala.scalatest-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest-funspec_3</artifactId>
-      <version>3.2.14</version>
+      <version>${scala.scalatest-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest-featurespec_3</artifactId>
-      <version>3.2.14</version>
+      <version>${scala.scalatest-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest-matchers-core_3</artifactId>
-      <version>3.2.14</version>
+      <version>${scala.scalatest-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest-shouldmatchers_3</artifactId>
-      <version>3.2.14</version>
+      <version>${scala.scalatest-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest-mustmatchers_3</artifactId>
-      <version>3.2.14</version>
+      <version>${scala.scalatest-version}</version>
       <scope>test</scope>
     </dependency>
+
     <!--<dependency>-->
-    <!--  <groupId>org.scalatest</groupId>-->
-    <!--  <artifactId>scalatest_2.13</artifactId>-->
-    <!--  <version>3.3.0-SNAP3</version>-->
-    <!--  <scope>test</scope>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--  <groupId>org.scalatest</groupId>-->
-    <!--  <artifactId>scalatest_3.0.0-M2</artifactId>-->
-    <!--  <version>3.3.0-SNAP3</version>-->
+    <!--  <groupId>org.scalatestplus</groupId>-->
+    <!--  <artifactId>junit-4-13_3</artifactId>-->
+    <!--  <version>3.2.14.0</version>-->
     <!--  <scope>test</scope>-->
     <!--</dependency>-->
 
-    <!--<dependency>-->
-    <!--  <groupId>org.specs2</groupId>-->
-    <!--  <artifactId>specs2-core_${scala.compat.version}</artifactId>-->
-    <!--  <version>${spec2.version}</version>-->
-    <!--  <scope>test</scope>-->
-    <!--</dependency>-->
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-core_3</artifactId>
-      <version>5.2.0</version>
+      <version>${scala.spec2-version}</version>
       <scope>test</scope>
     </dependency>
-    <!--<dependency>-->
-    <!--  <groupId>org.specs2</groupId>-->
-    <!--  <artifactId>specs2_2.12</artifactId>-->
-    <!--  <version>3.8.9</version>-->
-    <!--  <scope>test</scope>-->
-    <!--</dependency>-->
-
-    <!--<dependency>-->
-    <!--  <groupId>org.specs2</groupId>-->
-    <!--  <artifactId>specs2-junit_${scala.compat.version}</artifactId>-->
-    <!--  <version>${spec2.version}</version>-->
-    <!--  <scope>test</scope>-->
-    <!--</dependency>-->
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-junit_3</artifactId>
-      <version>5.2.0</version>
+      <version>${scala.spec2-version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- ??? empty ??? -->
+    <!--<dependency>-->
+    <!--  <groupId>org.specs2</groupId>-->
+    <!--  <artifactId>specs2-tests_3</artifactId>-->
+    <!--  <version>${scala.spec2-version}</version>-->
+    <!--  <scope>test</scope>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+    <!--  <groupId>org.specs2</groupId>-->
+    <!--  <artifactId>specs2-guide_3</artifactId>-->
+    <!--  <version>${scala.spec2-version}</version>-->
+    <!--  <scope>test</scope>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+    <!--  <groupId>org.specs2</groupId>-->
+    <!--  <artifactId>specs2-examples_3</artifactId>-->
+    <!--  <version>${scala.spec2-version}</version>-->
+    <!--  <scope>test</scope>-->
+    <!--</dependency>-->
 
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-scalacheck_3</artifactId>
-      <version>5.2.0</version>
+      <version>${scala.spec2-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-matcher_3</artifactId>
-      <version>5.2.0</version>
+      <version>${scala.spec2-version}</version>
     </dependency>
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-matcher-extra_3</artifactId>
-      <version>5.2.0</version>
+      <version>${scala.spec2-version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-html_3</artifactId>
-      <version>5.2.0</version>
+      <version>${scala.spec2-version}</version>
     </dependency>
-
-    <!--<dependency>-->
-    <!--  <groupId>org.scalatestplus</groupId>-->
-    <!--  <artifactId>scalatestplus-junit_2.13</artifactId>-->
-    <!--  <version>1.0.0-M2</version>-->
-    <!--  <scope>test</scope>-->
-    <!--</dependency>-->
     <dependency>
-      <groupId>org.scalatestplus</groupId>
-      <artifactId>junit-4-13_3</artifactId>
-      <version>3.2.14.0</version>
-      <scope>test</scope>
+      <groupId>org.specs2</groupId>
+      <artifactId>specs2-xml_3</artifactId>
+      <version>${scala.spec2-version}</version>
     </dependency>
-    <!--<dependency>-->
-    <!--  <groupId>org.apache.spark</groupId>-->
-    <!--  <artifactId>spark-core_2.13</artifactId>-->
-    <!--  <version>3.3.1</version>-->
-    <!--  <scope>test</scope>-->
-    <!--</dependency>-->
+    <dependency>
+      <groupId>org.specs2</groupId>
+      <artifactId>specs2-markdown_3</artifactId>
+      <version>${scala.spec2-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.specs2</groupId>
+      <artifactId>specs2-fp_3</artifactId>
+      <version>${scala.spec2-version}</version>
+    </dependency>
 
-
+    <!-- Seems for previous specs2 version -->
     <!--<dependency>-->
     <!--  <groupId>org.specs2</groupId>-->
-    <!--  <artifactId>spring_2.10</artifactId>-->
-    <!--  <version>2.3.10</version>-->
+    <!--  <artifactId>xml_3</artifactId>-->
+    <!--  <version>4.19.0</version>-->
     <!--</dependency>-->
-
+    <!--<dependency>-->
+    <!--  <groupId>org.specs2</groupId>-->
+    <!--  <artifactId>specs2-shapeless_2.13</artifactId>-->
+    <!--  <version>4.19.0</version>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+    <!--  <groupId>org.specs2</groupId>-->
+    <!--  <artifactId>specs2-analysis_2.13</artifactId>-->
+    <!--  <version>4.19.0</version>-->
+    <!--</dependency>-->
     <!--<dependency>-->
     <!--  <groupId>org.specs2</groupId>-->
     <!--  <artifactId>specs2-cats_3</artifactId>-->
-    <!--  <version>4.19.0</version>-->
+    <!--  <version>4.19.0</version> why not latest version -->
     <!--  <scope>test</scope>-->
     <!--</dependency>-->
     <!--<dependency>-->
@@ -240,16 +239,15 @@
     <!--  <version>4.19.0</version>-->
     <!--  <scope>test</scope>-->
     <!--</dependency>-->
-
     <!--<dependency>-->
     <!--  <groupId>org.specs2</groupId>-->
-    <!--  <artifactId>specs2-scalaz_3</artifactId>-->
+    <!--  <artifactId>specs2-gwt_2.13</artifactId>-->
     <!--  <version>4.19.0</version>-->
     <!--</dependency>-->
     <!--<dependency>-->
     <!--  <groupId>org.specs2</groupId>-->
-    <!--  <artifactId>specs2-scalaz-core_2.10</artifactId>-->
-    <!--  <version>7.0.0</version>-->
+    <!--  <artifactId>specs2-scalaz_3</artifactId>-->
+    <!--  <version>4.19.0</version>-->
     <!--</dependency>-->
 
     <!--<dependency>-->
@@ -330,6 +328,19 @@
               </args>
             </configuration>
           </execution>
+          <!--<execution>-->
+          <!--  <id>attach-javadocs</id>-->
+          <!--  <goals>-->
+          <!--    <goal>doc</goal>-->
+          <!--    <goal>doc-jar</goal>-->
+          <!--  </goals>-->
+          <!--</execution>-->
+          <!--<execution>-->
+          <!--  <goals>-->
+          <!--    <goal>doc</goal>-->
+          <!--  </goals>-->
+          <!--  <phase>site</phase>-->
+          <!--</execution>-->
         </executions>
       </plugin>
       <plugin>
@@ -339,6 +350,19 @@
         <configuration>
           <!-- Tests will be run with scalatest-maven-plugin instead -->
           <!--<skipTests>true</skipTests>-->
+
+          <!--<excludes>-->
+          <!--  <exclude>**/*ITTest*</exclude>-->
+          <!--  <exclude>**/*ITest*</exclude>-->
+          <!--  <exclude>**/*Integration*</exclude>-->
+          <!--</excludes>-->
+
+          <!-- !!! You should add your matcher if your tests do not suite default pattern Test*/*Test !!! -->
+          <includes>
+            <include>**/*Test*</include>
+            <include>**/*Spec*</include>
+            <include>**/*Suite*</include>
+          </includes>
         </configuration>
       </plugin>
       <plugin>
@@ -346,14 +370,28 @@
         <artifactId>scalatest-maven-plugin</artifactId>
         <version>2.2.0</version>
         <configuration>
-          <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-          <junitxml>.</junitxml>
-          <filereports>TestSuiteReport.txt</filereports>
-          <!-- Comma separated list of JUnit test class names to execute -->
-          <jUnitClasses>samples.AppTest_JUnit4</jUnitClasses>
-          <!-- Seems it works only with jUnit4 tests! Hm... -->
-          <!--<jUnitClasses>samples.AppTest_JUnit5</jUnitClasses>-->
+          <!-- junit tests are not picked up automatically   -->
+          <!-- patter class names are not supported too      -->
+          <!-- junit4/jupiter tests are not supported at all -->
+          <!--<jUnitClasses>**/*Test*</jUnitClasses>-->
+          <!--<jUnitClasses>samples.AppScalaJUnit4Test, samples.AppJavaJUnit4Test, samples.StackSuite</jUnitClasses>-->
+          <!--<tests>samples.ListSuite</tests>-->
+          <!--<suites>samples.ListSuite, samples.ExampleSpec22, samples.ExampleSpec23</suites>-->
+          <!--<wildcardSuites>??? **/*Spec*</wildcardSuites>-->
+          <!-- How to run samples.MySpecTest??? -->
+          <!--<testsFiles></testsFiles>-->
+          <!--<suites></suites>-->
+          <!--<noScalaTestIgnore></noScalaTestIgnore>-->
         </configuration>
+        <!--<configuration>-->
+        <!--  <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>-->
+        <!--  <junitxml>.</junitxml>-->
+        <!--  <filereports>TestSuiteReport.txt</filereports>-->
+        <!--  &lt;!&ndash; Comma separated list of JUnit test class names to execute &ndash;&gt;-->
+        <!--  <jUnitClasses>samples.AppTest_JUnit4</jUnitClasses>-->
+        <!--  &lt;!&ndash; Seems it works only with jUnit4 tests! Hm... &ndash;&gt;-->
+        <!--  &lt;!&ndash;<jUnitClasses>samples.AppTest_JUnit5</jUnitClasses>&ndash;&gt;-->
+        <!--</configuration>-->
         <executions>
           <execution>
             <id>test</id>

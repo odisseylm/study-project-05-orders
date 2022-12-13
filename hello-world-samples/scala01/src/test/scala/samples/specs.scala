@@ -20,7 +20,8 @@ import matchers._
  *
  */
 //noinspection ScalaFileName
-//@RunWith(classOf[JUnitRunner])
+// !!! Its is called as jUnit4 test !!!
+@org.junit.runner.RunWith(classOf[org.specs2.runner.JUnitRunner])
 class MySpecTest extends Specification {
   "The 'Hello world' string" should {
     "contain 11 characters" in {
