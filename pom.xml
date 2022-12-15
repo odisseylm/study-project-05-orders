@@ -49,7 +49,7 @@
     <kotlin.compiler.apiVersion>${kotlin.lang.min.version}</kotlin.compiler.apiVersion>
     <kotlin.compiler.jvmTarget>${java.min.version}</kotlin.compiler.jvmTarget>
 
-    <lombok.version>1.18.22</lombok.version>
+    <lombok.version>1.18.24</lombok.version>
     <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
 
     <!-- Unique build value (for example, timestamp as long).
@@ -135,6 +135,8 @@
     <mockito-kotlin.version>4.1.0</mockito-kotlin.version>
     <mockito.version>4.9.0</mockito.version>
     <net-byte-buddy.version>1.12.19</net-byte-buddy.version>
+
+    <postgresql.version>42.5.1</postgresql.version>
     <h2.version>2.1.214</h2.version>
 
     <!-- LTS version -->
@@ -186,6 +188,17 @@
         <version>${spring-boot.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>jakarta.validation</groupId>
+        <artifactId>jakarta.validation-api</artifactId>
+        <version>3.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.platform</groupId>
+        <artifactId>jakarta.jakartaee-api</artifactId>
+        <version>10.0.0</version>
       </dependency>
 
       <dependency>
@@ -336,6 +349,11 @@
         <artifactId>h2</artifactId>
         <version>${h2.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${postgresql.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -474,6 +492,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${build-helper-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>add-certs-root-directory-to-test-resources</id>
