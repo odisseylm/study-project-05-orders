@@ -120,6 +120,14 @@
           <groupId>ch.qos.logback</groupId>
           <artifactId>logback-classic</artifactId>
         </exclusion>
+        <exclusion>
+          <!-- Warning:(107, 5)  Provides transitive vulnerable dependency maven:org.yaml:snakeyaml:1.33
+           CVE-2022-41854 6.5 Stack-based Buffer Overflow vulnerability with medium severity found CVE-2022-1471 9.8
+            Deserialization of Untrusted Data vulnerability with high severity found  Results powered by Checkmarx(c)
+          -->
+          <groupId>org.yaml</groupId>
+          <artifactId>snakeyaml</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -211,6 +219,11 @@
          Their versions are configured in <dependencyManagement> of parent pom.xml
       -->
     <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <scope>test</scope>
@@ -243,11 +256,15 @@
       <artifactId>mockito-kotlin</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Warning:(259, 5)  Dependency maven:com.h2database:h2:2.1.214 is vulnerable CVE-2022-45868 7.8
+         Exposure of Sensitive Information to an Unauthorized Actor vulnerability with medium severity found
+         Results powered by Checkmarx(c) - -
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <scope>test</scope>
     </dependency>
+    -->
     <!--
     <dependency>
       <groupId>com.mvv.bank</groupId>
