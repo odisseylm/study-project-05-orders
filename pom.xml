@@ -137,7 +137,8 @@
     <net-byte-buddy.version>1.12.19</net-byte-buddy.version>
 
     <postgresql.version>42.5.1</postgresql.version>
-    <h2.version>2.1.214</h2.version>
+    <!--<h2.version>2.1.214</h2.version> ??? Unsafe ??? -->
+    <h2.version>2.1.212</h2.version>
 
     <!-- LTS version -->
     <node.version>v14.18.0</node.version>
