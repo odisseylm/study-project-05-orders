@@ -6,3 +6,8 @@ enum class OrderType {
     STOP_ORDER,
     BUY_STOP_ORDER,
 }
+
+enum class BuySellType {
+    BUY,
+    SELL,
+}

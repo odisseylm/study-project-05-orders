@@ -29,8 +29,14 @@ data class CurrencyPair (
     val counter: Currency,
     ) {
 
+    private val asString = "${base}_${counter}"
+
     // actually it can be without separator or the following '|', '/' can be used (what is better?)
-    override fun toString() = "${base}_${counter}"
+    override fun toString() = asString
+
+    // optimization
+    override fun equals(other: Any?): Boolean = (other is CurrencyPair) && other.asString == this.asString
+    override fun hashCode(): Int = asString.hashCode()
 
     companion object {
         @JvmStatic // standard java method to get from string. It can help to integrate with other frameworks.
@@ -53,7 +59,7 @@ private fun parseCurrencyPair(currencyPair: String): CurrencyPair {
     return CurrencyPair(Currency(base), Currency(counter))
 }
 
-fun isValidCurrency(currency: String?): Boolean =
+private fun isValidCurrency(currency: String?): Boolean =
     // see https://en.wikipedia.org/wiki/ISO_4217
     // see https://www.investopedia.com/terms/i/isocurrencycode.asp
     currency != null && currency.length == 3 && currency.all { ch -> ch in 'A'..'Z' }

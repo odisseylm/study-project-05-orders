@@ -1,0 +1,6 @@
+
+create table ORDERS (
+      ID NUMERIC PRIMARY KEY
+    , ORDER_TYPE VARCHAR(10) NOT NULL
+    , CUR VARCHAR(7) NOT NULL
+);
