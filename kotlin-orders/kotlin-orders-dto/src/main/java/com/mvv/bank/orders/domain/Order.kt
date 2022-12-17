@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 private val log: Logger = LoggerFactory.getLogger(Order::class.java)
 
@@ -35,9 +34,6 @@ interface OrderContext : GeneralContext {
     }
 }
 
-interface Market {
-    val marketZoneId: ZoneId
-}
 
 private class OrderContextImpl (
     override val dateTimeService: DateTimeService,
@@ -145,20 +141,3 @@ abstract class BaseOrder (
         }
 
 }
-
-
-/*
-class MarketOrder(
-    orderType: OrderType
-) : BaseOrder(orderType) {
-}
-
-data class StopOrder (
-    val id: Long,
-    val currencyPair: CurrencyPair,
-) : Order
-
-data class BuyStopOrder (
-    val id: Long,
-) : Order
-*/

@@ -13,6 +13,9 @@ data class Currency ( val value: String ) {
     override fun toString() = value
 
     companion object {
+        const val MIN_LENGTH: Int = 3
+        const val MAX_LENGTH: Int = 3 // ??? probably it can be 4 for crypto ???
+
         @JvmStatic // standard java method to get from string. It can help to integrate with other frameworks.
         fun valueOf(currency: String) = Currency(currency)
         @JvmStatic // short valueOf version
@@ -20,7 +23,7 @@ data class Currency ( val value: String ) {
     }
 }
 
-private const val CURRENCY_PAIR_SEPARATOR = '_'
+private const val CURRENCY_PAIR_SEPARATOR: Char = '_'
 
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
@@ -39,6 +42,9 @@ data class CurrencyPair (
     override fun hashCode(): Int = asString.hashCode()
 
     companion object {
+        const val MIN_LENGTH: Int = Currency.MIN_LENGTH * 2 + 1
+        const val MAX_LENGTH: Int = Currency.MAX_LENGTH * 2 + 1
+
         @JvmStatic // standard java method to get from string. It can help to integrate with other frameworks.
         fun valueOf(currencyPair: String) = parseCurrencyPair(currencyPair)
         @JvmStatic // short valueOf version
@@ -47,22 +53,27 @@ data class CurrencyPair (
 }
 
 private fun parseCurrencyPair(currencyPair: String): CurrencyPair {
-    check(currencyPair.length == 7 && currencyPair[3] == CURRENCY_PAIR_SEPARATOR) {
-        "Invalid currency pair [${currencyPair.safe}]." }
+    check(currencyPair.length in CurrencyPair.MIN_LENGTH..CurrencyPair.MAX_LENGTH) {
+        "Invalid currency pair [${currencyPair.safe}] (length should be in range ${CurrencyPair.MIN_LENGTH}..${CurrencyPair.MAX_LENGTH})." }
 
-    val base = currencyPair.substring(0, 3)
-    val counter = currencyPair.substring(4)
+    val currenciesList: List<String> = currencyPair.split(CURRENCY_PAIR_SEPARATOR)
+    check(currenciesList.size == 2) {
+        "Invalid currency pair [${currencyPair.safe}] (only one '$CURRENCY_PAIR_SEPARATOR' is expected)." }
 
-    check(isValidCurrency(base) && isValidCurrency(counter)) {
-        "Invalid currency pair [${currencyPair.safe}]." }
-
-    return CurrencyPair(Currency(base), Currency(counter))
+    try {
+        return CurrencyPair(Currency(currenciesList[0]), Currency(currenciesList[1]))
+    }
+    catch (ex: Exception) {
+        throw IllegalArgumentException("Invalid currency pair [${currencyPair.safe}].", ex)
+    }
 }
 
 private fun isValidCurrency(currency: String?): Boolean =
     // see https://en.wikipedia.org/wiki/ISO_4217
     // see https://www.investopedia.com/terms/i/isocurrencycode.asp
-    currency != null && currency.length == 3 && currency.all { ch -> ch in 'A'..'Z' }
+    currency != null
+            && currency.length in Currency.MIN_LENGTH..Currency.MAX_LENGTH
+            && currency.all { ch -> ch in 'A'..'Z' }
 
 
 private fun validateCurrency(currency: String?) {
