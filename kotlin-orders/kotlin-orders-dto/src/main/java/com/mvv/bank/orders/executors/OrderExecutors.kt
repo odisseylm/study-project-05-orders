@@ -7,5 +7,5 @@ interface OrderExecutor<Price> {
     fun priceChanged(price: Price)
 }
 
-interface FxOrderExecutor : OrderExecutor<FxRate> {
+interface FxCashOrderExecutor : OrderExecutor<FxRate> {
 }

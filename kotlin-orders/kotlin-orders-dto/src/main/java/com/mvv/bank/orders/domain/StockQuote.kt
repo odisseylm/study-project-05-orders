@@ -3,22 +3,43 @@ package com.mvv.bank.orders.domain
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
+
+interface Quote {
+    val productSymbol: String // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
+
+    val marketSymbol: String
+    //val market: Market
+
+    // date and dat-time in market/exchange timezone
+    val marketDate: LocalDate
+    val marketDateTime: LocalDateTime
+    val dateTime: ZonedDateTime
+
+    //val currency: Currency
+
+    val bid: Amount
+    val ask: Amount
+}
 
 // A stock quote is the price of a stock as quoted on an exchange.
 // A basic quote for a specific stock provides information, such as its bid and ask price,
 // last traded price, and volume traded.
 // https://www.investopedia.com/terms/s/stockquote.asp
 // https://www.wallstreetmojo.com/stock-quote/
-data class StockQuote(
-    val marketSymbol: String,
-    val symbol: String, // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
+data class StockQuote (
+    override val marketSymbol: String,
+    override val productSymbol: String, // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
 
-    val date: LocalDate,
-    val dateTime: LocalDateTime,
+    override val dateTime: ZonedDateTime,
+    override val marketDate: LocalDate,
+    override val marketDateTime: LocalDateTime,
 
-    val bid: Amount,
-    val ask: Amount,
+    //override val currency: Currency,
+
+    override val bid: Amount,
+    override val ask: Amount,
 
     val last: Amount,
 
@@ -41,4 +62,4 @@ data class StockQuote(
     val volume: BigDecimal? = null,
     //val averageVolume: BigDecimal? = null,
     val volume3m: BigDecimal? = null,
-)
+) : Quote

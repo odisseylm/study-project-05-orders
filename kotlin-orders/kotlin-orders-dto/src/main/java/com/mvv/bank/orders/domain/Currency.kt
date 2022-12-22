@@ -40,6 +40,12 @@ data class CurrencyPair (
     // optimization
     override fun equals(other: Any?): Boolean = (other is CurrencyPair) && other.asString == this.asString
     override fun hashCode(): Int = asString.hashCode()
+    fun opposite(currency: Currency): Currency =
+        when (currency) {
+            this.base   -> this.counter
+            this.counter -> this.base
+            else -> throw IllegalArgumentException("No opposite currency to $currency in $this.")
+        }
 
     companion object {
         const val MIN_LENGTH: Int = Currency.MIN_LENGTH * 2 + 1
@@ -51,6 +57,12 @@ data class CurrencyPair (
         fun of(currencyPair: String) = parseCurrencyPair(currencyPair)
     }
 }
+
+fun CurrencyPair.containsCurrency(currency: Currency): Boolean =
+    this.base == currency || this.counter == currency
+fun CurrencyPair.containsCurrencies(ccy1: Currency, ccy2: Currency): Boolean =
+    containsCurrency(ccy1) && containsCurrency(ccy2)
+
 
 private fun parseCurrencyPair(currencyPair: String): CurrencyPair {
     check(currencyPair.length in CurrencyPair.MIN_LENGTH..CurrencyPair.MAX_LENGTH) {

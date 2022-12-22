@@ -4,7 +4,7 @@ import com.mvv.bank.shared.log.safe
 import java.math.BigDecimal
 
 
-data class Amount (
+data class Amount private constructor (
     val amount: BigDecimal,
     val currency: Currency,
 ) {
@@ -12,9 +12,11 @@ data class Amount (
 
     companion object {
         @JvmStatic // standard java method to get from string. It can help to integrate with other frameworks.
-        fun valueOf(currencyPair: String) = parseAmount(currencyPair)
+        fun valueOf(amount: String) = parseAmount(amount)
         @JvmStatic // short valueOf version
-        fun of(currencyPair: String) = parseAmount(currencyPair)
+        fun of(amount: String) = parseAmount(amount)
+        @JvmStatic // short valueOf version
+        fun of(amount: BigDecimal, currency: Currency) = Amount(amount, currency)
     }
 }
 
@@ -29,7 +31,7 @@ private fun parseAmount(amount: String): Amount {
         val currency = Currency(strCurrency)
 
         val strAmount = amount.substringBeforeLast(' ')
-        return Amount(BigDecimal(strAmount), currency)
+        return Amount.of(BigDecimal(strAmount), currency)
     }
     catch (ex: Exception) {
         throw IllegalArgumentException("Error of parsing amount ${amount.safe}.", ex)
