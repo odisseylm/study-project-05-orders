@@ -5,12 +5,21 @@ import com.mvv.bank.shared.log.safe
 
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
-data class Currency private constructor (val value: String) {
+class Currency private constructor (val value: String) {
     init {
         validateCurrency(value)
     }
 
     override fun toString() = value
+
+    override fun hashCode(): Int = value.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as Currency
+        if (value != other.value) return false
+        return true
+    }
 
     companion object {
         const val MIN_LENGTH: Int = 3
@@ -32,6 +41,7 @@ private const val CURRENCY_PAIR_SEPARATOR: Char = '_'
 
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
+@Suppress("DataClassPrivateConstructor") // we convert it to usual class (with 'copy') if there is need to cache it in the future
 data class CurrencyPair private constructor (
     val base: Currency,
     val counter: Currency,
@@ -52,7 +62,7 @@ data class CurrencyPair private constructor (
             else -> throw IllegalArgumentException("No opposite currency to $currency in $this.")
         }
 
-    fun inverted(): CurrencyPair = CurrencyPair(base = this.counter, counter = this.base)
+    fun inverted(): CurrencyPair = of(base = this.counter, counter = this.base)
 
     companion object {
         const val MIN_LENGTH: Int = Currency.MIN_LENGTH * 2 + 1
@@ -61,12 +71,16 @@ data class CurrencyPair private constructor (
         @JvmStatic
         fun of(base: Currency, counter: Currency) = CurrencyPair(base, counter)
         @JvmStatic
-        fun of(base: String, counter: String) = CurrencyPair(Currency.of(base), Currency.of(counter))
+        fun of(base: String, counter: String) = of(Currency.of(base), Currency.of(counter))
         @JvmStatic
         fun of(currencyPair: String) = parseCurrencyPair(currencyPair)
 
         @JvmStatic // standard java method to get from string. It can help to integrate with other java frameworks.
         fun valueOf(currencyPair: String) = parseCurrencyPair(currencyPair)
+
+        val USD_EUR = of(Currency.USD, Currency.EUR)
+        val EUR_USD = of(Currency.EUR, Currency.USD)
+        // ... add other needed ones
     }
 }
 

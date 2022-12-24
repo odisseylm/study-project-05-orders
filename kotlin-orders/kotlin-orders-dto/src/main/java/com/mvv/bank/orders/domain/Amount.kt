@@ -4,6 +4,7 @@ import com.mvv.bank.shared.log.safe
 import java.math.BigDecimal
 
 
+@Suppress("DataClassPrivateConstructor") // we can ignore it (since in any case we are not going to cache it)
 data class Amount private constructor (
     val amount: BigDecimal,
     val currency: Currency,
