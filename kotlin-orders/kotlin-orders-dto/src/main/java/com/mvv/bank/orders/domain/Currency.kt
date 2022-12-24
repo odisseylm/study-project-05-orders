@@ -20,6 +20,11 @@ data class Currency ( val value: String ) {
         fun valueOf(currency: String) = Currency(currency)
         @JvmStatic // short valueOf version
         fun of(currency: String) = Currency(currency)
+
+        val UAH = Currency("UAH")
+        val USD = Currency("USD")
+        val EUR = Currency("EUR")
+        val JPY = Currency("JPY")
     }
 }
 

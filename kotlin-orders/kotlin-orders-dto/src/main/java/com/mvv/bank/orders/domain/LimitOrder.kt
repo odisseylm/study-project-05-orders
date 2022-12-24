@@ -28,9 +28,26 @@ abstract class AbstractLimitOrder<Product, Quote> : AbstractOrder<Product, Quote
             "Quote $quote has incorrect currency ${quote.bid.currency}." }
 
         return when (buySellType) {
+            BuySellType.SELL -> toExecuteSell(limitPrice, quote)
+            BuySellType.BUY  -> toExecuteBuy(limitPrice, quote)
+        }
+
+        /*
+        return when (buySellType) {
             BuySellType.BUY  -> quote.bid.amount <= limitPrice.amount
             BuySellType.SELL -> quote.ask.amount >= limitPrice.amount
         }
+        */
+    }
+
+    private fun toExecuteBuy(limitPrice: Amount, quote: com.mvv.bank.orders.domain.Quote): Boolean {
+        // На валютном рынке ask — цена покупки, а bid — цена продажи.
+        return quote.ask.amount <= limitPrice.amount
+    }
+
+    private fun toExecuteSell(limitPrice: Amount, quote: com.mvv.bank.orders.domain.Quote): Boolean {
+        // На валютном рынке ask — цена покупки, а bid — цена продажи.
+        return quote.bid.amount >= limitPrice.amount
     }
 
     // TODO: find better name
@@ -81,12 +98,28 @@ class FxCashLimitOrder private constructor() : AbstractLimitOrder<Currency, Quot
             }
         }
 
-    private val priceCurrency: Currency? get() = if (buySellType == BuySellType.BUY) buyCurrency else sellCurrency
+    private val priceCurrency: Currency? get() = when (buySellType) {
+        // opposite
+        null -> null
+        BuySellType.BUY -> sellCurrency
+        BuySellType.SELL -> buyCurrency
+    }
 
     override var product: Currency?
-        get() = if (buySellType == BuySellType.BUY) buyCurrency else sellCurrency
+        get() = when (buySellType) {
+            null -> null
+            BuySellType.BUY  -> buyCurrency
+            BuySellType.SELL -> sellCurrency
+        }
         @Deprecated("Better to use buyCurrency/sellCurrency directly.")
-        set(value) { if (buySellType == BuySellType.BUY) buyCurrency = value else sellCurrency = value }
+        set(value) {
+            val buySellType = this.buySellType
+            checkNotNull(buySellType) { "buySellType should be set before setting product." }
+            when (buySellType) {
+                BuySellType.BUY  -> buyCurrency  = value
+                BuySellType.SELL -> sellCurrency = value
+            }
+        }
 
     fun toExecute(rate: FxRate): Boolean = toExecute(FxRateAsQuote(rate, priceCurrency!!))
 

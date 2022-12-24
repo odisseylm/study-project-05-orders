@@ -75,8 +75,9 @@ fun invertRate(price: BigDecimal): BigDecimal {
     }
 
     val precision = price.precision()
-    val scale = price.scale()
-    println("p: $precision, s: $scale")
+    // T O D O: write more logical solution
+    val resScale = if (price.scale() < 2) precision + 2 + (2 - price.scale())
+                   else precision + price.scale()
 
-    return BigDecimal.ONE.divide(price, precision + scale, RoundingMode.HALF_UP)
+    return BigDecimal.ONE.divide(price, resScale, RoundingMode.HALF_UP)
 }

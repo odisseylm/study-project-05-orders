@@ -11,12 +11,16 @@ data class Amount private constructor (
     override fun toString(): String = "$amount $currency"
 
     companion object {
-        @JvmStatic // standard java method to get from string. It can help to integrate with other frameworks.
-        fun valueOf(amount: String) = parseAmount(amount)
-        @JvmStatic // short valueOf version
+        @JvmStatic
         fun of(amount: String) = parseAmount(amount)
-        @JvmStatic // short valueOf version
+        @JvmStatic
         fun of(amount: BigDecimal, currency: Currency) = Amount(amount, currency)
+        @JvmStatic
+        fun of(amount: String, currency: Currency) = Amount(BigDecimal(amount), currency)
+
+        @JvmStatic // standard java method to get from string. It can help to integrate with other java frameworks.
+        @Suppress("unused")
+        fun valueOf(amount: String) = parseAmount(amount)
     }
 }
 
