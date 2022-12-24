@@ -38,12 +38,17 @@ class FxCashLimitOrderTest {
             marketDateTime = dateTime,
             dateTime = ZonedDateTime.of(dateTime, uaMarket.marketZoneId),
             currencyPair = CurrencyPair.of("EUR_UAH"),
-            // На валютном рынке ask — цена покупки, а bid — цена продажи.
+            // In Foreign Exchange:
+            //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
+            //  ask - price of client 'buy'  (and dealer/bank 'sell')
             bid = BigDecimal("39.37"),
             ask = BigDecimal("39.39"),
         )
 
-        // На валютном рынке ask — цена покупки, а bid — цена продажи.
+        // In Foreign Exchange:
+        //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
+        //  ask - price of client 'buy'  (and dealer/bank 'sell')
+        //
         // limit sell price = 39.38
         //
         assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.35"), ask = bd("39.37"))))
@@ -81,12 +86,17 @@ class FxCashLimitOrderTest {
             marketDateTime = dateTime,
             dateTime = ZonedDateTime.of(dateTime, uaMarket.marketZoneId),
             currencyPair = CurrencyPair.of("EUR_UAH"),
-            // На валютном рынке ask — цена покупки, а bid — цена продажи.
+            // In Foreign Exchange:
+            //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
+            //  ask - price of client 'buy'  (and dealer/bank 'sell')
             bid = BigDecimal("39.37"),
             ask = BigDecimal("39.39"),
         )
 
-        // На валютном рынке ask — цена покупки, а bid — цена продажи.
+        // In Foreign Exchange:
+        //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
+        //  ask - price of client 'buy'  (and dealer/bank 'sell')
+        //
         // limit sell price = 39.38
         //
         assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.35"), ask = bd("39.37"))))

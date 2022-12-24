@@ -41,12 +41,16 @@ abstract class AbstractLimitOrder<Product, Quote> : AbstractOrder<Product, Quote
     }
 
     private fun toExecuteBuy(limitPrice: Amount, quote: com.mvv.bank.orders.domain.Quote): Boolean {
-        // На валютном рынке ask — цена покупки, а bid — цена продажи.
+        // In Foreign Exchange:
+        //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
+        //  ask - price of client 'buy'  (and dealer/bank 'sell')
         return quote.ask.amount <= limitPrice.amount
     }
 
     private fun toExecuteSell(limitPrice: Amount, quote: com.mvv.bank.orders.domain.Quote): Boolean {
-        // На валютном рынке ask — цена покупки, а bid — цена продажи.
+        // In Foreign Exchange:
+        //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
+        //  ask - price of client 'buy'  (and dealer/bank 'sell')
         return quote.bid.amount >= limitPrice.amount
     }
 
