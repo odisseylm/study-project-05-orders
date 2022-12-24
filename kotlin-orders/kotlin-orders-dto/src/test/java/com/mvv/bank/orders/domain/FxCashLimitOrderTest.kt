@@ -62,7 +62,21 @@ class FxCashLimitOrderTest {
         assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.39"), ask = bd("39.41"))))
             .isTrue
 
-        // TODO: add tests for inverted rate
+        // for inverted rate
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.35"), ask = bd("39.37")).inverted()))
+            .isFalse
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.36"), ask = bd("39.38")).inverted()))
+            .isFalse
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.37"), ask = bd("39.39")).inverted()))
+            .isFalse
+        // T O D O: it is false due to loosing precision!!! Is it ok, or we should add price rounding
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.38"), ask = bd("39.40")).inverted()))
+            .isFalse
+        // 0.0005 is added to bid=39.38 to get bid=39.38 after double inverting
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.3805"), ask = bd("39.40")).inverted()))
+            .isTrue
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.39"), ask = bd("39.41")).inverted()))
+            .isTrue
     }
 
     @Test
@@ -110,6 +124,16 @@ class FxCashLimitOrderTest {
         assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.39"), ask = bd("39.41"))))
             .isFalse
 
-        // TODO: add tests for inverted rate
+        // for inverted rate
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.35"), ask = bd("39.37")).inverted()))
+            .isTrue
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.36"), ask = bd("39.38")).inverted()))
+            .isTrue
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.37"), ask = bd("39.39")).inverted()))
+            .isFalse
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.38"), ask = bd("39.40")).inverted()))
+            .isFalse
+        assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.39"), ask = bd("39.41")).inverted()))
+            .isFalse
     }
 }

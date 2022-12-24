@@ -5,7 +5,7 @@ import com.mvv.bank.shared.log.safe
 
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
-data class Currency ( val value: String ) {
+data class Currency private constructor (val value: String) {
     init {
         validateCurrency(value)
     }
@@ -32,7 +32,7 @@ private const val CURRENCY_PAIR_SEPARATOR: Char = '_'
 
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
-data class CurrencyPair (
+data class CurrencyPair private constructor (
     val base: Currency,
     val counter: Currency,
     ) {
@@ -45,21 +45,28 @@ data class CurrencyPair (
     // optimization
     override fun equals(other: Any?): Boolean = (other is CurrencyPair) && other.asString == this.asString
     override fun hashCode(): Int = asString.hashCode()
-    fun opposite(currency: Currency): Currency =
+    fun oppositeCurrency(currency: Currency): Currency =
         when (currency) {
             this.base   -> this.counter
             this.counter -> this.base
             else -> throw IllegalArgumentException("No opposite currency to $currency in $this.")
         }
 
+    fun inverted(): CurrencyPair = CurrencyPair(base = this.counter, counter = this.base)
+
     companion object {
         const val MIN_LENGTH: Int = Currency.MIN_LENGTH * 2 + 1
         const val MAX_LENGTH: Int = Currency.MAX_LENGTH * 2 + 1
 
-        @JvmStatic // standard java method to get from string. It can help to integrate with other frameworks.
-        fun valueOf(currencyPair: String) = parseCurrencyPair(currencyPair)
-        @JvmStatic // short valueOf version
+        @JvmStatic
+        fun of(base: Currency, counter: Currency) = CurrencyPair(base, counter)
+        @JvmStatic
+        fun of(base: String, counter: String) = CurrencyPair(Currency.of(base), Currency.of(counter))
+        @JvmStatic
         fun of(currencyPair: String) = parseCurrencyPair(currencyPair)
+
+        @JvmStatic // standard java method to get from string. It can help to integrate with other java frameworks.
+        fun valueOf(currencyPair: String) = parseCurrencyPair(currencyPair)
     }
 }
 
@@ -74,11 +81,18 @@ private fun parseCurrencyPair(currencyPair: String): CurrencyPair {
         "Invalid currency pair [${currencyPair.safe}] (length should be in range ${CurrencyPair.MIN_LENGTH}..${CurrencyPair.MAX_LENGTH})." }
 
     val currenciesList: List<String> = currencyPair.split(CURRENCY_PAIR_SEPARATOR)
+
+    if (currenciesList.size == 1) {
+        throw IllegalArgumentException("Invalid currency pair [${currencyPair.safe}] (currency separator '$CURRENCY_PAIR_SEPARATOR' is expected).")
+    } else if (currenciesList.size > 2) {
+        throw IllegalArgumentException("Invalid currency pair [${currencyPair.safe}] (only one currency separator '$CURRENCY_PAIR_SEPARATOR' is expected).")
+    }
+
     check(currenciesList.size == 2) {
         "Invalid currency pair [${currencyPair.safe}] (only one '$CURRENCY_PAIR_SEPARATOR' is expected)." }
 
     try {
-        return CurrencyPair(Currency(currenciesList[0]), Currency(currenciesList[1]))
+        return CurrencyPair.of(Currency.of(currenciesList[0]), Currency.of(currenciesList[1]))
     }
     catch (ex: Exception) {
         throw IllegalArgumentException("Invalid currency pair [${currencyPair.safe}].", ex)

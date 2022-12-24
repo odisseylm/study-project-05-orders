@@ -28,11 +28,12 @@ data class FxRate (
     // other cross-currencies, e.g. CHF/JPY?)
     //boolean isMarketConvention();
 ) {
-    override fun toString(): String = "$currencyPair $mid"
+    override fun toString(): String = "$currencyPair $mid($bid/$ask)"
 }
 
 val FxRate.mid: BigDecimal get() = (bid + ask) / BigDecimal.valueOf(2) // math context is not needed there (at least now)
 val FxRate.spread: BigDecimal get() = ask - bid
+fun FxRate.inverted(): FxRate = this.copy(currencyPair = this.currencyPair.inverted(), bid = invertRate(this.bid), ask = invertRate(this.ask))
 
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -40,14 +41,15 @@ class FxRateAsQuote (
     val rate: FxRate,
     val priceCurrency: Currency,
 ) : Quote {
-    override val productSymbol: String get() = rate.currencyPair.opposite(priceCurrency).toString()
+    override val productSymbol: String get() = rate.currencyPair.oppositeCurrency(priceCurrency).toString()
     override val marketSymbol: String get() = rate.marketSymbol
     override val marketDate: LocalDate get() = rate.marketDate
     override val marketDateTime: LocalDateTime get() = rate.marketDateTime
     override val dateTime: ZonedDateTime get() = rate.dateTime
-    override val bid: Amount get() = Amount.of(rate.bid, priceCurrency)
-    override val ask: Amount get() = Amount.of(rate.ask, priceCurrency)
-
+    override val bid: Amount get() = Amount.of(
+        if (priceCurrency == rate.currencyPair.counter) rate.bid else invertRate(rate.bid), priceCurrency)
+    override val ask: Amount get() = Amount.of(
+        if (priceCurrency == rate.currencyPair.counter) rate.ask else invertRate(rate.ask), priceCurrency)
     init {
         check(priceCurrency == rate.currencyPair.base || priceCurrency == rate.currencyPair.counter) {
             "Currency $priceCurrency is not contained in ${rate.currencyPair}." }
@@ -79,5 +81,5 @@ fun invertRate(price: BigDecimal): BigDecimal {
     val resScale = if (price.scale() < 2) precision + 2 + (2 - price.scale())
                    else precision + price.scale()
 
-    return BigDecimal.ONE.divide(price, resScale, RoundingMode.HALF_UP)
+    return BigDecimal.ONE.divide(price, resScale, RoundingMode.HALF_UP).stripTrailingZeros()
 }

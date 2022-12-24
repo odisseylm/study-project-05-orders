@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 private fun bd(v: String) = BigDecimal(v)
 
@@ -41,5 +45,21 @@ class FxRatesTest {
         assertThat(invertRate(bd("480000"))).isEqualByComparingTo(bd("0.0000020833"))
         assertThat(invertRate(BigDecimal(480000))).isEqualByComparingTo(bd("0.0000020833"))
         assertThat(invertRate(BigDecimal.valueOf(480000.00))).isEqualByComparingTo(bd("0.0000020833"))
+    }
+
+    @Test
+    fun inverted() {
+        val marketDate = LocalDate.now()
+        val marketDateTime = LocalDateTime.now()
+        val marketZone = ZoneId.systemDefault()
+        val dateTime = ZonedDateTime.of(marketDateTime, marketZone)
+
+        val rate = FxRate("symbol", marketDate, marketDateTime, dateTime,
+            CurrencyPair.of("AAA", "ZZZ"), bid = bd("10"), ask = bd("100"))
+        val inverted = rate.inverted()
+
+        assertThat(inverted)
+            .isEqualTo(FxRate("symbol", marketDate, marketDateTime, dateTime,
+            CurrencyPair.of("ZZZ", "AAA"), bid = bd("0.1"), ask = bd("0.01")))
     }
 }

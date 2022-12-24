@@ -32,7 +32,7 @@ private fun parseAmount(amount: String): Amount {
         check(amount.length <= MAX_AMOUNT_LENGTH) {
             "Too long amount string [${amount.safe}] (${amount.length})" }
         val strCurrency = amount.substringAfterLast(' ', "")
-        val currency = Currency(strCurrency)
+        val currency = Currency.of(strCurrency)
 
         val strAmount = amount.substringBeforeLast(' ')
         return Amount.of(BigDecimal(strAmount), currency)
