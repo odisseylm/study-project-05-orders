@@ -7,6 +7,13 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
 
+// In Foreign Exchange:
+//  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
+//  ask - price of client 'buy'  (and dealer/bank 'sell')
+//
+// TODO: how to deal with inverted rates???
+// TODO: 'bid < ask' rule should be applied for which counterCurrency???
+//
 data class FxRate (
     val marketSymbol: String,
     val marketDate: LocalDate,
@@ -33,6 +40,7 @@ data class FxRate (
 
 val FxRate.mid: BigDecimal get() = (bid + ask) / BigDecimal.valueOf(2) // math context is not needed there (at least now)
 val FxRate.spread: BigDecimal get() = ask - bid
+// TODO: should we swap bid and ask ???
 fun FxRate.inverted(): FxRate = this.copy(currencyPair = this.currencyPair.inverted(), bid = invertRate(this.bid), ask = invertRate(this.ask))
 
 

@@ -21,3 +21,14 @@ enum class TestPredefinedMarkets (
         (date.dayOfWeek == DayOfWeek.SATURDAY) || (date.dayOfWeek == DayOfWeek.SUNDAY)
 }
 
+class TestPredefinedCompanies {
+    companion object {
+        val APPLE: Company = TestCompanyImpl("Apple", "AAPL", "isin1234")
+    }
+}
+
+private class TestCompanyImpl (
+    override val name: String,
+    override val symbol: String,
+    override val isin: String,
+) : Company

@@ -24,6 +24,7 @@ class FxCashLimitOrderTest {
 
         val uaMarket = TestPredefinedMarkets.KYIV_01
         val limitOrder = FxCashLimitOrder.create(
+            side = Side.CLIENT,
             buySellType = BuySellType.SELL,
             sellCurrency = EUR,
             buyCurrency = UAH,
@@ -86,6 +87,7 @@ class FxCashLimitOrderTest {
 
         val uaMarket = TestPredefinedMarkets.KYIV_01
         val limitOrder = FxCashLimitOrder.create(
+            side = Side.CLIENT,
             buySellType = BuySellType.BUY,
             buyCurrency = EUR,
             sellCurrency = UAH,

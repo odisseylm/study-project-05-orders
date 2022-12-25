@@ -6,12 +6,16 @@ package com.mvv.bank.orders.domain
 //    val name: String
 //    val symbol: String
 //}
+
 interface Company {
     val name: String
     val symbol: String // see https://stockanalysis.com/stocks/  https://www.investopedia.com/terms/s/stocksymbol.asp
-    @Suppress("PropertyName")
-    val ISIN: String
+    val isin: String
+}
 
+interface CompanyFactory {
+    // in general factory should return company data where Company.symbol = original symbol
+    fun getCompanyData(symbol: String): Company
 }
 
 /*

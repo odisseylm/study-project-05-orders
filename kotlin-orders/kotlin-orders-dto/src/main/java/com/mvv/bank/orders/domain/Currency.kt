@@ -55,6 +55,18 @@ data class CurrencyPair private constructor (
     // optimization
     override fun equals(other: Any?): Boolean = (other is CurrencyPair) && other.asString == this.asString
     override fun hashCode(): Int = asString.hashCode()
+
+    /*
+    // Unfortunately IDEA cannot generate this for me, so type it out
+    // I might eventually create a live template for this
+    fun copy(
+        base: Currency = this.base,
+        counter: Currency = this.counter,
+    ): User {
+        return of(base, counter)
+    }
+    */
+
     fun oppositeCurrency(currency: Currency): Currency =
         when (currency) {
             this.base   -> this.counter

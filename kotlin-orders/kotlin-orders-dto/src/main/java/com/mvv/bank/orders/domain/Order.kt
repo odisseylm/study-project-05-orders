@@ -6,7 +6,33 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDateTime
 
+
 private val log: Logger = LoggerFactory.getLogger(Order::class.java)
+
+/**
+ * I am not 100% sure that is the same as Buy-Side/Sell-Side, but seems so :-)
+ * https://corporatefinanceinstitute.com/resources/career/buy-side-vs-sell-side/
+ */
+enum class Side {
+    /**
+     * Trade/orders for clients.
+     *
+     * Buy-Side according to https://corporatefinanceinstitute.com/resources/career/buy-side-vs-sell-side/
+     * Buy-Side – is the side of the financial market that buys and invests large portions of securities for the purpose of money or fund management.
+     * The Buy Side refers to firms that purchase securities and includes investment managers, pension funds, and hedge funds.
+     */
+    CLIENT,
+
+    /**
+     * Bank or market.
+     * Sell-Side according to https://corporatefinanceinstitute.com/resources/career/buy-side-vs-sell-side/
+     * Sell-Side – is the other side of the financial market, which deals with the creation, promotion,
+     * and selling of traded securities to the public.
+     * The Sell-Side refers to firms that issue, sell, or trade securities, and includes investment banks,
+     * advisory firms, and corporations.
+     */
+    BANK_MARKER, // bank or market
+}
 
 
 interface DateTimeService {
@@ -66,9 +92,10 @@ enum class OrderCancelReason {
     CANCELED_BY_USER,
 }
 
-interface Order<Product, Quote> {
-    val orderType: OrderType
+sealed interface Order<Product, Quote> {
     var id: Long?
+    var side: Side?
+    val orderType: OrderType
     var product: Product?
 
     // several variables are used to see problems in case of signal race abd if both
@@ -93,8 +120,13 @@ interface Order<Product, Quote> {
 }
 
 
-abstract class AbstractOrder<Product, Quote> : Order<Product, Quote> {
+sealed class AbstractOrder<Product, Quote> : Order<Product, Quote> {
     override var id: Long? = null
+    override var side: Side? = null
+        set(value) {
+            if (field != null && value != field) throw IllegalStateException("Changing order side is not allowed (from $field to $value).")
+            field = value
+        }
     override var product: Product? = null
     override var market: Market? = null
 
@@ -187,6 +219,8 @@ abstract class AbstractOrder<Product, Quote> : Order<Product, Quote> {
 
         @Suppress("RedundantRequireNotNullCall")
         checkNotNull(orderType)
+        checkNotNull(side)
+        check(side == Side.CLIENT) { "Currently only client side orders are supported." }
         checkNotNull(product)
         checkNotNull(market)
         checkNotNull(buySellType)
