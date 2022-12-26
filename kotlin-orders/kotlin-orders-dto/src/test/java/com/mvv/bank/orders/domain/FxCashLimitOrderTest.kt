@@ -22,22 +22,22 @@ class FxCashLimitOrderTest {
 
         // client wants to sell 20 EUR (another currency UAH) by price >= 39.38
 
-        val uaMarket = TestPredefinedMarkets.KYIV_01
+        val uaMarket = TestPredefinedMarkets.KYIV1
         val limitOrder = FxCashLimitOrder.create(
             side = Side.CLIENT,
             buySellType = BuySellType.SELL,
             sellCurrency = EUR,
             buyCurrency = UAH,
             limitPrice = Amount.of("39.38", UAH),
-            executionType = AbstractLimitOrder.ExecutionType.GTC,
+            dailyExecutionType = DailyExecutionType.GTC,
             market = uaMarket,
         )
 
         val rate = FxRate(
-            marketSymbol = uaMarket.marketName,
+            marketSymbol = uaMarket.symbol,
             marketDate = date,
             marketDateTime = dateTime,
-            dateTime = ZonedDateTime.of(dateTime, uaMarket.marketZoneId),
+            dateTime = ZonedDateTime.of(dateTime, uaMarket.zoneId),
             currencyPair = CurrencyPair.of("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
@@ -85,22 +85,22 @@ class FxCashLimitOrderTest {
 
         // client wants to buy 20 EUR (another currency UAH) by price >= 39.38
 
-        val uaMarket = TestPredefinedMarkets.KYIV_01
+        val uaMarket = TestPredefinedMarkets.KYIV1
         val limitOrder = FxCashLimitOrder.create(
             side = Side.CLIENT,
             buySellType = BuySellType.BUY,
             buyCurrency = EUR,
             sellCurrency = UAH,
             limitPrice = Amount.of("39.38", UAH),
-            executionType = AbstractLimitOrder.ExecutionType.GTC,
+            dailyExecutionType = DailyExecutionType.GTC,
             market = uaMarket,
         )
 
         val rate = FxRate(
-            marketSymbol = uaMarket.marketName,
+            marketSymbol = uaMarket.symbol,
             marketDate = date,
             marketDateTime = dateTime,
-            dateTime = ZonedDateTime.of(dateTime, uaMarket.marketZoneId),
+            dateTime = ZonedDateTime.of(dateTime, uaMarket.zoneId),
             currencyPair = CurrencyPair.of("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),

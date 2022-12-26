@@ -6,11 +6,21 @@ import org.slf4j.LoggerFactory
 private val log: Logger = LoggerFactory.getLogger(AbstractLimitOrder::class.java)
 
 
-sealed class AbstractLimitOrder<Product, Quote> : AbstractOrder<Product, Quote>() {
+enum class DailyExecutionType (val humanName: String) {
+    DAY_ONLY("Day Only"),
+    GTC("Good 'til Canceled"),
+}
+
+interface LimitOrder<Product, Quote> : Order<Product, Quote> {
+    var limitPrice: Amount?
+    var dailyExecutionType: DailyExecutionType?
+}
+
+sealed class AbstractLimitOrder<Product, Quote> : AbstractOrder<Product, Quote>(), LimitOrder<Product, Quote> {
 
     override val orderType: OrderType = OrderType.LIMIT_ORDER
-    var limitPrice: Amount? = null
-    var executionType: ExecutionType? = null
+    override var limitPrice: Amount? = null
+    override var dailyExecutionType: DailyExecutionType? = null
 
     //abstract fun toExecute(currentPrice: FxRate): Boolean
 
@@ -57,12 +67,6 @@ sealed class AbstractLimitOrder<Product, Quote> : AbstractOrder<Product, Quote>(
         }
     }
 
-    // TODO: find better name
-    enum class ExecutionType (val humanName: String) {
-        DAY_ONLY("Day Only"),
-        GTC("Good 'til Canceled"),
-    }
-
     override fun validateCurrentState() {
         super.validateCurrentState()
 
@@ -71,7 +75,7 @@ sealed class AbstractLimitOrder<Product, Quote> : AbstractOrder<Product, Quote>(
         }
 
         checkNotNull(limitPrice)
-        checkNotNull(executionType)
+        checkNotNull(dailyExecutionType)
     }
 
     override fun validateNextState(nextState: OrderState) {
@@ -82,6 +86,6 @@ sealed class AbstractLimitOrder<Product, Quote> : AbstractOrder<Product, Quote>(
         }
 
         checkNotNull(limitPrice)
-        checkNotNull(executionType)
+        checkNotNull(dailyExecutionType)
     }
 }

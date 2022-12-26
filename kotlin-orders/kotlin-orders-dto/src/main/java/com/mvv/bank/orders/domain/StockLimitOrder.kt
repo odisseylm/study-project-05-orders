@@ -15,7 +15,7 @@ class StockLimitOrder : AbstractLimitOrder<String, StockQuote>() {
             companySymbol: String,
             company: Company,
             limitPrice: Amount,
-            executionType: ExecutionType,
+            dailyExecutionType: DailyExecutionType,
 
             market: Market,
             orderState: OrderState = OrderState.UNKNOWN,
@@ -37,7 +37,7 @@ class StockLimitOrder : AbstractLimitOrder<String, StockQuote>() {
             order.product = companySymbol
             order.company = company
             order.limitPrice = limitPrice
-            order.executionType = executionType
+            order.dailyExecutionType = dailyExecutionType
 
             order.market = market
 

@@ -47,7 +47,7 @@ interface GeneralContext {
 interface OrderContext : GeneralContext {
     val market: Market
     fun now(): Instant = dateTimeService.now()
-    fun nowOnMarket(): LocalDateTime = LocalDateTime.ofInstant(now(), market.marketZoneId)
+    fun nowOnMarket(): LocalDateTime = LocalDateTime.ofInstant(now(), market.zoneId)
 
     companion object {
         fun create(

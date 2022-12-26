@@ -55,7 +55,7 @@ class FxCashLimitOrder private constructor() : AbstractLimitOrder<Currency, Quot
             buyCurrency: Currency,
             sellCurrency: Currency,
             limitPrice: Amount,
-            executionType: ExecutionType,
+            dailyExecutionType: DailyExecutionType,
 
             market: Market,
             orderState: OrderState = OrderState.UNKNOWN,
@@ -77,7 +77,7 @@ class FxCashLimitOrder private constructor() : AbstractLimitOrder<Currency, Quot
             order.buyCurrency  = buyCurrency
             order.sellCurrency = sellCurrency
             order.limitPrice   = limitPrice
-            order.executionType = executionType
+            order.dailyExecutionType = dailyExecutionType
 
             order.market = market
 

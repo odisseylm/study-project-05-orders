@@ -6,19 +6,11 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 
-enum class TestPredefinedMarkets (
-    override val marketName: String,
-    override val marketZoneId: ZoneId,
-    override val description: String,
-    override val defaultOpenTime: LocalTime,  // inclusive
-    override val defaultCloseTime: LocalTime, // exclusive
-) : Market {
-    //NASDAQ("NASDAQ", ZoneId.of("America/New_York"), "", LocalTime.of(9, 0), LocalTime.of(17, 0)),
-    KYIV_01("NASDAQ", ZoneId.of("Europe/Kiev"), "", LocalTime.of(9, 0), LocalTime.of(17, 0)),
-    ;
-
-    override fun isWorkingDay(date: LocalDate): Boolean =
-        (date.dayOfWeek == DayOfWeek.SATURDAY) || (date.dayOfWeek == DayOfWeek.SUNDAY)
+class TestPredefinedMarkets {
+    companion object {
+        //val NASDAQ: Market = TestMarketImpl("National Association of Securities Dealers Automated Quotation", "NASDAQ", ZoneId.of("America/New_York"), "", LocalTime.of(9, 0), LocalTime.of(17, 0))
+        val KYIV1: Market = TestMarketImpl("KYIV1", "KYIV1", ZoneId.of("Europe/Kiev"), "", LocalTime.of(9, 0), LocalTime.of(17, 0))
+    }
 }
 
 class TestPredefinedCompanies {
@@ -27,8 +19,21 @@ class TestPredefinedCompanies {
     }
 }
 
+
 private class TestCompanyImpl (
     override val name: String,
     override val symbol: String,
     override val isin: String,
 ) : Company
+
+private class TestMarketImpl (
+    override val name: String,
+    override val symbol: String,
+    override val zoneId: ZoneId,
+    override val description: String,
+    override val defaultOpenTime: LocalTime,  // inclusive
+    override val defaultCloseTime: LocalTime, // exclusive
+) : Market {
+    override fun isWorkingDay(date: LocalDate): Boolean =
+        (date.dayOfWeek == DayOfWeek.SATURDAY) || (date.dayOfWeek == DayOfWeek.SUNDAY)
+}

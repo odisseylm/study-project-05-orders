@@ -6,8 +6,9 @@ import java.time.ZoneId
 
 
 interface Market {
-    val marketName: String
-    val marketZoneId: ZoneId
+    val name: String
+    val symbol: String
+    val zoneId: ZoneId
     val description: String
 
     val defaultOpenTime: LocalTime  // inclusive

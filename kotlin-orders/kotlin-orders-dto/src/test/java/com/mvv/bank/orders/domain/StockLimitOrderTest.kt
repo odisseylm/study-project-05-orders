@@ -27,22 +27,22 @@ class StockLimitOrderTest {
 
         // client wants to sell 20 Apple shares (another currency UAH) by price >= 10.00
 
-        val uaMarket = TestPredefinedMarkets.KYIV_01
+        val uaMarket = TestPredefinedMarkets.KYIV1
         val limitOrder = StockLimitOrder.create(
             side = Side.CLIENT,
             buySellType = BuySellType.SELL,
             companySymbol = "AAPL",
             company = TestPredefinedCompanies.APPLE,
             limitPrice = Amount.of("10.00", USD),
-            executionType = AbstractLimitOrder.ExecutionType.GTC,
+            dailyExecutionType = DailyExecutionType.GTC,
             market = uaMarket,
         )
 
         val quote = StockQuote(
-            marketSymbol = uaMarket.marketName,
+            marketSymbol = uaMarket.symbol,
             marketDate = date,
             marketDateTime = dateTime,
-            dateTime = ZonedDateTime.of(dateTime, uaMarket.marketZoneId),
+            dateTime = ZonedDateTime.of(dateTime, uaMarket.zoneId),
             productSymbol = "AAPL",
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
@@ -75,22 +75,22 @@ class StockLimitOrderTest {
 
         // client wants to sell 20 Apple shares (another currency UAH) by price >= 10.00
 
-        val uaMarket = TestPredefinedMarkets.KYIV_01
+        val uaMarket = TestPredefinedMarkets.KYIV1
         val limitOrder = StockLimitOrder.create(
             side = Side.CLIENT,
             buySellType = BuySellType.BUY,
             companySymbol = "AAPL",
             company = TestPredefinedCompanies.APPLE,
             limitPrice = Amount.of("10.00", USD),
-            executionType = AbstractLimitOrder.ExecutionType.GTC,
+            dailyExecutionType = DailyExecutionType.GTC,
             market = uaMarket,
         )
 
         val quote = StockQuote(
-            marketSymbol = uaMarket.marketName,
+            marketSymbol = uaMarket.symbol,
             marketDate = date,
             marketDateTime = dateTime,
-            dateTime = ZonedDateTime.of(dateTime, uaMarket.marketZoneId),
+            dateTime = ZonedDateTime.of(dateTime, uaMarket.zoneId),
             productSymbol = "AAPL",
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
