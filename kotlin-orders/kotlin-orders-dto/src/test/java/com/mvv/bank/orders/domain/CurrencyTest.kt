@@ -18,7 +18,7 @@ internal class CurrencyTest {
 
     @Test
     fun createCurrencyPair() {
-        val currencyPair = CurrencyPair.of(Currency.of("USD"), Currency.of("EUR"))
+        val currencyPair = CurrencyPair.USD_EUR
         assertThat(currencyPair.toString()).isEqualTo("USD_EUR")
         assertThat(currencyPair.base).isEqualTo(Currency.of("USD"))
         assertThat(currencyPair.counter).isEqualTo(Currency.of("EUR"))
@@ -42,5 +42,15 @@ internal class CurrencyTest {
         assertThat(currencyPair2.counter).isEqualTo(Currency.of("UAH"))
         assertThat(currencyPair2.base).isEqualTo(Currency.USD)
         assertThat(currencyPair2.counter).isEqualTo(Currency.UAH)
+    }
+
+    @Test
+    fun copyCurrencyPair() {
+        assertThat(CurrencyPair.USD_EUR.copy(counter = Currency.UAH))
+            .isEqualTo(CurrencyPair.of("USD_UAH"))
+        assertThat(CurrencyPair.USD_EUR.copy(counter = Currency.UAH))
+            .isEqualTo(CurrencyPair.USD_UAH)
+        assertThat(CurrencyPair.USD_EUR.copy(counter = Currency.UAH))
+            .isEqualTo(CurrencyPair.of(Currency.USD, Currency.UAH))
     }
 }

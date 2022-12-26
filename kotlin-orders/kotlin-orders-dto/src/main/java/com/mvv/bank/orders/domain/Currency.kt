@@ -1,5 +1,8 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.orders.domain.Currency.Companion.EUR
+import com.mvv.bank.orders.domain.Currency.Companion.UAH
+import com.mvv.bank.orders.domain.Currency.Companion.USD
 import com.mvv.bank.shared.log.safe
 
 
@@ -21,33 +24,36 @@ class Currency private constructor (val value: String) {
         return true
     }
 
+    @Suppress("unused")
     companion object {
         const val MIN_LENGTH: Int = 3
         const val MAX_LENGTH: Int = 3 // ??? probably it can be 4 for crypto ???
 
         @JvmStatic // standard java method to get from string. It can help to integrate with other frameworks.
-        fun valueOf(currency: String) = Currency(currency)
+        fun valueOf(currency: String) = of(currency)
         @JvmStatic // short valueOf version
         fun of(currency: String) = Currency(currency)
 
+        // popular ones
         val UAH = Currency("UAH")
         val USD = Currency("USD")
         val EUR = Currency("EUR")
         val JPY = Currency("JPY")
+        // feel free to add other popular ones...
     }
 }
+
 
 private const val CURRENCY_PAIR_SEPARATOR: Char = '_'
 
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
-@Suppress("DataClassPrivateConstructor") // we convert it to usual class (with 'copy') if there is need to cache it in the future
-data class CurrencyPair private constructor (
+class CurrencyPair private constructor (
     val base: Currency,
     val counter: Currency,
     ) {
 
-    private val asString = "${base}_${counter}"
+    private val asString = "${base}${CURRENCY_PAIR_SEPARATOR}${counter}"
 
     // actually it can be without separator or the following '|', '/' can be used (what is better?)
     override fun toString() = asString
@@ -56,16 +62,10 @@ data class CurrencyPair private constructor (
     override fun equals(other: Any?): Boolean = (other is CurrencyPair) && other.asString == this.asString
     override fun hashCode(): Int = asString.hashCode()
 
-    /*
-    // Unfortunately IDEA cannot generate this for me, so type it out
-    // I might eventually create a live template for this
     fun copy(
         base: Currency = this.base,
         counter: Currency = this.counter,
-    ): User {
-        return of(base, counter)
-    }
-    */
+    ): CurrencyPair = of(base, counter)
 
     fun oppositeCurrency(currency: Currency): Currency =
         when (currency) {
@@ -76,6 +76,7 @@ data class CurrencyPair private constructor (
 
     fun inverted(): CurrencyPair = of(base = this.counter, counter = this.base)
 
+    @Suppress("unused")
     companion object {
         const val MIN_LENGTH: Int = Currency.MIN_LENGTH * 2 + 1
         const val MAX_LENGTH: Int = Currency.MAX_LENGTH * 2 + 1
@@ -90,9 +91,17 @@ data class CurrencyPair private constructor (
         @JvmStatic // standard java method to get from string. It can help to integrate with other java frameworks.
         fun valueOf(currencyPair: String) = parseCurrencyPair(currencyPair)
 
-        val USD_EUR = of(Currency.USD, Currency.EUR)
-        val EUR_USD = of(Currency.EUR, Currency.USD)
-        // ... add other needed ones
+        // popular ones
+        val USD_EUR = of(USD, EUR)
+        val EUR_USD = of(EUR, USD)
+
+        val USD_UAH = of(USD, UAH)
+        val UAH_USD = of(UAH, USD)
+
+        val EUR_UAH = of(EUR, UAH)
+        val UAH_EUR = of(UAH, EUR)
+
+        // feel free to add other popular ones...
     }
 }
 
