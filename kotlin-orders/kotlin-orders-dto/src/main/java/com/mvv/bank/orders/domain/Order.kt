@@ -198,24 +198,6 @@ sealed class AbstractOrder<Product, Quote: BaseQuote> : Order<Product, Quote> {
         }
     }
 
-    /*
-    var resultingPrice: Amount? = resultingPrice
-        set(value) {
-            check( field == null || field == resultingPrice ) {
-                "Resulting price cannot be changed (from ${this.resultingPrice} to $value)"
-            }
-
-            // TODO: uncomment/implement
-            //if (value != null) {
-            //    check(value.currencyPair == this.currencyPair) {
-            //        "Invalid currency pair ${value.currencyPair} of resulting price."
-            //    }
-            //}
-
-            field = value
-        }
-        */
-
     override fun validateCurrentState() {
         if (orderState == OrderState.UNKNOWN) {
             log.warn("Attempt to validate current state of order with status $orderState") // TODO: fix warning message
