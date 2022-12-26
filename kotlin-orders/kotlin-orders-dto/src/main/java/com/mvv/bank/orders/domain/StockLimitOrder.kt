@@ -3,9 +3,26 @@ package com.mvv.bank.orders.domain
 import java.time.Instant
 
 
-class StockLimitOrder : AbstractLimitOrder<String, StockQuote>() {
+class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, StockQuote> {
 
+    private val limitOrderSupport = LimitOrderSupport<String, StockQuote>()
+
+    override val orderType: OrderType = OrderType.LIMIT_ORDER
+    override var limitPrice: Amount? = null
+    override var dailyExecutionType: DailyExecutionType? = null
     var company: Company? = null
+
+    override fun validateCurrentState() {
+        super.validateCurrentState()
+        limitOrderSupport.validateCurrentState(this)
+    }
+
+    override fun validateNextState(nextState: OrderState) {
+        super.validateNextState(nextState)
+        limitOrderSupport.validateNextState(this, nextState)
+    }
+
+    override fun toExecute(quote: StockQuote): Boolean = limitOrderSupport.toExecute(this, quote)
 
     companion object {
         fun create(

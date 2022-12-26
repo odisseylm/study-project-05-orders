@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDateTime
+import com.mvv.bank.orders.domain.Quote as BaseQuote
 
 
 private val log: Logger = LoggerFactory.getLogger(Order::class.java)
@@ -87,12 +88,14 @@ val OrderState.asVerb get() =
     }
 */
 
+/*
 enum class OrderCancelReason {
     EXPIRED,
     CANCELED_BY_USER,
 }
+*/
 
-sealed interface Order<Product, Quote> {
+sealed interface Order<Product, Quote: BaseQuote> {
     var id: Long?
     var side: Side?
     val orderType: OrderType
@@ -117,10 +120,12 @@ sealed interface Order<Product, Quote> {
     fun changeOrderState(nextOrderState: OrderState, context: OrderContext)
     fun validateCurrentState()
     fun validateNextState(nextState: OrderState)
+
+    fun toExecute(quote: Quote): Boolean
 }
 
 
-sealed class AbstractOrder<Product, Quote> : Order<Product, Quote> {
+sealed class AbstractOrder<Product, Quote: BaseQuote> : Order<Product, Quote> {
     override var id: Long? = null
     override var side: Side? = null
         set(value) {

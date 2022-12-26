@@ -3,7 +3,8 @@ package com.mvv.bank.orders.domain
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-private val log: Logger = LoggerFactory.getLogger(AbstractLimitOrder::class.java)
+@Suppress("unused")
+private val log: Logger = LoggerFactory.getLogger(LimitOrder::class.java)
 
 
 enum class DailyExecutionType (val humanName: String) {
@@ -11,25 +12,21 @@ enum class DailyExecutionType (val humanName: String) {
     GTC("Good 'til Canceled"),
 }
 
-interface LimitOrder<Product, Quote> : Order<Product, Quote> {
+interface LimitOrder<Product, Quote: com.mvv.bank.orders.domain.Quote> : Order<Product, Quote> {
+    var buySellType: BuySellType?
     var limitPrice: Amount?
     var dailyExecutionType: DailyExecutionType?
 }
 
-sealed class AbstractLimitOrder<Product, Quote> : AbstractOrder<Product, Quote>(), LimitOrder<Product, Quote> {
 
-    override val orderType: OrderType = OrderType.LIMIT_ORDER
-    override var limitPrice: Amount? = null
-    override var dailyExecutionType: DailyExecutionType? = null
+class LimitOrderSupport<Product, Quote: com.mvv.bank.orders.domain.Quote> { //}: AbstractOrder<Product, Quote>(), LimitOrder<Product, Quote> {
 
-    //abstract fun toExecute(currentPrice: FxRate): Boolean
+    fun toExecute(order: LimitOrder<Product, Quote>, quote: Quote): Boolean {
+        val buySellType = order.buySellType
+        val limitPrice  = order.limitPrice
 
-    open fun toExecute(quote: com.mvv.bank.orders.domain.Quote): Boolean {
-        val buySellType = this.buySellType
-        val limitPrice  = this.limitPrice
-
-        checkNotNull(buySellType) { "Buy/Sell type is not set for order [${id}]." }
-        checkNotNull(limitPrice)  { "Limit price is not set for order [${id}]."   }
+        checkNotNull(buySellType) { "Buy/Sell type is not set for order [${order.id}]." }
+        checkNotNull(limitPrice)  { "Limit price is not set for order [${order.id}]."   }
 
         check(limitPrice.currency == quote.bid.currency) {
             "Quote $quote has incorrect currency ${quote.bid.currency}." }
@@ -54,7 +51,7 @@ sealed class AbstractLimitOrder<Product, Quote> : AbstractOrder<Product, Quote>(
         //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
         //  ask - price of client 'buy'  (and dealer/bank 'sell')
 
-        return when (this.side) {
+        return when (order.side) {
             null -> throw IllegalStateException("Order side is not set.")
             Side.CLIENT -> when (buySellType) {
                 BuySellType.SELL -> quote.bid.amount >= limitPrice.amount
@@ -67,25 +64,26 @@ sealed class AbstractLimitOrder<Product, Quote> : AbstractOrder<Product, Quote>(
         }
     }
 
-    override fun validateCurrentState() {
-        super.validateCurrentState()
+    fun validateCurrentState(order: LimitOrder<Product, Quote>) {
+        //super.validateCurrentState()
 
-        if (orderState == OrderState.UNKNOWN) {
+        if (order.orderState == OrderState.UNKNOWN) {
             return
         }
 
-        checkNotNull(limitPrice)
-        checkNotNull(dailyExecutionType)
+        checkNotNull(order.limitPrice)
+        checkNotNull(order.dailyExecutionType)
     }
 
-    override fun validateNextState(nextState: OrderState) {
-        super.validateNextState(nextState)
+    @Suppress("UNUSED_PARAMETER")
+    fun validateNextState(order: LimitOrder<Product, Quote>, nextState: OrderState) {
+        //super.validateNextState(nextState)
 
-        if (orderState == OrderState.UNKNOWN) {
+        if (order.orderState == OrderState.UNKNOWN) {
             return
         }
 
-        checkNotNull(limitPrice)
-        checkNotNull(dailyExecutionType)
+        checkNotNull(order.limitPrice)
+        checkNotNull(order.dailyExecutionType)
     }
 }
