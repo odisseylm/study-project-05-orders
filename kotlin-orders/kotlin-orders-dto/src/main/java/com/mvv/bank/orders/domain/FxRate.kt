@@ -55,8 +55,10 @@ class FxRateAsQuote (
     override val marketDateTime: LocalDateTime get() = rate.marketDateTime
     override val dateTime: ZonedDateTime get() = rate.dateTime
     override val bid: Amount get() = Amount.of(
+        // TODO: should be invertRate(rate.bid) or invertRate(rate.ask)
         if (priceCurrency == rate.currencyPair.counter) rate.bid else invertRate(rate.bid), priceCurrency)
     override val ask: Amount get() = Amount.of(
+        // TODO: should be invertRate(rate.ask) or invertRate(rate.bid)
         if (priceCurrency == rate.currencyPair.counter) rate.ask else invertRate(rate.ask), priceCurrency)
     init {
         check(priceCurrency == rate.currencyPair.base || priceCurrency == rate.currencyPair.counter) {

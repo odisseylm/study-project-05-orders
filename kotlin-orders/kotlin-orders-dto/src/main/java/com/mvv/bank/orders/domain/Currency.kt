@@ -9,9 +9,7 @@ import com.mvv.bank.shared.log.safe
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
 class Currency private constructor (val value: String) {
-    init {
-        validateCurrency(value)
-    }
+    init { validateCurrency(value) }
 
     override fun toString() = value
 
@@ -29,10 +27,10 @@ class Currency private constructor (val value: String) {
         const val MIN_LENGTH: Int = 3
         const val MAX_LENGTH: Int = 3 // ??? probably it can be 4 for crypto ???
 
+        @JvmStatic
+        fun of(currency: String) = Currency(currency)
         @JvmStatic // standard java method to get from string. It can help to integrate with other frameworks.
         fun valueOf(currency: String) = of(currency)
-        @JvmStatic // short valueOf version
-        fun of(currency: String) = Currency(currency)
 
         // popular ones
         val UAH = Currency("UAH")
@@ -69,7 +67,7 @@ class CurrencyPair private constructor (
 
     fun oppositeCurrency(currency: Currency): Currency =
         when (currency) {
-            this.base   -> this.counter
+            this.base    -> this.counter
             this.counter -> this.base
             else -> throw IllegalArgumentException("No opposite currency to $currency in $this.")
         }
@@ -117,21 +115,12 @@ private fun parseCurrencyPair(currencyPair: String): CurrencyPair {
 
     val currenciesList: List<String> = currencyPair.split(CURRENCY_PAIR_SEPARATOR)
 
-    if (currenciesList.size == 1) {
-        throw IllegalArgumentException("Invalid currency pair [${currencyPair.safe}] (currency separator '$CURRENCY_PAIR_SEPARATOR' is expected).")
-    } else if (currenciesList.size > 2) {
-        throw IllegalArgumentException("Invalid currency pair [${currencyPair.safe}] (only one currency separator '$CURRENCY_PAIR_SEPARATOR' is expected).")
-    }
-
     check(currenciesList.size == 2) {
-        "Invalid currency pair [${currencyPair.safe}] (only one '$CURRENCY_PAIR_SEPARATOR' is expected)." }
+        "Invalid currency pair [${currencyPair.safe}] (format like 'USD${CURRENCY_PAIR_SEPARATOR}EUR' is expected)." }
 
-    try {
-        return CurrencyPair.of(Currency.of(currenciesList[0]), Currency.of(currenciesList[1]))
-    }
-    catch (ex: Exception) {
-        throw IllegalArgumentException("Invalid currency pair [${currencyPair.safe}].", ex)
-    }
+
+    return try { CurrencyPair.of(Currency.of(currenciesList[0]), Currency.of(currenciesList[1])) }
+    catch (ex: Exception) { throw IllegalArgumentException("Invalid currency pair [${currencyPair.safe}].", ex) }
 }
 
 private fun isValidCurrency(currency: String?): Boolean =

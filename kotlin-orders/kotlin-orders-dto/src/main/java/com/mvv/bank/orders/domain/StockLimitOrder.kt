@@ -37,10 +37,10 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
             market: Market,
             orderState: OrderState = OrderState.UNKNOWN,
 
-            placedAt: Instant? = null,
+            placedAt: Instant?   = null,
             executedAt: Instant? = null,
             canceledAt: Instant? = null,
-            expiredAt: Instant? = null,
+            expiredAt: Instant?  = null,
 
             resultingPrice: Amount? = null,
             resultingQuote: StockQuote? = null,
@@ -60,10 +60,65 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
 
             order.orderState = orderState
 
-            order.placedAt = placedAt
+            order.placedAt   = placedAt
             order.executedAt = executedAt
             order.canceledAt = canceledAt
-            order.expiredAt = expiredAt
+            order.expiredAt  = expiredAt
+
+            order.resultingPrice = resultingPrice
+            order.resultingQuote = resultingQuote
+
+            order.validateCurrentState()
+
+            return order
+        }
+    }
+}
+
+
+class StockMarketOrder : AbstractOrder<String, StockQuote>() {
+
+    override val orderType: OrderType = OrderType.MARKET_ORDER
+    var company: Company? = null
+
+    override fun toExecute(quote: StockQuote): Boolean = true
+
+    companion object {
+        fun create(
+            id: Long? = null,
+            side: Side,
+            buySellType: BuySellType,
+            companySymbol: String,
+            company: Company,
+
+            market: Market,
+            orderState: OrderState = OrderState.UNKNOWN,
+
+            placedAt: Instant?   = null,
+            executedAt: Instant? = null,
+            canceledAt: Instant? = null,
+            expiredAt: Instant?  = null,
+
+            resultingPrice: Amount? = null,
+            resultingQuote: StockQuote? = null,
+        ): StockMarketOrder {
+            val order = StockMarketOrder()
+            // TODO: how to fix this duplicated 19 lines???
+            order.id = id
+
+            order.side  = side
+            order.buySellType = buySellType
+            order.product = companySymbol
+            order.company = company
+
+            order.market = market
+
+            order.orderState = orderState
+
+            order.placedAt   = placedAt
+            order.executedAt = executedAt
+            order.canceledAt = canceledAt
+            order.expiredAt  = expiredAt
 
             order.resultingPrice = resultingPrice
             order.resultingQuote = resultingQuote

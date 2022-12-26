@@ -7,11 +7,6 @@ import org.slf4j.LoggerFactory
 private val log: Logger = LoggerFactory.getLogger(LimitOrder::class.java)
 
 
-enum class DailyExecutionType (val humanName: String) {
-    DAY_ONLY("Day Only"),
-    GTC("Good 'til Canceled"),
-}
-
 interface LimitOrder<Product, Quote: com.mvv.bank.orders.domain.Quote> : Order<Product, Quote> {
     var buySellType: BuySellType?
     var limitPrice: Amount?

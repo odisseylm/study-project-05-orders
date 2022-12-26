@@ -30,14 +30,11 @@ interface Quote {
 // https://www.wallstreetmojo.com/stock-quote/
 data class StockQuote (
     override val marketSymbol: String,
-    // TODO: probably rename
     override val productSymbol: String, // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
 
     override val dateTime: ZonedDateTime,
     override val marketDate: LocalDate,
     override val marketDateTime: LocalDateTime,
-
-    //override val currency: Currency,
 
     override val bid: Amount,
     override val ask: Amount,

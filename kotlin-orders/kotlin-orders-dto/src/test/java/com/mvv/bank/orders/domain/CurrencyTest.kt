@@ -27,11 +27,11 @@ internal class CurrencyTest {
         assertThat(CurrencyPair.of("USD_EUR")).isEqualTo(currencyPair)
 
         assertThatCode { CurrencyPair.valueOf("USD EUR") }
-            .hasMessage("Invalid currency pair [USD EUR] (currency separator '_' is expected).")
+            .hasMessage("Invalid currency pair [USD EUR] (format like 'USD_EUR' is expected).")
         assertThatCode { CurrencyPair.valueOf("USD-EUR") }
-            .hasMessage("Invalid currency pair [USD-EUR] (currency separator '_' is expected).")
+            .hasMessage("Invalid currency pair [USD-EUR] (format like 'USD_EUR' is expected).")
         assertThatCode { CurrencyPair.valueOf("USD/EUR") }
-            .hasMessage("Invalid currency pair [USD/EUR] (currency separator '_' is expected).")
+            .hasMessage("Invalid currency pair [USD/EUR] (format like 'USD_EUR' is expected).")
 
         assertThatCode { CurrencyPair.valueOf("US1_EUR") }
             .hasMessage("Invalid currency pair [US1_EUR].")

@@ -2,98 +2,12 @@ package com.mvv.bank.orders.domain
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.Clock
 import java.time.Instant
-import java.time.LocalDateTime
 import com.mvv.bank.orders.domain.Quote as BaseQuote
 
 
 private val log: Logger = LoggerFactory.getLogger(Order::class.java)
 
-/**
- * I am not 100% sure that is the same as Buy-Side/Sell-Side, but seems so :-)
- * https://corporatefinanceinstitute.com/resources/career/buy-side-vs-sell-side/
- */
-enum class Side {
-    /**
-     * Trade/orders for clients.
-     *
-     * Buy-Side according to https://corporatefinanceinstitute.com/resources/career/buy-side-vs-sell-side/
-     * Buy-Side – is the side of the financial market that buys and invests large portions of securities for the purpose of money or fund management.
-     * The Buy Side refers to firms that purchase securities and includes investment managers, pension funds, and hedge funds.
-     */
-    CLIENT,
-
-    /**
-     * Bank or market.
-     * Sell-Side according to https://corporatefinanceinstitute.com/resources/career/buy-side-vs-sell-side/
-     * Sell-Side – is the other side of the financial market, which deals with the creation, promotion,
-     * and selling of traded securities to the public.
-     * The Sell-Side refers to firms that issue, sell, or trade securities, and includes investment banks,
-     * advisory firms, and corporations.
-     */
-    BANK_MARKER, // bank or market
-}
-
-
-interface DateTimeService {
-    val clock: Clock
-    fun now(): Instant
-}
-
-interface GeneralContext {
-    val dateTimeService: DateTimeService
-}
-
-interface OrderContext : GeneralContext {
-    val market: Market
-    fun now(): Instant = dateTimeService.now()
-    fun nowOnMarket(): LocalDateTime = LocalDateTime.ofInstant(now(), market.zoneId)
-
-    companion object {
-        fun create(
-            dateTimeService: DateTimeService,
-            market: Market,
-        ) : OrderContext = OrderContextImpl(
-            dateTimeService = dateTimeService,
-            market = market,
-        )
-    }
-}
-
-
-private class OrderContextImpl (
-    override val dateTimeService: DateTimeService,
-    override val market: Market,
-) : OrderContext
-
-enum class OrderState {
-    UNKNOWN,
-    TO_BE_PLACED,
-    PLACED,
-    EXECUTED,
-    EXPIRED,
-    CANCELED,
-}
-
-/*
-// optional API (can be removed)
-val OrderState.asVerb get() =
-    when (this) {
-        OrderState.UNKNOWN  -> "make unknown"
-        OrderState.PLACED   -> "place"
-        OrderState.EXECUTED -> "execute"
-        OrderState.CANCELED -> "cancel"
-        OrderState.EXPIRED  -> "expire"
-    }
-*/
-
-/*
-enum class OrderCancelReason {
-    EXPIRED,
-    CANCELED_BY_USER,
-}
-*/
 
 sealed interface Order<Product, Quote: BaseQuote> {
     var id: Long?

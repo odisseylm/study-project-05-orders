@@ -17,7 +17,7 @@ data class Amount private constructor (
         @JvmStatic
         fun of(amount: BigDecimal, currency: Currency) = Amount(amount, currency)
         @JvmStatic
-        fun of(amount: String, currency: Currency) = Amount(BigDecimal(amount), currency)
+        fun of(amount: String, currency: Currency) = of(BigDecimal(amount), currency)
 
         @JvmStatic // standard java method to get from string. It can help to integrate with other java frameworks.
         @Suppress("unused")
@@ -32,11 +32,12 @@ private fun parseAmount(amount: String): Amount {
     try {
         check(amount.length <= MAX_AMOUNT_LENGTH) {
             "Too long amount string [${amount.safe}] (${amount.length})" }
+
         val strCurrency = amount.substringAfterLast(' ', "")
-        val currency = Currency.of(strCurrency)
+        check(strCurrency.isNotBlank()) { "Amount should have currency at the end (format like '155.46 USD' is expected)." }
 
         val strAmount = amount.substringBeforeLast(' ')
-        return Amount.of(BigDecimal(strAmount), currency)
+        return Amount.of(BigDecimal(strAmount), Currency.of(strCurrency))
     }
     catch (ex: Exception) {
         throw IllegalArgumentException("Error of parsing amount ${amount.safe}.", ex)

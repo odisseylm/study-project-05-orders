@@ -24,8 +24,7 @@ interface MarketFactory {
 }
 
 /*
-Symbols:
-Stock Exchange
-NASDAQ
-NYSE
+Stock Exchange symbols:
+ * NASDAQ
+ * NYSE
 */
