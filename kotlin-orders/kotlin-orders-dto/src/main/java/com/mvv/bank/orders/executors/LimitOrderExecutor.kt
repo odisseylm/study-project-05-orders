@@ -23,7 +23,7 @@ class FxCashLimitOrderExecutor (
     override fun priceChanged(price: FxRate) {
 
         val ordersToExecute = orders.asSequence()
-            .filter { price.currencyPair.containsCurrencies(it.buyCurrency!!, it.sellCurrency!!) }
+            .filter { price.currencyPair.containsCurrencies(it.buyCurrency, it.sellCurrency) }
             .filter { it.toExecute(price) }
             .toList()
 

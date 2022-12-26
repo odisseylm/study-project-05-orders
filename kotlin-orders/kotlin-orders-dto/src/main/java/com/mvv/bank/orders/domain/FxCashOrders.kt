@@ -6,9 +6,9 @@ import java.time.Instant
 sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
 
     @Suppress("MemberVisibilityCanBePrivate")
-    var buyCurrency: Currency? = null
+    lateinit var buyCurrency: Currency
     @Suppress("MemberVisibilityCanBePrivate")
-    var sellCurrency: Currency? = null
+    lateinit var sellCurrency: Currency
 
     // It also can be used to set resultingPrice/resultingQuote from FX rate during order execution (if they are not set).
     // It is optional/temporary (mainly for debugging; most probably after loading order from database it will be lost).
@@ -17,24 +17,24 @@ sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
             field = value
             if (value != null && resultingPrice == null) {
                 // TODO: test with inverted rate
-                resultingPrice = value.asPrice(priceCurrency!!, buySellType!!)
+                resultingPrice = value.asPrice(priceCurrency, buySellType)
             }
             if (value != null && resultingQuote == null) {
                 // TODO: test with inverted rate
-                resultingQuote = FxRateAsQuote(value, priceCurrency!!)
+                resultingQuote = FxRateAsQuote(value, priceCurrency)
             }
         }
 
-    private val priceCurrency: Currency? get() = when (buySellType) {
+    private val priceCurrency: Currency get() = when (buySellType) {
         // opposite
-        null -> null
+        //null -> null
         BuySellType.BUY  -> sellCurrency
         BuySellType.SELL -> buyCurrency
     }
 
-    override var product: Currency?
+    override var product: Currency
         get() = when (buySellType) {
-            null -> null
+            //null -> null
             BuySellType.BUY  -> buyCurrency
             BuySellType.SELL -> sellCurrency
         }
@@ -48,7 +48,7 @@ sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
             }
         }
 
-    fun toExecute(rate: FxRate): Boolean = toExecute(FxRateAsQuote(rate, priceCurrency!!))
+    fun toExecute(rate: FxRate): Boolean = toExecute(FxRateAsQuote(rate, priceCurrency))
 }
 
 
@@ -57,8 +57,8 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
     private val limitOrderSupport = LimitOrderSupport<Currency, Quote>()
 
     override val orderType: OrderType = OrderType.LIMIT_ORDER
-    override var limitPrice: Amount? = null
-    override var dailyExecutionType: DailyExecutionType? = null
+    override lateinit var limitPrice: Amount
+    override lateinit var dailyExecutionType: DailyExecutionType
 
     override fun validateCurrentState() {
         super.validateCurrentState()
@@ -74,7 +74,7 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
 
     companion object {
         fun create(
-            id: Long? = null,
+            id: Long = -1,
             side: Side,
             buySellType: BuySellType,
             buyCurrency: Currency,

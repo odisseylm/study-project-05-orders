@@ -1,19 +1,22 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.shared.log.safe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Instant
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 import com.mvv.bank.orders.domain.Quote as BaseQuote
 
 
 private val log: Logger = LoggerFactory.getLogger(Order::class.java)
 
 
-sealed interface Order<Product, Quote: BaseQuote> {
+sealed interface Order<Product: Any, Quote: BaseQuote> {
     var id: Long?
-    var side: Side?
+    var side: Side
     val orderType: OrderType
-    var product: Product?
+    var product: Product
 
     // several variables are used to see problems in case of signal race abd if both
     // operations are happened 'cancel' and 'execute/expire'
@@ -22,7 +25,7 @@ sealed interface Order<Product, Quote: BaseQuote> {
     var canceledAt: Instant?
     var expiredAt: Instant?
 
-    var market: Market?
+    var market: Market
 
     var orderState: OrderState
 
@@ -38,18 +41,65 @@ sealed interface Order<Product, Quote: BaseQuote> {
     fun toExecute(quote: Quote): Boolean
 }
 
+// This class is designed because kotlin does not support 'late init' props with custom getter/setter
+class LateInitProperty<T, Owner> (
+    value: T? = null,
 
-sealed class AbstractOrder<Product, Quote: BaseQuote> : Order<Product, Quote> {
-    override var id: Long? = null
-    override var side: Side? = null
-        set(value) {
-            if (field != null && value != field) throw IllegalStateException("Changing order side is not allowed (from $field to $value).")
-            field = value
+    val changeable: Boolean = true,
+    // !!! Message should have exactly ${prev} and ${new} (not short forms like $prev and $new)
+    val changeErrorMessage: String = "Not allowed to change property (from \${prev} to \${new})",
+
+    val validate:   (new: T, prev: T?)->Unit = {_,_->},
+    val preUpdate:  (new: T, prev: T?)->Unit = {_,_->},
+    val postUpdate: (new: T, prev: T?)->Unit = {_,_->},
+) : ReadWriteProperty<Owner, T> {
+    private var internalValue: T? = value
+    val asNullableValue: T? get() = internalValue
+    val asNonNullableValue: T get() = internalValue!!
+    fun set(v: T) {
+        val prev = this.internalValue
+        validateNonChangeable(v, prev)
+        validate(v, prev)
+        preUpdate(v, prev)
+        internalValue = v
+        postUpdate(v, prev)
+    }
+
+    private fun validateNonChangeable(new: T, prev: T?) {
+        if (prev != null && new != prev) {
+            val msg = changeErrorMessage
+                .replace("\$prev", prev.safe.toString())
+                .replace("\$new", new.safe.toString())
+            throw IllegalStateException(msg)
         }
-    override var product: Product? = null
-    override var market: Market? = null
+    }
 
-    var buySellType: BuySellType? = null
+    // TODO: add logic to verify value on null only if T is nullable. Is it needed???
+    override operator fun getValue(thisRef: Owner, property: KProperty<*>): T = asNonNullableValue
+    override operator fun setValue(thisRef: Owner, property: KProperty<*>, value: T) = set(value)
+
+    override fun toString(): String = "$internalValue"
+    override fun equals(other: Any?): Boolean {
+        return ((other is LateInitProperty<*, *>) && other.internalValue == this.internalValue)
+                || other == internalValue
+    }
+
+    override fun hashCode(): Int = internalValue.hashCode()
+}
+
+sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quote> {
+    override var id: Long? = null
+
+    private val sideImpl = LateInitProperty<Side, Any>(
+        changeable = false,
+        changeErrorMessage = "Changing order side is not allowed (from \${prev} to \${new}).",
+    )
+    override var side: Side by sideImpl
+
+    override lateinit var product: Product
+    override lateinit var market: Market
+
+    lateinit var buySellType: BuySellType
     override var orderState: OrderState = OrderState.UNKNOWN
 
     override var placedAt: Instant? = null
@@ -120,10 +170,14 @@ sealed class AbstractOrder<Product, Quote: BaseQuote> : Order<Product, Quote> {
 
         @Suppress("RedundantRequireNotNullCall")
         checkNotNull(orderType)
+        @Suppress("RedundantRequireNotNullCall")
         checkNotNull(side)
         check(side == Side.CLIENT) { "Currently only client side orders are supported." }
+        @Suppress("RedundantRequireNotNullCall")
         checkNotNull(product)
+        @Suppress("RedundantRequireNotNullCall")
         checkNotNull(market)
+        @Suppress("RedundantRequireNotNullCall")
         checkNotNull(buySellType)
         @Suppress("RedundantRequireNotNullCall")
         checkNotNull(orderState)
@@ -160,8 +214,11 @@ sealed class AbstractOrder<Product, Quote: BaseQuote> : Order<Product, Quote> {
 
         @Suppress("RedundantRequireNotNullCall")
         checkNotNull(orderType)
+        @Suppress("RedundantRequireNotNullCall")
         checkNotNull(product)
+        @Suppress("RedundantRequireNotNullCall")
         checkNotNull(market)
+        @Suppress("RedundantRequireNotNullCall")
         checkNotNull(buySellType)
         @Suppress("RedundantRequireNotNullCall")
         checkNotNull(orderState)

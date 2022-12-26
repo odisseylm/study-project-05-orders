@@ -8,9 +8,9 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
     private val limitOrderSupport = LimitOrderSupport<String, StockQuote>()
 
     override val orderType: OrderType = OrderType.LIMIT_ORDER
-    override var limitPrice: Amount? = null
-    override var dailyExecutionType: DailyExecutionType? = null
-    var company: Company? = null
+    override lateinit var limitPrice: Amount
+    override lateinit var dailyExecutionType: DailyExecutionType
+    lateinit var company: Company
 
     override fun validateCurrentState() {
         super.validateCurrentState()

@@ -2,19 +2,20 @@ package com.mvv.bank.orders.domain
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import com.mvv.bank.orders.domain.Quote as BaseQuote
 
 @Suppress("unused")
 private val log: Logger = LoggerFactory.getLogger(LimitOrder::class.java)
 
 
-interface LimitOrder<Product, Quote: com.mvv.bank.orders.domain.Quote> : Order<Product, Quote> {
-    var buySellType: BuySellType?
-    var limitPrice: Amount?
-    var dailyExecutionType: DailyExecutionType?
+interface LimitOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quote> {
+    var buySellType: BuySellType
+    var limitPrice: Amount
+    var dailyExecutionType: DailyExecutionType
 }
 
 
-class LimitOrderSupport<Product, Quote: com.mvv.bank.orders.domain.Quote> { //}: AbstractOrder<Product, Quote>(), LimitOrder<Product, Quote> {
+class LimitOrderSupport<Product: Any, Quote: BaseQuote> { //}: AbstractOrder<Product, Quote>(), LimitOrder<Product, Quote> {
 
     fun toExecute(order: LimitOrder<Product, Quote>, quote: Quote): Boolean {
         val buySellType = order.buySellType
@@ -47,7 +48,7 @@ class LimitOrderSupport<Product, Quote: com.mvv.bank.orders.domain.Quote> { //}:
         //  ask - price of client 'buy'  (and dealer/bank 'sell')
 
         return when (order.side) {
-            null -> throw IllegalStateException("Order side is not set.")
+            //null -> throw IllegalStateException("Order side is not set.")
             Side.CLIENT -> when (buySellType) {
                 BuySellType.SELL -> quote.bid.amount >= limitPrice.amount
                 BuySellType.BUY  -> quote.ask.amount <= limitPrice.amount
@@ -59,7 +60,7 @@ class LimitOrderSupport<Product, Quote: com.mvv.bank.orders.domain.Quote> { //}:
         }
     }
 
-    fun validateCurrentState(order: LimitOrder<Product, Quote>) {
+    fun validateCurrentState(order: LimitOrder<*, *>) {
         //super.validateCurrentState()
 
         if (order.orderState == OrderState.UNKNOWN) {
@@ -71,7 +72,7 @@ class LimitOrderSupport<Product, Quote: com.mvv.bank.orders.domain.Quote> { //}:
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun validateNextState(order: LimitOrder<Product, Quote>, nextState: OrderState) {
+    fun validateNextState(order: LimitOrder<*, *>, nextState: OrderState) {
         //super.validateNextState(nextState)
 
         if (order.orderState == OrderState.UNKNOWN) {
