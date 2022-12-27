@@ -1,5 +1,6 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.util.checkInitialized
 import java.time.Instant
 
 
@@ -41,7 +42,7 @@ sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
         @Deprecated("Better to use buyCurrency/sellCurrency directly.")
         set(value) {
             val buySellType = this.buySellType
-            checkNotNull(buySellType) { "buySellType should be set before setting product." }
+            checkInitialized(::buySellType) { "buySellType should be set before setting product." }
             when (buySellType) {
                 BuySellType.BUY  -> buyCurrency  = value
                 BuySellType.SELL -> sellCurrency = value
@@ -74,7 +75,7 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
 
     companion object {
         fun create(
-            id: Long = -1,
+            id: Long? = null,
             side: Side,
             buySellType: BuySellType,
             buyCurrency: Currency,
@@ -128,7 +129,14 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
 class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
     override val orderType: OrderType = OrderType.MARKET_ORDER
 
-    override fun toExecute(quote: Quote): Boolean = true
+    override fun toExecute(quote: Quote): Boolean {
+        val rateCurrencyPair = CurrencyPair.of(Currency.of(quote.productSymbol), quote.bid.currency)
+        val orderCurrencyPair = CurrencyPair.of(buyCurrency, sellCurrency)
+
+        check(rateCurrencyPair == orderCurrencyPair || rateCurrencyPair == orderCurrencyPair.inverted()) {
+            "FX rate currencies $rateCurrencyPair does not suite order currencies $orderCurrencyPair." }
+        return true
+    }
 
     companion object {
         fun create(

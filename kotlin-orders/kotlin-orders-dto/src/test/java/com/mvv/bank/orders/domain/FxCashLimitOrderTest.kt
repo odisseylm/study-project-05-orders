@@ -2,6 +2,7 @@ package com.mvv.bank.orders.domain
 
 import com.mvv.bank.orders.domain.Currency.Companion.EUR
 import com.mvv.bank.orders.domain.Currency.Companion.UAH
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -137,5 +138,24 @@ class FxCashLimitOrderTest {
             .isFalse
         assertThat(limitOrder.toExecute(rate.copy(bid = bd("39.39"), ask = bd("39.41")).inverted()))
             .isFalse
+    }
+
+
+    @Test
+    fun validationIsDone() {
+        Assertions.assertThatCode {
+                FxCashLimitOrder.create(
+                    side = Side.CLIENT,
+                    buySellType = BuySellType.BUY,
+                    buyCurrency = EUR,
+                    sellCurrency = UAH,
+                    limitPrice = Amount.of("39.38", UAH),
+                    dailyExecutionType = DailyExecutionType.GTC,
+                    market = TestPredefinedMarkets.KYIV1,
+                    orderState = OrderState.EXECUTED,
+                )
+            }
+            .hasMessage("Id is not set or incorrect null.")
+            .isExactlyInstanceOf(IllegalStateException::class.java)
     }
 }

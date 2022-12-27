@@ -62,7 +62,8 @@ class FxRateAsQuote (
         if (priceCurrency == rate.currencyPair.counter) rate.ask else invertRate(rate.ask), priceCurrency)
     init {
         check(priceCurrency == rate.currencyPair.base || priceCurrency == rate.currencyPair.counter) {
-            "Currency $priceCurrency is not contained in ${rate.currencyPair}." }
+            "FX rate ${rate.currencyPair} does not suite order currencies (with price currency $priceCurrency)." }
+            //"Currency $priceCurrency is not contained in ${rate.currencyPair}." }
     }
 }
 

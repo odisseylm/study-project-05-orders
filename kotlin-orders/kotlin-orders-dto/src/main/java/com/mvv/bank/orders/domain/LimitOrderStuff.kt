@@ -1,5 +1,6 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.util.checkInitialized
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import com.mvv.bank.orders.domain.Quote as BaseQuote
@@ -21,8 +22,8 @@ class LimitOrderSupport<Product: Any, Quote: BaseQuote> { //}: AbstractOrder<Pro
         val buySellType = order.buySellType
         val limitPrice  = order.limitPrice
 
-        checkNotNull(buySellType) { "Buy/Sell type is not set for order [${order.id}]." }
-        checkNotNull(limitPrice)  { "Limit price is not set for order [${order.id}]."   }
+        checkInitialized({ buySellType }) { "Buy/Sell type is not set for order [${order.id}]." }
+        checkInitialized({ limitPrice })  { "Limit price is not set for order [${order.id}]."   }
 
         check(limitPrice.currency == quote.bid.currency) {
             "Quote $quote has incorrect currency ${quote.bid.currency}." }
@@ -67,8 +68,8 @@ class LimitOrderSupport<Product: Any, Quote: BaseQuote> { //}: AbstractOrder<Pro
             return
         }
 
-        checkNotNull(order.limitPrice)
-        checkNotNull(order.dailyExecutionType)
+        checkInitialized("limitPrice") { order.limitPrice }
+        checkInitialized("dailyExecutionType") { order.dailyExecutionType }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -79,7 +80,7 @@ class LimitOrderSupport<Product: Any, Quote: BaseQuote> { //}: AbstractOrder<Pro
             return
         }
 
-        checkNotNull(order.limitPrice)
-        checkNotNull(order.dailyExecutionType)
+        checkInitialized("limitPrice") { order.limitPrice }
+        checkInitialized("dailyExecutionType") { order.dailyExecutionType }
     }
 }

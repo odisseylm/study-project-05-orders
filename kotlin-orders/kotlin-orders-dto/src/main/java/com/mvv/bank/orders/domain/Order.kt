@@ -1,11 +1,11 @@
 package com.mvv.bank.orders.domain
 
-import com.mvv.bank.shared.log.safe
+import com.mvv.bank.util.LateInitProperty
+import com.mvv.bank.util.checkId
+import com.mvv.bank.util.checkInitialized
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Instant
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
 import com.mvv.bank.orders.domain.Quote as BaseQuote
 
 
@@ -41,51 +41,6 @@ sealed interface Order<Product: Any, Quote: BaseQuote> {
     fun toExecute(quote: Quote): Boolean
 }
 
-// This class is designed because kotlin does not support 'late init' props with custom getter/setter
-class LateInitProperty<T, Owner> (
-    value: T? = null,
-
-    val changeable: Boolean = true,
-    // !!! Message should have exactly ${prev} and ${new} (not short forms like $prev and $new)
-    val changeErrorMessage: String = "Not allowed to change property (from \${prev} to \${new})",
-
-    val validate:   (new: T, prev: T?)->Unit = {_,_->},
-    val preUpdate:  (new: T, prev: T?)->Unit = {_,_->},
-    val postUpdate: (new: T, prev: T?)->Unit = {_,_->},
-) : ReadWriteProperty<Owner, T> {
-    private var internalValue: T? = value
-    val asNullableValue: T? get() = internalValue
-    val asNonNullableValue: T get() = internalValue!!
-    fun set(v: T) {
-        val prev = this.internalValue
-        validateNonChangeable(v, prev)
-        validate(v, prev)
-        preUpdate(v, prev)
-        internalValue = v
-        postUpdate(v, prev)
-    }
-
-    private fun validateNonChangeable(new: T, prev: T?) {
-        if (prev != null && new != prev) {
-            val msg = changeErrorMessage
-                .replace("\$prev", prev.safe.toString())
-                .replace("\$new", new.safe.toString())
-            throw IllegalStateException(msg)
-        }
-    }
-
-    // TODO: add logic to verify value on null only if T is nullable. Is it needed???
-    override operator fun getValue(thisRef: Owner, property: KProperty<*>): T = asNonNullableValue
-    override operator fun setValue(thisRef: Owner, property: KProperty<*>, value: T) = set(value)
-
-    override fun toString(): String = "$internalValue"
-    override fun equals(other: Any?): Boolean {
-        return ((other is LateInitProperty<*, *>) && other.internalValue == this.internalValue)
-                || other == internalValue
-    }
-
-    override fun hashCode(): Int = internalValue.hashCode()
-}
 
 sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quote> {
     override var id: Long? = null
@@ -168,19 +123,15 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
             return
         }
 
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(orderType)
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(side)
+        checkInitialized(::orderType)
+        checkInitialized(::orderType)
+        checkInitialized(::side)
         check(side == Side.CLIENT) { "Currently only client side orders are supported." }
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(product)
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(market)
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(buySellType)
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(orderState)
+        checkInitialized(::buySellType)
+        checkInitialized(::orderState)
+
+        checkInitialized(::product)
+        checkInitialized(::market)
 
         when (orderState) {
             OrderState.UNKNOWN -> { }
@@ -188,21 +139,21 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
                 check(id == null)
             }
             OrderState.PLACED -> {
-                checkNotNull(id)
+                checkId(id)
             }
             OrderState.EXECUTED -> {
-                checkNotNull(id)
-                checkNotNull(placedAt)
-                checkNotNull(resultingPrice)
-                checkNotNull(resultingQuote)
+                checkId(id)
+                checkInitialized(::placedAt)
+                checkInitialized(::resultingPrice)
+                checkInitialized(::resultingQuote)
             }
             OrderState.EXPIRED -> {
-                checkNotNull(id)
-                checkNotNull(expiredAt)
+                checkId(id)
+                checkInitialized(::expiredAt)
             }
             OrderState.CANCELED -> {
-                checkNotNull(id)
-                checkNotNull(canceledAt)
+                checkId(id)
+                checkInitialized(::canceledAt)
             }
         }
     }
@@ -212,16 +163,11 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
             return
         }
 
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(orderType)
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(product)
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(market)
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(buySellType)
-        @Suppress("RedundantRequireNotNullCall")
-        checkNotNull(orderState)
+        checkInitialized(::orderType)
+        checkInitialized(::product)
+        checkInitialized(::market)
+        checkInitialized(::buySellType)
+        checkInitialized(::orderState)
 
         @Suppress("KotlinConstantConditions")
         when (nextState) {
@@ -233,20 +179,20 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
             }
             OrderState.PLACED -> {
                 log.warn("Placing/booking order is done on server side and nothing to validate.")
-                //checkNotNull(id)
+                //checkId(id)
             }
             OrderState.EXPIRED -> {
-                checkNotNull(id)
+                checkId(id)
                 check(this.orderState == OrderState.PLACED) {
                     "Impossible to to expire order with status ${this.orderState}." }
             }
             OrderState.CANCELED -> {
-                checkNotNull(id)
+                checkId(id)
                 check(this.orderState == OrderState.PLACED) {
                     "Impossible to to cancel order with status ${this.orderState}." }
             }
             OrderState.EXECUTED -> {
-                checkNotNull(id)
+                checkId(id)
                 check(this.orderState == OrderState.PLACED) {
                     "Impossible to to cancel order with status ${this.orderState}." }
             }
