@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
-import java.math.BigDecimal
+import java.math.BigDecimal as bd
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-private fun bd(v: String) = BigDecimal(v)
+//private fun bd(v: String) = BigDecimal(v)
 
 class FxRatesTest {
 
@@ -43,8 +43,8 @@ class FxRatesTest {
         assertThat(invertRate(bd("484149"))).isEqualByComparingTo(bd("0.0000020655"))
         assertThat(invertRate(bd("480000.00"))).isEqualByComparingTo(bd("0.0000020833"))
         assertThat(invertRate(bd("480000"))).isEqualByComparingTo(bd("0.0000020833"))
-        assertThat(invertRate(BigDecimal(480000))).isEqualByComparingTo(bd("0.0000020833"))
-        assertThat(invertRate(BigDecimal.valueOf(480000.00))).isEqualByComparingTo(bd("0.0000020833"))
+        assertThat(invertRate(bd(480000))).isEqualByComparingTo(bd("0.0000020833"))
+        assertThat(invertRate(bd.valueOf(480000.00))).isEqualByComparingTo(bd("0.0000020833"))
     }
 
     @Test

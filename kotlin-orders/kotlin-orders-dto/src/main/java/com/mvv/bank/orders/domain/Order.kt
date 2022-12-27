@@ -132,6 +132,7 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
         checkInitialized(::orderType)
         checkInitialized(::side)
         check(side == Side.CLIENT) { "Currently only client side orders are supported." }
+        checkInitialized(::volume)
         checkInitialized(::buySellType)
         checkInitialized(::orderState)
 
@@ -170,6 +171,7 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
 
         checkInitialized(::orderType)
         checkInitialized(::product)
+        checkInitialized(::volume)
         checkInitialized(::market)
         checkInitialized(::buySellType)
         checkInitialized(::orderState)

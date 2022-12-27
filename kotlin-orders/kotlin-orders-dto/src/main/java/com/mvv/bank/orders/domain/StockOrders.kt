@@ -1,5 +1,6 @@
 package com.mvv.bank.orders.domain
 
+import java.math.BigDecimal
 import java.time.Instant
 
 
@@ -31,6 +32,7 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
             buySellType: BuySellType,
             companySymbol: String,
             company: Company,
+            volume: BigDecimal,
             limitPrice: Amount,
             dailyExecutionType: DailyExecutionType,
 
@@ -53,6 +55,7 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
             order.buySellType = buySellType
             order.product = companySymbol
             order.company = company
+            order.volume = volume
             order.limitPrice = limitPrice
             order.dailyExecutionType = dailyExecutionType
 
@@ -81,7 +84,11 @@ class StockMarketOrder : AbstractOrder<String, StockQuote>() {
     override val orderType: OrderType = OrderType.MARKET_ORDER
     var company: Company? = null
 
-    override fun toExecute(quote: StockQuote): Boolean = true
+    override fun toExecute(quote: StockQuote): Boolean {
+        check(quote.productSymbol == this.product) {
+            "This quote is for another product (order: $product, quote: ${quote.productSymbol})." }
+        return true
+    }
 
     companion object {
         fun create(
@@ -90,6 +97,7 @@ class StockMarketOrder : AbstractOrder<String, StockQuote>() {
             buySellType: BuySellType,
             companySymbol: String,
             company: Company,
+            volume: BigDecimal,
 
             market: Market,
             orderState: OrderState = OrderState.UNKNOWN,
@@ -110,6 +118,7 @@ class StockMarketOrder : AbstractOrder<String, StockQuote>() {
             order.buySellType = buySellType
             order.product = companySymbol
             order.company = company
+            order.volume = volume
 
             order.market = market
 

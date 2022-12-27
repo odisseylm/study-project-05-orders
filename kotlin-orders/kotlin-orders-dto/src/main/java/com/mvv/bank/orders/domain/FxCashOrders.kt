@@ -1,6 +1,7 @@
 package com.mvv.bank.orders.domain
 
 import com.mvv.bank.util.checkInitialized
+import java.math.BigDecimal
 import java.time.Instant
 
 
@@ -80,6 +81,7 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
             buySellType: BuySellType,
             buyCurrency: Currency,
             sellCurrency: Currency,
+            volume: BigDecimal,
             limitPrice: Amount,
             dailyExecutionType: DailyExecutionType,
 
@@ -102,6 +104,7 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
             order.buySellType  = buySellType
             order.buyCurrency  = buyCurrency
             order.sellCurrency = sellCurrency
+            order.volume = volume
             order.limitPrice   = limitPrice
             order.dailyExecutionType = dailyExecutionType
 
@@ -145,6 +148,7 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
             buySellType: BuySellType,
             buyCurrency: Currency,
             sellCurrency: Currency,
+            volume: BigDecimal,
 
             market: Market,
             orderState: OrderState = OrderState.UNKNOWN,
@@ -165,6 +169,7 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
             order.buySellType  = buySellType
             order.buyCurrency  = buyCurrency
             order.sellCurrency = sellCurrency
+            order.volume = volume
 
             order.market = market
 

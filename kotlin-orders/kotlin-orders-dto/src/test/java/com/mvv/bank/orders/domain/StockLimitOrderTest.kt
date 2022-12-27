@@ -3,6 +3,7 @@ package com.mvv.bank.orders.domain
 import com.mvv.bank.orders.domain.Currency.Companion.USD
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal as bd
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -33,6 +34,7 @@ class StockLimitOrderTest {
             buySellType = BuySellType.SELL,
             companySymbol = "AAPL",
             company = TestPredefinedCompanies.APPLE,
+            volume = bd("1000"),
             limitPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.GTC,
             market = uaMarket,
@@ -81,6 +83,7 @@ class StockLimitOrderTest {
             buySellType = BuySellType.BUY,
             companySymbol = "AAPL",
             company = TestPredefinedCompanies.APPLE,
+            volume = bd("1000"),
             limitPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.GTC,
             market = uaMarket,

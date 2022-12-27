@@ -3,11 +3,12 @@ package com.mvv.bank.orders.domain
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal
+import java.math.BigDecimal as bd
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
+
 
 class FxCashMarketOrderTest {
     private val market = TestPredefinedMarkets.KYIV1
@@ -22,6 +23,7 @@ class FxCashMarketOrderTest {
             buySellType = BuySellType.SELL,
             buyCurrency = Currency.USD,
             sellCurrency = Currency.EUR,
+            volume = bd("1000"),
             market = market,
         )
 
@@ -32,8 +34,8 @@ class FxCashMarketOrderTest {
                     marketDateTime = dateTime,
                     dateTime = ZonedDateTime.of(dateTime, market.zoneId),
                     currencyPair = CurrencyPair.EUR_USD,
-                    bid = BigDecimal("1.1"),
-                    ask = BigDecimal("1.15"),
+                    bid = bd("1.1"),
+                    ask = bd("1.15"),
                 )
             ))
             .isTrue
@@ -45,8 +47,8 @@ class FxCashMarketOrderTest {
                         marketDateTime = dateTime,
                         dateTime = ZonedDateTime.of(dateTime, market.zoneId),
                         currencyPair = CurrencyPair.EUR_UAH,
-                        bid = BigDecimal("1.1"),
-                        ask = BigDecimal("1.15"),
+                        bid = bd("1.1"),
+                        ask = bd("1.15"),
                     ))
             }
             .hasMessage("FX rate EUR_UAH does not suite order currencies (with price currency USD).")
@@ -59,8 +61,8 @@ class FxCashMarketOrderTest {
                         marketDateTime = dateTime,
                         dateTime = ZonedDateTime.of(dateTime, market.zoneId),
                         currencyPair = CurrencyPair.USD_UAH,
-                        bid = BigDecimal("1.1"),
-                        ask = BigDecimal("1.15"),
+                        bid = bd("1.1"),
+                        ask = bd("1.15"),
                     ))
             }
             .hasMessage("FX rate currencies UAH_USD does not suite order currencies USD_EUR.")

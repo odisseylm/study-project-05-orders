@@ -5,13 +5,13 @@ import com.mvv.bank.orders.domain.Currency.Companion.UAH
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal
+import java.math.BigDecimal as bd
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
 
-private fun bd(v: String): BigDecimal = BigDecimal(v)
+//private fun bd(v: String): BigDecimal = BigDecimal(v)
 
 class FxCashLimitOrderTest {
     private val date = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
@@ -29,6 +29,7 @@ class FxCashLimitOrderTest {
             buySellType = BuySellType.SELL,
             sellCurrency = EUR,
             buyCurrency = UAH,
+            volume = bd("1000"),
             limitPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
             market = uaMarket,
@@ -43,8 +44,8 @@ class FxCashLimitOrderTest {
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
-            bid = BigDecimal("39.37"),
-            ask = BigDecimal("39.39"),
+            bid = bd("39.37"),
+            ask = bd("39.39"),
         )
 
         // In Foreign Exchange:
@@ -92,6 +93,7 @@ class FxCashLimitOrderTest {
             buySellType = BuySellType.BUY,
             buyCurrency = EUR,
             sellCurrency = UAH,
+            volume = bd("1000"),
             limitPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
             market = uaMarket,
@@ -106,8 +108,8 @@ class FxCashLimitOrderTest {
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
-            bid = BigDecimal("39.37"),
-            ask = BigDecimal("39.39"),
+            bid = bd("39.37"),
+            ask = bd("39.39"),
         )
 
         // In Foreign Exchange:
@@ -149,6 +151,7 @@ class FxCashLimitOrderTest {
                     buySellType = BuySellType.BUY,
                     buyCurrency = EUR,
                     sellCurrency = UAH,
+                    volume = bd("1000"),
                     limitPrice = Amount.of("39.38", UAH),
                     dailyExecutionType = DailyExecutionType.GTC,
                     market = TestPredefinedMarkets.KYIV1,
