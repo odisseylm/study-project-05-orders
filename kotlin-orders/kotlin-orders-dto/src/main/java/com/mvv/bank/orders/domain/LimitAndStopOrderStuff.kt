@@ -85,22 +85,11 @@ class StopLimitOrderSupport<Order: com.mvv.bank.orders.domain.Order<*, *>>(
         }
     }
 
-
-    fun validateCurrentState() {
-        //super.validateCurrentState()
-
-        if (order.orderState == OrderState.UNKNOWN) {
-            return
-        }
-
-        checkInitialized(limitStopPricePropName, limitStopPrice)
-        checkInitialized(dailyExecutionTypePropName, dailyExecutionType)
-    }
-
+    fun validateCurrentState() = validateCurrentStopLimitAttributes()
     @Suppress("UNUSED_PARAMETER")
-    fun validateNextState(nextState: OrderState) {
-        //super.validateNextState(nextState)
+    fun validateNextState(nextState: OrderState) = validateCurrentStopLimitAttributes()
 
+    private fun validateCurrentStopLimitAttributes() {
         if (order.orderState == OrderState.UNKNOWN) {
             return
         }
