@@ -5,6 +5,7 @@ import com.mvv.bank.util.checkId
 import com.mvv.bank.util.checkInitialized
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.time.Instant
 import com.mvv.bank.orders.domain.Quote as BaseQuote
 
@@ -17,6 +18,8 @@ sealed interface Order<Product: Any, Quote: BaseQuote> {
     var side: Side
     val orderType: OrderType
     var product: Product
+    // for most equities it will be integer (but for currencies and for some equities it will be float)
+    var volume: BigDecimal
 
     // several variables are used to see problems in case of signal race abd if both
     // operations are happened 'cancel' and 'execute/expire'
@@ -52,6 +55,8 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
     override var side: Side by sideImpl
 
     override lateinit var product: Product
+    override lateinit var volume: BigDecimal
+
     override lateinit var market: Market
 
     lateinit var buySellType: BuySellType

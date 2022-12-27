@@ -8,10 +8,13 @@ import kotlin.reflect.KProperty
 // This class is designed because kotlin does not support 'late init' props with custom getter/setter
 class LateInitProperty<T, Owner> (
     value: T? = null,
+    val propName: String? = null,
 
     val changeable: Boolean = true,
     // !!! Message should have exactly ${prev} and ${new} (not short forms like $prev and $new)
-    val changeErrorMessage: String = "Not allowed to change property (from [\${prev}] to [\${new}])",
+    val changeErrorMessage: String = if (propName.isNullOrEmpty())
+        "Not allowed to change property (from [\${prev}] to [\${new}])."
+        else "Not allowed to change property '$propName' (from [\${prev}] to [\${new}]).",
 
     val validate:   (new: T, prev: T?)->Unit = {_,_->},
     val preUpdate:  (new: T, prev: T?)->Unit = {_,_->},
