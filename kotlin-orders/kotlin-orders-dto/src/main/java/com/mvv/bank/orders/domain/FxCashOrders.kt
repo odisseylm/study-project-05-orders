@@ -56,7 +56,7 @@ sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
 
 class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder<Currency, Quote> {
 
-    private val limitOrderSupport = LimitOrderSupport<Currency, Quote, FxCashLimitOrder>()
+    private val limitOrderSupport = StopLimitOrderSupport(this, ::limitPrice, ::dailyExecutionType)
 
     override val orderType: OrderType = OrderType.LIMIT_ORDER
     override lateinit var limitPrice: Amount
@@ -64,15 +64,15 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
 
     override fun validateCurrentState() {
         super.validateCurrentState()
-        limitOrderSupport.validateCurrentState(this)
+        limitOrderSupport.validateCurrentState()
     }
 
     override fun validateNextState(nextState: OrderState) {
         super.validateNextState(nextState)
-        limitOrderSupport.validateNextState(this, nextState)
+        limitOrderSupport.validateNextState(nextState)
     }
 
-    override fun toExecute(quote: Quote): Boolean = limitOrderSupport.toExecute(this, quote)
+    override fun toExecute(quote: Quote): Boolean = limitOrderSupport.toExecute(quote)
 
     companion object {
         fun create(
@@ -131,7 +131,7 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
 
 class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<Currency, Quote> {
 
-    private val limitOrderSupport = StopOrderSupport<Currency, Quote, FxCashStopOrder>()
+    private val stopOrderSupport = StopLimitOrderSupport(this, ::stopPrice, ::dailyExecutionType)
 
     override val orderType: OrderType = OrderType.LIMIT_ORDER
     override lateinit var stopPrice: Amount
@@ -139,15 +139,15 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
 
     override fun validateCurrentState() {
         super.validateCurrentState()
-        limitOrderSupport.validateCurrentState(this)
+        stopOrderSupport.validateCurrentState()
     }
 
     override fun validateNextState(nextState: OrderState) {
         super.validateNextState(nextState)
-        limitOrderSupport.validateNextState(this, nextState)
+        stopOrderSupport.validateNextState(nextState)
     }
 
-    override fun toExecute(quote: Quote): Boolean = limitOrderSupport.toExecute(this, quote)
+    override fun toExecute(quote: Quote): Boolean = stopOrderSupport.toExecute(quote)
 
     companion object {
         fun create(

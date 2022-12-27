@@ -3,6 +3,7 @@ package com.mvv.bank.orders.domain
 import com.mvv.bank.util.checkInitialized
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import kotlin.reflect.KProperty
 import com.mvv.bank.orders.domain.Quote as BaseQuote
 
 @Suppress("unused")
@@ -20,10 +21,25 @@ interface StopOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quote> {
 }
 
 
-// TODO: do we need parameters Product and Quote? Try to remove them!
-sealed class AbstractStopLimitOrderSupport<Product: Any, Quote: BaseQuote, Order: com.mvv.bank.orders.domain.Order<Product, Quote>> {
+/** Since java does not support multiple class inheritance common logic for limit and stop orders are put there. */
+class StopLimitOrderSupport<Order: com.mvv.bank.orders.domain.Order<*, *>>(
+    private val order: Order,
 
-    protected fun doToExecute(order: Order, limitStopPrice: () -> Amount, quote: Quote): Boolean {
+    private val limitStopPricePropName: String,
+    private val limitStopPrice: () -> Amount,
+
+    private val dailyExecutionTypePropName: String = "dailyExecutionType",
+    private val dailyExecutionType: () -> DailyExecutionType,
+
+    ) {
+
+    constructor (
+        order: Order,
+        limitStopPrice: KProperty<Amount>,
+        dailyExecutionType: KProperty<DailyExecutionType>,
+        ) : this(order, limitStopPrice.name, { limitStopPrice.getter.call() }, dailyExecutionType.name, { dailyExecutionType.getter.call() })
+
+    fun toExecute(quote: BaseQuote): Boolean {
         val buySellType = order.buySellType
         val limitPrice = limitStopPrice()
 
@@ -69,69 +85,27 @@ sealed class AbstractStopLimitOrderSupport<Product: Any, Quote: BaseQuote, Order
         }
     }
 
-    abstract fun toExecute(order: Order, quote: Quote): Boolean
-    abstract fun validateCurrentState(order: Order)
-    abstract fun validateNextState(order: Order, nextState: OrderState)
-}
 
-
-class LimitOrderSupport<Product: Any, Quote: BaseQuote, Order: LimitOrder<Product, Quote>>
-    : AbstractStopLimitOrderSupport<Product, Quote, Order>() {
-
-    override fun toExecute(order: Order, quote: Quote): Boolean =
-        doToExecute(order, { order.limitPrice }, quote)
-
-    override fun validateCurrentState(order: Order) {
+    fun validateCurrentState() {
         //super.validateCurrentState()
 
         if (order.orderState == OrderState.UNKNOWN) {
             return
         }
 
-        checkInitialized("limitPrice") { order.limitPrice }
-        checkInitialized("dailyExecutionType") { order.dailyExecutionType }
+        checkInitialized(limitStopPricePropName, limitStopPrice)
+        checkInitialized(dailyExecutionTypePropName, dailyExecutionType)
     }
 
     @Suppress("UNUSED_PARAMETER")
-    override fun validateNextState(order: Order, nextState: OrderState) {
+    fun validateNextState(nextState: OrderState) {
         //super.validateNextState(nextState)
 
         if (order.orderState == OrderState.UNKNOWN) {
             return
         }
 
-        checkInitialized("limitPrice") { order.limitPrice }
-        checkInitialized("dailyExecutionType") { order.dailyExecutionType }
-    }
-}
-
-
-class StopOrderSupport<Product: Any, Quote: BaseQuote, Order: StopOrder<Product, Quote>>
-    : AbstractStopLimitOrderSupport<Product, Quote, Order>() {
-
-    override fun toExecute(order: Order, quote: Quote): Boolean =
-        doToExecute(order, { order.stopPrice }, quote)
-
-    override fun validateCurrentState(order: Order) {
-        //super.validateCurrentState()
-
-        if (order.orderState == OrderState.UNKNOWN) {
-            return
-        }
-
-        checkInitialized("stopPrice") { order.stopPrice }
-        checkInitialized("dailyExecutionType") { order.dailyExecutionType }
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    override fun validateNextState(order: Order, nextState: OrderState) {
-        //super.validateNextState(nextState)
-
-        if (order.orderState == OrderState.UNKNOWN) {
-            return
-        }
-
-        checkInitialized("stopPrice") { order.stopPrice }
-        checkInitialized("dailyExecutionType") { order.dailyExecutionType }
+        checkInitialized(limitStopPricePropName, limitStopPrice)
+        checkInitialized(dailyExecutionTypePropName, dailyExecutionType)
     }
 }

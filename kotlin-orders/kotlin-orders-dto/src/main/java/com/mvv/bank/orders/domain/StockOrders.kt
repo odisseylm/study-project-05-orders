@@ -6,7 +6,12 @@ import java.time.Instant
 
 class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, StockQuote> {
 
-    private val limitOrderSupport = LimitOrderSupport<String, StockQuote, StockLimitOrder>()
+    private val limitOrderSupport = StopLimitOrderSupport(this,
+        //"limitPrice", { this.limitPrice },
+        //"dailyExecutionType", { this.dailyExecutionType },
+        ::limitPrice,
+        ::dailyExecutionType,
+    )
 
     override val orderType: OrderType = OrderType.LIMIT_ORDER
     override lateinit var limitPrice: Amount
@@ -15,15 +20,15 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
 
     override fun validateCurrentState() {
         super.validateCurrentState()
-        limitOrderSupport.validateCurrentState(this)
+        limitOrderSupport.validateCurrentState()
     }
 
     override fun validateNextState(nextState: OrderState) {
         super.validateNextState(nextState)
-        limitOrderSupport.validateNextState(this, nextState)
+        limitOrderSupport.validateNextState(nextState)
     }
 
-    override fun toExecute(quote: StockQuote): Boolean = limitOrderSupport.toExecute(this, quote)
+    override fun toExecute(quote: StockQuote): Boolean = limitOrderSupport.toExecute(quote)
 
     companion object {
         fun create(
@@ -81,7 +86,7 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
 
 class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, StockQuote> {
 
-    private val limitOrderSupport = StopOrderSupport<String, StockQuote, StockStopOrder>()
+    private val stopOrderSupport = StopLimitOrderSupport(this, ::stopPrice, ::dailyExecutionType)
 
     override val orderType: OrderType = OrderType.LIMIT_ORDER
     override lateinit var stopPrice: Amount
@@ -90,15 +95,15 @@ class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, St
 
     override fun validateCurrentState() {
         super.validateCurrentState()
-        limitOrderSupport.validateCurrentState(this)
+        stopOrderSupport.validateCurrentState()
     }
 
     override fun validateNextState(nextState: OrderState) {
         super.validateNextState(nextState)
-        limitOrderSupport.validateNextState(this, nextState)
+        stopOrderSupport.validateNextState(nextState)
     }
 
-    override fun toExecute(quote: StockQuote): Boolean = limitOrderSupport.toExecute(this, quote)
+    override fun toExecute(quote: StockQuote): Boolean = stopOrderSupport.toExecute(quote)
 
     companion object {
         fun create(
