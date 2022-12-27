@@ -6,7 +6,7 @@ import java.time.Instant
 
 class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, StockQuote> {
 
-    private val limitOrderSupport = LimitOrderSupport<String, StockQuote>()
+    private val limitOrderSupport = LimitOrderSupport<String, StockQuote, StockLimitOrder>()
 
     override val orderType: OrderType = OrderType.LIMIT_ORDER
     override lateinit var limitPrice: Amount
@@ -57,6 +57,81 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
             order.company = company
             order.volume = volume
             order.limitPrice = limitPrice
+            order.dailyExecutionType = dailyExecutionType
+
+            order.market = market
+
+            order.orderState = orderState
+
+            order.placedAt   = placedAt
+            order.executedAt = executedAt
+            order.canceledAt = canceledAt
+            order.expiredAt  = expiredAt
+
+            order.resultingPrice = resultingPrice
+            order.resultingQuote = resultingQuote
+
+            order.validateCurrentState()
+
+            return order
+        }
+    }
+}
+
+
+class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, StockQuote> {
+
+    private val limitOrderSupport = StopOrderSupport<String, StockQuote, StockStopOrder>()
+
+    override val orderType: OrderType = OrderType.LIMIT_ORDER
+    override lateinit var stopPrice: Amount
+    override lateinit var dailyExecutionType: DailyExecutionType
+    lateinit var company: Company
+
+    override fun validateCurrentState() {
+        super.validateCurrentState()
+        limitOrderSupport.validateCurrentState(this)
+    }
+
+    override fun validateNextState(nextState: OrderState) {
+        super.validateNextState(nextState)
+        limitOrderSupport.validateNextState(this, nextState)
+    }
+
+    override fun toExecute(quote: StockQuote): Boolean = limitOrderSupport.toExecute(this, quote)
+
+    companion object {
+        fun create(
+            id: Long? = null,
+            side: Side,
+            buySellType: BuySellType,
+            companySymbol: String,
+            company: Company,
+            volume: BigDecimal,
+            stopPrice: Amount,
+            dailyExecutionType: DailyExecutionType,
+
+            market: Market,
+            orderState: OrderState = OrderState.UNKNOWN,
+
+            placedAt: Instant?   = null,
+            executedAt: Instant? = null,
+            canceledAt: Instant? = null,
+            expiredAt: Instant?  = null,
+
+            resultingPrice: Amount? = null,
+            resultingQuote: StockQuote? = null,
+        ): StockStopOrder {
+            val order = StockStopOrder()
+            // TODO: how to fix this duplicated 19 lines???
+            order.id = id
+
+            order.side  = side
+            order.buySellType = buySellType
+            order.product = companySymbol
+            order.company = company
+            order.volume = volume
+            order.stopPrice = stopPrice
             order.dailyExecutionType = dailyExecutionType
 
             order.market = market

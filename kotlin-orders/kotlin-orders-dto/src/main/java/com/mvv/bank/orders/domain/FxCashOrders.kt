@@ -56,7 +56,7 @@ sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
 
 class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder<Currency, Quote> {
 
-    private val limitOrderSupport = LimitOrderSupport<Currency, Quote>()
+    private val limitOrderSupport = LimitOrderSupport<Currency, Quote, FxCashLimitOrder>()
 
     override val orderType: OrderType = OrderType.LIMIT_ORDER
     override lateinit var limitPrice: Amount
@@ -106,6 +106,81 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
             order.sellCurrency = sellCurrency
             order.volume = volume
             order.limitPrice   = limitPrice
+            order.dailyExecutionType = dailyExecutionType
+
+            order.market = market
+
+            order.orderState = orderState
+
+            order.placedAt   = placedAt
+            order.executedAt = executedAt
+            order.canceledAt = canceledAt
+            order.expiredAt  = expiredAt
+
+            order.resultingPrice = resultingPrice
+            order.resultingQuote = resultingQuote
+            order.resultingRate = resultingRate
+
+            order.validateCurrentState()
+
+            return order
+        }
+    }
+}
+
+
+class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<Currency, Quote> {
+
+    private val limitOrderSupport = StopOrderSupport<Currency, Quote, FxCashStopOrder>()
+
+    override val orderType: OrderType = OrderType.LIMIT_ORDER
+    override lateinit var stopPrice: Amount
+    override lateinit var dailyExecutionType: DailyExecutionType
+
+    override fun validateCurrentState() {
+        super.validateCurrentState()
+        limitOrderSupport.validateCurrentState(this)
+    }
+
+    override fun validateNextState(nextState: OrderState) {
+        super.validateNextState(nextState)
+        limitOrderSupport.validateNextState(this, nextState)
+    }
+
+    override fun toExecute(quote: Quote): Boolean = limitOrderSupport.toExecute(this, quote)
+
+    companion object {
+        fun create(
+            id: Long? = null,
+            side: Side,
+            buySellType: BuySellType,
+            buyCurrency: Currency,
+            sellCurrency: Currency,
+            volume: BigDecimal,
+            stopPrice: Amount,
+            dailyExecutionType: DailyExecutionType,
+
+            market: Market,
+            orderState: OrderState = OrderState.UNKNOWN,
+
+            placedAt: Instant? = null,
+            executedAt: Instant? = null,
+            canceledAt: Instant? = null,
+            expiredAt: Instant? = null,
+
+            resultingRate: FxRate? = null,
+            resultingPrice: Amount? = null,
+            resultingQuote: Quote? = null,
+        ): FxCashStopOrder {
+            val order = FxCashStopOrder()
+            order.id = id
+
+            order.side  = side
+            order.buySellType  = buySellType
+            order.buyCurrency  = buyCurrency
+            order.sellCurrency = sellCurrency
+            order.volume = volume
+            order.stopPrice = stopPrice
             order.dailyExecutionType = dailyExecutionType
 
             order.market = market

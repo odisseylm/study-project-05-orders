@@ -17,6 +17,7 @@ sealed interface Order<Product: Any, Quote: BaseQuote> {
     var id: Long?
     var side: Side
     val orderType: OrderType
+    var buySellType: BuySellType
     var product: Product
     // for most equities it will be integer (but for currencies and for some equities it will be float)
     var volume: BigDecimal
@@ -59,7 +60,7 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
 
     override lateinit var market: Market
 
-    lateinit var buySellType: BuySellType
+    override lateinit var buySellType: BuySellType
     override var orderState: OrderState = OrderState.UNKNOWN
 
     override var placedAt: Instant? = null

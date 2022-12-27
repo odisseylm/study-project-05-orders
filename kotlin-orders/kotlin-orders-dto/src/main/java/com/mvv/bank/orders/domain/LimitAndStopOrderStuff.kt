@@ -10,25 +10,32 @@ private val log: Logger = LoggerFactory.getLogger(LimitOrder::class.java)
 
 
 interface LimitOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quote> {
-    var buySellType: BuySellType
     var limitPrice: Amount
     var dailyExecutionType: DailyExecutionType
 }
 
+interface StopOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quote> {
+    var stopPrice: Amount
+    var dailyExecutionType: DailyExecutionType
+}
 
-class LimitOrderSupport<Product: Any, Quote: BaseQuote> { //}: AbstractOrder<Product, Quote>(), LimitOrder<Product, Quote> {
 
-    fun toExecute(order: LimitOrder<Product, Quote>, quote: Quote): Boolean {
+// TODO: do we need parameters Product and Quote? Try to remove them!
+sealed class AbstractStopLimitOrderSupport<Product: Any, Quote: BaseQuote, Order: com.mvv.bank.orders.domain.Order<Product, Quote>> {
+
+    protected fun doToExecute(order: Order, limitStopPrice: () -> Amount, quote: Quote): Boolean {
         val buySellType = order.buySellType
-        val limitPrice  = order.limitPrice
+        val limitPrice = limitStopPrice()
 
         checkInitialized({ buySellType }) { "Buy/Sell type is not set for order [${order.id}]." }
-        checkInitialized({ limitPrice })  { "Limit price is not set for order [${order.id}]."   }
+        checkInitialized({ limitPrice }) { "Limit price is not set for order [${order.id}]." }
 
         check(limitPrice.currency == quote.bid.currency) {
-            "Quote $quote has incorrect currency ${quote.bid.currency}." }
+            "Quote $quote has incorrect currency ${quote.bid.currency}."
+        }
         check(limitPrice.currency == quote.ask.currency) {
-            "Quote $quote has incorrect currency ${quote.bid.currency}." }
+            "Quote $quote has incorrect currency ${quote.bid.currency}."
+        }
 
         // For Stock Exchange:
         //  bid - the highest price a buyer (dealer/bank/market) will pay to buy a specified number of shares of a stock
@@ -52,16 +59,29 @@ class LimitOrderSupport<Product: Any, Quote: BaseQuote> { //}: AbstractOrder<Pro
             //null -> throw IllegalStateException("Order side is not set.")
             Side.CLIENT -> when (buySellType) {
                 BuySellType.SELL -> quote.bid.amount >= limitPrice.amount
-                BuySellType.BUY  -> quote.ask.amount <= limitPrice.amount
+                BuySellType.BUY -> quote.ask.amount <= limitPrice.amount
             }
+
             Side.BANK_MARKER -> when (buySellType) {
                 BuySellType.SELL -> quote.ask.amount >= limitPrice.amount
-                BuySellType.BUY  -> quote.bid.amount <= limitPrice.amount
+                BuySellType.BUY -> quote.bid.amount <= limitPrice.amount
             }
         }
     }
 
-    fun validateCurrentState(order: LimitOrder<*, *>) {
+    abstract fun toExecute(order: Order, quote: Quote): Boolean
+    abstract fun validateCurrentState(order: Order)
+    abstract fun validateNextState(order: Order, nextState: OrderState)
+}
+
+
+class LimitOrderSupport<Product: Any, Quote: BaseQuote, Order: LimitOrder<Product, Quote>>
+    : AbstractStopLimitOrderSupport<Product, Quote, Order>() {
+
+    override fun toExecute(order: Order, quote: Quote): Boolean =
+        doToExecute(order, { order.limitPrice }, quote)
+
+    override fun validateCurrentState(order: Order) {
         //super.validateCurrentState()
 
         if (order.orderState == OrderState.UNKNOWN) {
@@ -73,7 +93,7 @@ class LimitOrderSupport<Product: Any, Quote: BaseQuote> { //}: AbstractOrder<Pro
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun validateNextState(order: LimitOrder<*, *>, nextState: OrderState) {
+    override fun validateNextState(order: Order, nextState: OrderState) {
         //super.validateNextState(nextState)
 
         if (order.orderState == OrderState.UNKNOWN) {
@@ -81,6 +101,37 @@ class LimitOrderSupport<Product: Any, Quote: BaseQuote> { //}: AbstractOrder<Pro
         }
 
         checkInitialized("limitPrice") { order.limitPrice }
+        checkInitialized("dailyExecutionType") { order.dailyExecutionType }
+    }
+}
+
+
+class StopOrderSupport<Product: Any, Quote: BaseQuote, Order: StopOrder<Product, Quote>>
+    : AbstractStopLimitOrderSupport<Product, Quote, Order>() {
+
+    override fun toExecute(order: Order, quote: Quote): Boolean =
+        doToExecute(order, { order.stopPrice }, quote)
+
+    override fun validateCurrentState(order: Order) {
+        //super.validateCurrentState()
+
+        if (order.orderState == OrderState.UNKNOWN) {
+            return
+        }
+
+        checkInitialized("stopPrice") { order.stopPrice }
+        checkInitialized("dailyExecutionType") { order.dailyExecutionType }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    override fun validateNextState(order: Order, nextState: OrderState) {
+        //super.validateNextState(nextState)
+
+        if (order.orderState == OrderState.UNKNOWN) {
+            return
+        }
+
+        checkInitialized("stopPrice") { order.stopPrice }
         checkInitialized("dailyExecutionType") { order.dailyExecutionType }
     }
 }

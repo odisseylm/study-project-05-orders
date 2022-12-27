@@ -5,14 +5,14 @@ import com.mvv.bank.orders.domain.Currency.Companion.UAH
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal as bd
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
-import java.math.BigDecimal as bd
 
 
-class FxCashLimitOrderTest {
+class FxCashStopOrderTest {
     private val market = TestPredefinedMarkets.KYIV1
     private val date = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val time = LocalTime.of(13, 5)
@@ -23,13 +23,13 @@ class FxCashLimitOrderTest {
 
         // client wants to sell 20 EUR (another currency UAH) by price >= 39.38
 
-        val order = FxCashLimitOrder.create(
+        val order = FxCashStopOrder.create(
             side = Side.CLIENT,
             buySellType = BuySellType.SELL,
             sellCurrency = EUR,
             buyCurrency = UAH,
             volume = bd("1000"),
-            limitPrice = Amount.of("39.38", UAH),
+            stopPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
             market = market,
         )
@@ -86,13 +86,13 @@ class FxCashLimitOrderTest {
 
         // client wants to buy 20 EUR (another currency UAH) by price >= 39.38
 
-        val order = FxCashLimitOrder.create(
+        val order = FxCashStopOrder.create(
             side = Side.CLIENT,
             buySellType = BuySellType.BUY,
             buyCurrency = EUR,
             sellCurrency = UAH,
             volume = bd("1000"),
-            limitPrice = Amount.of("39.38", UAH),
+            stopPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
             market = market,
         )

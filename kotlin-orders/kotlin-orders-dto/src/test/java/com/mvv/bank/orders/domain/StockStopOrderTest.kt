@@ -10,7 +10,7 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 
 
-class StockLimitOrderTest {
+class StockStopOrderTest {
     private val market = TestPredefinedMarkets.KYIV1
     private val date = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val time = LocalTime.of(13, 5)
@@ -27,13 +27,13 @@ class StockLimitOrderTest {
 
         // client wants to sell 20 Apple shares (another currency UAH) by price >= 10.00
 
-        val order = StockLimitOrder.create(
+        val order = StockStopOrder.create(
             side = Side.CLIENT,
             buySellType = BuySellType.SELL,
             companySymbol = "AAPL",
             company = TestPredefinedCompanies.APPLE,
             volume = bd("1000"),
-            limitPrice = Amount.of("10.00", USD),
+            stopPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.GTC,
             market = market,
         )
@@ -75,13 +75,13 @@ class StockLimitOrderTest {
 
         // client wants to sell 20 Apple shares (another currency UAH) by price >= 10.00
 
-        val order = StockLimitOrder.create(
+        val order = StockStopOrder.create(
             side = Side.CLIENT,
             buySellType = BuySellType.BUY,
             companySymbol = "AAPL",
             company = TestPredefinedCompanies.APPLE,
             volume = bd("1000"),
-            limitPrice = Amount.of("10.00", USD),
+            stopPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.GTC,
             market = market,
         )
