@@ -1,6 +1,6 @@
 package com.mvv.bank.orders.domain
 
-import com.mvv.bank.shared.log.safe
+import com.mvv.bank.log.safe
 import java.math.BigDecimal
 
 

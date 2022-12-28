@@ -34,9 +34,16 @@ class StockStopOrderTest {
             company = TestPredefinedCompanies.APPLE,
             volume = bd("1000"),
             stopPrice = Amount.of("10.00", USD),
-            dailyExecutionType = DailyExecutionType.GTC,
+            dailyExecutionType = DailyExecutionType.DAY_ONLY,
             market = market,
         )
+
+        // mainly to suppress 'unused' warnings
+        assertThat(order.orderType).isEqualTo(OrderType.STOP_ORDER)
+        assertThat(order.volume).isEqualTo(bd("1000"))
+        assertThat(order.stopPrice).isEqualTo(Amount.of("10.00 USD"))
+        assertThat(order.dailyExecutionType).isEqualTo(DailyExecutionType.DAY_ONLY)
+        assertThat(order.company).isEqualTo(TestPredefinedCompanies.APPLE)
 
         val quote = StockQuote(
             marketSymbol = market.symbol,

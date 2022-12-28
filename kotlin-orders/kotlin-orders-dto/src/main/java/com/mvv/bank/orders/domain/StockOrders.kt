@@ -88,7 +88,7 @@ class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, St
 
     private val stopOrderSupport = StopLimitOrderSupport(this, ::stopPrice, ::dailyExecutionType)
 
-    override val orderType: OrderType = OrderType.LIMIT_ORDER
+    override val orderType: OrderType = OrderType.STOP_ORDER
     override lateinit var stopPrice: Amount
     override lateinit var dailyExecutionType: DailyExecutionType
     lateinit var company: Company

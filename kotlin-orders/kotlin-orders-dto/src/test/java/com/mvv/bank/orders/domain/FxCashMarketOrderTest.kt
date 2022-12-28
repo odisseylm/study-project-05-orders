@@ -27,6 +27,8 @@ class FxCashMarketOrderTest {
             market = market,
         )
 
+        assertThat(order.orderType).isEqualTo(OrderType.MARKET_ORDER)
+
         assertThat(order.toExecute(
                 FxRate(
                     marketSymbol = market.symbol,

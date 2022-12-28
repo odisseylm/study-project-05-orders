@@ -3,7 +3,7 @@ package com.mvv.bank.orders.domain
 import com.mvv.bank.orders.domain.Currency.Companion.EUR
 import com.mvv.bank.orders.domain.Currency.Companion.UAH
 import com.mvv.bank.orders.domain.Currency.Companion.USD
-import com.mvv.bank.shared.log.safe
+import com.mvv.bank.log.safe
 
 
 // Now we do not use 'value class' because it is fully not compatible with java
@@ -22,7 +22,6 @@ class Currency private constructor (val value: String) {
         return true
     }
 
-    @Suppress("unused")
     companion object {
         const val MIN_LENGTH: Int = 3
         const val MAX_LENGTH: Int = 3 // ??? probably it can be 4 for crypto ???

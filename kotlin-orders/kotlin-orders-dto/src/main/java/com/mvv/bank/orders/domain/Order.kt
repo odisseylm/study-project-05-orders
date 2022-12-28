@@ -7,6 +7,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.time.Instant
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.isAccessible
 import com.mvv.bank.orders.domain.Quote as BaseQuote
 
 
@@ -19,7 +21,7 @@ sealed interface Order<Product: Any, Quote: BaseQuote> {
     val orderType: OrderType
     var buySellType: BuySellType
     var product: Product
-    // for most equities it will be integer (but for currencies and for some equities it will be float)
+    // for most equities it will be integer (but for currencies and for some equities it will be float numbers)
     var volume: BigDecimal
 
     // several variables are used to see problems in case of signal race abd if both
@@ -44,6 +46,31 @@ sealed interface Order<Product: Any, Quote: BaseQuote> {
 
     fun toExecute(quote: Quote): Boolean
 }
+
+inline fun <reified T: Order<*,*>> createOrder(init: T.() -> Unit): T {
+    val order: T = createOrderInstanceInternal()
+    order.init()
+    order.validateCurrentState()
+    return order
+}
+
+// kotlin does not allow to make this inline function as 'internal' or 'private'
+inline fun <reified T: Order<*,*>> createOrderInstanceInternal(): T {
+    val primaryConstructor = T::class.primaryConstructor
+    if (primaryConstructor != null && primaryConstructor.parameters.isEmpty()) {
+        if (!primaryConstructor.isAccessible) {
+            primaryConstructor.isAccessible = true
+        }
+        return primaryConstructor.call()
+    }
+
+    val constructor = T::class.java.getDeclaredConstructor()
+    if (!constructor.canAccess(null)) { // for java before java 9 'constructor.isAccessible' should be used
+        constructor.trySetAccessible()
+    }
+    return constructor.newInstance()
+}
+
 
 
 sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quote> {

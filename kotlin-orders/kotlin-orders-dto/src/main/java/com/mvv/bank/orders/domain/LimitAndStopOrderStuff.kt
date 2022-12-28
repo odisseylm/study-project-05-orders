@@ -22,7 +22,7 @@ interface StopOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quote> {
 
 
 /** Since java does not support multiple class inheritance common logic for limit and stop orders are put there. */
-class StopLimitOrderSupport<Order: com.mvv.bank.orders.domain.Order<*, *>>(
+internal class StopLimitOrderSupport<Order: com.mvv.bank.orders.domain.Order<*, *>>(
     private val order: Order,
 
     private val limitStopPricePropName: String,

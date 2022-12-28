@@ -2,7 +2,7 @@ package com.mvv.bank.orders.executors
 
 import com.mvv.bank.orders.domain.*
 import com.mvv.bank.orders.repository.FxCashLimitOrderRepository
-import com.mvv.bank.shared.log.safe
+import com.mvv.bank.log.safe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.*
@@ -53,6 +53,7 @@ class FxCashLimitOrderExecutor (
         TODO("Not yet implemented")
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun executeOrderOnMarket(order: FxCashLimitOrder, currentPrice: FxRate) {
         // T O D O: how to emulate it?
         // TODO: introduce service which can be substituted in tests

@@ -53,4 +53,16 @@ internal class CurrencyTest {
         assertThat(CurrencyPair.USD_EUR.copy(counter = Currency.UAH))
             .isEqualTo(CurrencyPair.of(Currency.USD, Currency.UAH))
     }
+
+    @Test
+    fun suppressUnused() {
+        assertThat(CurrencyPair.USD_EUR.toString()).isEqualTo("USD_EUR")
+        assertThat(CurrencyPair.EUR_USD.toString()).isEqualTo("EUR_USD")
+
+        assertThat(CurrencyPair.USD_UAH.toString()).isEqualTo("USD_UAH")
+        assertThat(CurrencyPair.UAH_USD.toString()).isEqualTo("UAH_USD")
+
+        assertThat(CurrencyPair.EUR_UAH.toString()).isEqualTo("EUR_UAH")
+        assertThat(CurrencyPair.UAH_EUR.toString()).isEqualTo("UAH_EUR")
+    }
 }

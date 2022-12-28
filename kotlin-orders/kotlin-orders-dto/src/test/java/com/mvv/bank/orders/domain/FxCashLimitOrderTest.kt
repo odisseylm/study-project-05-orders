@@ -34,6 +34,12 @@ class FxCashLimitOrderTest {
             market = market,
         )
 
+        // mainly to suppress 'unused' warnings
+        assertThat(order.orderType).isEqualTo(OrderType.LIMIT_ORDER)
+        assertThat(order.volume).isEqualTo(bd("1000"))
+        assertThat(order.limitPrice).isEqualTo(Amount.of("39.38 UAH"))
+        assertThat(order.dailyExecutionType).isEqualTo(DailyExecutionType.GTC)
+
         val rate = FxRate(
             marketSymbol = market.symbol,
             marketDate = date,
@@ -155,6 +161,26 @@ class FxCashLimitOrderTest {
                     market = TestPredefinedMarkets.KYIV1,
                     orderState = OrderState.EXECUTED,
                 )
+            }
+            .hasMessage("Id is not set or incorrect null.")
+            .isExactlyInstanceOf(IllegalStateException::class.java)
+    }
+
+
+    @Test
+    fun validationIsDoneWithCreatingOrderByDslLikeBuilder() {
+        assertThatCode {
+            createOrder<FxCashLimitOrder> {
+                    side = Side.CLIENT
+                    buySellType = BuySellType.BUY
+                    buyCurrency = EUR
+                    sellCurrency = UAH
+                    volume = bd("1000")
+                    limitPrice = Amount.of("39.38", UAH)
+                    dailyExecutionType = DailyExecutionType.GTC
+                    market = TestPredefinedMarkets.KYIV1
+                    orderState = OrderState.EXECUTED
+                }
             }
             .hasMessage("Id is not set or incorrect null.")
             .isExactlyInstanceOf(IllegalStateException::class.java)

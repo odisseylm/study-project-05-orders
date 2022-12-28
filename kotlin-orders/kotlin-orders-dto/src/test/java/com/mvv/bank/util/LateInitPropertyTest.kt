@@ -23,6 +23,10 @@ class LateInitPropertyTest {
             val prop = LateInitProperty<Int, Any>(value = null, changeable = false)
             prop.set(1)
             prop.set(1)
+
+            assertThat(prop.asNullableValue).isEqualTo(1)    // to suppress 'unused' warning
+            assertThat(prop.asNonNullableValue).isEqualTo(1) // to suppress 'unused' warning
+
             assertThatCode { prop.set(2) }
                 .hasMessage("Not allowed to change property (from [1] to [2]).")
                 .isExactlyInstanceOf(IllegalStateException::class.java)

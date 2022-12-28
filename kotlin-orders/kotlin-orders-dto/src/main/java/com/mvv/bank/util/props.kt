@@ -1,6 +1,6 @@
 package com.mvv.bank.util
 
-import com.mvv.bank.shared.log.safe
+import com.mvv.bank.log.safe
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 

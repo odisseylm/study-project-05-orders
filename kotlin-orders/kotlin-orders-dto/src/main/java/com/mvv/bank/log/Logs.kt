@@ -1,4 +1,4 @@
-package com.mvv.bank.shared.log // TODO: move to other place
+package com.mvv.bank.log
 
 class Logs {
     companion object {

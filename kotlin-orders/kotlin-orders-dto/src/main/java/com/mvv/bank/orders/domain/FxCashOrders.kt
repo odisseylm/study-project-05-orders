@@ -7,9 +7,7 @@ import java.time.Instant
 
 sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
 
-    @Suppress("MemberVisibilityCanBePrivate")
     lateinit var buyCurrency: Currency
-    @Suppress("MemberVisibilityCanBePrivate")
     lateinit var sellCurrency: Currency
 
     // It also can be used to set resultingPrice/resultingQuote from FX rate during order execution (if they are not set).
@@ -34,13 +32,13 @@ sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
         BuySellType.SELL -> buyCurrency
     }
 
+    @Deprecated("Better to use buyCurrency/sellCurrency directly if you access/config cash order by direct FxCashOrder typed variable.")
     override var product: Currency
         get() = when (buySellType) {
             //null -> null
             BuySellType.BUY  -> buyCurrency
             BuySellType.SELL -> sellCurrency
         }
-        @Deprecated("Better to use buyCurrency/sellCurrency directly.")
         set(value) {
             val buySellType = this.buySellType
             checkInitialized(::buySellType) { "buySellType should be set before setting product." }
@@ -133,7 +131,7 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
 
     private val stopOrderSupport = StopLimitOrderSupport(this, ::stopPrice, ::dailyExecutionType)
 
-    override val orderType: OrderType = OrderType.LIMIT_ORDER
+    override val orderType: OrderType = OrderType.STOP_ORDER
     override lateinit var stopPrice: Amount
     override lateinit var dailyExecutionType: DailyExecutionType
 

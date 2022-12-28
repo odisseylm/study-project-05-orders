@@ -27,6 +27,11 @@ class StockMarketOrderTest {
             market = market,
         )
 
+        // mainly to suppress 'unused' warnings
+        assertThat(order.orderType).isEqualTo(OrderType.MARKET_ORDER)
+        assertThat(order.volume).isEqualTo(bd("1000"))
+        assertThat(order.company).isEqualTo(TestPredefinedCompanies.APPLE)
+
         val quote = StockQuote(
             marketSymbol = market.symbol,
             marketDate = date,

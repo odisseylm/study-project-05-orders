@@ -34,6 +34,8 @@ class FxCashStopOrderTest {
             market = market,
         )
 
+        assertThat(order.orderType).isEqualTo(OrderType.STOP_ORDER)
+
         val rate = FxRate(
             marketSymbol = market.symbol,
             marketDate = date,
