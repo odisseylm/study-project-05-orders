@@ -25,6 +25,10 @@ data class Amount private constructor (
     }
 }
 
+operator fun Amount.times(m: BigDecimal) = Amount.of(this.amount * m, this.currency)
+operator fun BigDecimal.times(amount: Amount) = Amount.of(this * amount.amount, amount.currency)
+
+
 
 private const val MAX_AMOUNT_LENGTH = 1000 + 1 + Currency.MAX_LENGTH
 

@@ -20,7 +20,7 @@ interface Market {
 }
 
 interface MarketFactory {
-    fun market(marketId: String)
+    fun market(marketSymbol: String): Market
 }
 
 /*

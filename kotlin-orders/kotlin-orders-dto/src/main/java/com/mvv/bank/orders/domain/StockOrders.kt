@@ -128,7 +128,7 @@ class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, St
             resultingQuote: StockQuote? = null,
         ): StockStopOrder {
             val order = StockStopOrder()
-            // TODO: how to fix this duplicated 19 lines???
+            // T O D O: how to fix this duplicated 19 lines???
             order.id = id
 
             order.side  = side
@@ -191,7 +191,7 @@ class StockMarketOrder : AbstractOrder<String, StockQuote>() {
             resultingQuote: StockQuote? = null,
         ): StockMarketOrder {
             val order = StockMarketOrder()
-            // TODO: how to fix this duplicated 19 lines???
+            // T O D O: how to fix this duplicated 19 lines???
             order.id = id
 
             order.side  = side

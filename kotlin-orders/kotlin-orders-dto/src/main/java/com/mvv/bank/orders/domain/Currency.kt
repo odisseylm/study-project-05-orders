@@ -96,6 +96,7 @@ class CurrencyPair private constructor (
         val UAH_USD = of(UAH, USD)
 
         val EUR_UAH = of(EUR, UAH)
+        //@JvmStatic
         val UAH_EUR = of(UAH, EUR)
 
         // feel free to add other popular ones...

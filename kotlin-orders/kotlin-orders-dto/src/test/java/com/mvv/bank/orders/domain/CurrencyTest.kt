@@ -3,6 +3,9 @@ package com.mvv.bank.orders.domain
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
+import kotlin.reflect.KVisibility
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.javaType
 
 
 internal class CurrencyTest {
@@ -52,6 +55,30 @@ internal class CurrencyTest {
             .isEqualTo(CurrencyPair.USD_UAH)
         assertThat(CurrencyPair.USD_EUR.copy(counter = Currency.UAH))
             .isEqualTo(CurrencyPair.of(Currency.USD, Currency.UAH))
+    }
+
+    @Test
+    fun testPredefinedCurrencyPairs() {
+
+        /*
+        val properPredefinedCurrencyPairs: Int = CurrencyPair.Companion::class.java.declaredFields
+            .filter { it.canAccess(null) && it.type == CurrencyPair::class.java }
+            .map { it.get(null) as CurrencyPair }
+            .map { currencyPair -> assertThat(currencyPair.toString()).isEqualTo("${currencyPair.base}_${currencyPair.counter}") }
+            .count()
+        assertThat(properPredefinedCurrencyPairs).isNotZero
+        */
+
+        val properPredefinedCurrencyPairs2: Int = CurrencyPair.Companion::class.declaredMemberProperties
+            .asSequence()
+            .filter { it.isFinal && it.visibility == KVisibility.PUBLIC && it.returnType.javaType == CurrencyPair::class.java }
+            .map { it.name to it.get(CurrencyPair.Companion) as CurrencyPair }
+            .map { v: Pair<String, CurrencyPair> -> assertThat("${v.second.base}_${v.second.counter}")
+                .describedAs("Seems constant ${v.first} has wrong definition.")
+                .isEqualTo(v.first); v }
+            .onEach { println("Predefined currency pair ${it.first} is OK.") }
+            .count()
+        assertThat(properPredefinedCurrencyPairs2).isNotZero
     }
 
     @Test
