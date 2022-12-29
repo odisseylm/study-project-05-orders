@@ -97,7 +97,7 @@
     <!-- is used in only for 'provided' dependencies -->
     <jakarta.jakartaee-api.version>9.1.0</jakarta.jakartaee-api.version>
 
-    <mapstruct.version>1.4.2.Final</mapstruct.version>
+    <mapstruct.version>1.5.3.Final</mapstruct.version>
 
     <grpc.version>1.46.0</grpc.version>
 

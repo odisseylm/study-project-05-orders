@@ -35,6 +35,7 @@ class StockStopOrderTest {
             volume = bd("1000"),
             stopPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.DAY_ONLY,
+            marketSymbol = market.symbol,
             market = market,
         )
 
@@ -90,6 +91,7 @@ class StockStopOrderTest {
             volume = bd("1000"),
             stopPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.GTC,
+            marketSymbol = market.symbol,
             market = market,
         )
 

@@ -41,7 +41,9 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
             limitPrice: Amount,
             dailyExecutionType: DailyExecutionType,
 
+            marketSymbol: String,
             market: Market,
+
             orderState: OrderState = OrderState.UNKNOWN,
 
             placedAt: Instant?   = null,
@@ -64,6 +66,7 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
             order.limitPrice = limitPrice
             order.dailyExecutionType = dailyExecutionType
 
+            order.marketSymbol = marketSymbol
             order.market = market
 
             order.orderState = orderState
@@ -116,7 +119,9 @@ class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, St
             stopPrice: Amount,
             dailyExecutionType: DailyExecutionType,
 
+            marketSymbol: String,
             market: Market,
+
             orderState: OrderState = OrderState.UNKNOWN,
 
             placedAt: Instant?   = null,
@@ -139,6 +144,7 @@ class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, St
             order.stopPrice = stopPrice
             order.dailyExecutionType = dailyExecutionType
 
+            order.marketSymbol = marketSymbol
             order.market = market
 
             order.orderState = orderState
@@ -179,7 +185,9 @@ class StockMarketOrder : AbstractOrder<String, StockQuote>() {
             company: Company,
             volume: BigDecimal,
 
+            marketSymbol: String,
             market: Market,
+
             orderState: OrderState = OrderState.UNKNOWN,
 
             placedAt: Instant?   = null,
@@ -200,6 +208,7 @@ class StockMarketOrder : AbstractOrder<String, StockQuote>() {
             order.company = company
             order.volume = volume
 
+            order.marketSymbol = marketSymbol
             order.market = market
 
             order.orderState = orderState

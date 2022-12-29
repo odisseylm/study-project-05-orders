@@ -83,7 +83,9 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
             limitPrice: Amount,
             dailyExecutionType: DailyExecutionType,
 
+            marketSymbol: String,
             market: Market,
+
             orderState: OrderState = OrderState.UNKNOWN,
 
             placedAt: Instant? = null,
@@ -106,6 +108,7 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
             order.limitPrice   = limitPrice
             order.dailyExecutionType = dailyExecutionType
 
+            order.marketSymbol = marketSymbol
             order.market = market
 
             order.orderState = orderState
@@ -158,7 +161,9 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
             stopPrice: Amount,
             dailyExecutionType: DailyExecutionType,
 
+            marketSymbol: String,
             market: Market,
+
             orderState: OrderState = OrderState.UNKNOWN,
 
             placedAt: Instant? = null,
@@ -181,6 +186,7 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
             order.stopPrice = stopPrice
             order.dailyExecutionType = dailyExecutionType
 
+            order.marketSymbol = marketSymbol
             order.market = market
 
             order.orderState = orderState
@@ -223,7 +229,9 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
             sellCurrency: Currency,
             volume: BigDecimal,
 
+            marketSymbol: String,
             market: Market,
+
             orderState: OrderState = OrderState.UNKNOWN,
 
             placedAt: Instant? = null,
@@ -244,6 +252,7 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
             order.sellCurrency = sellCurrency
             order.volume = volume
 
+            order.marketSymbol = marketSymbol
             order.market = market
 
             order.orderState = orderState

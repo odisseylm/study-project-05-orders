@@ -18,7 +18,12 @@
   </modules>
 
   <properties>
+    <java.version>17</java.version>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
     <kotlin.version>1.7.22</kotlin.version>
+
     <enable.generate-git-properties-file>true</enable.generate-git-properties-file>
   </properties>
 
@@ -159,6 +164,8 @@
         <version>${kotlin.version}</version>
 
         <configuration>
+          <jvmTarget>${java.version}</jvmTarget>
+
           <compilerPlugins>
             <plugin>jpa</plugin>
             <!--<plugin>all-open</plugin>-->

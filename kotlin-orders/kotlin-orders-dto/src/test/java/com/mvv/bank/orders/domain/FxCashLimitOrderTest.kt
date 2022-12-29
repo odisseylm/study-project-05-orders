@@ -31,6 +31,7 @@ class FxCashLimitOrderTest {
             volume = bd("1000"),
             limitPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
+            marketSymbol = market.symbol,
             market = market,
         )
 
@@ -100,6 +101,7 @@ class FxCashLimitOrderTest {
             volume = bd("1000"),
             limitPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
+            marketSymbol = market.symbol,
             market = market,
         )
 
@@ -158,6 +160,7 @@ class FxCashLimitOrderTest {
                     volume = bd("1000"),
                     limitPrice = Amount.of("39.38", UAH),
                     dailyExecutionType = DailyExecutionType.GTC,
+                    marketSymbol = market.symbol,
                     market = TestPredefinedMarkets.KYIV1,
                     orderState = OrderState.EXECUTED,
                 )
@@ -178,6 +181,7 @@ class FxCashLimitOrderTest {
                     volume = bd("1000")
                     limitPrice = Amount.of("39.38", UAH)
                     dailyExecutionType = DailyExecutionType.GTC
+                    marketSymbol = TestPredefinedMarkets.KYIV1.symbol
                     market = TestPredefinedMarkets.KYIV1
                     orderState = OrderState.EXECUTED
                 }

@@ -24,6 +24,7 @@ class StockMarketOrderTest {
             companySymbol = "AAPL",
             company = TestPredefinedCompanies.APPLE,
             volume = bd("1000"),
+            marketSymbol = market.symbol,
             market = market,
         )
 
