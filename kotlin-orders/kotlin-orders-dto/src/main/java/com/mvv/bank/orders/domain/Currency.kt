@@ -1,14 +1,17 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.log.safe
 import com.mvv.bank.orders.domain.Currency.Companion.EUR
 import com.mvv.bank.orders.domain.Currency.Companion.UAH
 import com.mvv.bank.orders.domain.Currency.Companion.USD
-import com.mvv.bank.log.safe
+import javax.annotation.Tainted
+import javax.annotation.Untainted
 
 
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
-class Currency private constructor (val value: String) {
+@Untainted
+class Currency private constructor (@param:Tainted val value: String) {
     init { validateCurrency(value) }
 
     override fun toString() = value
@@ -45,6 +48,7 @@ private const val CURRENCY_PAIR_SEPARATOR: Char = '_'
 
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
+@Untainted
 class CurrencyPair private constructor (
     val base: Currency,
     val counter: Currency,
@@ -110,12 +114,12 @@ fun CurrencyPair.containsCurrencies(ccy1: Currency, ccy2: Currency): Boolean =
 
 
 private fun parseCurrencyPair(currencyPair: String): CurrencyPair {
-    check(currencyPair.length in CurrencyPair.MIN_LENGTH..CurrencyPair.MAX_LENGTH) {
+    require(currencyPair.length in CurrencyPair.MIN_LENGTH..CurrencyPair.MAX_LENGTH) {
         "Invalid currency pair [${currencyPair.safe}] (length should be in range ${CurrencyPair.MIN_LENGTH}..${CurrencyPair.MAX_LENGTH})." }
 
     val currenciesList: List<String> = currencyPair.split(CURRENCY_PAIR_SEPARATOR)
 
-    check(currenciesList.size == 2) {
+    require(currenciesList.size == 2) {
         "Invalid currency pair [${currencyPair.safe}] (format like 'USD${CURRENCY_PAIR_SEPARATOR}EUR' is expected)." }
 
 
@@ -132,5 +136,5 @@ private fun isValidCurrency(currency: String?): Boolean =
 
 
 private fun validateCurrency(currency: String?) {
-    check(isValidCurrency(currency)) { "Invalid currency [${currency.safe}]." }
+    require(isValidCurrency(currency)) { "Invalid currency [${currency.safe}]." }
 }

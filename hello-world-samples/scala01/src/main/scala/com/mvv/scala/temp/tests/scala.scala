@@ -1,8 +1,9 @@
 package com.mvv.scala.temp.tests
 
+import com.ibm.icu.impl.locale.XCldrStub.Predicate
 import com.mvv.scala.temp.tests.IntExtensions.{***, +++, toStr2}
 
-import scala.annotation.targetName
+import scala.annotation.{tailrec, targetName}
 import scala.util.Random
 
 
@@ -107,6 +108,16 @@ extension (v: Rational)
 
 @main
 def m2(): Unit = {
+
+  val get3 = ()=> { println("get3"); 3 }
+
+  byNameAssert(get3() > 2)
+
+  if (true) {
+    return
+  }
+
+
   val r1 = Rational(22)
   println(s"r: $r1")
 
@@ -174,4 +185,30 @@ def m2(): Unit = {
     aa == 22
   } do()
 
+}
+
+val f = (_: Int) + (_: Int)
+
+def byNameAssert(predicate: => Boolean): Unit = {
+  println(" 555 1")
+  val res = predicate
+  val res2 = predicate
+  val res3 = predicate
+  val res4 = predicate
+  println(s" 555 2: $res")
+}
+
+@tailrec
+def whileLoop(condition: => Boolean)(body: => Unit): Unit =
+  if condition then
+    body
+    whileLoop(condition)(body)
+
+def aaa() = {
+  var i = 2
+
+  whileLoop(i > 0) {
+    println(i)
+    i -= 1
+  }
 }

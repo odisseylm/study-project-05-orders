@@ -2,14 +2,16 @@ package com.mvv.bank.orders.domain
 
 import com.mvv.bank.log.safe
 import java.math.BigDecimal
+import javax.annotation.Untainted
 
 
+@Untainted
 @Suppress("DataClassPrivateConstructor") // we can ignore it (since in any case we are not going to cache it)
 data class Amount private constructor (
-    val amount: BigDecimal,
+    val value: BigDecimal,
     val currency: Currency,
 ) {
-    override fun toString(): String = "$amount $currency"
+    override fun toString(): String = "$value $currency"
 
     companion object {
         @JvmStatic
@@ -25,8 +27,8 @@ data class Amount private constructor (
     }
 }
 
-operator fun Amount.times(m: BigDecimal) = Amount.of(this.amount * m, this.currency)
-operator fun BigDecimal.times(amount: Amount) = Amount.of(this * amount.amount, amount.currency)
+operator fun Amount.times(m: BigDecimal) = Amount.of(this.value * m, this.currency)
+operator fun BigDecimal.times(amount: Amount) = Amount.of(this * amount.value, amount.currency)
 
 
 

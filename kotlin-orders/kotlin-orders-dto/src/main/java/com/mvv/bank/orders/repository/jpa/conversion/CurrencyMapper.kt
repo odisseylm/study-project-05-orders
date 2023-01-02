@@ -6,13 +6,9 @@ import org.mapstruct.Mapper
 @Mapper(componentModel = "spring, default, cdi, jakarta, jsr330")
 interface CurrencyMapper {
 
-    fun toDto(currency: Currency?): String? {
-        return currency?.toString()
-    }
+    fun toDto(currency: Currency?): String? = currency?.toString()
 
-    fun fromDto(currency: String?): Currency? {
-        return if (currency == null) null else Currency.valueOf(currency)
-    }
+    fun fromDto(currency: String?): Currency? = if (currency == null) null else Currency.valueOf(currency)
 }
 
 /*

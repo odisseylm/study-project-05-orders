@@ -1,10 +1,12 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
+import com.mvv.bank.orders.domain.Currency
 import com.mvv.bank.orders.domain.CurrencyPair
 import com.mvv.bank.orders.domain.TestPredefinedMarkets
 import com.mvv.bank.orders.repository.jpa.entities.FxRate as JpaFxRate
 import com.mvv.bank.orders.domain.FxRate as DomainFxRate
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
 import org.mapstruct.factory.Mappers
 import java.math.BigDecimal as bd
@@ -14,7 +16,31 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 
 
-class FxRateMapperTest {
+internal class CurrencyMapperTest {
+
+    @Test
+    fun currencyMapping() {
+        val currencyMapper: CurrencyMapper = Mappers.getMapper(CurrencyMapper::class.java)
+        assertThat(currencyMapper).isNotNull
+
+        assertThat(currencyMapper.toDto(null)).isNull()
+
+        assertThat(currencyMapper.fromDto("USD")).isEqualTo(Currency.of("USD"))
+        assertThat(currencyMapper.fromDto("USD")).isEqualTo(Currency.USD)
+
+        assertThat(currencyMapper.toDto(Currency.of("USD"))).isEqualTo("USD")
+        assertThat(currencyMapper.toDto(Currency.USD)).isEqualTo("USD")
+
+        assertThatCode { currencyMapper.fromDto("USD ") }
+            .hasMessage("Invalid currency [USD ].")
+            .isExactlyInstanceOf(IllegalArgumentException::class.java)
+    }
+
+}
+
+
+
+internal class FxRateMapperTest {
     private val market = TestPredefinedMarkets.KYIV1
     private val date = LocalDate.now()
     private val time = LocalTime.now()
@@ -23,10 +49,6 @@ class FxRateMapperTest {
 
     @Test
     fun toDto() {
-        // TODO: write separate test for CurrencyMapper
-        val currencyMapper = Mappers.getMapper(CurrencyMapper::class.java)
-        assertThat(currencyMapper).isNotNull
-
         val mapper = Mappers.getMapper(FxRateMapper::class.java)
         assertThat(mapper).isNotNull
 

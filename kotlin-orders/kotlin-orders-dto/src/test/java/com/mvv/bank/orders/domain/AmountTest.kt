@@ -11,35 +11,35 @@ class AmountTest {
     fun create() {
         run {
             val amount = Amount.of(bd("12.34"), Currency.of("USD"))
-            assertThat(amount.amount).isEqualTo(bd("12.34"))
+            assertThat(amount.value).isEqualTo(bd("12.34"))
             assertThat(amount.currency).isEqualTo(Currency.of("USD"))
             assertThat(amount.currency.value).isEqualTo("USD")
         }
 
         run {
             val amount = Amount.of("12.34", Currency.of("USD"))
-            assertThat(amount.amount).isEqualTo(bd("12.34"))
+            assertThat(amount.value).isEqualTo(bd("12.34"))
             assertThat(amount.currency).isEqualTo(Currency.of("USD"))
             assertThat(amount.currency.value).isEqualTo("USD")
         }
 
         run {
             val amount = Amount.of("12.34", Currency.USD)
-            assertThat(amount.amount).isEqualTo(bd("12.34"))
+            assertThat(amount.value).isEqualTo(bd("12.34"))
             assertThat(amount.currency).isEqualTo(Currency.of("USD"))
             assertThat(amount.currency.value).isEqualTo("USD")
         }
 
         run {
             val amount = Amount.of("12.34 USD")
-            assertThat(amount.amount).isEqualTo(bd("12.34"))
+            assertThat(amount.value).isEqualTo(bd("12.34"))
             assertThat(amount.currency).isEqualTo(Currency.of("USD"))
             assertThat(amount.currency.value).isEqualTo("USD")
         }
 
         run {
             val amount = Amount.valueOf("12.34 JPY")
-            assertThat(amount.amount).isEqualTo(bd("12.34"))
+            assertThat(amount.value).isEqualTo(bd("12.34"))
             assertThat(amount.currency).isEqualTo(Currency.JPY)
             assertThat(amount.currency.value).isEqualTo("JPY")
         }

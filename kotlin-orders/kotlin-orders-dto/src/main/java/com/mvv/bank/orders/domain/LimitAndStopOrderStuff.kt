@@ -74,13 +74,13 @@ internal class StopLimitOrderSupport<Order: com.mvv.bank.orders.domain.Order<*, 
         return when (order.side) {
             //null -> throw IllegalStateException("Order side is not set.")
             Side.CLIENT -> when (buySellType) {
-                BuySellType.SELL -> quote.bid.amount >= limitPrice.amount
-                BuySellType.BUY -> quote.ask.amount <= limitPrice.amount
+                BuySellType.SELL -> quote.bid.value >= limitPrice.value
+                BuySellType.BUY -> quote.ask.value <= limitPrice.value
             }
 
             Side.BANK_MARKER -> when (buySellType) {
-                BuySellType.SELL -> quote.ask.amount >= limitPrice.amount
-                BuySellType.BUY -> quote.bid.amount <= limitPrice.amount
+                BuySellType.SELL -> quote.ask.value >= limitPrice.value
+                BuySellType.BUY -> quote.bid.value <= limitPrice.value
             }
         }
     }
