@@ -20,6 +20,10 @@ import com.mvv.bank.orders.repository.jpa.entities.FxOrder as JpaFxOrder
 abstract class FxOrderMapper {
     private lateinit var marketService: MarketService
 
+    @BeforeMapping
+    open fun validateOrderBeforeSaving(source: DomainAbstractFxCashOrder, @MappingTarget target: JpaFxOrder) =
+        source.validateCurrentState()
+
     @Mapping(source = "marketSymbol", target = "market")
     @Mapping(source = "resultingRate.currencyPair.base", target = "resultingRateCcy1")
     @Mapping(source = "resultingRate.currencyPair.counter", target = "resultingRateCcy2")
@@ -114,6 +118,8 @@ abstract class FxOrderMapper {
             // there is side effect and resultingQuote/resultingPrice will be set too automatically
             target.resultingRate = rate
         }
+
+        target.validateCurrentState()
     }
 
     // T O D O: can we do it better without this switch?

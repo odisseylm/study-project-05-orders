@@ -55,9 +55,11 @@ private class TestMarketImpl (
 
 
 class TestDateTimeService (
+    override val zoneId: ZoneId = ZoneId.systemDefault(),
     override val clock: Clock = Clock.systemDefaultZone(),
     private val nowSupplier: ()->Instant = { Instant.now(clock) }
 
 ) : DateTimeService {
+
     override fun now(): Instant = nowSupplier()
 }

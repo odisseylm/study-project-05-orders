@@ -2,7 +2,6 @@ package com.mvv.bank.orders.repository.jpa.entities
 
 import jakarta.persistence.*
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.ZonedDateTime
 
 
@@ -61,11 +60,11 @@ class FxOrder {
     var resultingRateAsk: BigDecimal? = null
 
     @Column(name = "PLACED_AT", nullable = false)
-    var placedAt: Instant? = null
+    var placedAt: ZonedDateTime? = null
     @Column(name = "EXECUTED_AT")
-    var executedAt: Instant? = null
+    var executedAt: ZonedDateTime? = null
     @Column(name = "EXECUTED_AT")
-    var canceledAt: Instant? = null
+    var canceledAt: ZonedDateTime? = null
     @Column(name = "EXECUTED_AT")
-    var expiredAt: Instant? = null
+    var expiredAt: ZonedDateTime? = null
 }

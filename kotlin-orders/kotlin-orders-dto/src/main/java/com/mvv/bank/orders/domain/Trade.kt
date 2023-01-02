@@ -2,7 +2,7 @@ package com.mvv.bank.orders.domain
 
 import com.mvv.bank.log.safe
 import java.math.BigDecimal
-import java.time.Instant
+import java.time.ZonedDateTime
 
 
 interface Trade<P> {
@@ -14,7 +14,7 @@ interface Trade<P> {
     val volume: BigDecimal // integer in case of stocks; float in case of cash/money
     val price: Amount
     val amount: Amount get() = volume * price
-    val tradedAt: Instant
+    val tradedAt: ZonedDateTime
 }
 
 data class FxCashTrade (
@@ -28,7 +28,7 @@ data class FxCashTrade (
     val sellCurrency: Currency,
     override val volume: BigDecimal,
     override val price: Amount,
-    override val tradedAt: Instant,
+    override val tradedAt: ZonedDateTime,
 ) : Trade<Currency> {
 
     init {
@@ -62,5 +62,5 @@ data class StockTrade (
     val company: Company,
     override val volume: BigDecimal,
     override val price: Amount,
-    override val tradedAt: Instant,
+    override val tradedAt: ZonedDateTime,
 ) : Trade<String>

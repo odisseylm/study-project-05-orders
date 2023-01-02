@@ -1,7 +1,7 @@
 package com.mvv.bank.orders.domain
 
 import java.math.BigDecimal
-import java.time.Instant
+import java.time.ZonedDateTime
 
 
 class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, StockQuote> {
@@ -46,10 +46,10 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
 
             orderState: OrderState = OrderState.UNKNOWN,
 
-            placedAt: Instant?   = null,
-            executedAt: Instant? = null,
-            canceledAt: Instant? = null,
-            expiredAt: Instant?  = null,
+            placedAt:   ZonedDateTime?   = null,
+            executedAt: ZonedDateTime? = null,
+            canceledAt: ZonedDateTime? = null,
+            expiredAt:  ZonedDateTime?  = null,
 
             resultingPrice: Amount? = null,
             resultingQuote: StockQuote? = null,
@@ -124,10 +124,10 @@ class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, St
 
             orderState: OrderState = OrderState.UNKNOWN,
 
-            placedAt: Instant?   = null,
-            executedAt: Instant? = null,
-            canceledAt: Instant? = null,
-            expiredAt: Instant?  = null,
+            placedAt:   ZonedDateTime?   = null,
+            executedAt: ZonedDateTime? = null,
+            canceledAt: ZonedDateTime? = null,
+            expiredAt:  ZonedDateTime?  = null,
 
             resultingPrice: Amount? = null,
             resultingQuote: StockQuote? = null,
@@ -190,10 +190,10 @@ class StockMarketOrder : AbstractOrder<String, StockQuote>() {
 
             orderState: OrderState = OrderState.UNKNOWN,
 
-            placedAt: Instant?   = null,
-            executedAt: Instant? = null,
-            canceledAt: Instant? = null,
-            expiredAt: Instant?  = null,
+            placedAt:   ZonedDateTime?   = null,
+            executedAt: ZonedDateTime? = null,
+            canceledAt: ZonedDateTime? = null,
+            expiredAt:  ZonedDateTime?  = null,
 
             resultingPrice: Amount? = null,
             resultingQuote: StockQuote? = null,

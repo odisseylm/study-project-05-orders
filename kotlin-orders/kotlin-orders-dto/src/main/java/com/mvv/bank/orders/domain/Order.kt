@@ -6,7 +6,7 @@ import com.mvv.bank.util.checkInitialized
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
-import java.time.Instant
+import java.time.ZonedDateTime
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
 import com.mvv.bank.orders.domain.Quote as BaseQuote
@@ -24,12 +24,13 @@ sealed interface Order<Product: Any, Quote: BaseQuote> {
     // for most equities it will be integer (but for currencies and for some equities it will be float numbers)
     var volume: BigDecimal
 
-    // several variables are used to see problems in case of signal race abd if both
-    // operations are happened 'cancel' and 'execute/expire'
-    var placedAt: Instant?
-    var executedAt: Instant?
-    var canceledAt: Instant?
-    var expiredAt: Instant?
+    // Several variables are used to see problems in case of signal race abd if both
+    // operations are happened 'cancel' and 'execute/expire'.
+    // Probably it would be better to use Instant? But I do not see advantages of Instant comparing with ZonedDateTime.
+    var placedAt:   ZonedDateTime?
+    var executedAt: ZonedDateTime?
+    var canceledAt: ZonedDateTime?
+    var expiredAt:  ZonedDateTime?
 
     var marketSymbol: String
     var market: Market
@@ -92,10 +93,11 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
     override lateinit var buySellType: BuySellType
     override var orderState: OrderState = OrderState.UNKNOWN
 
-    override var placedAt: Instant? = null
-    override var executedAt: Instant? = null
-    override var canceledAt: Instant? = null
-    override var expiredAt: Instant? = null
+    // probably it would be better to use Instant? But I do not see advantages of Instant comparing with ZonedDateTime
+    override var placedAt:   ZonedDateTime? = null
+    override var executedAt: ZonedDateTime? = null
+    override var canceledAt: ZonedDateTime? = null
+    override var expiredAt:  ZonedDateTime? = null
 
     override var resultingPrice: Amount? = null
     // it is optional/temporary (mainly for debugging; most probably after loading order from database it will be lost)
@@ -108,8 +110,8 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
     override val orderState: OrderState get() = orderStateValue
 
     // Seems there is no easier way ...
-    private var placedAtValue: Instant? = placedAt // there 'placedAt' is param
-    override val placedAt: Instant? get() = placedAtValue
+    private var placedAtValue: ZonedDateTime? = placedAt // there 'placedAt' is param
+    override val placedAt: ZonedDateTime? get() = placedAtValue
 
     // Seems there is no easier way ...
     private var marketValue: Market? = market // there 'market' is param

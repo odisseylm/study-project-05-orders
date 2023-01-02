@@ -2,7 +2,7 @@ package com.mvv.bank.orders.domain
 
 import com.mvv.bank.util.checkInitialized
 import java.math.BigDecimal
-import java.time.Instant
+import java.time.ZonedDateTime
 
 
 sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
@@ -88,10 +88,10 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
 
             orderState: OrderState = OrderState.UNKNOWN,
 
-            placedAt: Instant? = null,
-            executedAt: Instant? = null,
-            canceledAt: Instant? = null,
-            expiredAt: Instant? = null,
+            placedAt:   ZonedDateTime? = null,
+            executedAt: ZonedDateTime? = null,
+            canceledAt: ZonedDateTime? = null,
+            expiredAt:  ZonedDateTime? = null,
 
             resultingRate: FxRate? = null,
             resultingPrice: Amount? = null,
@@ -166,10 +166,10 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
 
             orderState: OrderState = OrderState.UNKNOWN,
 
-            placedAt: Instant? = null,
-            executedAt: Instant? = null,
-            canceledAt: Instant? = null,
-            expiredAt: Instant? = null,
+            placedAt:   ZonedDateTime? = null,
+            executedAt: ZonedDateTime? = null,
+            canceledAt: ZonedDateTime? = null,
+            expiredAt:  ZonedDateTime? = null,
 
             resultingRate: FxRate? = null,
             resultingPrice: Amount? = null,
@@ -235,10 +235,10 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
 
             orderState: OrderState = OrderState.UNKNOWN,
 
-            placedAt: Instant? = null,
-            executedAt: Instant? = null,
-            canceledAt: Instant? = null,
-            expiredAt: Instant? = null,
+            placedAt:   ZonedDateTime? = null,
+            executedAt: ZonedDateTime? = null,
+            canceledAt: ZonedDateTime? = null,
+            expiredAt:  ZonedDateTime? = null,
 
             resultingRate: FxRate? = null,
             resultingPrice: Amount? = null,

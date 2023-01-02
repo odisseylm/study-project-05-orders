@@ -3,11 +3,11 @@ package com.mvv.bank.orders.domain
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal as bd
-import java.time.Instant
+import java.time.ZonedDateTime
 
 
 class TradesTest {
-    private val now = Instant.now()
+    private val now = ZonedDateTime.now()
 
     @Test
     fun createFxCashTrade() {
@@ -65,7 +65,7 @@ class TradesTest {
 
     @Test
     fun testTestDateTimeService() {
-        val dateTimeService = TestDateTimeService(nowSupplier = { now })
-        assertThat(dateTimeService.now()).isEqualTo(now)
+        val dateTimeService = TestDateTimeService(nowSupplier = { now.toInstant() })
+        assertThat(dateTimeService.now()).isEqualTo(now.toInstant())
     }
 }

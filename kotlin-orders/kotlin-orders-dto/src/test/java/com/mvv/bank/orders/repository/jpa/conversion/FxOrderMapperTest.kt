@@ -97,13 +97,12 @@ class FxOrderMapperTest {
                 bid = bd("39.00"), ask = bd("39.50"),
             ),
             orderState = DomainOrderState.PLACED,
-            //placedAt =
+            placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
         )
 
         val jpaOrder = fxOrderMapper.toDto(domainOrder) // as AbstractFxCashOrder)
 
         checkNotNull(jpaOrder)
-        // TODO: use Lazy assertions
         SoftAssertions().apply {
             assertThat(jpaOrder.id).isEqualTo(567)
             assertThat(jpaOrder.orderType).isEqualTo(JpaOrderType.STOP_ORDER)
@@ -122,7 +121,7 @@ class FxOrderMapperTest {
             assertThat(jpaOrder.resultingRateDateTime).isEqualTo(zonedDateTime)
             assertThat(jpaOrder.resultingRateBid).isEqualTo(bd("39.00"))
             assertThat(jpaOrder.resultingRateAsk).isEqualTo(bd("39.50"))
-            //assertThat(jpaOrder.).isEqualTo()
+            assertThat(jpaOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
         }.assertAll()
     }
 
@@ -165,7 +164,6 @@ class FxOrderMapperTest {
         }.assertAll()
     }
 
-    // TODO: add DtoToDomain for Limit
     // TODO: add DtoToDomain for Stop
     // TODO: add DtoToDomain for Market
 
@@ -177,7 +175,7 @@ class FxOrderMapperTest {
         initProperty(fxOrderMapper, "marketService", TestPredefinedMarkets.Companion)
 
         val jpaOrder: JpaFxOrder = JpaFxOrder().apply {
-            id = null
+            id = 567
             orderType = JpaOrderType.LIMIT_ORDER
             side = JpaSide.CLIENT
             buySellType = JpaBuySellType.BUY
@@ -187,13 +185,13 @@ class FxOrderMapperTest {
             limitStopPrice = bd("40.0")
             dailyExecutionType = JpaDailyExecutionType.GTC
             market = this@FxOrderMapperTest.market.symbol
-            orderState = JpaOrderState.TO_BE_PLACED
+            orderState = JpaOrderState.PLACED
             resultingRateCcy1 = "USD"
             resultingRateCcy2 = "UAH"
             resultingRateDateTime = zonedDateTime
             resultingRateBid = bd("39.00")
             resultingRateAsk = bd("39.50")
-            //? // TODO: add assert for timestamps
+            placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
         }
 
 
@@ -201,7 +199,7 @@ class FxOrderMapperTest {
         //checkNotNull(domainOrder)
 
         SoftAssertions().apply {
-            assertThat(domainOrder.id).isNull()
+            assertThat(domainOrder.id).isEqualTo(567)
             assertThat(domainOrder.side).isEqualTo(DomainSide.CLIENT)
             assertThat(domainOrder.orderType).isEqualTo(DomainOrderType.LIMIT_ORDER)
             assertThat(domainOrder.buySellType).isEqualTo(DomainBuySellType.BUY)
@@ -210,7 +208,7 @@ class FxOrderMapperTest {
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
             assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(market.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(market)
-            assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.TO_BE_PLACED)
+            assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
             //assertThat(jpaOrder.).isEqualTo()
 
             val rate = FxRate(
