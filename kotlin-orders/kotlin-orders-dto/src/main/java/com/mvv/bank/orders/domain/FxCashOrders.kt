@@ -25,7 +25,7 @@ sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
             }
         }
 
-    private val priceCurrency: Currency get() = when (buySellType) {
+    val priceCurrency: Currency get() = when (buySellType) {
         // opposite
         //null -> null
         BuySellType.BUY  -> sellCurrency

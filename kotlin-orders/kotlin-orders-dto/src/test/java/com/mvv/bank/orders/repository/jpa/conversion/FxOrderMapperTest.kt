@@ -1,6 +1,10 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
 import com.mvv.bank.orders.domain.*
+import com.mvv.bank.orders.domain.Amount
+import com.mvv.bank.orders.domain.Currency
+import com.mvv.bank.test.reflect.initProperty
+import com.mvv.bank.orders.repository.jpa.entities.FxOrder as JpaFxOrder
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import org.mapstruct.factory.Mappers
@@ -12,9 +16,12 @@ import com.mvv.bank.orders.domain.OrderState as DomainOrderState
 import com.mvv.bank.orders.domain.Side as DomainSide
 import com.mvv.bank.orders.repository.jpa.entities.BuySellType as JpaBuySellType
 import com.mvv.bank.orders.repository.jpa.entities.DailyExecutionType as JpaDailyExecutionType
+import com.mvv.bank.orders.domain.OrderType as DomainOrderType
+import com.mvv.bank.orders.repository.jpa.entities.OrderType as JpaOrderType
 import com.mvv.bank.orders.repository.jpa.entities.OrderState as JpaOrderState
 import com.mvv.bank.orders.repository.jpa.entities.Side as JpaSide
 import java.math.BigDecimal as bd
+
 
 class FxOrderMapperTest {
     private val market = TestPredefinedMarkets.KYIV1
@@ -50,6 +57,7 @@ class FxOrderMapperTest {
 
         SoftAssertions().apply {
             assertThat(jpaOrder.id).isNull()
+            assertThat(jpaOrder.orderType).isEqualTo(JpaOrderType.LIMIT_ORDER)
             assertThat(jpaOrder.side).isEqualTo(JpaSide.CLIENT)
             assertThat(jpaOrder.buySellType).isEqualTo(JpaBuySellType.BUY)
             assertThat(jpaOrder.buyCurrency).isEqualTo("USD")
@@ -90,6 +98,7 @@ class FxOrderMapperTest {
         // TODO: use Lazy assertions
         SoftAssertions().apply {
             assertThat(jpaOrder.id).isNull()
+            assertThat(jpaOrder.orderType).isEqualTo(JpaOrderType.STOP_ORDER)
             assertThat(jpaOrder.side).isEqualTo(JpaSide.CLIENT)
             assertThat(jpaOrder.buySellType).isEqualTo(JpaBuySellType.BUY)
             assertThat(jpaOrder.buyCurrency).isEqualTo("USD")
@@ -110,7 +119,7 @@ class FxOrderMapperTest {
         val fxOrderMapper = Mappers.getMapper(FxOrderMapper::class.java)
 
         val domainOrder = FxCashMarketOrder.create(
-            id = null,
+            id = 456,
             side = DomainSide.CLIENT,
             buySellType = DomainBuySellType.BUY,
             buyCurrency = DomainCurrency.USD,
@@ -118,7 +127,7 @@ class FxOrderMapperTest {
             volume = bd("2000"),
             marketSymbol = market.symbol,
             market = market,
-            orderState = DomainOrderState.TO_BE_PLACED,
+            orderState = DomainOrderState.PLACED,
             //placedAt =
         )
 
@@ -127,7 +136,8 @@ class FxOrderMapperTest {
         checkNotNull(jpaOrder)
 
         SoftAssertions().apply {
-            assertThat(jpaOrder.id).isNull()
+            assertThat(jpaOrder.id).isEqualTo(456)
+            assertThat(jpaOrder.orderType).isEqualTo(JpaOrderType.MARKET_ORDER)
             assertThat(jpaOrder.side).isEqualTo(JpaSide.CLIENT)
             assertThat(jpaOrder.buySellType).isEqualTo(JpaBuySellType.BUY)
             assertThat(jpaOrder.buyCurrency).isEqualTo("USD")
@@ -136,7 +146,7 @@ class FxOrderMapperTest {
             assertThat(jpaOrder.limitStopPrice).isNull()
             assertThat(jpaOrder.dailyExecutionType).isNull()
             assertThat(jpaOrder.market).isNotNull.isEqualTo(market.symbol)
-            assertThat(jpaOrder.orderState).isEqualTo(JpaOrderState.TO_BE_PLACED)
+            assertThat(jpaOrder.orderState).isEqualTo(JpaOrderState.PLACED)
             //assertThat(jpaOrder.).isEqualTo()
         }.assertAll()
     }
@@ -144,4 +154,52 @@ class FxOrderMapperTest {
     // TODO: add DtoToDomain for Limit
     // TODO: add DtoToDomain for Stop
     // TODO: add DtoToDomain for Market
+
+    @Test
+    fun fxCashLimitOrder_dtoToDomain() {
+
+        val fxOrderMapper = Mappers.getMapper(FxOrderMapper::class.java)
+        // TODO: do not change global mapper, need to clone it?
+        initProperty(fxOrderMapper, "marketService", TestPredefinedMarkets.Companion)
+
+        val jpaOrder: JpaFxOrder = JpaFxOrder().apply {
+            id = null
+            orderType = JpaOrderType.LIMIT_ORDER
+            side = JpaSide.CLIENT
+            buySellType = JpaBuySellType.BUY
+            buyCurrency = "USD"
+            sellCurrency = "UAH"
+            volume = bd("2000")
+            limitStopPrice = bd("40.0")
+            dailyExecutionType = JpaDailyExecutionType.GTC
+            market = this@FxOrderMapperTest.market.symbol
+            orderState = JpaOrderState.TO_BE_PLACED
+            //? // TODO: add rates/quotes
+        }
+
+
+        val domainOrder: AbstractFxCashOrder? = fxOrderMapper.toDomain(jpaOrder) // as AbstractFxCashOrder)
+        checkNotNull(domainOrder)
+
+        SoftAssertions().apply {
+            assertThat(domainOrder.id).isNull()
+            assertThat(domainOrder.side).isEqualTo(DomainSide.CLIENT)
+            assertThat(domainOrder.orderType).isEqualTo(DomainOrderType.LIMIT_ORDER)
+            assertThat(domainOrder.buySellType).isEqualTo(DomainBuySellType.BUY)
+            assertThat(domainOrder.buyCurrency).isEqualTo(Currency.USD)
+            assertThat(domainOrder.sellCurrency).isEqualTo(Currency.UAH)
+            assertThat(domainOrder.volume).isEqualTo(bd("2000"))
+            assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(market.symbol)
+            assertThat(domainOrder.market).isNotNull.isEqualTo(market)
+            assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.TO_BE_PLACED)
+            //assertThat(jpaOrder.).isEqualTo()
+
+            assertThat(domainOrder).isExactlyInstanceOf(FxCashLimitOrder::class.java)
+            if (domainOrder is FxCashLimitOrder) {
+                assertThat(domainOrder.limitPrice).isEqualTo(Amount.of("40.0", Currency.UAH))
+                assertThat(domainOrder.dailyExecutionType).isEqualTo(DomainDailyExecutionType.GTC)
+            }
+
+        }.assertAll()
+    }
 }

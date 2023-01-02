@@ -1,19 +1,22 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.orders.service.MarketService
 import java.time.*
 
 
 class TestPredefinedMarkets {
-    companion object : MarketFactory {
+    companion object : MarketFactory, MarketService {
         val NASDAQ: Market = TestMarketImpl("National Association of Securities Dealers Automated Quotation", "NASDAQ", ZoneId.of("America/New_York"), "", LocalTime.of(9, 0), LocalTime.of(17, 0))
         val KYIV1:  Market = TestMarketImpl("KYIV1", "KYIV1", ZoneId.of("Europe/Kiev"), "", LocalTime.of(9, 0), LocalTime.of(17, 0))
 
-        override fun market(marketSymbol: String): Market =
+        override fun marketBySymbol(marketSymbol: String): Market =
             when (marketSymbol) {
                 NASDAQ.symbol -> NASDAQ
                 KYIV1.symbol  -> KYIV1
                 else -> throw IllegalArgumentException("Market [$marketSymbol] is not found.")
             }
+
+        override fun market(marketSymbol: String): Market = marketBySymbol(marketSymbol)
     }
 }
 
