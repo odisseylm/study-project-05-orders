@@ -9,8 +9,8 @@ import com.mvv.bank.orders.service.MarketService
 import org.mapstruct.*
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
-import com.mvv.bank.orders.domain.DailyExecutionType as DomainDailyExecutionType
 import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainAbstractFxCashOrder
+import com.mvv.bank.orders.domain.DailyExecutionType as DomainDailyExecutionType
 import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainFxCashLimitOrder
 import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainFxCashMarketOrder
 import com.mvv.bank.orders.domain.FxCashStopOrder as DomainFxCashStopOrder
@@ -21,7 +21,6 @@ import com.mvv.bank.orders.repository.jpa.entities.FxOrder as JpaFxOrder
 abstract class FxOrderMapper {
     private lateinit var marketService: MarketService
 
-    @SubclassMapping(source = DomainAbstractFxCashOrder::class, target = JpaFxOrder::class)
     @Mapping(source = "marketSymbol", target = "market")
     @Mapping(source = "resultingRate.currencyPair.base", target = "resultingRateCcy1")
     @Mapping(source = "resultingRate.currencyPair.counter", target = "resultingRateCcy2")
@@ -30,20 +29,20 @@ abstract class FxOrderMapper {
     // to avoid warnings
     @Mapping(target = "limitStopPrice", ignore = true)
     @Mapping(target = "dailyExecutionType", ignore = true)
-    abstract fun internalBaseFxCashAttrsToDto(source: DomainAbstractFxCashOrder?): JpaFxOrder?
+    abstract fun internalBaseFxCashAttrsToDto(source: DomainAbstractFxCashOrder?, @MappingTarget target: JpaFxOrder?): JpaFxOrder?
 
     @InheritConfiguration(name = "internalBaseFxCashAttrsToDto")
     @Mapping(source = "limitPrice.value", target = "limitStopPrice")
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun limitOrderToDto(source: DomainFxCashLimitOrder?): JpaFxOrder?
+    abstract fun limitOrderToDto(source: DomainFxCashLimitOrder?, @MappingTarget target: JpaFxOrder?): JpaFxOrder?
 
     @InheritConfiguration(name = "internalBaseFxCashAttrsToDto")
     @Mapping(source = "stopPrice.value", target = "limitStopPrice")
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun stopOrderToDto(source: DomainFxCashStopOrder?): JpaFxOrder?
+    abstract fun stopOrderToDto(source: DomainFxCashStopOrder?, @MappingTarget target: JpaFxOrder?): JpaFxOrder?
 
     @InheritConfiguration(name = "internalBaseFxCashAttrsToDto")
-    abstract fun marketOrderToDto(source: DomainFxCashMarketOrder?): JpaFxOrder?
+    abstract fun marketOrderToDto(source: DomainFxCashMarketOrder?, @MappingTarget target: JpaFxOrder?): JpaFxOrder?
 
     // T O D O: can we do it better without this switch?
     //fun toDto(source: DomainAbstractFxCashOrder?): JpaFxOrder? =
@@ -55,13 +54,15 @@ abstract class FxOrderMapper {
     //        }
 
     // T O D O: can we do it better without this switch?
-    fun toDto(source: DomainAbstractFxCashOrder?): JpaFxOrder? =
-        when (source) {
-            is DomainFxCashMarketOrder -> marketOrderToDto(source)
-            is DomainFxCashLimitOrder  -> limitOrderToDto(source)
-            is DomainFxCashStopOrder   -> stopOrderToDto(source)
+    fun toDto(source: DomainAbstractFxCashOrder?): JpaFxOrder? {
+        val target = JpaFxOrder()
+        return when (source) {
+            is DomainFxCashMarketOrder -> marketOrderToDto(source, target)
+            is DomainFxCashLimitOrder  -> limitOrderToDto(source, target)
+            is DomainFxCashStopOrder   -> stopOrderToDto(source, target)
             else -> null
         }
+    }
 
     @InheritConfiguration(name = "updateFxCashOrder")
     @Mapping(source = "market", target = "marketSymbol")
