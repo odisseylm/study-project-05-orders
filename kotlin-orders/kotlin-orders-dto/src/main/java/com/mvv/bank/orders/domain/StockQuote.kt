@@ -2,7 +2,7 @@ package com.mvv.bank.orders.domain
 
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZonedDateTime
 
 
@@ -12,10 +12,11 @@ interface Quote {
     val marketSymbol: String
     //val market: Market
 
-    // date and dat-time in market/exchange timezone
-    val marketDate: LocalDate
-    val marketDateTime: LocalDateTime
     val dateTime: ZonedDateTime
+
+    // date/time in market/exchange timezone
+    val marketDate: LocalDate
+    val marketTime: LocalTime
 
     //val currency: Currency
 
@@ -34,7 +35,7 @@ data class StockQuote (
 
     override val dateTime: ZonedDateTime,
     override val marketDate: LocalDate,
-    override val marketDateTime: LocalDateTime,
+    override val marketTime: LocalTime,
 
     override val bid: Amount,
     override val ask: Amount,

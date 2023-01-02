@@ -54,14 +54,8 @@ internal class FxRateMapperTest {
 
         val dto = mapper.toDto(
             DomainFxRate(
-                marketSymbol = market.symbol,
-                //market = market,
-                marketDate = date,
-                marketDateTime = dateTime,
-                dateTime = zonedDateTime,
-                currencyPair = CurrencyPair.EUR_USD,
-                bid = bd("1.1"),
-                ask = bd("1.2"),
+                market, zonedDateTime, CurrencyPair.EUR_USD,
+                bid = bd("1.1"), ask = bd("1.2"),
             )
         )
 
@@ -72,7 +66,7 @@ internal class FxRateMapperTest {
         assertThat(dto.cur2).isEqualTo("USD")
         assertThat(dto.marketSymbol).isNotNull.isEqualTo(market.symbol)
         assertThat(dto.marketDate).isNotNull.isEqualTo(date)
-        assertThat(dto.marketDateTime).isNotNull.isEqualTo(dateTime)
+        assertThat(dto.marketTime).isNotNull.isEqualTo(time)
         assertThat(dto.dateTime).isNotNull.isEqualTo(zonedDateTime)
         assertThat(dto.bid).isEqualTo(bd("1.1"))
         assertThat(dto.ask).isEqualTo(bd("1.2"))
@@ -88,10 +82,9 @@ internal class FxRateMapperTest {
         val domainObj = mapper.fromDto(
             JpaFxRate().apply {
                 marketSymbol = test.market.symbol
-                //market = test.market
-                marketDate = test.date
-                marketDateTime = test.dateTime
                 dateTime = test.zonedDateTime
+                marketDate = test.date
+                marketTime = test.time
                 cur1 = "EUR"
                 cur2 = "USD"
                 bid = bd("1.1")
@@ -105,7 +98,7 @@ internal class FxRateMapperTest {
         assertThat(domainObj.currencyPair).isEqualTo(CurrencyPair.of("EUR_USD"))
         assertThat(domainObj.marketSymbol).isNotNull.isEqualTo(market.symbol)
         assertThat(domainObj.marketDate).isNotNull.isEqualTo(date)
-        assertThat(domainObj.marketDateTime).isNotNull.isEqualTo(dateTime)
+        assertThat(domainObj.marketTime).isNotNull.isEqualTo(time)
         assertThat(domainObj.dateTime).isNotNull.isEqualTo(zonedDateTime)
         assertThat(domainObj.bid).isEqualTo(bd("1.1"))
         assertThat(domainObj.ask).isEqualTo(bd("1.2"))

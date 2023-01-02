@@ -3,7 +3,7 @@ package com.mvv.bank.orders.domain
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZonedDateTime
 
 
@@ -16,9 +16,9 @@ import java.time.ZonedDateTime
 //
 data class FxRate (
     val marketSymbol: String,
-    val marketDate: LocalDate,
-    val marketDateTime: LocalDateTime,
     val dateTime: ZonedDateTime,
+    val marketDate: LocalDate,
+    val marketTime: LocalTime,
 
     // The CurrencyPair as in Ccy1/Ccy2 where the Bid will be the price for selling ccy1 and buying ccy2.
     val currencyPair: CurrencyPair,
@@ -35,6 +35,14 @@ data class FxRate (
     // other cross-currencies, e.g. CHF/JPY?)
     //boolean isMarketConvention();
 ) {
+    constructor(market: Market, dateTime: ZonedDateTime, currencyPair: CurrencyPair, bid: BigDecimal, ask: BigDecimal)
+            : this(
+        marketSymbol = market.symbol, dateTime = dateTime,
+        marketDate = dateTime.withZoneSameInstant(market.zoneId).toLocalDate(),
+        marketTime = dateTime.withZoneSameInstant(market.zoneId).toLocalTime(),
+        currencyPair = currencyPair, bid = bid, ask = ask
+    )
+
     override fun toString(): String = "$currencyPair $mid($bid/$ask)"
 }
 
@@ -45,14 +53,14 @@ fun FxRate.inverted(): FxRate = this.copy(currencyPair = this.currencyPair.inver
 
 
 @Suppress("MemberVisibilityCanBePrivate")
-class FxRateAsQuote (
+data class FxRateAsQuote (
     val rate: FxRate,
     val priceCurrency: Currency,
 ) : Quote {
     override val productSymbol: String get() = rate.currencyPair.oppositeCurrency(priceCurrency).toString()
     override val marketSymbol: String get() = rate.marketSymbol
     override val marketDate: LocalDate get() = rate.marketDate
-    override val marketDateTime: LocalDateTime get() = rate.marketDateTime
+    override val marketTime: LocalTime get() = rate.marketTime
     override val dateTime: ZonedDateTime get() = rate.dateTime
     override val bid: Amount get() = Amount.of(
         // TODO: should be invertRate(rate.bid) or invertRate(rate.ask)

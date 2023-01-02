@@ -17,6 +17,7 @@ class FxCashStopOrderTest {
     private val date = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val time = LocalTime.of(13, 5)
     private val dateTime = LocalDateTime.of(date, time)
+    private val zonedDateTime = ZonedDateTime.of(dateTime, market.zoneId)
 
     @Test
     fun toExecuteSellCurrencyOrder() {
@@ -38,16 +39,11 @@ class FxCashStopOrderTest {
         assertThat(order.orderType).isEqualTo(OrderType.STOP_ORDER)
 
         val rate = FxRate(
-            marketSymbol = market.symbol,
-            marketDate = date,
-            marketDateTime = dateTime,
-            dateTime = ZonedDateTime.of(dateTime, market.zoneId),
-            currencyPair = CurrencyPair.of("EUR_UAH"),
+            market, zonedDateTime, CurrencyPair.of("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
-            bid = bd("39.37"),
-            ask = bd("39.39"),
+            bid = bd("39.37"), ask = bd("39.39"),
         )
 
         // In Foreign Exchange:
@@ -102,16 +98,11 @@ class FxCashStopOrderTest {
         )
 
         val rate = FxRate(
-            marketSymbol = market.symbol,
-            marketDate = date,
-            marketDateTime = dateTime,
-            dateTime = ZonedDateTime.of(dateTime, market.zoneId),
-            currencyPair = CurrencyPair.of("EUR_UAH"),
+            market, zonedDateTime, CurrencyPair.of("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
-            bid = bd("39.37"),
-            ask = bd("39.39"),
+            bid = bd("39.37"), ask = bd("39.39"),
         )
 
         // In Foreign Exchange:

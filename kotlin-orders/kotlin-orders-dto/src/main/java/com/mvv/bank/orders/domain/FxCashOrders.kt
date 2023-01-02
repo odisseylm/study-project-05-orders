@@ -198,6 +198,7 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
 
             order.resultingPrice = resultingPrice
             order.resultingQuote = resultingQuote
+            // ! should be last because has side effect !
             order.resultingRate = resultingRate
 
             order.validateCurrentState()

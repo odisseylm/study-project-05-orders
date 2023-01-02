@@ -15,6 +15,7 @@ class FxCashMarketOrderTest {
     private val date = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val time = LocalTime.of(13, 5)
     private val dateTime = LocalDateTime.of(date, time)
+    private val zonedDateTime = ZonedDateTime.of(dateTime, market.zoneId)
 
     @Test
     fun create() {
@@ -32,26 +33,16 @@ class FxCashMarketOrderTest {
 
         assertThat(order.toExecute(
                 FxRate(
-                    marketSymbol = market.symbol,
-                    marketDate = date,
-                    marketDateTime = dateTime,
-                    dateTime = ZonedDateTime.of(dateTime, market.zoneId),
-                    currencyPair = CurrencyPair.EUR_USD,
-                    bid = bd("1.1"),
-                    ask = bd("1.15"),
+                    market, zonedDateTime, CurrencyPair.EUR_USD,
+                    bid = bd("1.1"), ask = bd("1.15"),
                 )
             ))
             .isTrue
 
         assertThatCode {
             order.toExecute(FxRate(
-                        marketSymbol = market.symbol,
-                        marketDate = date,
-                        marketDateTime = dateTime,
-                        dateTime = ZonedDateTime.of(dateTime, market.zoneId),
-                        currencyPair = CurrencyPair.EUR_UAH,
-                        bid = bd("1.1"),
-                        ask = bd("1.15"),
+                        market, zonedDateTime, CurrencyPair.EUR_UAH,
+                        bid = bd("1.1"), ask = bd("1.15"),
                     ))
             }
             .hasMessage("FX rate EUR_UAH does not suite order currencies (with price currency USD).")
@@ -59,13 +50,8 @@ class FxCashMarketOrderTest {
 
         assertThatCode {
             order.toExecute(FxRate(
-                        marketSymbol = market.symbol,
-                        marketDate = date,
-                        marketDateTime = dateTime,
-                        dateTime = ZonedDateTime.of(dateTime, market.zoneId),
-                        currencyPair = CurrencyPair.USD_UAH,
-                        bid = bd("1.1"),
-                        ask = bd("1.15"),
+                        market, zonedDateTime, CurrencyPair.USD_UAH,
+                        bid = bd("1.1"), ask = bd("1.15"),
                     ))
             }
             .hasMessage("FX rate currencies UAH_USD does not suite order currencies USD_EUR.")

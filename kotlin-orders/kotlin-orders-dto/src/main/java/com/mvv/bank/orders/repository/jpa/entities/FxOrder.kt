@@ -3,6 +3,7 @@ package com.mvv.bank.orders.repository.jpa.entities
 import jakarta.persistence.*
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.ZonedDateTime
 
 
 @Entity
@@ -48,10 +49,12 @@ class FxOrder {
     var dailyExecutionType: DailyExecutionType? = null
 
 
+    @Column(name = "RES_TIMESTAMP")
+    var resultingRateDateTime: ZonedDateTime? = null
     @Column(name = "RES_CCY1")
-    var resultingRateCcy1: BigDecimal? = null
+    var resultingRateCcy1: String? = null
     @Column(name = "RES_CCY2")
-    var resultingRateCcy2: BigDecimal? = null
+    var resultingRateCcy2: String? = null
     @Column(name = "RES_RATE_BID")
     var resultingRateBid: BigDecimal? = null
     @Column(name = "RES_RATE_ASK")

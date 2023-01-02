@@ -3,25 +3,23 @@ package com.mvv.bank.orders.domain
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import java.math.BigDecimal as bd
+import java.time.*
 
 
-private fun bd(value: String) = BigDecimal(value)
+//private fun bd(value: String) = bd(value)
 
 class FxRateTest {
-    private val market = "market1"
+    private val market = TestPredefinedMarkets.KYIV1
     private val marketDate = LocalDate.of(2022, 12, 19)
-    private val marketDateTime = LocalDateTime.of(2022, 12, 19, 1, 2, 3)
-    private val dateTime = ZonedDateTime.now() // T O D O: use hardcoded one
+    private val marketTime = LocalTime.of(1, 2, 3)
+    private val marketDateTime = LocalDateTime.of(marketDate, marketTime)
+    private val marketZonedDateTime = ZonedDateTime.of(marketDateTime, market.zoneId)
 
     @Test
     fun getMid() {
         val rate = FxRate(
-            market, marketDate, marketDateTime, dateTime,
+            market, marketZonedDateTime,
             CurrencyPair.of("EUR_USD"), bd("1.05"), bd("1.07"))
         assertThat(rate.mid).isEqualTo(bd("1.06"))
     }
@@ -29,7 +27,7 @@ class FxRateTest {
     @Test
     fun getSpread() {
         val rate = FxRate(
-            market, marketDate, marketDateTime, dateTime,
+            market.symbol, marketZonedDateTime, marketDate, marketTime,
             CurrencyPair.of("EUR_USD"), bd("1.05"), bd("1.07"))
         assertThat(rate.spread).isEqualTo(bd("0.02"))
     }
@@ -48,39 +46,40 @@ class FxRateTest {
         //assertThat(invertRate(bd("1.06"))).isEqualByComparingTo(bd("0.94340"))
         //assertThat(invertRate(bd("1.06"))).isEqualByComparingTo(bd("0.94340"))
 
-        assertThat(invertRate(BigDecimal("136.13"))).isEqualByComparingTo(BigDecimal("0.0073459"))
+        assertThat(invertRate(bd("136.13"))).isEqualByComparingTo(bd("0.0073459"))
 
         // USD_JPY
-        assertThat(invertRate(BigDecimal("132.77"))).isEqualByComparingTo(BigDecimal("0.0075318"))
-        assertThat(invertRate(BigDecimal("130.00"))).isEqualByComparingTo(BigDecimal("0.0076923"))
+        assertThat(invertRate(bd("132.77"))).isEqualByComparingTo(bd("0.0075318"))
+        assertThat(invertRate(bd("130.00"))).isEqualByComparingTo(bd("0.0076923"))
         // XAU/USD 1798.18
-        assertThat(invertRate(BigDecimal("1798.18"))).isEqualByComparingTo(BigDecimal("0.00055612"))
-        assertThat(invertRate(BigDecimal("1800.00"))).isEqualByComparingTo(BigDecimal("0.00055556"))
+        assertThat(invertRate(bd("1798.18"))).isEqualByComparingTo(bd("0.00055612"))
+        assertThat(invertRate(bd("1800.00"))).isEqualByComparingTo(bd("0.00055556"))
 
-        assertThat(invertRate(BigDecimal("484149.00"))).isEqualByComparingTo(BigDecimal("0.0000020655"))
-        assertThat(invertRate(BigDecimal("484149.0"))).isEqualByComparingTo(BigDecimal("0.0000020655"))
-        assertThat(invertRate(BigDecimal("484149"))).isEqualByComparingTo(BigDecimal("0.0000020655"))
-        assertThat(invertRate(BigDecimal("480000.00"))).isEqualByComparingTo(BigDecimal("0.0000020833"))
-        assertThat(invertRate(BigDecimal("480000"))).isEqualByComparingTo(BigDecimal("0.0000020833"))
-        assertThat(invertRate(BigDecimal(480000))).isEqualByComparingTo(BigDecimal("0.0000020833"))
-        assertThat(invertRate(BigDecimal.valueOf(480000.00))).isEqualByComparingTo(BigDecimal("0.0000020833"))
+        assertThat(invertRate(bd("484149.00"))).isEqualByComparingTo(bd("0.0000020655"))
+        assertThat(invertRate(bd("484149.0"))).isEqualByComparingTo(bd("0.0000020655"))
+        assertThat(invertRate(bd("484149"))).isEqualByComparingTo(bd("0.0000020655"))
+        assertThat(invertRate(bd("480000.00"))).isEqualByComparingTo(bd("0.0000020833"))
+        assertThat(invertRate(bd("480000"))).isEqualByComparingTo(bd("0.0000020833"))
+        assertThat(invertRate(bd(480000))).isEqualByComparingTo(bd("0.0000020833"))
+        assertThat(invertRate(bd.valueOf(480000.00))).isEqualByComparingTo(bd("0.0000020833"))
     }
 
     @Test
     fun inverted() {
         val marketDate = LocalDate.now()
-        val marketDateTime = LocalDateTime.now()
+        val marketTime = LocalTime.now()
+        val marketDateTime = LocalDateTime.of(marketDate, marketTime)
         val marketZone = ZoneId.systemDefault()
-        val dateTime = ZonedDateTime.of(marketDateTime, marketZone)
+        val zonedDateTime = ZonedDateTime.of(marketDateTime, marketZone)
 
-        val rate = FxRate("symbol", marketDate, marketDateTime, dateTime,
-            CurrencyPair.of("AAA", "ZZZ"), bid = BigDecimal("10"), ask = BigDecimal("100")
+        val rate = FxRate("symbol", zonedDateTime, marketDate, marketTime,
+            CurrencyPair.of("AAA", "ZZZ"), bid = bd("10"), ask = bd("100")
         )
         val inverted = rate.inverted()
 
         assertThat(inverted)
-            .isEqualTo(FxRate("symbol", marketDate, marketDateTime, dateTime,
-                CurrencyPair.of("ZZZ", "AAA"), bid = BigDecimal("0.1"), ask = BigDecimal("0.01")
+            .isEqualTo(FxRate("symbol", zonedDateTime, marketDate, marketTime,
+                CurrencyPair.of("ZZZ", "AAA"), bid = bd("0.1"), ask = bd("0.01")
             ))
     }
 }

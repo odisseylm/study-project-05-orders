@@ -35,9 +35,9 @@ class StockMarketOrderTest {
 
         val quote = StockQuote(
             marketSymbol = market.symbol,
-            marketDate = date,
-            marketDateTime = dateTime,
             dateTime = ZonedDateTime.of(dateTime, market.zoneId),
+            marketDate = date,
+            marketTime = time,
             productSymbol = "AAPL",
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),

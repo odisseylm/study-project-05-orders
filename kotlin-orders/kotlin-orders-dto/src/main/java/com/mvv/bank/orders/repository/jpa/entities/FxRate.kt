@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import java.io.Serializable
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZonedDateTime
 
 
@@ -13,6 +13,20 @@ import java.time.ZonedDateTime
 @Table(name = "FX_RATES")
 @Suppress("JpaDataSourceORMInspection")
 class FxRate {
+
+    @Column(name = "MARKET", nullable = false)
+    lateinit var marketSymbol: String
+
+    @Id
+    @Column(name = "DATE_TIME", nullable = false)
+    lateinit var dateTime: ZonedDateTime
+
+    @Column(name = "MARKET_DATE", nullable = false)
+    lateinit var marketDate: LocalDate
+
+    @Column(name = "MARKET_TIME", nullable = false)
+    lateinit var marketTime: LocalTime
+
     @Id
     @Column(name = "CUR1", nullable = false)
     //@Basic(optional = false)
@@ -22,22 +36,7 @@ class FxRate {
 
     @Id
     @Column(name = "CUR2", nullable = false)
-    //@Convert(converter = CurrencyConverter::class)
-    //lateinit var cur2: Currency
     lateinit var cur2: String
-
-    @Column(name = "MARKET_SYMBOL", nullable = false)
-    lateinit var marketSymbol: String
-
-    @Column(name = "MARKET_DATE", nullable = false)
-    lateinit var marketDate: LocalDate
-
-    @Column(name = "MARKET_DATE_TIME", nullable = false)
-    lateinit var marketDateTime: LocalDateTime
-
-    @Id
-    @Column(name = "DATE_TIME", nullable = false)
-    lateinit var dateTime: ZonedDateTime
 
     @Column(name = "BID", nullable = false)
     lateinit var bid: BigDecimal
