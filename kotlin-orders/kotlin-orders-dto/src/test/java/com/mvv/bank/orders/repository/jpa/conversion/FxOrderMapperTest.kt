@@ -1,8 +1,6 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
-import com.mvv.bank.orders.domain.FxCashLimitOrder
-import com.mvv.bank.orders.domain.FxCashStopOrder
-import com.mvv.bank.orders.domain.TestPredefinedMarkets
+import com.mvv.bank.orders.domain.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mapstruct.factory.Mappers
@@ -27,7 +25,7 @@ class FxOrderMapperTest {
 
 
     @Test
-    fun aa() {
+    fun fxCashLimitOrder_domainToDto() {
 
         val fxOrderMapper = Mappers.getMapper(FxOrderMapper::class.java)
 
@@ -46,7 +44,7 @@ class FxOrderMapperTest {
             //placedAt =
         )
 
-        val jpaOrder = fxOrderMapper.toDto(domainOrder)
+        val jpaOrder = fxOrderMapper.toDto(domainOrder) // as AbstractFxCashOrder)
 
         checkNotNull(jpaOrder)
         assertThat(jpaOrder.id).isNull()
@@ -64,7 +62,7 @@ class FxOrderMapperTest {
 
 
     @Test
-    fun aa444() {
+    fun fxCashStopOrder_domainToDto() {
 
         val fxOrderMapper = Mappers.getMapper(FxOrderMapper::class.java)
 
@@ -83,9 +81,10 @@ class FxOrderMapperTest {
             //placedAt =
         )
 
-        val jpaOrder = fxOrderMapper.toDto(domainOrder)
+        val jpaOrder = fxOrderMapper.toDto(domainOrder) // as AbstractFxCashOrder)
 
         checkNotNull(jpaOrder)
+        // TODO: use Lazy assertions
         assertThat(jpaOrder.id).isNull()
         assertThat(jpaOrder.side).isEqualTo(JpaSide.CLIENT)
         assertThat(jpaOrder.buySellType).isEqualTo(JpaBuySellType.BUY)
@@ -99,4 +98,43 @@ class FxOrderMapperTest {
         //assertThat(jpaOrder.).isEqualTo()
     }
 
+
+    @Test
+    fun fxCashMarketOrder_domainToDto() {
+
+        val fxOrderMapper = Mappers.getMapper(FxOrderMapper::class.java)
+
+        val domainOrder = FxCashMarketOrder.create(
+            id = null,
+            side = DomainSide.CLIENT,
+            buySellType = DomainBuySellType.BUY,
+            buyCurrency = DomainCurrency.USD,
+            sellCurrency = DomainCurrency.UAH,
+            volume = bd("2000"),
+            marketSymbol = market.symbol,
+            market = market,
+            orderState = DomainOrderState.TO_BE_PLACED,
+            //placedAt =
+        )
+
+        val jpaOrder = fxOrderMapper.toDto(domainOrder) // as AbstractFxCashOrder)
+
+        checkNotNull(jpaOrder)
+        // TODO: use Lazy assertions
+        assertThat(jpaOrder.id).isNull()
+        assertThat(jpaOrder.side).isEqualTo(JpaSide.CLIENT)
+        assertThat(jpaOrder.buySellType).isEqualTo(JpaBuySellType.BUY)
+        assertThat(jpaOrder.buyCurrency).isEqualTo("USD")
+        assertThat(jpaOrder.sellCurrency).isEqualTo("UAH")
+        assertThat(jpaOrder.volume).isEqualTo(bd("2000"))
+        assertThat(jpaOrder.limitStopPrice).isNull()
+        assertThat(jpaOrder.dailyExecutionType).isNull()
+        assertThat(jpaOrder.market).isNotNull.isEqualTo(market.symbol)
+        assertThat(jpaOrder.orderState).isEqualTo(JpaOrderState.TO_BE_PLACED)
+        //assertThat(jpaOrder.).isEqualTo()
+    }
+
+    // TODO: add DtoToDomain for Limit
+    // TODO: add DtoToDomain for Stop
+    // TODO: add DtoToDomain for Market
 }
