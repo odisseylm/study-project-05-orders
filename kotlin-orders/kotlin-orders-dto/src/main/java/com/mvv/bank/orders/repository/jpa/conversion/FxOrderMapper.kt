@@ -17,7 +17,7 @@ import com.mvv.bank.orders.repository.jpa.entities.FxOrder as JpaFxOrder
 
 
 @Mapper(componentModel = "spring, default, cdi, jakarta, jsr330", uses = [CurrencyMapper::class])
-abstract class FxOrderMapper {
+abstract class FxOrderMapper : Cloneable {
     private lateinit var marketService: MarketService
 
     @BeforeMapping
@@ -142,4 +142,6 @@ abstract class FxOrderMapper {
         @Suppress("UNCHECKED_CAST")
         return constructor!!.call() as T
     }
+
+    public override fun clone(): FxOrderMapper = super.clone() as FxOrderMapper
 }
