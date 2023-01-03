@@ -1,4 +1,4 @@
-package com.mvv.bank.orders.repository.jpa.conversion
+package com.mvv.bank.orders.conversion
 
 import com.mvv.bank.orders.domain.Currency
 import org.mapstruct.Mapper

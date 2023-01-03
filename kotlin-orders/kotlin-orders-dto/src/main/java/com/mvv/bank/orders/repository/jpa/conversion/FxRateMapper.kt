@@ -1,5 +1,6 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
+import com.mvv.bank.orders.conversion.CurrencyMapper
 import com.mvv.bank.orders.domain.CurrencyPair
 import com.mvv.bank.orders.domain.FxRate as DomainFxRate
 import com.mvv.bank.orders.repository.jpa.entities.FxRate as JpaFxRate

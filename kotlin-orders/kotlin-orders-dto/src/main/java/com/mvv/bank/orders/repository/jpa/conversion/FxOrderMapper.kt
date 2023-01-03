@@ -1,14 +1,15 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
-//import com.mvv.bank.orders.domain.FxRate as DomainFxRate
-//import com.mvv.bank.orders.repository.jpa.entities.FxRate as JpaFxRate
-//import com.mvv.bank.orders.domain.OrderType as DomainOrderType
+import com.mvv.bank.log.safe
+import com.mvv.bank.orders.conversion.CurrencyMapper
 import com.mvv.bank.orders.domain.*
 import com.mvv.bank.orders.repository.jpa.entities.FxOrder
 import com.mvv.bank.orders.service.MarketService
+import jakarta.inject.Inject
 import org.mapstruct.*
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
+import com.mvv.bank.orders.repository.jpa.entities.OrderType as DtoOrderType
 import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainAbstractFxCashOrder
 import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainFxCashLimitOrder
 import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainFxCashMarketOrder
@@ -18,6 +19,7 @@ import com.mvv.bank.orders.repository.jpa.entities.FxOrder as JpaFxOrder
 
 @Mapper(componentModel = "spring, default, cdi, jakarta, jsr330", uses = [CurrencyMapper::class])
 abstract class FxOrderMapper : Cloneable {
+    @Inject
     private lateinit var marketService: MarketService
 
     @BeforeMapping
@@ -117,6 +119,13 @@ abstract class FxOrderMapper : Cloneable {
 
             // there is side effect and resultingQuote/resultingPrice will be set too automatically
             target.resultingRate = rate
+        }
+
+        if (source.orderType == DtoOrderType.MARKET_ORDER) {
+            require(source.limitStopPrice == null) {
+                "Market price cannot have limit/stop price (${source.limitStopPrice.safe})." }
+            require(source.dailyExecutionType == null) {
+                "Market price cannot have daily execution type (${source.dailyExecutionType.safe})." }
         }
 
         target.validateCurrentState()

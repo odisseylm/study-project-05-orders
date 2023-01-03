@@ -3,14 +3,10 @@ package com.mvv.bank.orders.repository.jpa.conversion
 import com.mvv.bank.jpa.SqlShortcutEnum
 import com.mvv.bank.log.safe
 import com.mvv.bank.orders.domain.*
-import com.mvv.bank.orders.domain.OrderType
-import com.mvv.bank.orders.repository.jpa.entities.OrderState
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredFunctions
-import com.mvv.bank.orders.repository.jpa.entities.OrderType as JpaOrderType
-import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 
 
 class EnumTypesTest {
@@ -19,31 +15,61 @@ class EnumTypesTest {
     @Test
     fun convert() {
         SoftAssertions().apply {
+            val assertions = this
 
-            convertBetweenDomainAndJpa(
-                OrderType::class,
+            convertBetweenDomainAndDto(
+                com.mvv.bank.orders.domain.OrderType::class,
                 com.mvv.bank.orders.repository.jpa.entities.OrderType::class,
-                this,
+                assertions,
             )
-            convertBetweenDomainAndJpa(
-                Side::class,
+            convertBetweenDomainAndDto(
+                com.mvv.bank.orders.domain.OrderType::class,
+                com.mvv.bank.orders.rest.OrderType::class,
+                assertions,
+            )
+
+            convertBetweenDomainAndDto(
+                com.mvv.bank.orders.domain.Side::class,
                 com.mvv.bank.orders.repository.jpa.entities.Side::class,
-                this,
+                assertions,
             )
-            convertBetweenDomainAndJpa(
-                BuySellType::class,
+            convertBetweenDomainAndDto(
+                com.mvv.bank.orders.domain.Side::class,
+                com.mvv.bank.orders.rest.Side::class,
+                assertions,
+            )
+
+            convertBetweenDomainAndDto(
+                com.mvv.bank.orders.domain.BuySellType::class,
                 com.mvv.bank.orders.repository.jpa.entities.BuySellType::class,
-                this,
+                assertions,
             )
-            convertBetweenDomainAndJpa(
-                DailyExecutionType::class,
+            convertBetweenDomainAndDto(
+                com.mvv.bank.orders.domain.BuySellType::class,
+                com.mvv.bank.orders.rest.BuySellType::class,
+                assertions,
+            )
+
+            convertBetweenDomainAndDto(
+                com.mvv.bank.orders.domain.DailyExecutionType::class,
                 com.mvv.bank.orders.repository.jpa.entities.DailyExecutionType::class,
-                this,
+                assertions,
             )
-            convertBetweenDomainAndJpa(
+            convertBetweenDomainAndDto(
+                com.mvv.bank.orders.domain.DailyExecutionType::class,
+                com.mvv.bank.orders.rest.DailyExecutionType::class,
+                assertions,
+            )
+
+            convertBetweenDomainAndDto(
                 com.mvv.bank.orders.domain.OrderState::class,
-                OrderState::class,
-                this,
+                com.mvv.bank.orders.repository.jpa.entities.OrderState::class,
+                assertions,
+            )
+            convertBetweenDomainAndDto(
+                com.mvv.bank.orders.domain.OrderState::class,
+                com.mvv.bank.orders.rest.OrderState::class,
+                assertions,
             )
 
         }.assertAll()
@@ -53,20 +79,22 @@ class EnumTypesTest {
     fun orderTypeMapping() {
         SoftAssertions().apply {
 
-            JpaOrderType.values().forEach { assertThat(DomainOrderType.valueOf(it.name)).isNotNull() }
-            DomainOrderType.values().forEach { assertThat(JpaOrderType.valueOf(it.name)).isNotNull() }
+            com.mvv.bank.orders.repository.jpa.entities.OrderType.values()
+                .forEach { assertThat(com.mvv.bank.orders.domain.OrderType.valueOf(it.name)).isNotNull() }
+            com.mvv.bank.orders.domain.OrderType.values()
+                .forEach { assertThat(com.mvv.bank.orders.repository.jpa.entities.OrderType.valueOf(it.name)).isNotNull() }
 
-            val sqlLabels = JpaOrderType.values()
+            val sqlLabels = com.mvv.bank.orders.repository.jpa.entities.OrderType.values()
                 .map { it.sqlShortcut }
                 .distinct()
-            assertThat(sqlLabels).hasSize(JpaOrderType.values().size)
+            assertThat(sqlLabels).hasSize(com.mvv.bank.orders.repository.jpa.entities.OrderType.values().size)
 
         }.assertAll()
     }
 }
 
 
-private fun <DomainEnumType: Enum<*>, JpaEnumType: Enum<*>> convertBetweenDomainAndJpa(
+private fun <DomainEnumType: Enum<*>, JpaEnumType: Enum<*>> convertBetweenDomainAndDto(
     domainType: KClass<DomainEnumType>,
     jpaType: KClass<JpaEnumType>,
     assertions: SoftAssertions,
@@ -76,10 +104,12 @@ private fun <DomainEnumType: Enum<*>, JpaEnumType: Enum<*>> convertBetweenDomain
     enumValues(jpaType).forEach { assertions.assertThat(enumValueOf(domainType, it.name)).isNotNull() }
 
     val jpaEnumValues = enumValues(jpaType)
-    val sqlLabels = jpaEnumValues
-        .map { (it as SqlShortcutEnum).sqlShortcut }
-        .distinct()
-    assertions.assertThat(sqlLabels).hasSize(jpaEnumValues.size)
+    if (jpaEnumValues[0] is SqlShortcutEnum) {
+        val sqlLabels = jpaEnumValues
+            .map { (it as SqlShortcutEnum).sqlShortcut }
+            .distinct()
+        assertions.assertThat(sqlLabels).hasSize(jpaEnumValues.size)
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
