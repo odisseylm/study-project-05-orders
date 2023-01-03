@@ -1,6 +1,7 @@
 package com.mvv.bank.orders.domain
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal as bd
 import java.time.ZonedDateTime
@@ -23,19 +24,23 @@ class TradesTest {
             tradedAt = now,
         )
 
-        assertThat(trade.id).isEqualTo(123L)
-        assertThat(trade.marketSymbol).isNotNull.isEqualTo(TestPredefinedMarkets.KYIV1.symbol)
-        assertThat(trade.market).isEqualTo(TestPredefinedMarkets.KYIV1)
-        assertThat(trade.buySellType).isEqualTo(BuySellType.BUY)
-        assertThat(trade.buyCurrency).isEqualTo(Currency.EUR)
-        assertThat(trade.sellCurrency).isEqualTo(Currency.UAH)
+        SoftAssertions().apply {
 
-        assertThat((trade as Trade<Currency>).product).isEqualTo(Currency.EUR)
-        assertThat(trade.priceCurrency).isEqualTo(Currency.UAH)
+            assertThat(trade.id).isEqualTo(123L)
+            assertThat(trade.marketSymbol).isNotNull.isEqualTo(TestPredefinedMarkets.KYIV1.symbol)
+            assertThat(trade.market).isEqualTo(TestPredefinedMarkets.KYIV1)
+            assertThat(trade.buySellType).isEqualTo(BuySellType.BUY)
+            assertThat(trade.buyCurrency).isEqualTo(Currency.EUR)
+            assertThat(trade.sellCurrency).isEqualTo(Currency.UAH)
 
-        assertThat(trade.volume).isEqualTo(bd(1000))
-        assertThat(trade.price).isEqualTo(Amount.of("36.7 UAH"))
-        assertThat(trade.tradedAt).isEqualTo(now)
+            assertThat((trade as Trade<Currency>).product).isEqualTo(Currency.EUR)
+            assertThat(trade.priceCurrency).isEqualTo(Currency.UAH)
+
+            assertThat(trade.volume).isEqualTo(bd(1000))
+            assertThat(trade.price).isEqualTo(Amount.of("36.7 UAH"))
+            assertThat(trade.tradedAt).isEqualTo(now)
+
+        }.assertAll()
     }
 
     @Test
@@ -52,15 +57,19 @@ class TradesTest {
             tradedAt = now,
         )
 
-        assertThat(trade.id).isEqualTo(124L)
-        assertThat(trade.marketSymbol).isNotNull.isEqualTo(TestPredefinedMarkets.NASDAQ.symbol)
-        assertThat(trade.market).isEqualTo(TestPredefinedMarkets.NASDAQ)
-        assertThat(trade.buySellType).isEqualTo(BuySellType.BUY)
-        assertThat(trade.product).isEqualTo(TestPredefinedCompanies.APPLE.symbol)
-        assertThat(trade.company).isEqualTo(TestPredefinedCompanies.APPLE)
-        assertThat(trade.volume).isEqualTo(bd(1000))
-        assertThat(trade.price).isEqualTo(Amount.of("95.55 USD"))
-        assertThat(trade.tradedAt).isEqualTo(now)
+        SoftAssertions().apply {
+
+            assertThat(trade.id).isEqualTo(124L)
+            assertThat(trade.marketSymbol).isNotNull.isEqualTo(TestPredefinedMarkets.NASDAQ.symbol)
+            assertThat(trade.market).isEqualTo(TestPredefinedMarkets.NASDAQ)
+            assertThat(trade.buySellType).isEqualTo(BuySellType.BUY)
+            assertThat(trade.product).isEqualTo(TestPredefinedCompanies.APPLE.symbol)
+            assertThat(trade.company).isEqualTo(TestPredefinedCompanies.APPLE)
+            assertThat(trade.volume).isEqualTo(bd(1000))
+            assertThat(trade.price).isEqualTo(Amount.of("95.55 USD"))
+            assertThat(trade.tradedAt).isEqualTo(now)
+
+        }.assertAll()
     }
 
     @Test

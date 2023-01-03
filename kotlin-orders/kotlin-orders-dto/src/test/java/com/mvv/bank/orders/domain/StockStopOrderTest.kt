@@ -1,7 +1,7 @@
 package com.mvv.bank.orders.domain
 
 import com.mvv.bank.orders.domain.Currency.Companion.USD
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal as bd
 import java.time.LocalDate
@@ -39,13 +39,6 @@ class StockStopOrderTest {
             market = market,
         )
 
-        // mainly to suppress 'unused' warnings
-        assertThat(order.orderType).isEqualTo(OrderType.STOP_ORDER)
-        assertThat(order.volume).isEqualTo(bd("1000"))
-        assertThat(order.stopPrice).isEqualTo(Amount.of("10.00 USD"))
-        assertThat(order.dailyExecutionType).isEqualTo(DailyExecutionType.DAY_ONLY)
-        assertThat(order.company).isEqualTo(TestPredefinedCompanies.APPLE)
-
         val quote = StockQuote(
             marketSymbol = market.symbol,
             dateTime = ZonedDateTime.of(dateTime, market.zoneId),
@@ -59,17 +52,28 @@ class StockStopOrderTest {
             ask = Amount.of("0", USD),
         )
 
-        assertThat(order.toExecute(quote.copy(bid = Amount.of("9.85", USD), ask = Amount.of("9.95", USD))))
-            .isFalse // because market price for client sell 10.05 < my desired limit sell price 10.00
-        assertThat(order.toExecute(quote.copy(bid = Amount.of("9.90", USD), ask = Amount.of("10.00", USD))))
-            .isFalse // because market price for client sell 10.05 < my desired limit sell price 10.00
-        assertThat(order.toExecute(quote.copy(bid = Amount.of("9.95", USD), ask = Amount.of("10.05", USD))))
-            .isFalse // because market price for client sell 9.95 < my desired limit sell price 10.00
+        SoftAssertions().apply {
 
-        assertThat(order.toExecute(quote.copy(bid = Amount.of("10.00", USD), ask = Amount.of("10.10", USD))))
-            .isTrue // because market price for client sell 10.00 >= my desired limit sell price 10.00
-        assertThat(order.toExecute(quote.copy(bid = Amount.of("10.05", USD), ask = Amount.of("10.15", USD))))
-            .isTrue // because market price for client sell 10.05 > my desired limit sell price 10.00
+            // mainly to suppress 'unused' warnings
+            assertThat(order.orderType).isEqualTo(OrderType.STOP_ORDER)
+            assertThat(order.volume).isEqualTo(bd("1000"))
+            assertThat(order.stopPrice).isEqualTo(Amount.of("10.00 USD"))
+            assertThat(order.dailyExecutionType).isEqualTo(DailyExecutionType.DAY_ONLY)
+            assertThat(order.company).isEqualTo(TestPredefinedCompanies.APPLE)
+
+            assertThat(order.toExecute(quote.copy(bid = Amount.of("9.85", USD), ask = Amount.of("9.95", USD))))
+                .isFalse // because market price for client sell 10.05 < my desired limit sell price 10.00
+            assertThat(order.toExecute(quote.copy(bid = Amount.of("9.90", USD), ask = Amount.of("10.00", USD))))
+                .isFalse // because market price for client sell 10.05 < my desired limit sell price 10.00
+            assertThat(order.toExecute(quote.copy(bid = Amount.of("9.95", USD), ask = Amount.of("10.05", USD))))
+                .isFalse // because market price for client sell 9.95 < my desired limit sell price 10.00
+
+            assertThat(order.toExecute(quote.copy(bid = Amount.of("10.00", USD), ask = Amount.of("10.10", USD))))
+                .isTrue // because market price for client sell 10.00 >= my desired limit sell price 10.00
+            assertThat(order.toExecute(quote.copy(bid = Amount.of("10.05", USD), ask = Amount.of("10.15", USD))))
+                .isTrue // because market price for client sell 10.05 > my desired limit sell price 10.00
+
+        }.assertAll()
     }
 
     @Test
@@ -108,16 +112,20 @@ class StockStopOrderTest {
             ask = Amount.of("0", USD),
         )
 
-        assertThat(order.toExecute(quote.copy(bid = Amount.of("9.85", USD), ask = Amount.of("9.95", USD))))
-            .isTrue // because market price for client buy 9.95 < my desired limit buy price 10.00
-        assertThat(order.toExecute(quote.copy(bid = Amount.of("9.90", USD), ask = Amount.of("10.00", USD))))
-            .isTrue // because market price for client buy 10.00 <= my desired limit buy price 10.00
+        SoftAssertions().apply {
 
-        assertThat(order.toExecute(quote.copy(bid = Amount.of("9.95", USD), ask = Amount.of("10.05", USD))))
-            .isFalse // because market price for client buy 10.05 > my desired limit buy price 10.00
-        assertThat(order.toExecute(quote.copy(bid = Amount.of("10.00", USD), ask = Amount.of("10.10", USD))))
-            .isFalse // because market price for client buy 10.00 > my desired limit buy price 10.00
-        assertThat(order.toExecute(quote.copy(bid = Amount.of("10.05", USD), ask = Amount.of("10.15", USD))))
-            .isFalse // because market price for client buy 10.05 > my desired limit buy price 10.00
+            assertThat(order.toExecute(quote.copy(bid = Amount.of("9.85", USD), ask = Amount.of("9.95", USD))))
+                .isTrue // because market price for client buy 9.95 < my desired limit buy price 10.00
+            assertThat(order.toExecute(quote.copy(bid = Amount.of("9.90", USD), ask = Amount.of("10.00", USD))))
+                .isTrue // because market price for client buy 10.00 <= my desired limit buy price 10.00
+
+            assertThat(order.toExecute(quote.copy(bid = Amount.of("9.95", USD), ask = Amount.of("10.05", USD))))
+                .isFalse // because market price for client buy 10.05 > my desired limit buy price 10.00
+            assertThat(order.toExecute(quote.copy(bid = Amount.of("10.00", USD), ask = Amount.of("10.10", USD))))
+                .isFalse // because market price for client buy 10.00 > my desired limit buy price 10.00
+            assertThat(order.toExecute(quote.copy(bid = Amount.of("10.05", USD), ask = Amount.of("10.15", USD))))
+                .isFalse // because market price for client buy 10.05 > my desired limit buy price 10.00
+
+        }.assertAll()
     }
 }

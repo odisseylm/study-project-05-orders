@@ -1,7 +1,6 @@
 package com.mvv.bank.orders.domain
 
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal as bd
 import java.time.LocalDate
@@ -29,32 +28,42 @@ class FxCashMarketOrderTest {
             market = market,
         )
 
-        assertThat(order.orderType).isEqualTo(OrderType.MARKET_ORDER)
+        SoftAssertions().apply {
 
-        assertThat(order.toExecute(
-                FxRate(
-                    market, zonedDateTime, CurrencyPair.EUR_USD,
-                    bid = bd("1.1"), ask = bd("1.15"),
+            assertThat(order.orderType).isEqualTo(OrderType.MARKET_ORDER)
+
+            assertThat(
+                order.toExecute(
+                    FxRate(
+                        market, zonedDateTime, CurrencyPair.EUR_USD,
+                        bid = bd("1.1"), ask = bd("1.15"),
+                    )
                 )
-            ))
-            .isTrue
+            )
+                .isTrue
 
-        assertThatCode {
-            order.toExecute(FxRate(
+            assertThatCode {
+                order.toExecute(
+                    FxRate(
                         market, zonedDateTime, CurrencyPair.EUR_UAH,
                         bid = bd("1.1"), ask = bd("1.15"),
-                    ))
+                    )
+                )
             }
-            .hasMessage("FX rate EUR_UAH does not suite order currencies (with price currency USD).")
-            .isExactlyInstanceOf(IllegalStateException::class.java)
+                .hasMessage("FX rate EUR_UAH does not suite order currencies (with price currency USD).")
+                .isExactlyInstanceOf(IllegalStateException::class.java)
 
-        assertThatCode {
-            order.toExecute(FxRate(
+            assertThatCode {
+                order.toExecute(
+                    FxRate(
                         market, zonedDateTime, CurrencyPair.USD_UAH,
                         bid = bd("1.1"), ask = bd("1.15"),
-                    ))
+                    )
+                )
             }
-            .hasMessage("FX rate currencies UAH_USD does not suite order currencies USD_EUR.")
-            .isExactlyInstanceOf(IllegalStateException::class.java)
+                .hasMessage("FX rate currencies UAH_USD does not suite order currencies USD_EUR.")
+                .isExactlyInstanceOf(IllegalStateException::class.java)
+
+        }.assertAll()
     }
 }

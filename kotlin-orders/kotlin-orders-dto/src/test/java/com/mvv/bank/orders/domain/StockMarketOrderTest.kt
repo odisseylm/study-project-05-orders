@@ -1,13 +1,12 @@
 package com.mvv.bank.orders.domain
 
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal as bd
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
+import java.math.BigDecimal as bd
 
 
 class StockMarketOrderTest {
@@ -28,11 +27,6 @@ class StockMarketOrderTest {
             market = market,
         )
 
-        // mainly to suppress 'unused' warnings
-        assertThat(order.orderType).isEqualTo(OrderType.MARKET_ORDER)
-        assertThat(order.volume).isEqualTo(bd("1000"))
-        assertThat(order.company).isEqualTo(TestPredefinedCompanies.APPLE)
-
         val quote = StockQuote(
             marketSymbol = market.symbol,
             dateTime = ZonedDateTime.of(dateTime, market.zoneId),
@@ -46,10 +40,19 @@ class StockMarketOrderTest {
             ask = Amount.of("0", Currency.USD),
         )
 
-        assertThat(order.toExecute(quote)).isTrue
+        SoftAssertions().apply {
 
-        assertThatCode { order.toExecute(quote.copy(productSymbol = "GOOGLE")) }
-            .hasMessage("This quote is for another product (order: AAPL, quote: GOOGLE).")
-            .isExactlyInstanceOf(IllegalStateException::class.java)
+            // mainly to suppress 'unused' warnings
+            assertThat(order.orderType).isEqualTo(OrderType.MARKET_ORDER)
+            assertThat(order.volume).isEqualTo(bd("1000"))
+            assertThat(order.company).isEqualTo(TestPredefinedCompanies.APPLE)
+
+            assertThat(order.toExecute(quote)).isTrue
+
+            assertThatCode { order.toExecute(quote.copy(productSymbol = "GOOGLE")) }
+                .hasMessage("This quote is for another product (order: AAPL, quote: GOOGLE).")
+                .isExactlyInstanceOf(IllegalStateException::class.java)
+
+        }.assertAll()
     }
 }

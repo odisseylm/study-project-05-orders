@@ -52,10 +52,9 @@ class FxOrderMapperTest {
             marketSymbol = market.symbol,
             market = market,
             orderState = DomainOrderState.TO_BE_PLACED,
-            //placedAt =
         )
 
-        val jpaOrder = fxOrderMapper.toDto(domainOrder) // as AbstractFxCashOrder)
+        val jpaOrder = fxOrderMapper.toDto(domainOrder)
 
         checkNotNull(jpaOrder)
 
@@ -71,7 +70,6 @@ class FxOrderMapperTest {
             assertThat(jpaOrder.dailyExecutionType).isEqualTo(JpaDailyExecutionType.GTC)
             assertThat(jpaOrder.market).isNotNull.isEqualTo(market.symbol)
             assertThat(jpaOrder.orderState).isEqualTo(JpaOrderState.TO_BE_PLACED)
-            //assertThat(jpaOrder.).isEqualTo()
         }.assertAll()
     }
 
@@ -100,7 +98,7 @@ class FxOrderMapperTest {
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
         )
 
-        val jpaOrder = fxOrderMapper.toDto(domainOrder) // as AbstractFxCashOrder)
+        val jpaOrder = fxOrderMapper.toDto(domainOrder)
 
         checkNotNull(jpaOrder)
         SoftAssertions().apply {
@@ -141,10 +139,9 @@ class FxOrderMapperTest {
             marketSymbol = market.symbol,
             market = market,
             orderState = DomainOrderState.PLACED,
-            //placedAt =
         )
 
-        val jpaOrder = fxOrderMapper.toDto(domainOrder) // as AbstractFxCashOrder)
+        val jpaOrder = fxOrderMapper.toDto(domainOrder)
 
         checkNotNull(jpaOrder)
 
@@ -160,7 +157,6 @@ class FxOrderMapperTest {
             assertThat(jpaOrder.dailyExecutionType).isNull()
             assertThat(jpaOrder.market).isNotNull.isEqualTo(market.symbol)
             assertThat(jpaOrder.orderState).isEqualTo(JpaOrderState.PLACED)
-            //assertThat(jpaOrder.).isEqualTo()
         }.assertAll()
     }
 
@@ -193,8 +189,7 @@ class FxOrderMapperTest {
         }
 
 
-        val domainOrder: AbstractFxCashOrder = fxOrderMapper.toDomain(jpaOrder) // as AbstractFxCashOrder)
-        //checkNotNull(domainOrder)
+        val domainOrder: AbstractFxCashOrder = fxOrderMapper.toDomain(jpaOrder)
 
         SoftAssertions().apply {
             assertThat(domainOrder.id).isEqualTo(567)
@@ -207,7 +202,6 @@ class FxOrderMapperTest {
             assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(market.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(market)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
-            //assertThat(jpaOrder.).isEqualTo()
 
             val rate = FxRate(
                 market, zonedDateTime, CurrencyPair.USD_UAH,
@@ -256,7 +250,6 @@ class FxOrderMapperTest {
 
 
         val domainOrder: AbstractFxCashOrder = fxOrderMapper.toDomain(jpaOrder) // as AbstractFxCashOrder)
-        //checkNotNull(domainOrder)
 
         SoftAssertions().apply {
             assertThat(domainOrder.id).isEqualTo(567)
@@ -269,7 +262,6 @@ class FxOrderMapperTest {
             assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(market.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(market)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
-            //assertThat(jpaOrder.).isEqualTo()
 
             val rate = FxRate(
                 market, zonedDateTime, CurrencyPair.USD_UAH,
@@ -321,7 +313,6 @@ class FxOrderMapperTest {
 
 
         val domainOrder: AbstractFxCashOrder = fxOrderMapper.toDomain(jpaOrder) // as AbstractFxCashOrder)
-        //checkNotNull(domainOrder)
 
         SoftAssertions().apply {
             assertThat(domainOrder.id).isEqualTo(567)
@@ -334,7 +325,6 @@ class FxOrderMapperTest {
             assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(market.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(market)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
-            //assertThat(jpaOrder.).isEqualTo()
 
             val rate = FxRate(
                 market, zonedDateTime, CurrencyPair.USD_UAH,
