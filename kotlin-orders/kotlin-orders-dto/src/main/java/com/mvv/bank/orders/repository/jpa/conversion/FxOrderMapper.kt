@@ -1,7 +1,8 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
 import com.mvv.bank.log.safe
-import com.mvv.bank.orders.conversion.CurrencyMapper
+import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
+import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import com.mvv.bank.orders.domain.*
 import com.mvv.bank.orders.service.MarketService
 import jakarta.inject.Inject
@@ -18,14 +19,11 @@ import com.mvv.bank.orders.repository.jpa.entities.FxOrder as DtoOrder
 import com.mvv.bank.orders.repository.jpa.entities.OrderType as DtoOrderType
 
 
-@Mapper(componentModel = "spring, default, cdi, jakarta, jsr330", uses = [CurrencyMapper::class])
+@Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL, config = DomainPrimitiveMappers::class)
 @Suppress("CdiInjectionPointsInspection")
 abstract class FxOrderMapper : Cloneable {
     @Inject
     private lateinit var marketService: MarketService
-
-    fun map(user: String): User = User.of(user) // TODO: move to base interface
-    fun map(user: User): String = user.value    // TODO: move to base interface
 
     @BeforeMapping
     open fun validateOrderBeforeSaving(source: DomainOrder, @MappingTarget target: DtoOrder) =

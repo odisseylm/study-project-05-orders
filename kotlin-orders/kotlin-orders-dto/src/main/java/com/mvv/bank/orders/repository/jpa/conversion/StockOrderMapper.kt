@@ -1,7 +1,8 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
 import com.mvv.bank.log.safe
-import com.mvv.bank.orders.conversion.CurrencyMapper
+import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
+import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import com.mvv.bank.orders.domain.*
 import com.mvv.bank.orders.service.CompanyService
 import com.mvv.bank.orders.service.MarketService
@@ -21,9 +22,9 @@ import com.mvv.bank.orders.repository.jpa.entities.StockOrder as DtoStockOrder
 
 
 @Mapper(
-    componentModel = "spring, default, cdi, jakarta, jsr330",
-    uses = [CurrencyMapper::class],
-    imports = [Currency::class, Amount::class]
+    componentModel = MAP_STRUCT_COMPONENT_MODEL,
+    config = DomainPrimitiveMappers::class,
+    imports = [Currency::class, Amount::class],
 )
 @Suppress("CdiInjectionPointsInspection")
 abstract class StockOrderMapper : Cloneable {
@@ -31,9 +32,6 @@ abstract class StockOrderMapper : Cloneable {
     private lateinit var marketService: MarketService
     @Inject
     private lateinit var companyService: CompanyService
-
-    fun mapUser(user: String): User = User.of(user) // TODO: move to base interface
-    fun mapUser(user: User): String = user.value    // TODO: move to base interface
 
     @BeforeMapping
     open fun validateOrderBeforeSaving(source: DomainBaseOrder, @MappingTarget target: DtoStockOrder) =

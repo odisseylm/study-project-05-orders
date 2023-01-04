@@ -1,12 +1,13 @@
 package com.mvv.bank.orders.rest.conversion
 
+import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import com.mvv.bank.orders.rest.FxRate as RestFxRate
 import com.mvv.bank.orders.domain.FxRate as DomainFxRate
 
 
-@Mapper(componentModel = "spring, default, cdi, jakarta, jsr330")
+@Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL)
 interface FxRateMapper {
     @Mapping(source = "marketSymbol", target = "market")
     fun toDto(source: DomainFxRate?): RestFxRate?

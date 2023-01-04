@@ -3,52 +3,84 @@ package com.mvv.bank.orders.domain
 import com.mvv.bank.log.safe
 
 
-data class Email (val value: String) {
+class Email (val value: String) {
     init { validateEmail(value) }
     override fun toString(): String = value
+    override fun equals(other: Any?): Boolean =
+        (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as Email).value))
+    override fun hashCode(): Int = value.hashCode()
+
+    companion object {
+        @JvmStatic
+        fun of(email: String) = Email(email)
+        @JvmStatic
+        fun valueOf(email: String) = of(email)
+    }
 }
 
-data class Phone (val value: String) {
+
+class Phone (val value: String) {
     init { validatePhone(value) }
     override fun toString(): String = value
+    override fun equals(other: Any?): Boolean =
+        (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as Phone).value))
+    override fun hashCode(): Int = value.hashCode()
+
+    companion object {
+        @JvmStatic
+        fun of(email: String) = Phone(email)
+        @JvmStatic
+        fun valueOf(email: String) = of(email)
+    }
 }
 
 
 // it is not clear now what it should be??? phone and email can be changed? or cannot?
-data class UserNaturalKey (val value: String) {
+class UserNaturalKey (val value: String) {
     init {
         // now we will use email but later will change it
         Email(value) // used for validation only
     }
     override fun toString(): String = value
-}
-
-// TODO: think about natural-key
-data class User (
-    val naturalKey: UserNaturalKey,
-    //val username: String,
-) {
-    init {
-        // TODO: add validation
-    }
-    val value: String get()  = naturalKey.value
+    override fun equals(other: Any?): Boolean =
+        (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as UserNaturalKey).value))
+    override fun hashCode(): Int = value.hashCode()
 
     companion object {
         @JvmStatic
-        fun of(value: String) = User(UserNaturalKey(value))
-
+        fun of(userNaturalKey: String) = UserNaturalKey(userNaturalKey)
         @JvmStatic
-        fun valueOf(value: String) = of(value)
+        fun valueOf(userNaturalKey: String) = of(userNaturalKey)
     }
 }
 
+
+// T O D O: think about natural-key
+class User (val naturalKey: UserNaturalKey) {
+    val value: String get() = naturalKey.value
+    override fun equals(other: Any?): Boolean =
+        (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as User).value))
+    override fun hashCode(): Int = value.hashCode()
+
+    companion object {
+        @JvmStatic
+        fun of(naturalKey: UserNaturalKey) = User(naturalKey)
+        @JvmStatic
+        fun of(naturalKey: String) = User(UserNaturalKey(naturalKey))
+
+        @JvmStatic
+        fun valueOf(naturalKey: String) = of(naturalKey)
+    }
+}
+
+/*
 // TODO: probably should be object which can be read only once
 class Password (val value: String) {
     init {
         // TODO: add validation
     }
 }
-
+*/
 
 /*
 // this class describes details which are not need for most cases/services

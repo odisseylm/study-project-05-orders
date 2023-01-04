@@ -2,6 +2,7 @@ package com.mvv.bank.orders.rest.conversion
 
 import com.mvv.bank.log.safe
 import com.mvv.bank.orders.conversion.CurrencyMapper
+import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import com.mvv.bank.orders.domain.*
 import com.mvv.bank.orders.rest.FxOrder
 import com.mvv.bank.orders.service.MarketService
@@ -13,7 +14,7 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
 
 
-@Mapper(componentModel = "spring, default, cdi, jakarta, jsr330", uses = [CurrencyMapper::class, FxRateMapper::class])
+@Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL, uses = [CurrencyMapper::class, FxRateMapper::class])
 @Suppress("CdiInjectionPointsInspection")
 abstract class FxOrderMapper: Cloneable {
     @Inject

@@ -29,13 +29,13 @@ internal class CurrencyMapperTest {
 
             assertThat(currencyMapper.toDto(null)).isNull()
 
-            assertThat(currencyMapper.fromDto("USD")).isEqualTo(Currency.of("USD"))
-            assertThat(currencyMapper.fromDto("USD")).isEqualTo(Currency.USD)
+            assertThat(currencyMapper.toDomain("USD")).isEqualTo(Currency.of("USD"))
+            assertThat(currencyMapper.toDomain("USD")).isEqualTo(Currency.USD)
 
             assertThat(currencyMapper.toDto(Currency.of("USD"))).isEqualTo("USD")
             assertThat(currencyMapper.toDto(Currency.USD)).isEqualTo("USD")
 
-            assertThatCode { currencyMapper.fromDto("USD ") }
+            assertThatCode { currencyMapper.toDomain("USD ") }
                 .hasMessage("Invalid currency [USD ].")
                 .isExactlyInstanceOf(IllegalArgumentException::class.java)
 
