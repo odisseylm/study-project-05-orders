@@ -40,22 +40,34 @@ interface UserNaturalKeyMapper {
 }
 
 
+@Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL)
+interface MarketSymbolMapper {
+    fun toDto(marketSymbol: MarketSymbol?): String? = marketSymbol?.value
+    fun toDomain(marketSymbol: String?): MarketSymbol? = if (marketSymbol == null) null else MarketSymbol.of(marketSymbol)
+}
+
+
+@Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL)
+interface CompanySymbolMapper {
+    fun toDto(companySymbol: CompanySymbol?): String? = companySymbol?.value
+    fun toDomain(companySymbol: String?): CompanySymbol? = if (companySymbol == null) null else CompanySymbol.of(companySymbol)
+}
+
+
 @MapperConfig(
     componentModel = MAP_STRUCT_COMPONENT_MODEL,
     uses = [
+        // Natural key/id mappers
         UserNaturalKeyMapper::class,
+        MarketSymbolMapper::class,
+        CompanySymbolMapper::class,
+        // others
         CurrencyMapper::class,
         EmailMapper::class,
         PhoneMapper::class,
         UserMapper::class,
     ])
 interface DomainPrimitiveMappers
-
-
-//@Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL)
-//interface DomainPrimitiveMappers : UserNaturalKeyMapper
-//interface DomainPrimitiveMappers : UserNaturalKeyMapper, CurrencyMapper
-//interface DomainPrimitiveMappers : UserNaturalKeyMapper, CurrencyMapper, EmailMapper, PhoneMapper, UserMapper
 
 
 /*

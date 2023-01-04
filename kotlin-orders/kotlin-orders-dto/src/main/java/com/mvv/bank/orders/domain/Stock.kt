@@ -1,5 +1,7 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.log.safe
+
 
 // most probably shares, derivatives, and others should be inherited from it
 //interface Stock {
@@ -7,15 +9,33 @@ package com.mvv.bank.orders.domain
 //    val symbol: String
 //}
 
+
+class CompanySymbol private constructor (val value: String) {
+    init { validateCompanySymbol(value) }
+    override fun toString(): String = value
+    override fun equals(other: Any?): Boolean =
+        (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as CompanySymbol).value))
+    override fun hashCode(): Int = value.hashCode()
+
+    companion object {
+        @JvmStatic
+        fun of(companySymbol: String) = CompanySymbol(companySymbol)
+        @JvmStatic
+        fun valueOf(companySymbol: String) = of(companySymbol)
+    }
+}
+
+
 interface Company {
     val name: String
-    val symbol: String // see https://stockanalysis.com/stocks/  https://www.investopedia.com/terms/s/stocksymbol.asp
+    val symbol: CompanySymbol // see https://stockanalysis.com/stocks/  https://www.investopedia.com/terms/s/stocksymbol.asp
     val isin: String
 }
 
+
 interface CompanyFactory {
     // in general factory should return company data where Company.symbol = original symbol
-    fun getCompanyData(symbol: String): Company
+    fun getCompanyData(companySymbol: CompanySymbol): Company
 }
 
 /*
@@ -49,3 +69,14 @@ Berkshire Hathaway Inc. (BRK-A)
 NYSE - Nasdaq Real Time Price. Currency in USD
 
 */
+
+
+private const val COMPANY_SYMBOL_MAX_LENGTH = 25
+private val companySymbolPattern = Regex("^[A-Z\\-.]*\$")
+
+private fun validateCompanySymbol(marketSymbol: String?) {
+    if (marketSymbol.isNullOrBlank() ||
+        (marketSymbol.length > COMPANY_SYMBOL_MAX_LENGTH) ||
+        !companySymbolPattern.matches(marketSymbol))
+        throw IllegalArgumentException("Invalid market symbol [${marketSymbol.safe}].")
+}

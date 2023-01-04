@@ -97,7 +97,7 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
             val asLocalDateTime = resultingRateTimestamp.withZoneSameInstant(target.market.zoneId).toLocalDateTime()
 
             val rate = FxRate(
-                market = source.market,
+                market = MarketSymbol.of(source.market),
                 timestamp = resultingRateTimestamp,
                 marketDate = asLocalDateTime.toLocalDate(),
                 marketTime = asLocalDateTime.toLocalTime(),

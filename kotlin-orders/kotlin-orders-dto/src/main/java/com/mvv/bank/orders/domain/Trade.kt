@@ -6,12 +6,13 @@ import java.time.ZonedDateTime
 
 
 interface Trade<P> {
-    val market: String
+    val market: MarketSymbol
 
     val product: P
     val buySellType: BuySellType
     val volume: BigDecimal // integer in case of stocks; float in case of cash/money
     val price: Amount
+
     val amount: Amount get() = volume * price
     val tradedAt: ZonedDateTime
 }
@@ -19,13 +20,14 @@ interface Trade<P> {
 data class FxCashTrade (
     val id: Long,
 
-    override val market: String,
+    override val market: MarketSymbol,
 
     override val buySellType: BuySellType,
     val buyCurrency: Currency,
     val sellCurrency: Currency,
     override val volume: BigDecimal,
     override val price: Amount,
+
     override val tradedAt: ZonedDateTime,
 ) : Trade<Currency> {
 
@@ -52,12 +54,13 @@ data class FxCashTrade (
 data class StockTrade (
     val id: Long,
 
-    override val market: String,
+    override val market: MarketSymbol,
+    val company: CompanySymbol,
 
-    override val product: String,
     override val buySellType: BuySellType,
-    val company: Company,
     override val volume: BigDecimal,
     override val price: Amount,
     override val tradedAt: ZonedDateTime,
-) : Trade<String>
+) : Trade<CompanySymbol> {
+    override val product: CompanySymbol get() = company
+}

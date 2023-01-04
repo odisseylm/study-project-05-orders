@@ -74,13 +74,13 @@ class FxRateTest {
         val marketZone = ZoneId.systemDefault()
         val zonedDateTime = ZonedDateTime.of(marketDateTime, marketZone)
 
-        val rate = FxRate("symbol", zonedDateTime, marketDate, marketTime,
+        val rate = FxRate(testMarket.symbol, zonedDateTime, marketDate, marketTime,
             CurrencyPair.of("AAA", "ZZZ"), bid = bd("10"), ask = bd("100")
         )
         val inverted = rate.inverted()
 
         assertThat(inverted)
-            .isEqualTo(FxRate("symbol", zonedDateTime, marketDate, marketTime,
+            .isEqualTo(FxRate(testMarket.symbol, zonedDateTime, marketDate, marketTime,
                 CurrencyPair.of("ZZZ", "AAA"), bid = bd("0.1"), ask = bd("0.01")
             ))
     }

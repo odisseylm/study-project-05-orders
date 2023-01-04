@@ -8,8 +8,7 @@ import java.time.ZonedDateTime
 
 interface Quote {
     val product: String // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
-
-    val market: String
+    val market: MarketSymbol
 
     val timestamp: ZonedDateTime
     // date/time in market/exchange timezone
@@ -26,8 +25,8 @@ interface Quote {
 // https://www.investopedia.com/terms/s/stockquote.asp
 // https://www.wallstreetmojo.com/stock-quote/
 data class StockQuote (
-    override val market: String,
-    override val product: String, // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
+    override val market: MarketSymbol,
+    val company: CompanySymbol, // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
 
     override val timestamp: ZonedDateTime,
     override val marketDate: LocalDate,
@@ -58,6 +57,7 @@ data class StockQuote (
     //val averageVolume: BigDecimal? = null,
     val volume3m: BigDecimal? = null,
 ) : Quote {
+    override val product: String get() = company.value
     companion object { } // for possibility to write companion extension functions
 }
 
@@ -78,7 +78,7 @@ fun StockQuote.Companion.of(
     currency: Currency,
 ): StockQuote = StockQuote(
     market = market.symbol,
-    product = company.symbol,
+    company = company.symbol,
     timestamp = timestamp,
     marketDate = timestamp.withZoneSameInstant(market.zoneId).toLocalDate(),
     marketTime = timestamp.withZoneSameInstant(market.zoneId).toLocalTime(),

@@ -83,7 +83,7 @@ class FxOrderMapperTest {
             assertThat(dtoOrder.volume).isEqualTo(bd("2000"))
             assertThat(dtoOrder.limitPrice).isEqualTo(bd("40.0"))
             assertThat(dtoOrder.dailyExecutionType).isEqualTo(DtoDailyExecutionType.GTC)
-            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol)
+            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol.value)
             assertThat(dtoOrder.orderState).isEqualTo(DtoOrderState.TO_BE_PLACED)
         }.assertAll()
     }
@@ -124,11 +124,11 @@ class FxOrderMapperTest {
             assertThat(dtoOrder.volume).isEqualTo(bd("2000"))
             assertThat(dtoOrder.stopPrice).isEqualTo(bd("40.0"))
             assertThat(dtoOrder.dailyExecutionType).isEqualTo(DtoDailyExecutionType.GTC)
-            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol)
+            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol.value)
             assertThat(dtoOrder.orderState).isEqualTo(DtoOrderState.PLACED)
 
             assertThat(dtoOrder.resultingRate).isEqualTo(
-                DtoFxRate(testMarket.symbol, testTimestamp, testDate, testTime,
+                DtoFxRate(testMarket.symbol.value, testTimestamp, testDate, testTime,
                     DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50")))
             assertThat(dtoOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
         }.assertAll()
@@ -164,7 +164,7 @@ class FxOrderMapperTest {
             assertThat(dtoOrder.limitPrice).isNull()
             assertThat(dtoOrder.stopPrice).isNull()
             assertThat(dtoOrder.dailyExecutionType).isNull()
-            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol)
+            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol.value)
             assertThat(dtoOrder.orderState).isEqualTo(DtoOrderState.PLACED)
         }.assertAll()
     }
@@ -184,9 +184,9 @@ class FxOrderMapperTest {
             volume = bd("2000")
             limitPrice = bd("40.0")
             dailyExecutionType = DtoDailyExecutionType.GTC
-            market = testMarket.symbol
+            market = testMarket.symbol.value
             orderState = DtoOrderState.PLACED
-            resultingRate = DtoFxRate(testMarket.symbol,
+            resultingRate = DtoFxRate(testMarket.symbol.value,
                 testTimestamp, testDate, testTime, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
@@ -239,9 +239,9 @@ class FxOrderMapperTest {
             volume = bd("2000")
             stopPrice = bd("40.0")
             dailyExecutionType = DtoDailyExecutionType.DAY_ONLY
-            market = testMarket.symbol
+            market = testMarket.symbol.value
             orderState = DtoOrderState.PLACED
-            resultingRate = DtoFxRate(testMarket.symbol, testTimestamp, testDate, testTime,
+            resultingRate = DtoFxRate(testMarket.symbol.value, testTimestamp, testDate, testTime,
                 DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             expiredAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
@@ -295,9 +295,9 @@ class FxOrderMapperTest {
             buyCurrency = "USD"
             sellCurrency = "UAH"
             volume = bd("2000")
-            market = testMarket.symbol
+            market = testMarket.symbol.value
             orderState = DtoOrderState.PLACED
-            resultingRate = DtoFxRate(testMarket.symbol, testTimestamp, testDate, testTime,
+            resultingRate = DtoFxRate(testMarket.symbol.value, testTimestamp, testDate, testTime,
                 DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
@@ -348,9 +348,9 @@ class FxOrderMapperTest {
             volume = bd("2000")
             limitPrice = bd("41.0")
             stopPrice = bd("42.0")
-            market = testMarket.symbol
+            market = testMarket.symbol.value
             orderState = DtoOrderState.PLACED
-            resultingRate = DtoFxRate(testMarket.symbol, testTimestamp, testDate, testTime,
+            resultingRate = DtoFxRate(testMarket.symbol.value, testTimestamp, testDate, testTime,
                 DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
@@ -373,9 +373,9 @@ class FxOrderMapperTest {
             sellCurrency = "UAH"
             volume = bd("2000")
             dailyExecutionType = DtoDailyExecutionType.DAY_ONLY // Not allowed
-            market = testMarket.symbol
+            market = testMarket.symbol.value
             orderState = DtoOrderState.PLACED
-            resultingRate = DtoFxRate(testMarket.symbol, testTimestamp, testDate, testTime,
+            resultingRate = DtoFxRate(testMarket.symbol.value, testTimestamp, testDate, testTime,
                 DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")

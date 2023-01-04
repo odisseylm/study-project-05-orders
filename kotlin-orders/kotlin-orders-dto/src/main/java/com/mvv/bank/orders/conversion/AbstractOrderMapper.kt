@@ -1,5 +1,7 @@
 package com.mvv.bank.orders.conversion
 
+import com.mvv.bank.orders.domain.CompanySymbol
+import com.mvv.bank.orders.domain.MarketSymbol
 import com.mvv.bank.orders.domain.Company as DomainCompany
 import com.mvv.bank.orders.domain.Market as DomainMarket
 import com.mvv.bank.orders.service.CompanyService
@@ -10,7 +12,7 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
 
 
-@Suppress("CdiInjectionPointsInspection")
+@Suppress("CdiInjectionPointsInspection", "MemberVisibilityCanBePrivate")
 abstract class AbstractOrderMapper: Cloneable {
     @Inject
     protected lateinit var marketService: MarketService
@@ -19,15 +21,20 @@ abstract class AbstractOrderMapper: Cloneable {
 
     // Ideally it should be put into separate MarketMapper but easy pure unit testing it is there now
     // (to avoid injection sub-dependencies into dependencies)
-    fun marketToDto(market: DomainMarket?): String? = market?.symbol
+    fun marketToDto(market: DomainMarket?): String? = market?.symbol?.value
     fun marketToDomain(marketSymbol: String?): DomainMarket? =
+        if (marketSymbol == null) null else marketToDomain(MarketSymbol.of(marketSymbol))
+    fun marketToDomain(marketSymbol: MarketSymbol?): DomainMarket? =
         if (marketSymbol == null) null else marketService.marketBySymbol(marketSymbol)
 
     // Ideally it should be put into separate MarketMapper but easy pure unit testing it is there now
     // (to avoid injection sub-dependencies into dependencies)
-    fun companyToDto(company: DomainCompany?): String? = company?.symbol
+    fun companyToDto(company: DomainCompany?): String? = company?.symbol?.value
     fun companyToDomain(companySymbol: String?): DomainCompany? =
+        if (companySymbol == null) null else companyToDomain(CompanySymbol.of(companySymbol))
+    fun companyToDomain(companySymbol: CompanySymbol?): DomainCompany? =
         if (companySymbol == null) null else companyService.companyBySymbol(companySymbol)
+
 
     protected fun <T> newOrderInstance(type: KClass<*>): T {
         val constructor = type.primaryConstructor

@@ -15,7 +15,7 @@ import java.time.ZonedDateTime
 // TODO: 'bid < ask' rule should be applied for which counterCurrency???
 //
 data class FxRate (
-    val market: String,
+    val market: MarketSymbol,
     val timestamp: ZonedDateTime,
     val marketDate: LocalDate,
     val marketTime: LocalTime,
@@ -60,7 +60,7 @@ data class FxRateAsQuote (
     val priceCurrency: Currency,
 ) : Quote {
     override val product: String get() = rate.currencyPair.oppositeCurrency(priceCurrency).toString()
-    override val market: String get() = rate.market
+    override val market: MarketSymbol get() = rate.market
     override val marketDate: LocalDate get() = rate.marketDate
     override val marketTime: LocalTime get() = rate.marketTime
     override val timestamp: ZonedDateTime get() = rate.timestamp

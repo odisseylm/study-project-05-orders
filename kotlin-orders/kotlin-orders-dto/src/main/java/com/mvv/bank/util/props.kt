@@ -42,7 +42,10 @@ class LateInitProperty<T, Owner> (
     }
 
     // T O D O: add logic to verify value on null only if T is nullable. Is it needed???
-    override operator fun getValue(thisRef: Owner, property: KProperty<*>): T = asNonNullableValue
+    override operator fun getValue(thisRef: Owner, property: KProperty<*>): T {
+        return asNullableValue
+            ?: throw UninitializedPropertyAccessException("Property [$propName] is not initialized yet.")
+    }
     override operator fun setValue(thisRef: Owner, property: KProperty<*>, value: T) = set(value)
 
     override fun toString(): String = "$internalValue"

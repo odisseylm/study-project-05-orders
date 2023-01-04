@@ -1,13 +1,30 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.log.safe
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 
 
+class MarketSymbol private constructor (val value: String) {
+    init { validateMarketSymbol(value) }
+    override fun toString(): String = value
+    override fun equals(other: Any?): Boolean =
+        (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as MarketSymbol).value))
+    override fun hashCode(): Int = value.hashCode()
+
+    companion object {
+        @JvmStatic
+        fun of(marketSymbol: String) = MarketSymbol(marketSymbol)
+        @JvmStatic
+        fun valueOf(marketSymbol: String) = of(marketSymbol)
+    }
+}
+
+
 interface Market {
     val name: String
-    val symbol: String
+    val symbol: MarketSymbol
     val zoneId: ZoneId
     val description: String
 
@@ -20,7 +37,7 @@ interface Market {
 }
 
 interface MarketFactory {
-    fun market(marketSymbol: String): Market
+    fun market(marketSymbol: MarketSymbol): Market
 }
 
 /*
@@ -28,3 +45,14 @@ Stock Exchange symbols:
  * NASDAQ
  * NYSE
 */
+
+
+private const val MARKET_SYMBOL_MAX_LENGTH = 25
+private val marketSymbolPattern = Regex("^[A-Z\\-.]*\$")
+
+private fun validateMarketSymbol(marketSymbol: String?) {
+    if (marketSymbol.isNullOrBlank() ||
+        (marketSymbol.length > MARKET_SYMBOL_MAX_LENGTH) ||
+        !marketSymbolPattern.matches(marketSymbol))
+        throw IllegalArgumentException("Invalid market symbol [${marketSymbol.safe}].")
+}

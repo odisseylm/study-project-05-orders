@@ -1,6 +1,8 @@
 package com.mvv.bank.util
 
+import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KProperty
+import kotlin.reflect.KVisibility
 import kotlin.reflect.full.memberProperties
 
 
@@ -45,10 +47,30 @@ inline fun <T : Number> checkId(id: T?): Unit = checkId(id) { "Id is not set or 
 
 fun checkLateInitPropsAreInitialized(obj: Any) {
     val notInitializedPropNames = obj::class.memberProperties
-        .filter { it.isLateinit && !isPropertyInitialized(obj, it) }
+        .filter { it.visibility == KVisibility.PUBLIC }
+        .filter { isLateInitUninitializedProperty(it, obj) }
         .map { it.name }
         .sorted()
 
     if (notInitializedPropNames.isNotEmpty())
         throw IllegalStateException("The following properties $notInitializedPropNames are not initialized.")
+}
+
+// This method is designed for public props (it does not change property accessibility)!
+fun isLateInitUninitializedProperty(prop: KProperty<*>, obj: Any): Boolean {
+    if (prop.isLateinit) {
+        if (!isPropertyInitialized(obj, prop)) return true
+    }
+    else {
+        // Verification of custom lazy prop (see LateInitProperty class).
+        // (currently I do not know how to verify ONLY LateInitProperty props)
+        try { prop.call(obj) }
+        catch (ignore: UninitializedPropertyAccessException) { return true }
+        catch (ex: InvocationTargetException) {
+            if (ex.targetException is UninitializedPropertyAccessException ||
+                ex.cause is UninitializedPropertyAccessException) return true
+        }
+        catch (ignore: Exception) { }
+    }
+    return false
 }

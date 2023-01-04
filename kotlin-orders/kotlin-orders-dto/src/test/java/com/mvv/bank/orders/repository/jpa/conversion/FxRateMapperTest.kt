@@ -68,7 +68,7 @@ internal class FxRateMapperTest {
             checkNotNull(dto)
             assertThat(dto.cur1).isEqualTo("EUR")
             assertThat(dto.cur2).isEqualTo("USD")
-            assertThat(dto.market).isNotNull.isEqualTo(testMarket.symbol)
+            assertThat(dto.market).isNotNull.isEqualTo(testMarket.symbol.value)
             assertThat(dto.marketDate).isNotNull.isEqualTo(testDate)
             assertThat(dto.marketTime).isNotNull.isEqualTo(testTime)
             assertThat(dto.timestamp).isNotNull.isEqualTo(testTimestamp)
@@ -88,7 +88,7 @@ internal class FxRateMapperTest {
 
             val domainObj = mapper.fromDto(
                 JpaFxRate().apply {
-                    market = testMarket.symbol
+                    market = testMarket.symbol.value
                     timestamp  = testTimestamp
                     marketDate = testDate
                     marketTime = testTime

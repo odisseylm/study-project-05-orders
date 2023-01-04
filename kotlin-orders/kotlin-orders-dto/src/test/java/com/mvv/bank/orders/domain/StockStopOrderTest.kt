@@ -35,7 +35,6 @@ class StockStopOrderTest {
             user = testUser,
             side = Side.CLIENT,
             buySellType = BuySellType.SELL,
-            companySymbol = testCompany.symbol,
             company = testCompany,
             volume = bd("1000"),
             stopPrice = Amount.of("10.00", USD),
@@ -75,6 +74,7 @@ class StockStopOrderTest {
         }.assertAll()
     }
 
+
     @Test
     fun toExecuteBuyCurrencyOrder() {
 
@@ -90,7 +90,6 @@ class StockStopOrderTest {
             user = testUser,
             side = Side.CLIENT,
             buySellType = BuySellType.BUY,
-            companySymbol = testCompany.symbol,
             company = testCompany,
             volume = bd("1000"),
             stopPrice = Amount.of("10.00", USD),

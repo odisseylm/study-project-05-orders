@@ -35,7 +35,6 @@ class StockLimitOrderTest {
             side = Side.CLIENT,
             user = testUser,
             buySellType = BuySellType.SELL,
-            companySymbol = testCompany.symbol,
             company = testCompany,
             volume = bd("1000"),
             limitPrice = Amount.of("10.00", USD),
@@ -45,10 +44,10 @@ class StockLimitOrderTest {
 
         val quote = StockQuote(
             market = testMarket.symbol,
+            company = testCompany.symbol,
             marketDate = testDate,
             marketTime = testTime,
             timestamp = testTimestamp ,
-            product = "AAPL",
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
@@ -95,7 +94,6 @@ class StockLimitOrderTest {
             side = Side.CLIENT,
             user = testUser,
             buySellType = BuySellType.BUY,
-            companySymbol = testCompany.symbol,
             company = testCompany,
             volume = bd("1000"),
             limitPrice = Amount.of("10.00", USD),
@@ -105,10 +103,10 @@ class StockLimitOrderTest {
 
         val quote = StockQuote(
             market = testMarket.symbol,
+            company = testCompany.symbol,
             timestamp = testTimestamp,
             marketDate = testDate,
             marketTime = testTime,
-            product = "AAPL",
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')

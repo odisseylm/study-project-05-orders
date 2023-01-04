@@ -1,11 +1,16 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.util.LateInitProperty
 import java.math.BigDecimal
 import java.time.ZonedDateTime
 
 
-sealed class StockOrder : AbstractOrder<String, StockQuote>() {
-    abstract var company: Company
+sealed class StockOrder : AbstractOrder<CompanySymbol, StockQuote>() {
+    private val companyImpl = LateInitProperty<Company, Any>(
+        changeable = false,
+        postUpdate = { new, _ -> product = new.symbol },
+    )
+    var company: Company by companyImpl
 
     override var resultingQuote: StockQuote?
         get() = super.resultingQuote
@@ -18,7 +23,7 @@ sealed class StockOrder : AbstractOrder<String, StockQuote>() {
         }
 }
 
-class StockLimitOrder : StockOrder(), LimitOrder<String, StockQuote> {
+class StockLimitOrder : StockOrder(), LimitOrder<CompanySymbol, StockQuote> {
 
     private val limitOrderSupport = StopLimitOrderSupport(this,
         //"limitPrice", { this.limitPrice },
@@ -30,7 +35,6 @@ class StockLimitOrder : StockOrder(), LimitOrder<String, StockQuote> {
     override val orderType: OrderType = OrderType.LIMIT_ORDER
     override lateinit var limitPrice: Amount
     override lateinit var dailyExecutionType: DailyExecutionType
-    override lateinit var company: Company
 
     override fun validateCurrentState() {
         super.validateCurrentState()
@@ -50,7 +54,6 @@ class StockLimitOrder : StockOrder(), LimitOrder<String, StockQuote> {
             user: User,
             side: Side,
             buySellType: BuySellType,
-            companySymbol: String,
             company: Company,
             volume: BigDecimal,
             limitPrice: Amount,
@@ -75,7 +78,7 @@ class StockLimitOrder : StockOrder(), LimitOrder<String, StockQuote> {
 
             order.side  = side
             order.buySellType = buySellType
-            order.product = companySymbol
+            order.product = company.symbol
             order.company = company
             order.volume = volume
             order.limitPrice = limitPrice
@@ -101,14 +104,13 @@ class StockLimitOrder : StockOrder(), LimitOrder<String, StockQuote> {
 }
 
 
-class StockStopOrder : StockOrder(), StopOrder<String, StockQuote> {
+class StockStopOrder : StockOrder(), StopOrder<CompanySymbol, StockQuote> {
 
     private val stopOrderSupport = StopLimitOrderSupport(this, ::stopPrice, ::dailyExecutionType)
 
     override val orderType: OrderType = OrderType.STOP_ORDER
     override lateinit var stopPrice: Amount
     override lateinit var dailyExecutionType: DailyExecutionType
-    override lateinit var company: Company
 
     override fun validateCurrentState() {
         super.validateCurrentState()
@@ -130,7 +132,6 @@ class StockStopOrder : StockOrder(), StopOrder<String, StockQuote> {
             side: Side,
 
             buySellType: BuySellType,
-            companySymbol: String,
             company: Company,
             volume: BigDecimal,
             stopPrice: Amount,
@@ -154,7 +155,7 @@ class StockStopOrder : StockOrder(), StopOrder<String, StockQuote> {
 
             order.side  = side
             order.buySellType = buySellType
-            order.product = companySymbol
+            order.product = company.symbol
             order.company = company
             order.volume = volume
             order.stopPrice = stopPrice
@@ -179,12 +180,10 @@ class StockStopOrder : StockOrder(), StopOrder<String, StockQuote> {
 
 
 class StockMarketOrder : StockOrder() {
-
     override val orderType: OrderType = OrderType.MARKET_ORDER
-    override lateinit var company: Company
 
     override fun toExecute(quote: StockQuote): Boolean {
-        check(quote.product == this.product) {
+        check(quote.product == this.product.value) {
             "This quote is for another product (order: $product, quote: ${quote.product})." }
         return true
     }
@@ -197,7 +196,6 @@ class StockMarketOrder : StockOrder() {
             market: Market,
 
             buySellType: BuySellType,
-            companySymbol: String,
             company: Company,
             volume: BigDecimal,
 
@@ -219,7 +217,7 @@ class StockMarketOrder : StockOrder() {
             order.side  = side
 
             order.buySellType = buySellType
-            order.product = companySymbol
+            order.product = company.symbol
             order.company = company
             order.volume = volume
 

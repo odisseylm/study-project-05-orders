@@ -49,8 +49,7 @@ class TradesTest {
         val trade = StockTrade(
             id = 124L,
             market = TestPredefinedMarkets.NASDAQ.symbol,
-            product = TestPredefinedCompanies.APPLE.symbol,
-            company = TestPredefinedCompanies.APPLE,
+            company = TestPredefinedCompanies.APPLE.symbol,
             buySellType = BuySellType.BUY,
             volume = bd("1000"),
             price = Amount.of("95.55", Currency.USD),
@@ -63,7 +62,7 @@ class TradesTest {
             assertThat(trade.market).isNotNull.isEqualTo(TestPredefinedMarkets.NASDAQ.symbol)
             assertThat(trade.buySellType).isEqualTo(BuySellType.BUY)
             assertThat(trade.product).isEqualTo(TestPredefinedCompanies.APPLE.symbol)
-            assertThat(trade.company).isEqualTo(TestPredefinedCompanies.APPLE)
+            assertThat(trade.company).isEqualTo(TestPredefinedCompanies.APPLE.symbol)
             assertThat(trade.volume).isEqualTo(bd(1000))
             assertThat(trade.price).isEqualTo(Amount.of("95.55 USD"))
             assertThat(trade.tradedAt).isEqualTo(now)

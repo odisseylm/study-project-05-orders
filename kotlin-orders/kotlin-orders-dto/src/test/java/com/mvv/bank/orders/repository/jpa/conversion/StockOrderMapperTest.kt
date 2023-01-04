@@ -62,7 +62,6 @@ class StockOrderMapperTest {
             user = testUser,
             side = DomainSide.CLIENT,
             buySellType = DomainBuySellType.BUY,
-            companySymbol = testCompany.symbol,
             company = testCompany,
             volume = bd("2000"),
             limitPrice = DomainAmount.of("40.0", DomainCurrency.USD),
@@ -79,12 +78,12 @@ class StockOrderMapperTest {
             assertThat(dtoOrder.orderType).isEqualTo(DtoOrderType.LIMIT_ORDER)
             assertThat(dtoOrder.side).isEqualTo(DtoSide.CLIENT)
             assertThat(dtoOrder.buySellType).isEqualTo(DtoBuySellType.BUY)
-            assertThat(dtoOrder.product).isEqualTo(testCompany.symbol)
+            assertThat(dtoOrder.product).isEqualTo(testCompany.symbol.value)
             assertThat(dtoOrder.volume).isEqualTo(bd("2000"))
             assertThat(dtoOrder.limitStopPrice).isEqualTo(bd("40.0"))
             assertThat(dtoOrder.priceCurrency).isEqualTo("USD")
             assertThat(dtoOrder.dailyExecutionType).isEqualTo(DtoDailyExecutionType.GTC)
-            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol)
+            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol.value)
             assertThat(dtoOrder.orderState).isEqualTo(DtoOrderState.TO_BE_PLACED)
         }.assertAll()
     }
@@ -98,7 +97,6 @@ class StockOrderMapperTest {
             user = testUser,
             side = DomainSide.CLIENT,
             buySellType = DomainBuySellType.BUY,
-            companySymbol = testCompany.symbol,
             company = testCompany,
             volume = bd("2000"),
             stopPrice = DomainAmount.of("40.0", DomainCurrency.USD),
@@ -120,11 +118,11 @@ class StockOrderMapperTest {
             assertThat(dtoOrder.orderType).isEqualTo(DtoOrderType.STOP_ORDER)
             assertThat(dtoOrder.side).isEqualTo(DtoSide.CLIENT)
             assertThat(dtoOrder.buySellType).isEqualTo(DtoBuySellType.BUY)
-            assertThat(dtoOrder.product).isEqualTo(testCompany.symbol)
+            assertThat(dtoOrder.product).isEqualTo(testCompany.symbol.value)
             assertThat(dtoOrder.volume).isEqualTo(bd("2000"))
             assertThat(dtoOrder.limitStopPrice).isEqualTo(bd("40.0"))
             assertThat(dtoOrder.dailyExecutionType).isEqualTo(DtoDailyExecutionType.GTC)
-            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol)
+            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol.value)
             assertThat(dtoOrder.orderState).isEqualTo(DtoOrderState.PLACED)
 
             assertThat(dtoOrder.priceCurrency).isEqualTo("USD")
@@ -145,7 +143,6 @@ class StockOrderMapperTest {
             user = testUser,
             side = DomainSide.CLIENT,
             buySellType = DomainBuySellType.BUY,
-            companySymbol = testCompany.symbol,
             company = testCompany,
             volume = bd("2000"),
             market = testMarket,
@@ -160,11 +157,11 @@ class StockOrderMapperTest {
             assertThat(dtoOrder.orderType).isEqualTo(DtoOrderType.MARKET_ORDER)
             assertThat(dtoOrder.side).isEqualTo(DtoSide.CLIENT)
             assertThat(dtoOrder.buySellType).isEqualTo(DtoBuySellType.BUY)
-            assertThat(dtoOrder.product).isEqualTo(testCompany.symbol)
+            assertThat(dtoOrder.product).isEqualTo(testCompany.symbol.value)
             assertThat(dtoOrder.volume).isEqualTo(bd("2000"))
             assertThat(dtoOrder.limitStopPrice).isNull()
             assertThat(dtoOrder.dailyExecutionType).isNull()
-            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol)
+            assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol.value)
             assertThat(dtoOrder.orderState).isEqualTo(DtoOrderState.PLACED)
         }.assertAll()
     }
@@ -197,12 +194,12 @@ class StockOrderMapperTest {
             orderType = DtoOrderType.LIMIT_ORDER
             side = DtoSide.CLIENT
             buySellType = DtoBuySellType.BUY
-            product = testCompany.symbol
+            product = testCompany.symbol.value
             volume = bd("2000")
             limitStopPrice = bd("40.0")
             priceCurrency = "USD"
             dailyExecutionType = DtoDailyExecutionType.GTC
-            market = testMarket.symbol
+            market = testMarket.symbol.value
             orderState = DtoOrderState.PLACED
             resultingPrice = bd("39.50")
             resultingQuoteTimestamp = testTimestamp
@@ -251,12 +248,12 @@ class StockOrderMapperTest {
             orderType = DtoOrderType.STOP_ORDER
             side = DtoSide.CLIENT
             buySellType = DtoBuySellType.SELL
-            product = testCompany.symbol
+            product = testCompany.symbol.value
             volume = bd("2000")
             limitStopPrice = bd("40.0")
             priceCurrency = "USD"
             dailyExecutionType = DtoDailyExecutionType.DAY_ONLY
-            market = testMarket.symbol
+            market = testMarket.symbol.value
             orderState = DtoOrderState.PLACED
             resultingPrice = bd("39.00")
             resultingQuoteBid = bd("39.00")
@@ -309,9 +306,9 @@ class StockOrderMapperTest {
             orderType = DtoOrderType.MARKET_ORDER
             side = DtoSide.CLIENT
             buySellType = DtoBuySellType.BUY
-            product = testCompany.symbol
+            product = testCompany.symbol.value
             volume = bd("2000")
-            market = testMarket.symbol
+            market = testMarket.symbol.value
             orderState = DtoOrderState.PLACED
             priceCurrency = "USD"
             resultingPrice = bd("39.50")
@@ -361,11 +358,11 @@ class StockOrderMapperTest {
             orderType = DtoOrderType.MARKET_ORDER
             side = DtoSide.CLIENT
             buySellType = DtoBuySellType.BUY
-            product = testCompany.symbol
+            product = testCompany.symbol.value
             volume = bd("2000")
             limitStopPrice = bd("41.0")
             priceCurrency = "USD"
-            market = testMarket.symbol
+            market = testMarket.symbol.value
             orderState = DtoOrderState.TO_BE_PLACED
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
@@ -384,11 +381,11 @@ class StockOrderMapperTest {
             orderType = DtoOrderType.MARKET_ORDER
             side = DtoSide.CLIENT
             buySellType = DtoBuySellType.BUY
-            product = testCompany.symbol
+            product = testCompany.symbol.value
             priceCurrency = "USD"
             volume = bd("2000")
             dailyExecutionType = DtoDailyExecutionType.DAY_ONLY // Not allowed
-            market = testMarket.symbol
+            market = testMarket.symbol.value
             orderState = DtoOrderState.PLACED
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
