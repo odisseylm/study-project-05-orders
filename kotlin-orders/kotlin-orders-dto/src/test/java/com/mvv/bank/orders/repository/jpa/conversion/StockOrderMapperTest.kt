@@ -1,8 +1,10 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
-import com.mvv.bank.orders.domain.*
-import com.mvv.bank.orders.domain.Amount
-import com.mvv.bank.orders.domain.Currency
+import com.mvv.bank.orders.domain.test.predefined.TestPredefinedCompanies
+import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
+import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
+import com.mvv.bank.orders.domain.of
+
 import com.mvv.bank.test.reflect.initProperty
 import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.SoftAssertions
@@ -15,6 +17,7 @@ import java.time.ZonedDateTime
 
 import com.mvv.bank.orders.domain.Amount as DomainAmount
 import com.mvv.bank.orders.domain.Currency as DomainCurrency
+import com.mvv.bank.orders.domain.StockQuote as DomainStockQuote
 
 import com.mvv.bank.orders.domain.Side as DomainSide
 import com.mvv.bank.orders.domain.OrderType as DomainOrderType
@@ -50,7 +53,7 @@ class StockOrderMapperTest {
 
 
     @Test
-    fun fxCashLimitOrder_domainToDto() {
+    fun limitOrder_domainToDto() {
 
         val domainOrder = DomainLimitOrder.create(
             id = null,
@@ -68,7 +71,6 @@ class StockOrderMapperTest {
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
-
         checkNotNull(dtoOrder)
 
         SoftAssertions().apply {
@@ -88,7 +90,7 @@ class StockOrderMapperTest {
 
 
     @Test
-    fun fxCashStopOrder_domainToDto() {
+    fun stopOrder_domainToDto() {
 
         val domainOrder = DomainStopOrder.create(
             id = 567,
@@ -102,17 +104,17 @@ class StockOrderMapperTest {
             dailyExecutionType = DomainDailyExecutionType.GTC,
             marketSymbol = testMarket.symbol,
             market = testMarket,
-            resultingQuote = StockQuote.of(
+            resultingQuote = DomainStockQuote.of(
                 testMarket, testCompany, testZonedDateTime,
-                bid = bd("39.00"), ask = bd("39.50"), Currency.USD,
+                bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD,
             ),
             orderState = DomainOrderState.PLACED,
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
-
         checkNotNull(dtoOrder)
+
         SoftAssertions().apply {
             assertThat(dtoOrder.id).isEqualTo(567)
             assertThat(dtoOrder.orderType).isEqualTo(DtoOrderType.STOP_ORDER)
@@ -152,7 +154,6 @@ class StockOrderMapperTest {
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
-
         checkNotNull(dtoOrder)
 
         SoftAssertions().apply {
@@ -209,15 +210,15 @@ class StockOrderMapperTest {
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            assertThat(domainOrder.resultingPrice).isEqualTo(Amount.of(bd("39.50"), Currency.USD))
-            assertThat(domainOrder.resultingQuote).isEqualTo(StockQuote.of(
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.50"), DomainCurrency.USD))
+            assertThat(domainOrder.resultingQuote).isEqualTo(DomainStockQuote.of(
                 testMarket, testCompany, testZonedDateTime,
-                bid = bd("39.00"), ask = bd("39.50"), Currency.USD,
+                bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD,
             ))
 
             assertThat(domainOrder).isExactlyInstanceOf(DomainLimitOrder::class.java)
             if (domainOrder is DomainLimitOrder) {
-                assertThat(domainOrder.limitPrice).isEqualTo(Amount.of(bd("40.0"), Currency.USD))
+                assertThat(domainOrder.limitPrice).isEqualTo(DomainAmount.of(bd("40.0"), DomainCurrency.USD))
                 assertThat(domainOrder.dailyExecutionType).isEqualTo(DomainDailyExecutionType.GTC)
             }
 
@@ -226,7 +227,7 @@ class StockOrderMapperTest {
 
 
     @Test
-    fun fxCashStopOrder_dtoToDomain() {
+    fun stopOrder_dtoToDomain() {
 
         val dtoOrder: DtoOrder = DtoOrder().apply {
             id = 567
@@ -265,10 +266,10 @@ class StockOrderMapperTest {
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            val quote = StockQuote(
+            val quote = DomainStockQuote(
                 testMarket.symbol, testCompany.symbol, testZonedDateTime, testDate, testTime,
-                bid = Amount.of(bd("39.00"), Currency.USD), ask = Amount.of(bd("39.50"), Currency.USD))
-            assertThat(domainOrder.resultingPrice).isEqualTo(Amount.of(bd("39.00"), Currency.USD))
+                bid = DomainAmount.of(bd("39.00"), DomainCurrency.USD), ask = DomainAmount.of(bd("39.50"), DomainCurrency.USD))
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.00"), DomainCurrency.USD))
             assertThat(domainOrder.resultingQuote).isEqualTo(quote)
 
             assertThat(domainOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
@@ -276,7 +277,7 @@ class StockOrderMapperTest {
 
             assertThat(domainOrder).isExactlyInstanceOf(DomainStopOrder::class.java)
             if (domainOrder is DomainStopOrder) {
-                assertThat(domainOrder.stopPrice).isEqualTo(Amount.of("40.0", Currency.USD))
+                assertThat(domainOrder.stopPrice).isEqualTo(DomainAmount.of("40.0", DomainCurrency.USD))
                 assertThat(domainOrder.dailyExecutionType).isEqualTo(DomainDailyExecutionType.DAY_ONLY)
             }
 
@@ -285,7 +286,7 @@ class StockOrderMapperTest {
 
 
     @Test
-    fun fxCashMarketOrder_dtoToDomain() {
+    fun marketOrder_dtoToDomain() {
 
         val dtoOrder: DtoOrder = DtoOrder().apply {
             id = 567
@@ -322,10 +323,10 @@ class StockOrderMapperTest {
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            val stockQuote = StockQuote.of(
+            val stockQuote = DomainStockQuote.of(
                 testMarket, testCompany, testZonedDateTime,
-                bid = bd("39.00"), ask = bd("39.50"), Currency.USD)
-            assertThat(domainOrder.resultingPrice).isEqualTo(Amount.of(bd("39.50"), Currency.USD))
+                bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD)
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.50"), DomainCurrency.USD))
             assertThat(domainOrder.resultingQuote).isEqualTo(stockQuote)
 
             assertThat(domainOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
@@ -338,7 +339,7 @@ class StockOrderMapperTest {
 
 
     @Test
-    fun fxCashMarketOrder_withLimitStopPrice_dtoToDomain() {
+    fun marketOrder_withLimitStopPrice_dtoToDomain() {
 
         val dtoOrder = DtoOrder().apply {
             id = null
@@ -361,7 +362,7 @@ class StockOrderMapperTest {
     }
 
     @Test
-    fun fxCashMarketOrder_withDailyExecType_dtoToDomain() {
+    fun marketOrder_withDailyExecType_dtoToDomain() {
 
         val dtoOrder: DtoOrder = DtoOrder().apply {
             id = 567

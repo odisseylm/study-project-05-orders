@@ -1,5 +1,6 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.DisplayName
@@ -17,7 +18,7 @@ class FxRateTest {
 
     @Test
     fun getMid() {
-        val rate = FxRate(
+        val rate = FxRate.of(
             market, marketZonedDateTime,
             CurrencyPair.of("EUR_USD"), bd("1.05"), bd("1.07"))
         assertThat(rate.mid).isEqualTo(bd("1.06"))

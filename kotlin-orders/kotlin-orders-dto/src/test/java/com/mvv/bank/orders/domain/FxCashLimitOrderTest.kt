@@ -1,5 +1,8 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
+import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
+
 import com.mvv.bank.orders.domain.Currency.Companion.EUR
 import com.mvv.bank.orders.domain.Currency.Companion.UAH
 import org.assertj.core.api.Assertions.assertThatCode
@@ -38,7 +41,7 @@ class FxCashLimitOrderTest {
             market = market,
         )
 
-        val rate = FxRate(
+        val rate = FxRate.of(
             market, zonedDateTime, CurrencyPair.of("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),

@@ -35,16 +35,18 @@ data class FxRate (
     // other cross-currencies, e.g. CHF/JPY?)
     //boolean isMarketConvention();
 ) {
-    constructor(market: Market, dateTime: ZonedDateTime, currencyPair: CurrencyPair, bid: BigDecimal, ask: BigDecimal)
-            : this(
+    override fun toString(): String = "$currencyPair $mid($bid/$ask)"
+
+    companion object // only for writing extension functions
+}
+
+fun FxRate.Companion.of(market: Market, dateTime: ZonedDateTime, currencyPair: CurrencyPair, bid: BigDecimal, ask: BigDecimal) =
+    FxRate(
         marketSymbol = market.symbol, dateTime = dateTime,
         marketDate = dateTime.withZoneSameInstant(market.zoneId).toLocalDate(),
         marketTime = dateTime.withZoneSameInstant(market.zoneId).toLocalTime(),
         currencyPair = currencyPair, bid = bid, ask = ask
     )
-
-    override fun toString(): String = "$currencyPair $mid($bid/$ask)"
-}
 
 val FxRate.mid: BigDecimal get() = (bid + ask) / BigDecimal.valueOf(2) // math context is not needed there (at least now)
 val FxRate.spread: BigDecimal get() = ask - bid

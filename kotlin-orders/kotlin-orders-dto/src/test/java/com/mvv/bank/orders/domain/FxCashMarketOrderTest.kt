@@ -1,5 +1,8 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
+import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
+
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal as bd
@@ -35,34 +38,19 @@ class FxCashMarketOrderTest {
             assertThat(order.orderType).isEqualTo(OrderType.MARKET_ORDER)
 
             assertThat(
-                order.toExecute(
-                    FxRate(
-                        market, zonedDateTime, CurrencyPair.EUR_USD,
-                        bid = bd("1.1"), ask = bd("1.15"),
-                    )
-                )
-            )
-                .isTrue
+                order.toExecute(FxRate.of(market, zonedDateTime, CurrencyPair.EUR_USD, bid = bd("1.1"), ask = bd("1.15")))
+                ).isTrue
 
             assertThatCode {
-                order.toExecute(
-                    FxRate(
-                        market, zonedDateTime, CurrencyPair.EUR_UAH,
-                        bid = bd("1.1"), ask = bd("1.15"),
-                    )
-                )
-            }
+                order.toExecute(FxRate.of(market, zonedDateTime, CurrencyPair.EUR_UAH, bid = bd("1.1"), ask = bd("1.15")))
+                }
                 .hasMessage("FX rate EUR_UAH does not suite order currencies (with price currency USD).")
                 .isExactlyInstanceOf(IllegalStateException::class.java)
 
             assertThatCode {
                 order.toExecute(
-                    FxRate(
-                        market, zonedDateTime, CurrencyPair.USD_UAH,
-                        bid = bd("1.1"), ask = bd("1.15"),
-                    )
-                )
-            }
+                    FxRate.of(market, zonedDateTime, CurrencyPair.USD_UAH, bid = bd("1.1"), ask = bd("1.15")))
+                }
                 .hasMessage("FX rate currencies UAH_USD does not suite order currencies USD_EUR.")
                 .isExactlyInstanceOf(IllegalStateException::class.java)
 

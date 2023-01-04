@@ -1,23 +1,34 @@
 package com.mvv.bank.orders.rest.conversion
 
-import com.mvv.bank.orders.domain.*
+import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
+import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
+import com.mvv.bank.orders.domain.FxRateAsQuote
+import com.mvv.bank.orders.domain.of
+
 import com.mvv.bank.test.reflect.initProperty
 import org.assertj.core.api.Assertions.assertThatCode
 
-import com.mvv.bank.orders.domain.OrderType as DomainOrderType
-import com.mvv.bank.orders.domain.Side as DomainSide
-import com.mvv.bank.orders.domain.BuySellType as DomainBuySellType
-import com.mvv.bank.orders.domain.OrderState as DomainOrderState
-import com.mvv.bank.orders.domain.DailyExecutionType as DomainDailyExecutionType
+import com.mvv.bank.orders.domain.Amount as DomainAmount
 import com.mvv.bank.orders.domain.FxRate as DomainFxRate
+import com.mvv.bank.orders.domain.Currency as DomainCurrency
+import com.mvv.bank.orders.domain.CurrencyPair as DomainCurrencyPair
 
-import com.mvv.bank.orders.rest.OrderType as DtoOrderType
+import com.mvv.bank.orders.domain.Side as DomainSide
+import com.mvv.bank.orders.domain.OrderType as DomainOrderType
+import com.mvv.bank.orders.domain.OrderState as DomainOrderState
+import com.mvv.bank.orders.domain.BuySellType as DomainBuySellType
+import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
+import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainLimitOrder
+import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainMarketOrder
+import com.mvv.bank.orders.domain.DailyExecutionType as DomainDailyExecutionType
+
 import com.mvv.bank.orders.rest.Side as DtoSide
-import com.mvv.bank.orders.rest.BuySellType as DtoBuySellType
-import com.mvv.bank.orders.rest.OrderState as DtoOrderState
-import com.mvv.bank.orders.rest.DailyExecutionType as DtoDailyExecutionType
 import com.mvv.bank.orders.rest.FxRate as DtoFxRate
-import com.mvv.bank.orders.rest.FxOrder as DtoFxOrder
+import com.mvv.bank.orders.rest.FxOrder as DtoOrder
+import com.mvv.bank.orders.rest.OrderType as DtoOrderType
+import com.mvv.bank.orders.rest.OrderState as DtoOrderState
+import com.mvv.bank.orders.rest.BuySellType as DtoBuySellType
+import com.mvv.bank.orders.rest.DailyExecutionType as DtoDailyExecutionType
 
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
@@ -37,30 +48,29 @@ class FxOrderMapperTest {
     private val testZonedDateTime = ZonedDateTime.of(testDateTime, testMarket.zoneId)
     private val testUser = TestPredefinedUsers.USER1
 
-    private val fxOrderMapper = Mappers.getMapper(FxOrderMapper::class.java).clone()
+    private val orderMapper = Mappers.getMapper(FxOrderMapper::class.java).clone()
         .also { initProperty(it, "marketService", TestPredefinedMarkets) }
 
 
     @Test
-    fun fxCashLimitOrder_domainToDto() {
+    fun limitOrder_domainToDto() {
 
-        val domainOrder = FxCashLimitOrder.create(
+        val domainOrder = DomainLimitOrder.create(
             id = null,
             user = testUser,
             side = DomainSide.CLIENT,
             buySellType = DomainBuySellType.BUY,
-            buyCurrency = Currency.USD,
-            sellCurrency = Currency.UAH,
+            buyCurrency = DomainCurrency.USD,
+            sellCurrency = DomainCurrency.UAH,
             volume = bd("2000"),
-            limitPrice = Amount.of("40.0", Currency.UAH),
-            dailyExecutionType = com.mvv.bank.orders.domain.DailyExecutionType.GTC,
+            limitPrice = DomainAmount.of("40.0", DomainCurrency.UAH),
+            dailyExecutionType = DomainDailyExecutionType.GTC,
             marketSymbol = testMarket.symbol,
             market = testMarket,
-            orderState = com.mvv.bank.orders.domain.OrderState.TO_BE_PLACED,
+            orderState = DomainOrderState.TO_BE_PLACED,
         )
 
-        val dtoOrder = fxOrderMapper.toDto(domainOrder)
-
+        val dtoOrder = orderMapper.toDto(domainOrder)
         checkNotNull(dtoOrder)
 
         SoftAssertions().apply {
@@ -80,31 +90,31 @@ class FxOrderMapperTest {
 
 
     @Test
-    fun fxCashStopOrder_domainToDto() {
+    fun stopOrder_domainToDto() {
 
-        val domainOrder = FxCashStopOrder.create(
+        val domainOrder = DomainStopOrder.create(
             id = 567,
             user = testUser,
             side = DomainSide.CLIENT,
             buySellType = DomainBuySellType.BUY,
-            buyCurrency = Currency.USD,
-            sellCurrency = Currency.UAH,
+            buyCurrency = DomainCurrency.USD,
+            sellCurrency = DomainCurrency.UAH,
             volume = bd("2000"),
-            stopPrice = Amount.of("40.0", Currency.UAH),
+            stopPrice = DomainAmount.of("40.0", DomainCurrency.UAH),
             dailyExecutionType = DomainDailyExecutionType.GTC,
             marketSymbol = testMarket.symbol,
             market = testMarket,
-            resultingRate = DomainFxRate(
-                testMarket, testZonedDateTime, CurrencyPair.USD_UAH,
+            resultingRate = DomainFxRate.of(
+                testMarket, testZonedDateTime, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50"),
             ),
-            orderState = com.mvv.bank.orders.domain.OrderState.PLACED,
+            orderState = DomainOrderState.PLACED,
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
         )
 
-        val dtoOrder = fxOrderMapper.toDto(domainOrder)
-
+        val dtoOrder = orderMapper.toDto(domainOrder)
         checkNotNull(dtoOrder)
+
         SoftAssertions().apply {
             assertThat(dtoOrder.id).isEqualTo(567)
             assertThat(dtoOrder.orderType).isEqualTo(DtoOrderType.STOP_ORDER)
@@ -119,30 +129,30 @@ class FxOrderMapperTest {
             assertThat(dtoOrder.orderState).isEqualTo(DtoOrderState.PLACED)
 
             assertThat(dtoOrder.resultingRate).isEqualTo(
-                DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime, CurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))     )
+                DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime,
+                    DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50")))
             assertThat(dtoOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
         }.assertAll()
     }
 
 
     @Test
-    fun fxCashMarketOrder_domainToDto() {
+    fun marketOrder_domainToDto() {
 
-        val domainOrder = FxCashMarketOrder.create(
+        val domainOrder = DomainMarketOrder.create(
             id = 456,
             user = testUser,
             side = DomainSide.CLIENT,
             buySellType = DomainBuySellType.BUY,
-            buyCurrency = Currency.USD,
-            sellCurrency = Currency.UAH,
+            buyCurrency = DomainCurrency.USD,
+            sellCurrency = DomainCurrency.UAH,
             volume = bd("2000"),
             marketSymbol = testMarket.symbol,
             market = testMarket,
             orderState = DomainOrderState.PLACED,
         )
 
-        val dtoOrder = fxOrderMapper.toDto(domainOrder)
-
+        val dtoOrder = orderMapper.toDto(domainOrder)
         checkNotNull(dtoOrder)
 
         SoftAssertions().apply {
@@ -163,9 +173,9 @@ class FxOrderMapperTest {
 
 
     @Test
-    fun fxCashLimitOrder_dtoToDomain() {
+    fun limitOrder_dtoToDomain() {
 
-        val dtoOrder: DtoFxOrder = DtoFxOrder().apply {
+        val dtoOrder: DtoOrder = DtoOrder().apply {
             id = 567
             user = testUser.value
             orderType = DtoOrderType.LIMIT_ORDER
@@ -179,13 +189,13 @@ class FxOrderMapperTest {
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
             resultingRate = DtoFxRate(testMarket.symbol,
-                testZonedDateTime, testDate, testTime, CurrencyPair.USD_UAH,
+                testZonedDateTime, testDate, testTime, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
         }
 
 
-        val domainOrder: AbstractFxCashOrder = fxOrderMapper.toDomain(dtoOrder)
+        val domainOrder = orderMapper.toDomain(dtoOrder)
 
         SoftAssertions().apply {
             assertThat(domainOrder.id).isEqualTo(567)
@@ -193,24 +203,24 @@ class FxOrderMapperTest {
             assertThat(domainOrder.side).isEqualTo(DomainSide.CLIENT)
             assertThat(domainOrder.orderType).isEqualTo(DomainOrderType.LIMIT_ORDER)
             assertThat(domainOrder.buySellType).isEqualTo(DomainBuySellType.BUY)
-            assertThat(domainOrder.buyCurrency).isEqualTo(Currency.USD)
-            assertThat(domainOrder.sellCurrency).isEqualTo(Currency.UAH)
+            assertThat(domainOrder.buyCurrency).isEqualTo(DomainCurrency.USD)
+            assertThat(domainOrder.sellCurrency).isEqualTo(DomainCurrency.UAH)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
             assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            val rate = DomainFxRate(
-                testMarket, testZonedDateTime, CurrencyPair.USD_UAH,
+            val rate = DomainFxRate.of(
+                testMarket, testZonedDateTime, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50")
             )
             assertThat(domainOrder.resultingRate).isEqualTo(rate)
             assertThat(domainOrder.resultingQuote).isEqualTo(FxRateAsQuote(rate, domainOrder.priceCurrency))
-            assertThat(domainOrder.resultingPrice).isEqualTo(Amount.of(bd("39.00"), Currency.UAH))
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.00"), DomainCurrency.UAH))
 
-            assertThat(domainOrder).isExactlyInstanceOf(FxCashLimitOrder::class.java)
-            if (domainOrder is FxCashLimitOrder) {
-                assertThat(domainOrder.limitPrice).isEqualTo(Amount.of("40.0", Currency.UAH))
+            assertThat(domainOrder).isExactlyInstanceOf(DomainLimitOrder::class.java)
+            if (domainOrder is DomainLimitOrder) {
+                assertThat(domainOrder.limitPrice).isEqualTo(DomainAmount.of("40.0", DomainCurrency.UAH))
                 assertThat(domainOrder.dailyExecutionType).isEqualTo(DomainDailyExecutionType.GTC)
             }
 
@@ -219,9 +229,9 @@ class FxOrderMapperTest {
 
 
     @Test
-    fun fxCashStopOrder_dtoToDomain() {
+    fun stopOrder_dtoToDomain() {
 
-        val dtoOrder = DtoFxOrder().apply {
+        val dtoOrder = DtoOrder().apply {
             id = 567
             user = testUser.value
             orderType = DtoOrderType.STOP_ORDER
@@ -235,13 +245,13 @@ class FxOrderMapperTest {
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
             resultingRate = DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime,
-                CurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
+                DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             expiredAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
         }
 
 
-        val domainOrder: AbstractFxCashOrder = fxOrderMapper.toDomain(dtoOrder) // as AbstractFxCashOrder)
+        val domainOrder = orderMapper.toDomain(dtoOrder)
 
         SoftAssertions().apply {
             assertThat(domainOrder.id).isEqualTo(567)
@@ -249,27 +259,27 @@ class FxOrderMapperTest {
             assertThat(domainOrder.side).isEqualTo(DomainSide.CLIENT)
             assertThat(domainOrder.orderType).isEqualTo(DomainOrderType.STOP_ORDER)
             assertThat(domainOrder.buySellType).isEqualTo(DomainBuySellType.BUY)
-            assertThat(domainOrder.buyCurrency).isEqualTo(Currency.USD)
-            assertThat(domainOrder.sellCurrency).isEqualTo(Currency.UAH)
+            assertThat(domainOrder.buyCurrency).isEqualTo(DomainCurrency.USD)
+            assertThat(domainOrder.sellCurrency).isEqualTo(DomainCurrency.UAH)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
             assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            val rate = DomainFxRate(
-                testMarket, testZonedDateTime, CurrencyPair.USD_UAH,
+            val rate = DomainFxRate.of(
+                testMarket, testZonedDateTime, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50")
             )
             assertThat(domainOrder.resultingRate).isEqualTo(rate)
             assertThat(domainOrder.resultingQuote).isEqualTo(FxRateAsQuote(rate, domainOrder.priceCurrency))
-            assertThat(domainOrder.resultingPrice).isEqualTo(Amount.of(bd("39.00"), Currency.UAH))
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.00"), DomainCurrency.UAH))
 
             assertThat(domainOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
             assertThat(domainOrder.expiredAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]"))
 
-            assertThat(domainOrder).isExactlyInstanceOf(FxCashStopOrder::class.java)
-            if (domainOrder is FxCashStopOrder) {
-                assertThat(domainOrder.stopPrice).isEqualTo(Amount.of("40.0", Currency.UAH))
+            assertThat(domainOrder).isExactlyInstanceOf(DomainStopOrder::class.java)
+            if (domainOrder is DomainStopOrder) {
+                assertThat(domainOrder.stopPrice).isEqualTo(DomainAmount.of("40.0", DomainCurrency.UAH))
                 assertThat(domainOrder.dailyExecutionType).isEqualTo(DomainDailyExecutionType.DAY_ONLY)
             }
 
@@ -278,9 +288,9 @@ class FxOrderMapperTest {
 
 
     @Test
-    fun fxCashMarketOrder_dtoToDomain() {
+    fun marketOrder_dtoToDomain() {
 
-        val dtoOrder: DtoFxOrder = DtoFxOrder().apply {
+        val dtoOrder: DtoOrder = DtoOrder().apply {
             id = 567
             user = testUser.value
             orderType = DtoOrderType.MARKET_ORDER
@@ -292,13 +302,13 @@ class FxOrderMapperTest {
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
             resultingRate = DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime,
-                CurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
+                DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
         }
 
 
-        val domainOrder: AbstractFxCashOrder = fxOrderMapper.toDomain(dtoOrder) // as AbstractFxCashOrder)
+        val domainOrder = orderMapper.toDomain(dtoOrder)
 
         SoftAssertions().apply {
             assertThat(domainOrder.id).isEqualTo(567)
@@ -306,33 +316,33 @@ class FxOrderMapperTest {
             assertThat(domainOrder.side).isEqualTo(DomainSide.CLIENT)
             assertThat(domainOrder.orderType).isEqualTo(DomainOrderType.MARKET_ORDER)
             assertThat(domainOrder.buySellType).isEqualTo(DomainBuySellType.BUY)
-            assertThat(domainOrder.buyCurrency).isEqualTo(Currency.USD)
-            assertThat(domainOrder.sellCurrency).isEqualTo(Currency.UAH)
+            assertThat(domainOrder.buyCurrency).isEqualTo(DomainCurrency.USD)
+            assertThat(domainOrder.sellCurrency).isEqualTo(DomainCurrency.UAH)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
             assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            val rate = DomainFxRate(
-                testMarket, testZonedDateTime, CurrencyPair.USD_UAH,
+            val rate = DomainFxRate.of(
+                testMarket, testZonedDateTime, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50")
             )
             assertThat(domainOrder.resultingRate).isEqualTo(rate)
             assertThat(domainOrder.resultingQuote).isEqualTo(FxRateAsQuote(rate, domainOrder.priceCurrency))
-            assertThat(domainOrder.resultingPrice).isEqualTo(Amount.of(bd("39.00"), Currency.UAH))
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.00"), DomainCurrency.UAH))
 
             assertThat(domainOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
             assertThat(domainOrder.executedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]"))
 
-            assertThat(domainOrder).isExactlyInstanceOf(FxCashMarketOrder::class.java)
+            assertThat(domainOrder).isExactlyInstanceOf(DomainMarketOrder::class.java)
 
         }.assertAll()
     }
 
     @Test
-    fun fxCashMarketOrder_withLimitStopPrice_dtoToDomain() {
+    fun marketOrder_withLimitStopPrice_dtoToDomain() {
 
-        val dtoOrder = DtoFxOrder().apply {
+        val dtoOrder = DtoOrder().apply {
             id = 567
             user = TestPredefinedUsers.USER1.value
             orderType = DtoOrderType.MARKET_ORDER
@@ -346,19 +356,19 @@ class FxOrderMapperTest {
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
             resultingRate = DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime,
-                CurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
+                DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
         }
 
-        assertThatCode { fxOrderMapper.toDomain(dtoOrder) }
+        assertThatCode { orderMapper.toDomain(dtoOrder) }
             .hasMessage("Market price cannot have limit/stop price (41.0/42.0).")
     }
 
     @Test
-    fun fxCashMarketOrder_withDailyExecType_dtoToDomain() {
+    fun marketOrder_withDailyExecType_dtoToDomain() {
 
-        val dtoOrder: DtoFxOrder = DtoFxOrder().apply {
+        val dtoOrder: DtoOrder = DtoOrder().apply {
             id = 567
             user = TestPredefinedUsers.USER1.value
             orderType = DtoOrderType.MARKET_ORDER
@@ -371,12 +381,12 @@ class FxOrderMapperTest {
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
             resultingRate = DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime,
-                CurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
+                DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
         }
 
-        assertThatCode { fxOrderMapper.toDomain(dtoOrder) }
+        assertThatCode { orderMapper.toDomain(dtoOrder) }
             .hasMessage("Market price cannot have daily execution type (DAY_ONLY).")
     }
 
