@@ -45,7 +45,7 @@ class FxOrderMapperTest {
     private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val testTime = LocalTime.of(13, 5)
     private val testDateTime = LocalDateTime.of(testDate, testTime)
-    private val testZonedDateTime = ZonedDateTime.of(testDateTime, testMarket.zoneId)
+    private val testTimestamp = ZonedDateTime.of(testDateTime, testMarket.zoneId)
     private val testUser = TestPredefinedUsers.USER1
 
     private val orderMapper = Mappers.getMapper(FxOrderMapper::class.java).clone()
@@ -104,7 +104,7 @@ class FxOrderMapperTest {
             dailyExecutionType = DomainDailyExecutionType.GTC,
             market = testMarket,
             resultingRate = DomainFxRate.of(
-                testMarket, testZonedDateTime, DomainCurrencyPair.USD_UAH,
+                testMarket, testTimestamp, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50"),
             ),
             orderState = DomainOrderState.PLACED,
@@ -128,7 +128,7 @@ class FxOrderMapperTest {
             assertThat(dtoOrder.orderState).isEqualTo(DtoOrderState.PLACED)
 
             assertThat(dtoOrder.resultingRate).isEqualTo(
-                DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime,
+                DtoFxRate(testMarket.symbol, testTimestamp, testDate, testTime,
                     DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50")))
             assertThat(dtoOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
         }.assertAll()
@@ -187,7 +187,7 @@ class FxOrderMapperTest {
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
             resultingRate = DtoFxRate(testMarket.symbol,
-                testZonedDateTime, testDate, testTime, DomainCurrencyPair.USD_UAH,
+                testTimestamp, testDate, testTime, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
         }
@@ -208,7 +208,7 @@ class FxOrderMapperTest {
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
             val rate = DomainFxRate.of(
-                testMarket, testZonedDateTime, DomainCurrencyPair.USD_UAH,
+                testMarket, testTimestamp, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50")
             )
             assertThat(domainOrder.resultingRate).isEqualTo(rate)
@@ -241,7 +241,7 @@ class FxOrderMapperTest {
             dailyExecutionType = DtoDailyExecutionType.DAY_ONLY
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
-            resultingRate = DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime,
+            resultingRate = DtoFxRate(testMarket.symbol, testTimestamp, testDate, testTime,
                 DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             expiredAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
@@ -263,7 +263,7 @@ class FxOrderMapperTest {
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
             val rate = DomainFxRate.of(
-                testMarket, testZonedDateTime, DomainCurrencyPair.USD_UAH,
+                testMarket, testTimestamp, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50")
             )
             assertThat(domainOrder.resultingRate).isEqualTo(rate)
@@ -297,7 +297,7 @@ class FxOrderMapperTest {
             volume = bd("2000")
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
-            resultingRate = DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime,
+            resultingRate = DtoFxRate(testMarket.symbol, testTimestamp, testDate, testTime,
                 DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
@@ -319,7 +319,7 @@ class FxOrderMapperTest {
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
             val rate = DomainFxRate.of(
-                testMarket, testZonedDateTime, DomainCurrencyPair.USD_UAH,
+                testMarket, testTimestamp, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50")
             )
             assertThat(domainOrder.resultingRate).isEqualTo(rate)
@@ -350,7 +350,7 @@ class FxOrderMapperTest {
             stopPrice = bd("42.0")
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
-            resultingRate = DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime,
+            resultingRate = DtoFxRate(testMarket.symbol, testTimestamp, testDate, testTime,
                 DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
@@ -375,7 +375,7 @@ class FxOrderMapperTest {
             dailyExecutionType = DtoDailyExecutionType.DAY_ONLY // Not allowed
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
-            resultingRate = DtoFxRate(testMarket.symbol, testZonedDateTime, testDate, testTime,
+            resultingRate = DtoFxRate(testMarket.symbol, testTimestamp, testDate, testTime,
                 DomainCurrencyPair.USD_UAH, bid = bd("39.00"), ask = bd("39.50"))
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")

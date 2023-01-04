@@ -50,7 +50,7 @@ internal class FxRateMapperTest {
     private val testMarket = TestPredefinedMarkets.KYIV1
     private val testDate = LocalDate.now()
     private val testTime = LocalTime.now()
-    private val testZonedDateTime = ZonedDateTime.of(testDate, testTime, testMarket.zoneId)
+    private val testTimestamp = ZonedDateTime.of(testDate, testTime, testMarket.zoneId)
 
     @Test
     fun toDto() {
@@ -61,7 +61,7 @@ internal class FxRateMapperTest {
             assertThat(mapper).isNotNull
 
             val dto = mapper.toDto(
-                DomainFxRate.of(testMarket, testZonedDateTime, CurrencyPair.EUR_USD, bid = bd("1.1"), ask = bd("1.2")))
+                DomainFxRate.of(testMarket, testTimestamp, CurrencyPair.EUR_USD, bid = bd("1.1"), ask = bd("1.2")))
 
             assertThat(dto).isNotNull
 
@@ -71,7 +71,7 @@ internal class FxRateMapperTest {
             assertThat(dto.market).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(dto.marketDate).isNotNull.isEqualTo(testDate)
             assertThat(dto.marketTime).isNotNull.isEqualTo(testTime)
-            assertThat(dto.timestamp).isNotNull.isEqualTo(testZonedDateTime)
+            assertThat(dto.timestamp).isNotNull.isEqualTo(testTimestamp)
             assertThat(dto.bid).isEqualTo(bd("1.1"))
             assertThat(dto.ask).isEqualTo(bd("1.2"))
 
@@ -89,7 +89,7 @@ internal class FxRateMapperTest {
             val domainObj = mapper.fromDto(
                 JpaFxRate().apply {
                     market = testMarket.symbol
-                    timestamp  = testZonedDateTime
+                    timestamp  = testTimestamp
                     marketDate = testDate
                     marketTime = testTime
                     cur1 = "EUR"
@@ -106,7 +106,7 @@ internal class FxRateMapperTest {
             assertThat(domainObj.market).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainObj.marketDate).isNotNull.isEqualTo(testDate)
             assertThat(domainObj.marketTime).isNotNull.isEqualTo(testTime)
-            assertThat(domainObj.timestamp).isNotNull.isEqualTo(testZonedDateTime)
+            assertThat(domainObj.timestamp).isNotNull.isEqualTo(testTimestamp)
             assertThat(domainObj.bid).isEqualTo(bd("1.1"))
             assertThat(domainObj.ask).isEqualTo(bd("1.2"))
 

@@ -10,17 +10,15 @@ import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal as bd
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
 
 
 class FxCashStopOrderTest {
-    private val market = TestPredefinedMarkets.KYIV1
-    private val date = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
-    private val time = LocalTime.of(13, 5)
-    private val dateTime = LocalDateTime.of(date, time)
-    private val zonedDateTime = ZonedDateTime.of(dateTime, market.zoneId)
+    private val testMarket = TestPredefinedMarkets.KYIV1
+    private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
+    private val testTime = LocalTime.of(13, 5)
+    private val testTimestamp = ZonedDateTime.of(testDate, testTime, testMarket.zoneId)
     private val testUser = TestPredefinedUsers.USER1
 
     @Test
@@ -37,7 +35,7 @@ class FxCashStopOrderTest {
             volume = bd("1000"),
             stopPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
-            market = market,
+            market = testMarket,
         )
 
         SoftAssertions().apply {
@@ -45,7 +43,7 @@ class FxCashStopOrderTest {
             assertThat(order.orderType).isEqualTo(OrderType.STOP_ORDER)
 
             val rate = FxRate.of(
-                market, zonedDateTime, CurrencyPair.of("EUR_UAH"),
+                testMarket, testTimestamp, CurrencyPair.of("EUR_UAH"),
                 // In Foreign Exchange:
                 //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
                 //  ask - price of client 'buy'  (and dealer/bank 'sell')
@@ -102,11 +100,11 @@ class FxCashStopOrderTest {
             volume = bd("1000"),
             stopPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
-            market = market,
+            market = testMarket,
         )
 
         val rate = FxRate.of(
-            market, zonedDateTime, CurrencyPair.of("EUR_UAH"),
+            testMarket, testTimestamp, CurrencyPair.of("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')

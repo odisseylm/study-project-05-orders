@@ -10,16 +10,15 @@ import java.time.*
 
 
 class FxRateTest {
-    private val market = TestPredefinedMarkets.KYIV1
-    private val marketDate = LocalDate.of(2022, 12, 19)
-    private val marketTime = LocalTime.of(1, 2, 3)
-    private val marketDateTime = LocalDateTime.of(marketDate, marketTime)
-    private val marketZonedDateTime = ZonedDateTime.of(marketDateTime, market.zoneId)
+    private val testMarket = TestPredefinedMarkets.KYIV1
+    private val testMarketDate = LocalDate.of(2022, 12, 19)
+    private val testMarketTime = LocalTime.of(1, 2, 3)
+    private val marketZonedDateTime = ZonedDateTime.of(testMarketDate, testMarketTime, testMarket.zoneId)
 
     @Test
     fun getMid() {
         val rate = FxRate.of(
-            market, marketZonedDateTime,
+            testMarket, marketZonedDateTime,
             CurrencyPair.of("EUR_USD"), bd("1.05"), bd("1.07"))
         assertThat(rate.mid).isEqualTo(bd("1.06"))
     }
@@ -27,7 +26,7 @@ class FxRateTest {
     @Test
     fun getSpread() {
         val rate = FxRate(
-            market.symbol, marketZonedDateTime, marketDate, marketTime,
+            testMarket.symbol, marketZonedDateTime, testMarketDate, testMarketTime,
             CurrencyPair.of("EUR_USD"), bd("1.05"), bd("1.07"))
         assertThat(rate.spread).isEqualTo(bd("0.02"))
     }

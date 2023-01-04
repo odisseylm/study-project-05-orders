@@ -8,16 +8,15 @@ import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal as bd
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
 
 
 class StockLimitOrderTest {
-    private val market = TestPredefinedMarkets.KYIV1
-    private val date = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
-    private val time = LocalTime.of(13, 5)
-    private val dateTime = LocalDateTime.of(date, time)
+    private val testMarket = TestPredefinedMarkets.KYIV1
+    private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
+    private val testTime = LocalTime.of(13, 5)
+    private val testTimestamp = ZonedDateTime.of(testDate, testTime, testMarket.zoneId)
     private val testUser = TestPredefinedUsers.USER1
     private val testCompany = TestPredefinedCompanies.APPLE
 
@@ -41,14 +40,14 @@ class StockLimitOrderTest {
             volume = bd("1000"),
             limitPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.DAY_ONLY,
-            market = market,
+            market = testMarket,
         )
 
         val quote = StockQuote(
-            market = market.symbol,
-            marketDate = date,
-            marketTime = time,
-            timestamp = ZonedDateTime.of(dateTime, market.zoneId),
+            market = testMarket.symbol,
+            marketDate = testDate,
+            marketTime = testTime,
+            timestamp = testTimestamp ,
             product = "AAPL",
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
@@ -101,14 +100,14 @@ class StockLimitOrderTest {
             volume = bd("1000"),
             limitPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.GTC,
-            market = market,
+            market = testMarket,
         )
 
         val quote = StockQuote(
-            market = market.symbol,
-            timestamp = ZonedDateTime.of(dateTime, market.zoneId),
-            marketDate = date,
-            marketTime = time,
+            market = testMarket.symbol,
+            timestamp = testTimestamp,
+            marketDate = testDate,
+            marketTime = testTime,
             product = "AAPL",
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),

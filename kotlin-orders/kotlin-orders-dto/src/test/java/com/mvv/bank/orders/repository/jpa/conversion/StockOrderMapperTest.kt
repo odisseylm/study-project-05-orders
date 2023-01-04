@@ -44,7 +44,7 @@ class StockOrderMapperTest {
     private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val testTime = LocalTime.of(13, 5)
     private val testDateTime = LocalDateTime.of(testDate, testTime)
-    private val testZonedDateTime = ZonedDateTime.of(testDateTime, testMarket.zoneId)
+    private val testTimestamp = ZonedDateTime.of(testDateTime, testMarket.zoneId)
     private val testCompany = TestPredefinedCompanies.APPLE
     private val testUser = TestPredefinedUsers.USER1
 
@@ -105,7 +105,7 @@ class StockOrderMapperTest {
             dailyExecutionType = DomainDailyExecutionType.GTC,
             market = testMarket,
             resultingQuote = DomainStockQuote.of(
-                testMarket, testCompany, testZonedDateTime,
+                testMarket, testCompany, testTimestamp,
                 bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD,
             ),
             orderState = DomainOrderState.PLACED,
@@ -129,7 +129,7 @@ class StockOrderMapperTest {
 
             assertThat(dtoOrder.priceCurrency).isEqualTo("USD")
             assertThat(dtoOrder.resultingPrice).isEqualTo(bd("39.50"))
-            assertThat(dtoOrder.resultingQuoteTimestamp).isEqualTo(testZonedDateTime)
+            assertThat(dtoOrder.resultingQuoteTimestamp).isEqualTo(testTimestamp)
             assertThat(dtoOrder.resultingQuoteBid).isEqualTo(bd("39.00"))
             assertThat(dtoOrder.resultingQuoteAsk).isEqualTo(bd("39.50"))
             assertThat(dtoOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
@@ -205,7 +205,7 @@ class StockOrderMapperTest {
             market = testMarket.symbol
             orderState = DtoOrderState.PLACED
             resultingPrice = bd("39.50")
-            resultingQuoteTimestamp = testZonedDateTime
+            resultingQuoteTimestamp = testTimestamp
             resultingQuoteBid = bd("39.00")
             resultingQuoteAsk = bd("39.50")
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
@@ -228,7 +228,7 @@ class StockOrderMapperTest {
 
             assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.50"), DomainCurrency.USD))
             assertThat(domainOrder.resultingQuote).isEqualTo(DomainStockQuote.of(
-                testMarket, testCompany, testZonedDateTime,
+                testMarket, testCompany, testTimestamp,
                 bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD,
             ))
 
@@ -261,7 +261,7 @@ class StockOrderMapperTest {
             resultingPrice = bd("39.00")
             resultingQuoteBid = bd("39.00")
             resultingQuoteAsk = bd("39.50")
-            resultingQuoteTimestamp = testZonedDateTime
+            resultingQuoteTimestamp = testTimestamp
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             expiredAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
         }
@@ -282,7 +282,7 @@ class StockOrderMapperTest {
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
             val quote = DomainStockQuote(
-                testMarket.symbol, testCompany.symbol, testZonedDateTime, testDate, testTime,
+                testMarket.symbol, testCompany.symbol, testTimestamp, testDate, testTime,
                 bid = DomainAmount.of(bd("39.00"), DomainCurrency.USD), ask = DomainAmount.of(bd("39.50"), DomainCurrency.USD))
             assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.00"), DomainCurrency.USD))
             assertThat(domainOrder.resultingQuote).isEqualTo(quote)
@@ -317,7 +317,7 @@ class StockOrderMapperTest {
             resultingPrice = bd("39.50")
             resultingQuoteBid = bd("39.00")
             resultingQuoteAsk = bd("39.50")
-            resultingQuoteTimestamp = testZonedDateTime
+            resultingQuoteTimestamp = testTimestamp
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
             executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
         }
@@ -338,7 +338,7 @@ class StockOrderMapperTest {
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
             val stockQuote = DomainStockQuote.of(
-                testMarket, testCompany, testZonedDateTime,
+                testMarket, testCompany, testTimestamp,
                 bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD)
             assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.50"), DomainCurrency.USD))
             assertThat(domainOrder.resultingQuote).isEqualTo(stockQuote)

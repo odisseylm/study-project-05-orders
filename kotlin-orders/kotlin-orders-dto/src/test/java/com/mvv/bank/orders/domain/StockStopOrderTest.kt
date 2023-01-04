@@ -16,7 +16,7 @@ class StockStopOrderTest {
     private val testMarket = TestPredefinedMarkets.KYIV1
     private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val testTime = LocalTime.of(13, 5)
-    private val testZonedDateTime = ZonedDateTime.of(testDate, testTime, testMarket.zoneId)
+    private val testTimestamp = ZonedDateTime.of(testDate, testTime, testMarket.zoneId)
     private val testCompany = TestPredefinedCompanies.APPLE
     private val testUser = TestPredefinedUsers.USER1
 
@@ -44,7 +44,7 @@ class StockStopOrderTest {
         )
 
         val quote = StockQuote.of(
-            testMarket, testCompany, testZonedDateTime,
+            testMarket, testCompany, testTimestamp,
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
@@ -99,7 +99,7 @@ class StockStopOrderTest {
         )
 
         val quote = StockQuote.of(
-            testMarket, testCompany, testZonedDateTime,
+            testMarket, testCompany, testTimestamp,
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
