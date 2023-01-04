@@ -50,6 +50,7 @@ class FxOrderMapperTest {
 
     private val orderMapper = Mappers.getMapper(FxOrderMapper::class.java).clone()
         .also { initProperty(it, "marketService", TestPredefinedMarkets) }
+         as FxOrderMapper
 
 
     @Test

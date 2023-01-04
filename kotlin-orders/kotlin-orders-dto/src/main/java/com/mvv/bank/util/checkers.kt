@@ -47,7 +47,8 @@ fun checkLateInitPropsAreInitialized(obj: Any) {
     val notInitializedPropNames = obj::class.memberProperties
         .filter { it.isLateinit && !isPropertyInitialized(obj, it) }
         .map { it.name }
+        .sorted()
 
     if (notInitializedPropNames.isNotEmpty())
-        throw IllegalStateException("The following properties $notInitializedPropNames are not initialized")
+        throw IllegalStateException("The following properties $notInitializedPropNames are not initialized.")
 }

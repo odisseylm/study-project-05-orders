@@ -1,37 +1,21 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
-import com.mvv.bank.log.safe
-import com.mvv.bank.orders.conversion.CurrencyMapper
+import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
+import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import com.mvv.bank.orders.domain.*
-import com.mvv.bank.orders.service.MarketService
-import jakarta.inject.Inject
 import org.mapstruct.*
-import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.jvm.isAccessible
-
-import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
+import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainOrder
 import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainLimitOrder
 import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainMarketOrder
-import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainOrder
-
+import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
 import com.mvv.bank.orders.repository.jpa.entities.FxOrder as DtoOrder
-import com.mvv.bank.orders.repository.jpa.entities.OrderType as DtoOrderType
 
 
-@Mapper(componentModel = "spring, default, cdi, jakarta, jsr330", uses = [CurrencyMapper::class])
+@Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL, config = DomainPrimitiveMappers::class)
 @Suppress("CdiInjectionPointsInspection")
-abstract class FxOrderMapper : Cloneable {
-    @Inject
-    private lateinit var marketService: MarketService
+abstract class FxOrderMapper : AbstractJpaOrderMapper() {
 
-    fun map(user: String): User = User.of(user) // TODO: move to base interface
-    fun map(user: User): String = user.value    // TODO: move to base interface
-
-    @BeforeMapping
-    open fun validateOrderBeforeSaving(source: DomainOrder, @MappingTarget target: DtoOrder) =
-        source.validateCurrentState()
-
-    @Mapping(source = "marketSymbol", target = "market")
+    @Mapping(source = "market.symbol", target = "market")
     @Mapping(source = "resultingRate.currencyPair.base", target = "resultingRateCcy1")
     @Mapping(source = "resultingRate.currencyPair.counter", target = "resultingRateCcy2")
     @Mapping(source = "resultingRate.dateTime", target = "resultingRateDateTime")
@@ -41,19 +25,19 @@ abstract class FxOrderMapper : Cloneable {
     // to avoid warnings
     @Mapping(target = "limitStopPrice", ignore = true)
     @Mapping(target = "dailyExecutionType", ignore = true)
-    abstract fun baseCashOrderToDto(source: DomainOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
+    abstract fun baseOrderAttrsToDto(source: DomainOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
-    @InheritConfiguration(name = "baseCashOrderToDto")
+    @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "limitPrice.value", target = "limitStopPrice")
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
     abstract fun limitOrderToDto(source: DomainLimitOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
-    @InheritConfiguration(name = "baseCashOrderToDto")
+    @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "stopPrice.value", target = "limitStopPrice")
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
     abstract fun stopOrderToDto(source: DomainStopOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
-    @InheritConfiguration(name = "baseCashOrderToDto")
+    @InheritConfiguration(name = "baseOrderAttrsToDto")
     abstract fun marketOrderToDto(source: DomainMarketOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     // T O D O: can we do it better without this switch?
@@ -77,31 +61,32 @@ abstract class FxOrderMapper : Cloneable {
     }
 
 
+    @Mapping(source = "market", target = "market")
+    //@Mapping(target = "market",  ignore = true)
     @Mapping(source = "market", target = "marketSymbol")
-    @Mapping(target = "market",  ignore = true)
     @Mapping(target = "product", ignore = true)
     @Mapping(target = "resultingPrice", ignore = true)
     @Mapping(target = "resultingQuote", ignore = true)
     @Mapping(target = "resultingRate",  ignore = true)
-    //@Mapping(target = "user", expression = "java( User.of(source.user) )") // TODO: to fix
-    abstract fun dtoToBaseCashOrder(source: DtoOrder, @MappingTarget target: DomainOrder): DomainOrder
+    // baseOrderAttrsToDomain
+    abstract fun baseOrderAttrsToDomain(source: DtoOrder, @MappingTarget target: DomainOrder): DomainOrder
 
-    @InheritConfiguration(name = "dtoToBaseCashOrder")
+    @InheritConfiguration(name = "baseOrderAttrsToDomain")
     @Mapping(target = "limitPrice", expression = "java( com.mvv.bank.orders.domain.Amount.of(source.getLimitStopPrice(), target.getPriceCurrency()) )")
     abstract fun dtoToLimitOrder(source: DtoOrder, @MappingTarget target: DomainLimitOrder): DomainLimitOrder
 
-    @InheritConfiguration(name = "dtoToBaseCashOrder")
+    @InheritConfiguration(name = "baseOrderAttrsToDomain")
     @Mapping(target = "stopPrice", expression = "java( com.mvv.bank.orders.domain.Amount.of(source.getLimitStopPrice(), target.getPriceCurrency()) )")
     abstract fun dtoToStopOrder(source: DtoOrder, @MappingTarget target: DomainStopOrder): DomainStopOrder
 
-    @InheritConfiguration(name = "dtoToBaseCashOrder")
+    @InheritConfiguration(name = "baseOrderAttrsToDomain")
     abstract fun dtoToMarketOrder(source: DtoOrder, @MappingTarget target: DomainMarketOrder): DomainMarketOrder
 
     @AfterMapping
     open fun postInitDomainOrder(source: DtoOrder, @MappingTarget target: DomainOrder) {
         // if (source == null) return
-        target.market = marketService.marketBySymbol(source.market)
 
+        // T???
         val resultingRateDateTime = source.resultingRateDateTime
         if (resultingRateDateTime != null) {
             val resultingRateCcy1 = source.resultingRateCcy1; val resultingRateCcy2 = source.resultingRateCcy2
@@ -128,13 +113,6 @@ abstract class FxOrderMapper : Cloneable {
             target.resultingRate = rate
         }
 
-        if (source.orderType == DtoOrderType.MARKET_ORDER) {
-            require(source.limitStopPrice == null) {
-                "Market price cannot have limit/stop price (${source.limitStopPrice.safe})." }
-            require(source.dailyExecutionType == null) {
-                "Market price cannot have daily execution type (${source.dailyExecutionType.safe})." }
-        }
-
         target.validateCurrentState()
     }
 
@@ -152,12 +130,7 @@ abstract class FxOrderMapper : Cloneable {
 
 
     @ObjectFactory
-    fun <T : DomainOrder> resolve(source: DtoOrder): T {
-        val constructor = source.orderType.cashDomainType.primaryConstructor
-            ?.apply { if (!isAccessible) isAccessible = true }
-        @Suppress("UNCHECKED_CAST")
-        return constructor!!.call() as T
-    }
+    fun <T : DomainOrder> resolve(source: DtoOrder): T = newOrderInstance(source.orderType.cashDomainType)
 
-    public override fun clone(): FxOrderMapper = super.clone() as FxOrderMapper
+    //override fun clone(): FxOrderMapper = super.clone() as FxOrderMapper
 }

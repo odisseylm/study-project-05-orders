@@ -1,51 +1,42 @@
 package com.mvv.bank.orders.rest.conversion
 
-import com.mvv.bank.log.safe
-import com.mvv.bank.orders.conversion.CurrencyMapper
-import com.mvv.bank.orders.domain.*
-import com.mvv.bank.orders.rest.FxOrder
-import com.mvv.bank.orders.service.MarketService
-import jakarta.inject.Inject
-import com.mvv.bank.orders.rest.FxOrder as DtoFxOrder
-import com.mvv.bank.orders.rest.OrderType as DtoOrderType
+import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
+import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
+import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainOrder
+import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainMarketOrder
+import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainLimitOrder
+import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
+import com.mvv.bank.orders.rest.FxOrder as DtoOrder
 import org.mapstruct.*
-import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.jvm.isAccessible
 
 
-@Mapper(componentModel = "spring, default, cdi, jakarta, jsr330", uses = [CurrencyMapper::class, FxRateMapper::class])
+@Mapper(
+    componentModel = MAP_STRUCT_COMPONENT_MODEL,
+    config = DomainPrimitiveMappers::class,
+    uses = [FxRateMapper::class]
+)
 @Suppress("CdiInjectionPointsInspection")
-abstract class FxOrderMapper: Cloneable {
-    @Inject
-    private lateinit var marketService: MarketService
+abstract class FxOrderMapper: AbstractRestOrderMapper() {
 
-    fun map(user: String): User = User.of(user) // TODO: move to base interface
-    fun map(user: User): String = user.value    // TODO: move to base interface
-
-    // I guess it is not needed or even small evil ))
-    //@BeforeMapping
-    //fun validateOrderBeforeConvertingToRest(source: AbstractFxCashOrder, @MappingTarget target: RestFxOrder) =
-    //    source.validateCurrentState()
-
-    @Mapping(source = "marketSymbol", target = "market")
+    @Mapping(source = "market.symbol", target = "market")
     // to avoid warnings
     @Mapping(target = "limitPrice", ignore = true)
     @Mapping(target = "stopPrice", ignore = true)
     @Mapping(target = "dailyExecutionType", ignore = true)
-    abstract fun internalBaseFxCashAttrsToDto(source: AbstractFxCashOrder?, @MappingTarget target: DtoFxOrder?): DtoFxOrder?
+    abstract fun baseOrderAttrsToDto(source: DomainOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
-    @InheritConfiguration(name = "internalBaseFxCashAttrsToDto")
+    @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "limitPrice.value", target = "limitPrice")
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun limitOrderToDto(source: FxCashLimitOrder?, @MappingTarget target: DtoFxOrder?): DtoFxOrder?
+    abstract fun limitOrderToDto(source: DomainLimitOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
-    @InheritConfiguration(name = "internalBaseFxCashAttrsToDto")
+    @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "stopPrice.value", target = "stopPrice")
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun stopOrderToDto(source: FxCashStopOrder?, @MappingTarget target: DtoFxOrder?): DtoFxOrder?
+    abstract fun stopOrderToDto(source: DomainStopOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
-    @InheritConfiguration(name = "internalBaseFxCashAttrsToDto")
-    abstract fun marketOrderToDto(source: FxCashMarketOrder?, @MappingTarget target: DtoFxOrder?): DtoFxOrder?
+    @InheritConfiguration(name = "baseOrderAttrsToDto")
+    abstract fun marketOrderToDto(source: DomainMarketOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     // T O D O: can we do it better without this switch?
     //fun toDto(source: DomainAbstractFxCashOrder?): RestFxOrder? =
@@ -57,70 +48,53 @@ abstract class FxOrderMapper: Cloneable {
     //        }
 
     // T O D O: can we do it better without this switch?
-    fun toDto(source: AbstractFxCashOrder?): DtoFxOrder? {
-        val target = DtoFxOrder()
+    fun toDto(source: DomainOrder?): DtoOrder? {
+        val target = DtoOrder()
         return when (source) {
-            is FxCashMarketOrder -> marketOrderToDto(source, target)
-            is FxCashLimitOrder  -> limitOrderToDto(source, target)
-            is FxCashStopOrder   -> stopOrderToDto(source, target)
+            is DomainMarketOrder -> marketOrderToDto(source, target)
+            is DomainLimitOrder  -> limitOrderToDto(source, target)
+            is DomainStopOrder   -> stopOrderToDto(source, target)
             else -> null
         }
     }
 
 
     @Mapping(source = "market", target = "marketSymbol")
-    @Mapping(target = "market",  ignore = true)
     @Mapping(target = "product", ignore = true)
     @Mapping(target = "resultingPrice", ignore = true)
     @Mapping(target = "resultingQuote", ignore = true)
-    abstract fun internalDtoToBaseFxCashAttrs(source: DtoFxOrder, @MappingTarget target: AbstractFxCashOrder): AbstractFxCashOrder
+    abstract fun baseOrderAttrsToDomain(source: DtoOrder, @MappingTarget target: DomainOrder): DomainOrder
 
-    @InheritConfiguration(name = "internalDtoToBaseFxCashAttrs")
+    @InheritConfiguration(name = "baseOrderAttrsToDomain")
     @Mapping(target = "limitPrice", expression = "java( com.mvv.bank.orders.domain.Amount.of(source.getLimitPrice(), target.getPriceCurrency()) )")
-    abstract fun dtoToLimitOrder(source: DtoFxOrder, @MappingTarget target: FxCashLimitOrder): FxCashLimitOrder
+    abstract fun dtoToLimitOrder(source: DtoOrder, @MappingTarget target: DomainLimitOrder): DomainLimitOrder
 
-    @InheritConfiguration(name = "internalDtoToBaseFxCashAttrs")
+    @InheritConfiguration(name = "baseOrderAttrsToDomain")
     @Mapping(target = "stopPrice", expression = "java( com.mvv.bank.orders.domain.Amount.of(source.getStopPrice(), target.getPriceCurrency()) )")
-    abstract fun dtoToStopOrder(source: DtoFxOrder, @MappingTarget target: FxCashStopOrder): FxCashStopOrder
+    abstract fun dtoToStopOrder(source: DtoOrder, @MappingTarget target: DomainStopOrder): DomainStopOrder
 
-    @InheritConfiguration(name = "internalDtoToBaseFxCashAttrs")
-    abstract fun dtoToMarketOrder(source: DtoFxOrder, @MappingTarget target: FxCashMarketOrder): FxCashMarketOrder
+    @InheritConfiguration(name = "baseOrderAttrsToDomain")
+    abstract fun dtoToMarketOrder(source: DtoOrder, @MappingTarget target: DomainMarketOrder): DomainMarketOrder
 
     @AfterMapping
-    fun postInitDomainOrder(source: DtoFxOrder, @MappingTarget target: AbstractFxCashOrder) {
+    @Suppress("UNUSED_PARAMETER")
+    fun postInitDomainOrder(source: DtoOrder, @MappingTarget target: DomainOrder) {
         // if (source == null) return
-        target.market = marketService.marketBySymbol(source.market)
-
         target.validateCurrentState()
-
-        if (source.orderType == DtoOrderType.MARKET_ORDER) {
-            require(source.limitPrice == null && source.stopPrice == null) {
-                "Market price cannot have limit/stop price (${source.limitPrice.safe}/${source.stopPrice.safe})." }
-            require(source.dailyExecutionType == null) {
-                "Market price cannot have daily execution type (${source.dailyExecutionType.safe})." }
-        }
     }
 
     // T O D O: can we do it better without this switch?
-    fun toDomain(source: DtoFxOrder): AbstractFxCashOrder {
+    fun toDomain(source: DtoOrder): DomainOrder {
         @Suppress("MoveVariableDeclarationIntoWhen")
-        val target = resolve<AbstractFxCashOrder>(source)
+        val target = resolve<DomainOrder>(source)
         return when (target) {
-            is FxCashMarketOrder -> dtoToMarketOrder(source, target)
-            is FxCashLimitOrder  -> dtoToLimitOrder(source, target)
-            is FxCashStopOrder   -> dtoToStopOrder(source, target)
+            is DomainMarketOrder -> dtoToMarketOrder(source, target)
+            is DomainLimitOrder  -> dtoToLimitOrder(source, target)
+            is DomainStopOrder   -> dtoToStopOrder(source, target)
             //else -> null
         }
     }
 
     @ObjectFactory
-    fun <T : AbstractFxCashOrder> resolve(source: FxOrder): T {
-        val constructor = source.orderType.domainType.primaryConstructor
-            ?.apply { if (!isAccessible) isAccessible = true }
-        @Suppress("UNCHECKED_CAST")
-        return constructor!!.call() as T
-    }
-
-    // for easy testing
-    public override fun clone(): FxOrderMapper = super.clone() as FxOrderMapper
+    fun <T : DomainOrder> resolve(source: DtoOrder): T = newOrderInstance(source.orderType.cashDomainType)
 }

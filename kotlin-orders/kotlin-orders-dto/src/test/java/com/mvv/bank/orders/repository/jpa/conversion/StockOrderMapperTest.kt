@@ -6,6 +6,7 @@ import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
 import com.mvv.bank.orders.domain.of
 
 import com.mvv.bank.test.reflect.initProperty
+import com.mvv.bank.util.newInstance
 import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
@@ -48,8 +49,9 @@ class StockOrderMapperTest {
     private val testUser = TestPredefinedUsers.USER1
 
     private val orderMapper = Mappers.getMapper(StockOrderMapper::class.java).clone()
-        .also { initProperty(it, "marketService", TestPredefinedMarkets) }
-        .also { initProperty(it, "companyService", TestPredefinedCompanies) }
+        .apply { initProperty(this, "marketService", TestPredefinedMarkets) }
+        .apply { initProperty(this, "companyService", TestPredefinedCompanies) }
+        as StockOrderMapper
 
 
     @Test
@@ -168,6 +170,24 @@ class StockOrderMapperTest {
             assertThat(dtoOrder.market).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(dtoOrder.orderState).isEqualTo(DtoOrderState.PLACED)
         }.assertAll()
+    }
+
+
+    @Test
+    fun limitOrder_withoutDailyExecType_domainToDto() {
+
+        val domainOrder = newInstance<DomainLimitOrder>().apply {
+            id = null
+            user = testUser
+            side = DomainSide.CLIENT
+            buySellType = DomainBuySellType.BUY
+            product = testCompany.symbol
+            orderState = DomainOrderState.TO_BE_PLACED
+            // market, volume, limitPrice, dailyExecutionType are missed by some strange mistake
+        }
+
+        assertThatCode { orderMapper.toDto(domainOrder) }
+            .hasMessage("The following properties [company, dailyExecutionType, limitPrice, market, marketSymbol, volume] are not initialized.")
     }
 
 
