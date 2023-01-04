@@ -6,10 +6,10 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 
 class StockQuote (
-    val marketSymbol: String,
-    val productSymbol: String,
+    val market: String,
+    val product: String,
 
-    val dateTime: ZonedDateTime,
+    val timestamp: ZonedDateTime,
     val marketDate: LocalDate,
     val marketTime: LocalTime,
 

@@ -37,7 +37,6 @@ class FxCashStopOrderTest {
             volume = bd("1000"),
             stopPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
-            marketSymbol = market.symbol,
             market = market,
         )
 
@@ -103,7 +102,6 @@ class FxCashStopOrderTest {
             volume = bd("1000"),
             stopPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
-            marketSymbol = market.symbol,
             market = market,
         )
 
@@ -162,7 +160,6 @@ class FxCashStopOrderTest {
                     volume = bd("1000"),
                     limitPrice = Amount.of("39.38", UAH),
                     dailyExecutionType = DailyExecutionType.GTC,
-                    marketSymbol = market.symbol,
                     market = TestPredefinedMarkets.KYIV1,
                     orderState = OrderState.EXECUTED,
                 )

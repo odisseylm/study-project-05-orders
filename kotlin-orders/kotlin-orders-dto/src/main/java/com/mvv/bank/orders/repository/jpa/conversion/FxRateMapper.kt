@@ -15,7 +15,7 @@ interface FxRateMapper {
     //@Mapping(target = "currencyPair", expression = "java(com.mvv.bank.orders.domain.CurrencyPair.of(source.getCur1(), source.getCur2()))")
     fun fromDto(source: JpaFxRate?): DomainFxRate? =
         if (source == null) null else DomainFxRate(
-            source.marketSymbol, source.dateTime, source.marketDate, source.marketTime,
+            source.market, source.timestamp, source.marketDate, source.marketTime,
             CurrencyPair.of(source.cur1, source.cur2), bid = source.bid, ask = source.ask)
 
     @Mapping(source = "currencyPair.base", target = "cur1")

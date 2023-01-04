@@ -15,11 +15,11 @@ import java.time.ZonedDateTime
 class FxRate {
 
     @Column(name = "MARKET", nullable = false)
-    lateinit var marketSymbol: String
+    lateinit var market: String
 
     @Id
     @Column(name = "DATE_TIME", nullable = false)
-    lateinit var dateTime: ZonedDateTime
+    lateinit var timestamp: ZonedDateTime
 
     @Column(name = "MARKET_DATE", nullable = false)
     lateinit var marketDate: LocalDate
@@ -48,5 +48,5 @@ class FxRate {
 data class FxRateId (
     val cur1: String,
     val cur2: String,
-    val dateTime: ZonedDateTime, // TODO: rename to timestamp
+    val timestamp: ZonedDateTime,
 ) : Serializable

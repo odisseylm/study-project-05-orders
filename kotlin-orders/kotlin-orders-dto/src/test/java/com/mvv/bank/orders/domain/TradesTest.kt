@@ -17,8 +17,7 @@ class TradesTest {
     fun createFxCashTrade() {
         val trade = FxCashTrade(
             id = 123L,
-            marketSymbol = TestPredefinedMarkets.KYIV1.symbol,
-            market = TestPredefinedMarkets.KYIV1,
+            market = TestPredefinedMarkets.KYIV1.symbol,
             buySellType = BuySellType.BUY,
             buyCurrency = Currency.EUR,
             sellCurrency = Currency.UAH,
@@ -30,8 +29,7 @@ class TradesTest {
         SoftAssertions().apply {
 
             assertThat(trade.id).isEqualTo(123L)
-            assertThat(trade.marketSymbol).isNotNull.isEqualTo(TestPredefinedMarkets.KYIV1.symbol)
-            assertThat(trade.market).isEqualTo(TestPredefinedMarkets.KYIV1)
+            assertThat(trade.market).isNotNull.isEqualTo(TestPredefinedMarkets.KYIV1.symbol)
             assertThat(trade.buySellType).isEqualTo(BuySellType.BUY)
             assertThat(trade.buyCurrency).isEqualTo(Currency.EUR)
             assertThat(trade.sellCurrency).isEqualTo(Currency.UAH)
@@ -50,8 +48,7 @@ class TradesTest {
     fun createStockTrade() {
         val trade = StockTrade(
             id = 124L,
-            marketSymbol = TestPredefinedMarkets.NASDAQ.symbol,
-            market = TestPredefinedMarkets.NASDAQ,
+            market = TestPredefinedMarkets.NASDAQ.symbol,
             product = TestPredefinedCompanies.APPLE.symbol,
             company = TestPredefinedCompanies.APPLE,
             buySellType = BuySellType.BUY,
@@ -63,8 +60,7 @@ class TradesTest {
         SoftAssertions().apply {
 
             assertThat(trade.id).isEqualTo(124L)
-            assertThat(trade.marketSymbol).isNotNull.isEqualTo(TestPredefinedMarkets.NASDAQ.symbol)
-            assertThat(trade.market).isEqualTo(TestPredefinedMarkets.NASDAQ)
+            assertThat(trade.market).isNotNull.isEqualTo(TestPredefinedMarkets.NASDAQ.symbol)
             assertThat(trade.buySellType).isEqualTo(BuySellType.BUY)
             assertThat(trade.product).isEqualTo(TestPredefinedCompanies.APPLE.symbol)
             assertThat(trade.company).isEqualTo(TestPredefinedCompanies.APPLE)

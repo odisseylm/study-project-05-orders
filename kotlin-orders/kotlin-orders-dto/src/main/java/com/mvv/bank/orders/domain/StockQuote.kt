@@ -7,18 +7,14 @@ import java.time.ZonedDateTime
 
 
 interface Quote {
-    val productSymbol: String // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
+    val product: String // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
 
-    val marketSymbol: String
-    //val market: Market
+    val market: String
 
-    val dateTime: ZonedDateTime // TODO: rename to timestamp
-
+    val timestamp: ZonedDateTime
     // date/time in market/exchange timezone
     val marketDate: LocalDate
     val marketTime: LocalTime
-
-    //val currency: Currency
 
     val bid: Amount
     val ask: Amount
@@ -30,10 +26,10 @@ interface Quote {
 // https://www.investopedia.com/terms/s/stockquote.asp
 // https://www.wallstreetmojo.com/stock-quote/
 data class StockQuote (
-    override val marketSymbol: String,
-    override val productSymbol: String, // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
+    override val market: String,
+    override val product: String, // symbol for this market; see https://www.investopedia.com/terms/s/stocksymbol.asp
 
-    override val dateTime: ZonedDateTime,
+    override val timestamp: ZonedDateTime,
     override val marketDate: LocalDate,
     override val marketTime: LocalTime,
 
@@ -76,16 +72,16 @@ fun StockQuote.asPrice(buySellType: BuySellType): Amount =
 fun StockQuote.Companion.of(
     market: Market,
     company: Company,
-    dateTime: ZonedDateTime,
+    timestamp: ZonedDateTime,
     bid: BigDecimal,
     ask: BigDecimal,
     currency: Currency,
 ): StockQuote = StockQuote(
-    marketSymbol = market.symbol,
-    productSymbol = company.symbol,
-    dateTime = dateTime,
-    marketDate = dateTime.withZoneSameInstant(market.zoneId).toLocalDate(),
-    marketTime = dateTime.withZoneSameInstant(market.zoneId).toLocalTime(),
+    market = market.symbol,
+    product = company.symbol,
+    timestamp = timestamp,
+    marketDate = timestamp.withZoneSameInstant(market.zoneId).toLocalDate(),
+    marketTime = timestamp.withZoneSameInstant(market.zoneId).toLocalTime(),
     bid = Amount.of(bid, currency),
     ask = Amount.of(ask, currency),
 )

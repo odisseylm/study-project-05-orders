@@ -56,7 +56,6 @@ class StockLimitOrder : StockOrder(), LimitOrder<String, StockQuote> {
             limitPrice: Amount,
             dailyExecutionType: DailyExecutionType,
 
-            marketSymbol: String,
             market: Market,
 
             orderState: OrderState = OrderState.UNKNOWN,
@@ -82,7 +81,6 @@ class StockLimitOrder : StockOrder(), LimitOrder<String, StockQuote> {
             order.limitPrice = limitPrice
             order.dailyExecutionType = dailyExecutionType
 
-            order.marketSymbol = marketSymbol
             order.market = market
 
             order.orderState = orderState
@@ -128,16 +126,15 @@ class StockStopOrder : StockOrder(), StopOrder<String, StockQuote> {
         fun create(
             id: Long? = null,
             user: User,
+            market: Market,
             side: Side,
+
             buySellType: BuySellType,
             companySymbol: String,
             company: Company,
             volume: BigDecimal,
             stopPrice: Amount,
             dailyExecutionType: DailyExecutionType,
-
-            marketSymbol: String,
-            market: Market,
 
             orderState: OrderState = OrderState.UNKNOWN,
 
@@ -153,6 +150,7 @@ class StockStopOrder : StockOrder(), StopOrder<String, StockQuote> {
             // T O D O: how to fix this duplicated 19 lines???
             order.id = id
             order.user = user
+            order.market = market
 
             order.side  = side
             order.buySellType = buySellType
@@ -161,9 +159,6 @@ class StockStopOrder : StockOrder(), StopOrder<String, StockQuote> {
             order.volume = volume
             order.stopPrice = stopPrice
             order.dailyExecutionType = dailyExecutionType
-
-            order.marketSymbol = marketSymbol
-            order.market = market
 
             order.orderState = orderState
 
@@ -189,8 +184,8 @@ class StockMarketOrder : StockOrder() {
     override lateinit var company: Company
 
     override fun toExecute(quote: StockQuote): Boolean {
-        check(quote.productSymbol == this.product) {
-            "This quote is for another product (order: $product, quote: ${quote.productSymbol})." }
+        check(quote.product == this.product) {
+            "This quote is for another product (order: $product, quote: ${quote.product})." }
         return true
     }
 
@@ -199,13 +194,12 @@ class StockMarketOrder : StockOrder() {
             id: Long? = null,
             user: User,
             side: Side,
+            market: Market,
+
             buySellType: BuySellType,
             companySymbol: String,
             company: Company,
             volume: BigDecimal,
-
-            marketSymbol: String,
-            market: Market,
 
             orderState: OrderState = OrderState.UNKNOWN,
 
@@ -221,15 +215,13 @@ class StockMarketOrder : StockOrder() {
             // T O D O: how to fix this duplicated 19 lines???
             order.id = id
             order.user = user
-
+            order.market = market
             order.side  = side
+
             order.buySellType = buySellType
             order.product = companySymbol
             order.company = company
             order.volume = volume
-
-            order.marketSymbol = marketSymbol
-            order.market = market
 
             order.orderState = orderState
 

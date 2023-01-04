@@ -68,10 +68,10 @@ internal class FxRateMapperTest {
             checkNotNull(dto)
             assertThat(dto.cur1).isEqualTo("EUR")
             assertThat(dto.cur2).isEqualTo("USD")
-            assertThat(dto.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
+            assertThat(dto.market).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(dto.marketDate).isNotNull.isEqualTo(testDate)
             assertThat(dto.marketTime).isNotNull.isEqualTo(testTime)
-            assertThat(dto.dateTime).isNotNull.isEqualTo(testZonedDateTime)
+            assertThat(dto.timestamp).isNotNull.isEqualTo(testZonedDateTime)
             assertThat(dto.bid).isEqualTo(bd("1.1"))
             assertThat(dto.ask).isEqualTo(bd("1.2"))
 
@@ -88,8 +88,8 @@ internal class FxRateMapperTest {
 
             val domainObj = mapper.fromDto(
                 JpaFxRate().apply {
-                    marketSymbol = testMarket.symbol
-                    dateTime   = testZonedDateTime
+                    market = testMarket.symbol
+                    timestamp  = testZonedDateTime
                     marketDate = testDate
                     marketTime = testTime
                     cur1 = "EUR"
@@ -103,10 +103,10 @@ internal class FxRateMapperTest {
 
             checkNotNull(domainObj) // for kotlin only
             assertThat(domainObj.currencyPair).isEqualTo(CurrencyPair.of("EUR_USD"))
-            assertThat(domainObj.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
+            assertThat(domainObj.market).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainObj.marketDate).isNotNull.isEqualTo(testDate)
             assertThat(domainObj.marketTime).isNotNull.isEqualTo(testTime)
-            assertThat(domainObj.dateTime).isNotNull.isEqualTo(testZonedDateTime)
+            assertThat(domainObj.timestamp).isNotNull.isEqualTo(testZonedDateTime)
             assertThat(domainObj.bid).isEqualTo(bd("1.1"))
             assertThat(domainObj.ask).isEqualTo(bd("1.2"))
 

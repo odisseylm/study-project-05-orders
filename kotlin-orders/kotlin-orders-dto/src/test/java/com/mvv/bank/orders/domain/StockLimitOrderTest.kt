@@ -41,16 +41,15 @@ class StockLimitOrderTest {
             volume = bd("1000"),
             limitPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.DAY_ONLY,
-            marketSymbol = market.symbol,
             market = market,
         )
 
         val quote = StockQuote(
-            marketSymbol = market.symbol,
+            market = market.symbol,
             marketDate = date,
             marketTime = time,
-            dateTime = ZonedDateTime.of(dateTime, market.zoneId),
-            productSymbol = "AAPL",
+            timestamp = ZonedDateTime.of(dateTime, market.zoneId),
+            product = "AAPL",
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
@@ -102,16 +101,15 @@ class StockLimitOrderTest {
             volume = bd("1000"),
             limitPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.GTC,
-            marketSymbol = market.symbol,
             market = market,
         )
 
         val quote = StockQuote(
-            marketSymbol = market.symbol,
-            dateTime = ZonedDateTime.of(dateTime, market.zoneId),
+            market = market.symbol,
+            timestamp = ZonedDateTime.of(dateTime, market.zoneId),
             marketDate = date,
             marketTime = time,
-            productSymbol = "AAPL",
+            product = "AAPL",
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')

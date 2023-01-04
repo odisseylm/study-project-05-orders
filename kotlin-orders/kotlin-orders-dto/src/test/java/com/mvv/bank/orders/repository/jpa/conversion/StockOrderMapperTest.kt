@@ -67,7 +67,6 @@ class StockOrderMapperTest {
             volume = bd("2000"),
             limitPrice = DomainAmount.of("40.0", DomainCurrency.USD),
             dailyExecutionType = DomainDailyExecutionType.GTC,
-            marketSymbol = testMarket.symbol,
             market = testMarket,
             orderState = DomainOrderState.TO_BE_PLACED,
         )
@@ -104,7 +103,6 @@ class StockOrderMapperTest {
             volume = bd("2000"),
             stopPrice = DomainAmount.of("40.0", DomainCurrency.USD),
             dailyExecutionType = DomainDailyExecutionType.GTC,
-            marketSymbol = testMarket.symbol,
             market = testMarket,
             resultingQuote = DomainStockQuote.of(
                 testMarket, testCompany, testZonedDateTime,
@@ -150,7 +148,6 @@ class StockOrderMapperTest {
             companySymbol = testCompany.symbol,
             company = testCompany,
             volume = bd("2000"),
-            marketSymbol = testMarket.symbol,
             market = testMarket,
             orderState = DomainOrderState.PLACED,
         )
@@ -187,7 +184,7 @@ class StockOrderMapperTest {
         }
 
         assertThatCode { orderMapper.toDto(domainOrder) }
-            .hasMessage("The following properties [company, dailyExecutionType, limitPrice, market, marketSymbol, volume] are not initialized.")
+            .hasMessage("The following properties [company, dailyExecutionType, limitPrice, market, volume] are not initialized.")
     }
 
 
@@ -226,7 +223,6 @@ class StockOrderMapperTest {
             assertThat(domainOrder.product).isEqualTo(testCompany.symbol)
             assertThat(domainOrder.company).isEqualTo(testCompany)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
-            assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
@@ -282,7 +278,6 @@ class StockOrderMapperTest {
             assertThat(domainOrder.product).isEqualTo(testCompany.symbol)
             assertThat(domainOrder.company).isEqualTo(testCompany)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
-            assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
@@ -339,7 +334,6 @@ class StockOrderMapperTest {
             assertThat(domainOrder.product).isEqualTo(testCompany.symbol)
             assertThat(domainOrder.company).isEqualTo(testCompany)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
-            assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 

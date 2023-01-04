@@ -6,8 +6,7 @@ import java.time.ZonedDateTime
 
 
 interface Trade<P> {
-    val marketSymbol: String
-    val market: Market
+    val market: String
 
     val product: P
     val buySellType: BuySellType
@@ -20,8 +19,7 @@ interface Trade<P> {
 data class FxCashTrade (
     val id: Long,
 
-    override val marketSymbol: String,
-    override val market: Market,
+    override val market: String,
 
     override val buySellType: BuySellType,
     val buyCurrency: Currency,
@@ -54,8 +52,7 @@ data class FxCashTrade (
 data class StockTrade (
     val id: Long,
 
-    override val marketSymbol: String,
-    override val market: Market,
+    override val market: String,
 
     override val product: String,
     override val buySellType: BuySellType,

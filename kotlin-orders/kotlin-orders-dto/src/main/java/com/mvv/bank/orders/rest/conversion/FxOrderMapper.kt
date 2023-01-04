@@ -59,7 +59,6 @@ abstract class FxOrderMapper: AbstractRestOrderMapper() {
     }
 
 
-    @Mapping(source = "market", target = "marketSymbol")
     @Mapping(target = "product", ignore = true)
     @Mapping(target = "resultingPrice", ignore = true)
     @Mapping(target = "resultingQuote", ignore = true)

@@ -29,7 +29,6 @@ sealed interface Order<Product: Any, Quote: BaseQuote> {
     var canceledAt: ZonedDateTime?
     var expiredAt:  ZonedDateTime?
 
-    var marketSymbol: String
     var market: Market
 
     var orderState: OrderState
@@ -72,7 +71,6 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
     override lateinit var volume: BigDecimal
 
     override lateinit var market: Market
-    override lateinit var marketSymbol: String
 
     override lateinit var buySellType: BuySellType
     override var orderState: OrderState = OrderState.UNKNOWN
@@ -157,7 +155,6 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
 
         checkPropertyInitialized(::product)
         checkPropertyInitialized(::market)
-        checkPropertyInitialized(::marketSymbol)
         */
 
         when (orderState) {
@@ -197,7 +194,6 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
         checkInitialized(::product)
         checkInitialized(::volume)
         checkInitialized(::market)
-        checkInitialized(::marketSymbol)
         checkInitialized(::buySellType)
         checkInitialized(::orderState)
         */

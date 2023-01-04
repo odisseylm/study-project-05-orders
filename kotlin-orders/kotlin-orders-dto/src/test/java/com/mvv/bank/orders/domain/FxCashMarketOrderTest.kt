@@ -29,7 +29,6 @@ class FxCashMarketOrderTest {
             buyCurrency = Currency.USD,
             sellCurrency = Currency.EUR,
             volume = bd("1000"),
-            marketSymbol = market.symbol,
             market = market,
         )
 

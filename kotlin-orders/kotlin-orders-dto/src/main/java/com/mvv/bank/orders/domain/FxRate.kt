@@ -15,8 +15,8 @@ import java.time.ZonedDateTime
 // TODO: 'bid < ask' rule should be applied for which counterCurrency???
 //
 data class FxRate (
-    val marketSymbol: String,
-    val dateTime: ZonedDateTime, // TODO: rename to timestamp
+    val market: String,
+    val timestamp: ZonedDateTime,
     val marketDate: LocalDate,
     val marketTime: LocalTime,
 
@@ -40,11 +40,11 @@ data class FxRate (
     companion object // only for writing extension functions
 }
 
-fun FxRate.Companion.of(market: Market, dateTime: ZonedDateTime, currencyPair: CurrencyPair, bid: BigDecimal, ask: BigDecimal) =
+fun FxRate.Companion.of(market: Market, timestamp: ZonedDateTime, currencyPair: CurrencyPair, bid: BigDecimal, ask: BigDecimal) =
     FxRate(
-        marketSymbol = market.symbol, dateTime = dateTime,
-        marketDate = dateTime.withZoneSameInstant(market.zoneId).toLocalDate(),
-        marketTime = dateTime.withZoneSameInstant(market.zoneId).toLocalTime(),
+        market = market.symbol, timestamp = timestamp,
+        marketDate = timestamp.withZoneSameInstant(market.zoneId).toLocalDate(),
+        marketTime = timestamp.withZoneSameInstant(market.zoneId).toLocalTime(),
         currencyPair = currencyPair, bid = bid, ask = ask
     )
 
@@ -59,11 +59,11 @@ data class FxRateAsQuote (
     val rate: FxRate,
     val priceCurrency: Currency,
 ) : Quote {
-    override val productSymbol: String get() = rate.currencyPair.oppositeCurrency(priceCurrency).toString()
-    override val marketSymbol: String get() = rate.marketSymbol
+    override val product: String get() = rate.currencyPair.oppositeCurrency(priceCurrency).toString()
+    override val market: String get() = rate.market
     override val marketDate: LocalDate get() = rate.marketDate
     override val marketTime: LocalTime get() = rate.marketTime
-    override val dateTime: ZonedDateTime get() = rate.dateTime
+    override val timestamp: ZonedDateTime get() = rate.timestamp
     override val bid: Amount get() = Amount.of(
         // TODO: should be invertRate(rate.bid) or invertRate(rate.ask)
         if (priceCurrency == rate.currencyPair.counter) rate.bid else invertRate(rate.bid), priceCurrency)

@@ -18,7 +18,7 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
     @Mapping(source = "market.symbol", target = "market")
     @Mapping(source = "resultingRate.currencyPair.base", target = "resultingRateCcy1")
     @Mapping(source = "resultingRate.currencyPair.counter", target = "resultingRateCcy2")
-    @Mapping(source = "resultingRate.dateTime", target = "resultingRateDateTime")
+    @Mapping(source = "resultingRate.timestamp", target = "resultingRateTimestamp")
     @Mapping(source = "resultingRate.bid", target = "resultingRateBid")
     @Mapping(source = "resultingRate.ask", target = "resultingRateAsk")
     @Mapping(source = "user.value", target = "user")
@@ -61,9 +61,6 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
     }
 
 
-    @Mapping(source = "market", target = "market")
-    //@Mapping(target = "market",  ignore = true)
-    @Mapping(source = "market", target = "marketSymbol")
     @Mapping(target = "product", ignore = true)
     @Mapping(target = "resultingPrice", ignore = true)
     @Mapping(target = "resultingQuote", ignore = true)
@@ -87,8 +84,8 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
         // if (source == null) return
 
         // T???
-        val resultingRateDateTime = source.resultingRateDateTime
-        if (resultingRateDateTime != null) {
+        val resultingRateTimestamp = source.resultingRateTimestamp
+        if (resultingRateTimestamp != null) {
             val resultingRateCcy1 = source.resultingRateCcy1; val resultingRateCcy2 = source.resultingRateCcy2
             val resultingRateBid  = source.resultingRateBid;  val resultingRateAsk  = source.resultingRateAsk
 
@@ -97,11 +94,11 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
             checkNotNull(resultingRateBid)  { "resultingRateBid is null."  }
             checkNotNull(resultingRateAsk)  { "resultingRateAsk is null."  }
 
-            val asLocalDateTime = resultingRateDateTime.withZoneSameInstant(target.market.zoneId).toLocalDateTime()
+            val asLocalDateTime = resultingRateTimestamp.withZoneSameInstant(target.market.zoneId).toLocalDateTime()
 
             val rate = FxRate(
-                marketSymbol = source.market,
-                dateTime = resultingRateDateTime,
+                market = source.market,
+                timestamp = resultingRateTimestamp,
                 marketDate = asLocalDateTime.toLocalDate(),
                 marketTime = asLocalDateTime.toLocalTime(),
                 currencyPair = CurrencyPair.of(resultingRateCcy1, resultingRateCcy2),

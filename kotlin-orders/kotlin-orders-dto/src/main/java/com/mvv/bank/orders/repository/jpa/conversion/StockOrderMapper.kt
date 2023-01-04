@@ -24,7 +24,7 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
     @Mapping(source = "resultingPrice.value", target = "resultingPrice")
     @Mapping(source = "resultingQuote.bid.value", target = "resultingQuoteBid")
     @Mapping(source = "resultingQuote.ask.value", target = "resultingQuoteAsk")
-    @Mapping(source = "resultingQuote.dateTime", target = "resultingQuoteTimestamp")
+    @Mapping(source = "resultingQuote.timestamp", target = "resultingQuoteTimestamp")
     // to avoid warnings
     @Mapping(target = "limitStopPrice", ignore = true)
     @Mapping(target = "priceCurrency", ignore = true)
@@ -67,7 +67,6 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
     }
 
 
-    @Mapping(source = "market", target = "marketSymbol")
     @Mapping(source = "product", target = "company")
     @Mapping(target = "resultingPrice", expression = "java( ( source.getResultingPrice() == null ? null : Amount.of(source.getResultingPrice(), Currency.of(source.getPriceCurrency())) ) )")
     @Mapping(target = "resultingQuote", ignore = true)

@@ -14,6 +14,5 @@ import org.mapstruct.Mapper
 @Suppress("CdiInjectionPointsInspection")
 interface StockQuoteMapper {
     fun toDto(quote: DomainStockQuote?): DtoStockQuote?
-
     fun toDomain(quote: DomainStockQuote?): DtoStockQuote?
 }

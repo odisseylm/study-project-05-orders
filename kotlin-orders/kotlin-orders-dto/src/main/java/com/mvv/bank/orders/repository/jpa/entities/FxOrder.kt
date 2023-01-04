@@ -16,7 +16,7 @@ class FxOrder : BaseOrder() {
     lateinit var sellCurrency: String
 
     @Column(name = "RES_TIMESTAMP")
-    var resultingRateDateTime: ZonedDateTime? = null
+    var resultingRateTimestamp: ZonedDateTime? = null
     @Column(name = "RES_CCY1")
     var resultingRateCcy1: String? = null
     @Column(name = "RES_CCY2")

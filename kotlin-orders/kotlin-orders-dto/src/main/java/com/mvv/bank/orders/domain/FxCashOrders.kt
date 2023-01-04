@@ -85,7 +85,6 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
             limitPrice: Amount,
             dailyExecutionType: DailyExecutionType,
 
-            marketSymbol: String,
             market: Market,
 
             orderState: OrderState = OrderState.UNKNOWN,
@@ -111,7 +110,6 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
             order.limitPrice   = limitPrice
             order.dailyExecutionType = dailyExecutionType
 
-            order.marketSymbol = marketSymbol
             order.market = market
 
             order.orderState = orderState
@@ -165,7 +163,6 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
             stopPrice: Amount,
             dailyExecutionType: DailyExecutionType,
 
-            marketSymbol: String,
             market: Market,
 
             orderState: OrderState = OrderState.UNKNOWN,
@@ -191,7 +188,6 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
             order.stopPrice = stopPrice
             order.dailyExecutionType = dailyExecutionType
 
-            order.marketSymbol = marketSymbol
             order.market = market
 
             order.orderState = orderState
@@ -218,7 +214,7 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
     override val orderType: OrderType = OrderType.MARKET_ORDER
 
     override fun toExecute(quote: Quote): Boolean {
-        val rateCurrencyPair = CurrencyPair.of(Currency.of(quote.productSymbol), quote.bid.currency)
+        val rateCurrencyPair = CurrencyPair.of(Currency.of(quote.product), quote.bid.currency)
         val orderCurrencyPair = CurrencyPair.of(buyCurrency, sellCurrency)
 
         check(rateCurrencyPair == orderCurrencyPair || rateCurrencyPair == orderCurrencyPair.inverted()) {
@@ -236,7 +232,6 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
             sellCurrency: Currency,
             volume: BigDecimal,
 
-            marketSymbol: String,
             market: Market,
 
             orderState: OrderState = OrderState.UNKNOWN,
@@ -260,7 +255,6 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
             order.sellCurrency = sellCurrency
             order.volume = volume
 
-            order.marketSymbol = marketSymbol
             order.market = market
 
             order.orderState = orderState

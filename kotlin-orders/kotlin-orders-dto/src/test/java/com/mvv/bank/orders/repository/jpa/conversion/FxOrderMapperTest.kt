@@ -67,7 +67,6 @@ class FxOrderMapperTest {
             volume = bd("2000"),
             limitPrice = DomainAmount.of("40.0", DomainCurrency.UAH),
             dailyExecutionType = DomainDailyExecutionType.GTC,
-            marketSymbol = testMarket.symbol,
             market = testMarket,
             orderState = DomainOrderState.TO_BE_PLACED,
         )
@@ -104,7 +103,6 @@ class FxOrderMapperTest {
             volume = bd("2000"),
             stopPrice = DomainAmount.of("40.0", DomainCurrency.UAH),
             dailyExecutionType = DomainDailyExecutionType.GTC,
-            marketSymbol = testMarket.symbol,
             market = testMarket,
             resultingRate = DomainFxRate.of(
                 testMarket, testZonedDateTime, DomainCurrencyPair.USD_UAH,
@@ -132,7 +130,7 @@ class FxOrderMapperTest {
 
             assertThat(dtoOrder.resultingRateCcy1).isEqualTo("USD")
             assertThat(dtoOrder.resultingRateCcy2).isEqualTo("UAH")
-            assertThat(dtoOrder.resultingRateDateTime).isEqualTo(testZonedDateTime)
+            assertThat(dtoOrder.resultingRateTimestamp).isEqualTo(testZonedDateTime)
             assertThat(dtoOrder.resultingRateBid).isEqualTo(bd("39.00"))
             assertThat(dtoOrder.resultingRateAsk).isEqualTo(bd("39.50"))
             assertThat(dtoOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
@@ -151,7 +149,6 @@ class FxOrderMapperTest {
             buyCurrency = DomainCurrency.USD,
             sellCurrency = DomainCurrency.UAH,
             volume = bd("2000"),
-            marketSymbol = testMarket.symbol,
             market = testMarket,
             orderState = DomainOrderState.PLACED,
         )
@@ -190,7 +187,7 @@ class FxOrderMapperTest {
         }
 
         assertThatCode { orderMapper.toDto(domainOrder) }
-            .hasMessage("The following properties [dailyExecutionType, limitPrice, market, marketSymbol, volume] are not initialized.")
+            .hasMessage("The following properties [dailyExecutionType, limitPrice, market, volume] are not initialized.")
     }
 
 
@@ -212,7 +209,7 @@ class FxOrderMapperTest {
             orderState = DtoOrderState.PLACED
             resultingRateCcy1 = "USD"
             resultingRateCcy2 = "UAH"
-            resultingRateDateTime = testZonedDateTime
+            resultingRateTimestamp = testZonedDateTime
             resultingRateBid = bd("39.00")
             resultingRateAsk = bd("39.50")
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
@@ -230,7 +227,6 @@ class FxOrderMapperTest {
             assertThat(domainOrder.buyCurrency).isEqualTo(DomainCurrency.USD)
             assertThat(domainOrder.sellCurrency).isEqualTo(DomainCurrency.UAH)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
-            assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
@@ -269,7 +265,7 @@ class FxOrderMapperTest {
             orderState = DtoOrderState.PLACED
             resultingRateCcy1 = "USD"
             resultingRateCcy2 = "UAH"
-            resultingRateDateTime = testZonedDateTime
+            resultingRateTimestamp = testZonedDateTime
             resultingRateBid = bd("39.00")
             resultingRateAsk = bd("39.50")
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
@@ -288,7 +284,6 @@ class FxOrderMapperTest {
             assertThat(domainOrder.buyCurrency).isEqualTo(DomainCurrency.USD)
             assertThat(domainOrder.sellCurrency).isEqualTo(DomainCurrency.UAH)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
-            assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
@@ -328,7 +323,7 @@ class FxOrderMapperTest {
             orderState = DtoOrderState.PLACED
             resultingRateCcy1 = "USD"
             resultingRateCcy2 = "UAH"
-            resultingRateDateTime = testZonedDateTime
+            resultingRateTimestamp = testZonedDateTime
             resultingRateBid = bd("39.00")
             resultingRateAsk = bd("39.50")
             placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
@@ -347,7 +342,6 @@ class FxOrderMapperTest {
             assertThat(domainOrder.buyCurrency).isEqualTo(DomainCurrency.USD)
             assertThat(domainOrder.sellCurrency).isEqualTo(DomainCurrency.UAH)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
-            assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 

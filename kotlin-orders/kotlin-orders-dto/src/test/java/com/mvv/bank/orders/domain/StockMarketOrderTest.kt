@@ -29,16 +29,15 @@ class StockMarketOrderTest {
             companySymbol = testCompany.symbol,
             company = TestPredefinedCompanies.APPLE,
             volume = bd("1000"),
-            marketSymbol = testMarket.symbol,
             market = testMarket,
         )
 
         val quote = StockQuote(
-            marketSymbol = testMarket.symbol,
-            dateTime = ZonedDateTime.of(testDateTime, testMarket.zoneId),
+            market = testMarket.symbol,
+            product = testCompany.symbol,
+            timestamp = ZonedDateTime.of(testDateTime, testMarket.zoneId),
             marketDate = testDate,
             marketTime = testTime,
-            productSymbol = testCompany.symbol,
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
@@ -55,7 +54,7 @@ class StockMarketOrderTest {
 
             assertThat(order.toExecute(quote)).isTrue
 
-            assertThatCode { order.toExecute(quote.copy(productSymbol = "GOOGLE")) }
+            assertThatCode { order.toExecute(quote.copy(product = "GOOGLE")) }
                 .hasMessage("This quote is for another product (order: AAPL, quote: GOOGLE).")
                 .isExactlyInstanceOf(IllegalStateException::class.java)
 

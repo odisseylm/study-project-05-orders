@@ -66,7 +66,6 @@ class FxOrderMapperTest {
             volume = bd("2000"),
             limitPrice = DomainAmount.of("40.0", DomainCurrency.UAH),
             dailyExecutionType = DomainDailyExecutionType.GTC,
-            marketSymbol = testMarket.symbol,
             market = testMarket,
             orderState = DomainOrderState.TO_BE_PLACED,
         )
@@ -103,7 +102,6 @@ class FxOrderMapperTest {
             volume = bd("2000"),
             stopPrice = DomainAmount.of("40.0", DomainCurrency.UAH),
             dailyExecutionType = DomainDailyExecutionType.GTC,
-            marketSymbol = testMarket.symbol,
             market = testMarket,
             resultingRate = DomainFxRate.of(
                 testMarket, testZonedDateTime, DomainCurrencyPair.USD_UAH,
@@ -148,7 +146,6 @@ class FxOrderMapperTest {
             buyCurrency = DomainCurrency.USD,
             sellCurrency = DomainCurrency.UAH,
             volume = bd("2000"),
-            marketSymbol = testMarket.symbol,
             market = testMarket,
             orderState = DomainOrderState.PLACED,
         )
@@ -207,7 +204,6 @@ class FxOrderMapperTest {
             assertThat(domainOrder.buyCurrency).isEqualTo(DomainCurrency.USD)
             assertThat(domainOrder.sellCurrency).isEqualTo(DomainCurrency.UAH)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
-            assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
@@ -263,7 +259,6 @@ class FxOrderMapperTest {
             assertThat(domainOrder.buyCurrency).isEqualTo(DomainCurrency.USD)
             assertThat(domainOrder.sellCurrency).isEqualTo(DomainCurrency.UAH)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
-            assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
@@ -320,7 +315,6 @@ class FxOrderMapperTest {
             assertThat(domainOrder.buyCurrency).isEqualTo(DomainCurrency.USD)
             assertThat(domainOrder.sellCurrency).isEqualTo(DomainCurrency.UAH)
             assertThat(domainOrder.volume).isEqualTo(bd("2000"))
-            assertThat(domainOrder.marketSymbol).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
