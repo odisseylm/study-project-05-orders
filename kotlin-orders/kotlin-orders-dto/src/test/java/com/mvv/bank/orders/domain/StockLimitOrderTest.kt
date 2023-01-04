@@ -15,6 +15,8 @@ class StockLimitOrderTest {
     private val date = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val time = LocalTime.of(13, 5)
     private val dateTime = LocalDateTime.of(date, time)
+    private val testUser = TestPredefinedUsers.USER1
+    private val testCompany = TestPredefinedCompanies.APPLE
 
     @Test
     fun toExecuteSellCurrencyOrder() {
@@ -29,9 +31,10 @@ class StockLimitOrderTest {
 
         val order = StockLimitOrder.create(
             side = Side.CLIENT,
+            user = testUser,
             buySellType = BuySellType.SELL,
-            companySymbol = "AAPL",
-            company = TestPredefinedCompanies.APPLE,
+            companySymbol = testCompany.symbol,
+            company = testCompany,
             volume = bd("1000"),
             limitPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.DAY_ONLY,
@@ -59,7 +62,7 @@ class StockLimitOrderTest {
             assertThat(order.volume).isEqualTo(bd("1000"))
             assertThat(order.limitPrice).isEqualTo(Amount.of("10.00 USD"))
             assertThat(order.dailyExecutionType).isEqualTo(DailyExecutionType.DAY_ONLY)
-            assertThat(order.company).isEqualTo(TestPredefinedCompanies.APPLE)
+            assertThat(order.company).isEqualTo(testCompany)
 
             assertThat(order.toExecute(quote.copy(bid = Amount.of("9.85", USD), ask = Amount.of("9.95", USD))))
                 .isFalse // because market price for client sell 10.05 < my desired limit sell price 10.00
@@ -89,9 +92,10 @@ class StockLimitOrderTest {
 
         val order = StockLimitOrder.create(
             side = Side.CLIENT,
+            user = testUser,
             buySellType = BuySellType.BUY,
-            companySymbol = "AAPL",
-            company = TestPredefinedCompanies.APPLE,
+            companySymbol = testCompany.symbol,
+            company = testCompany,
             volume = bd("1000"),
             limitPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.GTC,

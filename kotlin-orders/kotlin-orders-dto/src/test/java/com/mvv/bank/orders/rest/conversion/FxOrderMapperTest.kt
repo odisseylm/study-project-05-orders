@@ -35,6 +35,7 @@ class FxOrderMapperTest {
     private val testTime = LocalTime.of(13, 5)
     private val testDateTime = LocalDateTime.of(testDate, testTime)
     private val testZonedDateTime = ZonedDateTime.of(testDateTime, testMarket.zoneId)
+    private val testUser = TestPredefinedUsers.USER1
 
     private val fxOrderMapper = Mappers.getMapper(FxOrderMapper::class.java).clone()
         .also { initProperty(it, "marketService", TestPredefinedMarkets) }
@@ -45,6 +46,7 @@ class FxOrderMapperTest {
 
         val domainOrder = FxCashLimitOrder.create(
             id = null,
+            user = testUser,
             side = DomainSide.CLIENT,
             buySellType = DomainBuySellType.BUY,
             buyCurrency = Currency.USD,
@@ -82,6 +84,7 @@ class FxOrderMapperTest {
 
         val domainOrder = FxCashStopOrder.create(
             id = 567,
+            user = testUser,
             side = DomainSide.CLIENT,
             buySellType = DomainBuySellType.BUY,
             buyCurrency = Currency.USD,
@@ -127,6 +130,7 @@ class FxOrderMapperTest {
 
         val domainOrder = FxCashMarketOrder.create(
             id = 456,
+            user = testUser,
             side = DomainSide.CLIENT,
             buySellType = DomainBuySellType.BUY,
             buyCurrency = Currency.USD,
@@ -163,6 +167,7 @@ class FxOrderMapperTest {
 
         val dtoOrder: DtoFxOrder = DtoFxOrder().apply {
             id = 567
+            user = testUser.value
             orderType = DtoOrderType.LIMIT_ORDER
             side = DtoSide.CLIENT
             buySellType = DtoBuySellType.BUY
@@ -184,6 +189,7 @@ class FxOrderMapperTest {
 
         SoftAssertions().apply {
             assertThat(domainOrder.id).isEqualTo(567)
+            assertThat(domainOrder.user).isEqualTo(testUser)
             assertThat(domainOrder.side).isEqualTo(DomainSide.CLIENT)
             assertThat(domainOrder.orderType).isEqualTo(DomainOrderType.LIMIT_ORDER)
             assertThat(domainOrder.buySellType).isEqualTo(DomainBuySellType.BUY)
@@ -217,6 +223,7 @@ class FxOrderMapperTest {
 
         val dtoOrder = DtoFxOrder().apply {
             id = 567
+            user = testUser.value
             orderType = DtoOrderType.STOP_ORDER
             side = DtoSide.CLIENT
             buySellType = DtoBuySellType.BUY
@@ -238,6 +245,7 @@ class FxOrderMapperTest {
 
         SoftAssertions().apply {
             assertThat(domainOrder.id).isEqualTo(567)
+            assertThat(domainOrder.user).isEqualTo(testUser)
             assertThat(domainOrder.side).isEqualTo(DomainSide.CLIENT)
             assertThat(domainOrder.orderType).isEqualTo(DomainOrderType.STOP_ORDER)
             assertThat(domainOrder.buySellType).isEqualTo(DomainBuySellType.BUY)
@@ -274,6 +282,7 @@ class FxOrderMapperTest {
 
         val dtoOrder: DtoFxOrder = DtoFxOrder().apply {
             id = 567
+            user = testUser.value
             orderType = DtoOrderType.MARKET_ORDER
             side = DtoSide.CLIENT
             buySellType = DtoBuySellType.BUY
@@ -293,6 +302,7 @@ class FxOrderMapperTest {
 
         SoftAssertions().apply {
             assertThat(domainOrder.id).isEqualTo(567)
+            assertThat(domainOrder.user).isEqualTo(testUser)
             assertThat(domainOrder.side).isEqualTo(DomainSide.CLIENT)
             assertThat(domainOrder.orderType).isEqualTo(DomainOrderType.MARKET_ORDER)
             assertThat(domainOrder.buySellType).isEqualTo(DomainBuySellType.BUY)
@@ -324,6 +334,7 @@ class FxOrderMapperTest {
 
         val dtoOrder = DtoFxOrder().apply {
             id = 567
+            user = TestPredefinedUsers.USER1.value
             orderType = DtoOrderType.MARKET_ORDER
             side = DtoSide.CLIENT
             buySellType = DtoBuySellType.BUY
@@ -349,6 +360,7 @@ class FxOrderMapperTest {
 
         val dtoOrder: DtoFxOrder = DtoFxOrder().apply {
             id = 567
+            user = TestPredefinedUsers.USER1.value
             orderType = DtoOrderType.MARKET_ORDER
             side = DtoSide.CLIENT
             buySellType = DtoBuySellType.BUY

@@ -14,9 +14,13 @@ import kotlin.reflect.jvm.isAccessible
 
 
 @Mapper(componentModel = "spring, default, cdi, jakarta, jsr330", uses = [CurrencyMapper::class, FxRateMapper::class])
+@Suppress("CdiInjectionPointsInspection")
 abstract class FxOrderMapper: Cloneable {
     @Inject
     private lateinit var marketService: MarketService
+
+    fun map(user: String): User = User.of(user) // TODO: move to base interface
+    fun map(user: User): String = user.value    // TODO: move to base interface
 
     // I guess it is not needed or even small evil ))
     //@BeforeMapping

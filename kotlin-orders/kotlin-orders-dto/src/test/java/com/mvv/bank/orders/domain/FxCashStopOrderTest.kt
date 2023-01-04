@@ -18,6 +18,7 @@ class FxCashStopOrderTest {
     private val time = LocalTime.of(13, 5)
     private val dateTime = LocalDateTime.of(date, time)
     private val zonedDateTime = ZonedDateTime.of(dateTime, market.zoneId)
+    private val testUser = TestPredefinedUsers.USER1
 
     @Test
     fun toExecuteSellCurrencyOrder() {
@@ -26,6 +27,7 @@ class FxCashStopOrderTest {
 
         val order = FxCashStopOrder.create(
             side = Side.CLIENT,
+            user = testUser,
             buySellType = BuySellType.SELL,
             sellCurrency = EUR,
             buyCurrency = UAH,
@@ -91,6 +93,7 @@ class FxCashStopOrderTest {
 
         val order = FxCashStopOrder.create(
             side = Side.CLIENT,
+            user = testUser,
             buySellType = BuySellType.BUY,
             buyCurrency = EUR,
             sellCurrency = UAH,
@@ -149,6 +152,7 @@ class FxCashStopOrderTest {
         assertThatCode {
                 FxCashLimitOrder.create(
                     side = Side.CLIENT,
+                    user = testUser,
                     buySellType = BuySellType.BUY,
                     buyCurrency = EUR,
                     sellCurrency = UAH,
@@ -160,7 +164,7 @@ class FxCashStopOrderTest {
                     orderState = OrderState.EXECUTED,
                 )
             }
-            .hasMessage("Id is not set or incorrect null.")
+            .hasMessage("Id is not set or incorrect [null].")
             .isExactlyInstanceOf(IllegalStateException::class.java)
     }
 }

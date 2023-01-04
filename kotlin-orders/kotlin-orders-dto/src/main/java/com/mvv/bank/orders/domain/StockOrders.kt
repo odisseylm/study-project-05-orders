@@ -4,7 +4,21 @@ import java.math.BigDecimal
 import java.time.ZonedDateTime
 
 
-class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, StockQuote> {
+sealed class StockOrder : AbstractOrder<String, StockQuote>() {
+    abstract var company: Company
+
+    override var resultingQuote: StockQuote?
+        get() = super.resultingQuote
+        set(value) {
+            super.resultingQuote = value
+
+            if (value != null && resultingPrice == null) {
+                resultingPrice = value.asPrice(buySellType)
+            }
+        }
+}
+
+class StockLimitOrder : StockOrder(), LimitOrder<String, StockQuote> {
 
     private val limitOrderSupport = StopLimitOrderSupport(this,
         //"limitPrice", { this.limitPrice },
@@ -16,7 +30,7 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
     override val orderType: OrderType = OrderType.LIMIT_ORDER
     override lateinit var limitPrice: Amount
     override lateinit var dailyExecutionType: DailyExecutionType
-    lateinit var company: Company
+    override lateinit var company: Company
 
     override fun validateCurrentState() {
         super.validateCurrentState()
@@ -33,6 +47,7 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
     companion object {
         fun create(
             id: Long? = null,
+            user: User,
             side: Side,
             buySellType: BuySellType,
             companySymbol: String,
@@ -57,6 +72,7 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
             val order = StockLimitOrder()
             // TODO: how to fix this duplicated 19 lines???
             order.id = id
+            order.user = user
 
             order.side  = side
             order.buySellType = buySellType
@@ -87,14 +103,14 @@ class StockLimitOrder : AbstractOrder<String, StockQuote>(), LimitOrder<String, 
 }
 
 
-class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, StockQuote> {
+class StockStopOrder : StockOrder(), StopOrder<String, StockQuote> {
 
     private val stopOrderSupport = StopLimitOrderSupport(this, ::stopPrice, ::dailyExecutionType)
 
     override val orderType: OrderType = OrderType.STOP_ORDER
     override lateinit var stopPrice: Amount
     override lateinit var dailyExecutionType: DailyExecutionType
-    lateinit var company: Company
+    override lateinit var company: Company
 
     override fun validateCurrentState() {
         super.validateCurrentState()
@@ -111,6 +127,7 @@ class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, St
     companion object {
         fun create(
             id: Long? = null,
+            user: User,
             side: Side,
             buySellType: BuySellType,
             companySymbol: String,
@@ -135,6 +152,7 @@ class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, St
             val order = StockStopOrder()
             // T O D O: how to fix this duplicated 19 lines???
             order.id = id
+            order.user = user
 
             order.side  = side
             order.buySellType = buySellType
@@ -165,10 +183,10 @@ class StockStopOrder : AbstractOrder<String, StockQuote>(), StopOrder<String, St
 }
 
 
-class StockMarketOrder : AbstractOrder<String, StockQuote>() {
+class StockMarketOrder : StockOrder() {
 
     override val orderType: OrderType = OrderType.MARKET_ORDER
-    var company: Company? = null
+    override lateinit var company: Company
 
     override fun toExecute(quote: StockQuote): Boolean {
         check(quote.productSymbol == this.product) {
@@ -179,6 +197,7 @@ class StockMarketOrder : AbstractOrder<String, StockQuote>() {
     companion object {
         fun create(
             id: Long? = null,
+            user: User,
             side: Side,
             buySellType: BuySellType,
             companySymbol: String,
@@ -201,6 +220,7 @@ class StockMarketOrder : AbstractOrder<String, StockQuote>() {
             val order = StockMarketOrder()
             // T O D O: how to fix this duplicated 19 lines???
             order.id = id
+            order.user = user
 
             order.side  = side
             order.buySellType = buySellType

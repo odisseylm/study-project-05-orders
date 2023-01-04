@@ -1,14 +1,10 @@
 package com.mvv.bank.orders.domain
 
-import com.mvv.bank.util.LateInitProperty
-import com.mvv.bank.util.checkId
-import com.mvv.bank.util.checkInitialized
+import com.mvv.bank.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.time.ZonedDateTime
-import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.jvm.isAccessible
 import com.mvv.bank.orders.domain.Quote as BaseQuote
 
 
@@ -17,6 +13,7 @@ private val log: Logger = LoggerFactory.getLogger(Order::class.java)
 
 sealed interface Order<Product: Any, Quote: BaseQuote> {
     var id: Long?
+    var user: User
     var side: Side
     val orderType: OrderType
     var buySellType: BuySellType
@@ -49,34 +46,21 @@ sealed interface Order<Product: Any, Quote: BaseQuote> {
     fun toExecute(quote: Quote): Boolean
 }
 
+interface OrderNaturalKey { }
+
+
 inline fun <reified T: Order<*,*>> createOrder(init: T.() -> Unit): T {
-    val order: T = createOrderInstanceInternal()
+    val order = newInstance<T>()
     order.init()
     order.validateCurrentState()
     return order
 }
 
-// kotlin does not allow to make this inline function as 'internal' or 'private'
-inline fun <reified T: Order<*,*>> createOrderInstanceInternal(): T {
-    val primaryConstructor = T::class.primaryConstructor
-    if (primaryConstructor != null && primaryConstructor.parameters.isEmpty()) {
-        if (!primaryConstructor.isAccessible) {
-            primaryConstructor.isAccessible = true
-        }
-        return primaryConstructor.call()
-    }
-
-    val constructor = T::class.java.getDeclaredConstructor()
-    if (!constructor.canAccess(null)) { // for java before java 9 'constructor.isAccessible' should be used
-        constructor.trySetAccessible()
-    }
-    return constructor.newInstance()
-}
-
-
 
 sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quote> {
     override var id: Long? = null
+
+    override lateinit var user: User
 
     private val sideImpl = LateInitProperty<Side, Any>(
         changeable = false,
@@ -156,21 +140,25 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
 
     override fun validateCurrentState() {
         if (orderState == OrderState.UNKNOWN) {
-            log.warn("Attempt to validate current state of order with status $orderState") // TODO: fix warning message
+            log.warn("Attempt to validate current state of order with status $orderState.")
             return
         }
 
-        checkInitialized(::orderType)
-        checkInitialized(::orderType)
-        checkInitialized(::side)
+        checkLateInitPropsAreInitialized(this)
         check(side == Side.CLIENT) { "Currently only client side orders are supported." }
-        checkInitialized(::volume)
-        checkInitialized(::buySellType)
-        checkInitialized(::orderState)
 
-        checkInitialized(::product)
-        checkInitialized(::market)
-        checkInitialized(::marketSymbol)
+        /*
+        checkPropertyInitialized(::orderType)
+        checkPropertyInitialized(::side)
+        check(side == Side.CLIENT) { "Currently only client side orders are supported." }
+        checkPropertyInitialized(::volume)
+        checkPropertyInitialized(::buySellType)
+        checkPropertyInitialized(::orderState)
+
+        checkPropertyInitialized(::product)
+        checkPropertyInitialized(::market)
+        checkPropertyInitialized(::marketSymbol)
+        */
 
         when (orderState) {
             OrderState.UNKNOWN -> { }
@@ -182,17 +170,17 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
             }
             OrderState.EXECUTED -> {
                 checkId(id)
-                checkInitialized(::placedAt)
-                checkInitialized(::resultingPrice)
-                checkInitialized(::resultingQuote)
+                checkPropertyInitialized(::placedAt)
+                checkPropertyInitialized(::resultingPrice)
+                checkPropertyInitialized(::resultingQuote)
             }
             OrderState.EXPIRED -> {
                 checkId(id)
-                checkInitialized(::expiredAt)
+                checkPropertyInitialized(::expiredAt)
             }
             OrderState.CANCELED -> {
                 checkId(id)
-                checkInitialized(::canceledAt)
+                checkPropertyInitialized(::canceledAt)
             }
         }
     }
@@ -202,6 +190,9 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
             return
         }
 
+        checkLateInitPropsAreInitialized(this)
+
+        /*
         checkInitialized(::orderType)
         checkInitialized(::product)
         checkInitialized(::volume)
@@ -209,6 +200,7 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
         checkInitialized(::marketSymbol)
         checkInitialized(::buySellType)
         checkInitialized(::orderState)
+        */
 
         @Suppress("KotlinConstantConditions")
         when (nextState) {

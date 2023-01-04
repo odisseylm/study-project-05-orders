@@ -7,6 +7,8 @@ import java.time.ZonedDateTime
 class FxOrder {
     var id: Long? = null
 
+    lateinit var user: String
+
     lateinit var orderType: OrderType
     lateinit var orderState: OrderState
 

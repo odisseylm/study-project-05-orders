@@ -6,9 +6,9 @@ import java.time.ZonedDateTime
 
 
 @Entity
-@Table(name = "FX_ORDERS")
+@Table(name = "QUOTE_ORDERS")
 @Suppress("JpaDataSourceORMInspection")
-class FxOrder {
+class StockOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID", nullable = false)
@@ -33,15 +33,16 @@ class FxOrder {
     lateinit var buySellType: BuySellType
 
     @Column(name = "ORDER_STATE", nullable = false)
-    @Convert(converter = OrderState.SqlConverter::class)
+    @Convert(converter = OrderState.SqlConverter::class) // TODO: move common/shared to base class
     lateinit var orderState: OrderState
 
-    @Column(name = "BUY_CUR", nullable = false)
-    lateinit var buyCurrency: String
-    @Column(name = "SELL_CUR", nullable = false)
-    lateinit var sellCurrency: String
+    @Column(name = "PRODUCT", nullable = false)
+    lateinit var product: String
     @Column(name = "VOLUME", nullable = false)
     lateinit var volume: BigDecimal
+
+    @Column(name = "PRICE_CUR", nullable = true)
+    lateinit var priceCurrency: String
 
     // It is nullable since market price does not require limit/stop price (since executed immediately)
     @Column(name = "LIMIT_PRICE", nullable = true)
@@ -50,17 +51,14 @@ class FxOrder {
     @Column(name = "DAILY_TYPE", nullable = true)
     var dailyExecutionType: DailyExecutionType? = null
 
-
-    @Column(name = "RES_TIMESTAMP")
-    var resultingRateDateTime: ZonedDateTime? = null
-    @Column(name = "RES_CCY1")
-    var resultingRateCcy1: String? = null
-    @Column(name = "RES_CCY2")
-    var resultingRateCcy2: String? = null
-    @Column(name = "RES_RATE_BID")
-    var resultingRateBid: BigDecimal? = null
-    @Column(name = "RES_RATE_ASK")
-    var resultingRateAsk: BigDecimal? = null
+    @Column(name = "RES_PRICE_BID")
+    var resultingPrice: BigDecimal? = null
+    @Column(name = "RES_QUOTE_BID")
+    var resultingQuoteBid: BigDecimal? = null
+    @Column(name = "RES_QUOTE_ASK")
+    var resultingQuoteAsk: BigDecimal? = null
+    @Column(name = "RES_QUOTE_TIMESTAMP")
+    var resultingQuoteTimestamp: ZonedDateTime? = null
 
     @Column(name = "PLACED_AT", nullable = false)
     var placedAt: ZonedDateTime? = null

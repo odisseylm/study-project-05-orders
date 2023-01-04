@@ -48,5 +48,5 @@ class FxRate {
 data class FxRateId (
     val cur1: String,
     val cur2: String,
-    val dateTime: ZonedDateTime,
+    val dateTime: ZonedDateTime, // TODO: rename to timestamp
 ) : Serializable

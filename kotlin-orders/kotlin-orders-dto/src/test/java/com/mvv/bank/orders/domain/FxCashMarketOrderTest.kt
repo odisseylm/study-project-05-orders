@@ -15,11 +15,13 @@ class FxCashMarketOrderTest {
     private val time = LocalTime.of(13, 5)
     private val dateTime = LocalDateTime.of(date, time)
     private val zonedDateTime = ZonedDateTime.of(dateTime, market.zoneId)
+    private val testUser = TestPredefinedUsers.USER1
 
     @Test
     fun create() {
         val order = FxCashMarketOrder.create(
             side = Side.CLIENT,
+            user = testUser,
             buySellType = BuySellType.SELL,
             buyCurrency = Currency.USD,
             sellCurrency = Currency.EUR,

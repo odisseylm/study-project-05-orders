@@ -18,6 +18,7 @@ class FxCashLimitOrderTest {
     private val time = LocalTime.of(13, 5)
     private val dateTime = LocalDateTime.of(date, time)
     private val zonedDateTime = ZonedDateTime.of(dateTime, market.zoneId)
+    private val testUser = TestPredefinedUsers.USER1
 
     @Test
     fun toExecuteSellCurrencyOrder() {
@@ -26,6 +27,7 @@ class FxCashLimitOrderTest {
 
         val order = FxCashLimitOrder.create(
             side = Side.CLIENT,
+            user = testUser,
             buySellType = BuySellType.SELL,
             sellCurrency = EUR,
             buyCurrency = UAH,
@@ -96,6 +98,7 @@ class FxCashLimitOrderTest {
 
         val order = FxCashLimitOrder.create(
             side = Side.CLIENT,
+            user = testUser,
             buySellType = BuySellType.BUY,
             buyCurrency = EUR,
             sellCurrency = UAH,
@@ -159,6 +162,7 @@ class FxCashLimitOrderTest {
         assertThatCode {
                 FxCashLimitOrder.create(
                     side = Side.CLIENT,
+                    user = testUser,
                     buySellType = BuySellType.BUY,
                     buyCurrency = EUR,
                     sellCurrency = UAH,
@@ -170,7 +174,7 @@ class FxCashLimitOrderTest {
                     orderState = OrderState.EXECUTED,
                 )
             }
-            .hasMessage("Id is not set or incorrect null.")
+            .hasMessage("Id is not set or incorrect [null].")
             .isExactlyInstanceOf(IllegalStateException::class.java)
     }
 
@@ -179,6 +183,7 @@ class FxCashLimitOrderTest {
     fun validationIsDoneWithCreatingOrderByDslLikeBuilder() {
         assertThatCode {
             createOrder<FxCashLimitOrder> {
+                    user = TestPredefinedUsers.USER1
                     side = Side.CLIENT
                     buySellType = BuySellType.BUY
                     buyCurrency = EUR
@@ -191,7 +196,7 @@ class FxCashLimitOrderTest {
                     orderState = OrderState.EXECUTED
                 }
             }
-            .hasMessage("Id is not set or incorrect null.")
+            .hasMessage("Id is not set or incorrect [null].")
             .isExactlyInstanceOf(IllegalStateException::class.java)
     }
 }

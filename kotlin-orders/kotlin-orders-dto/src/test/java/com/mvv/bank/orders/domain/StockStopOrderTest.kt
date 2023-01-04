@@ -3,18 +3,19 @@ package com.mvv.bank.orders.domain
 import com.mvv.bank.orders.domain.Currency.Companion.USD
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal as bd
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
+import java.math.BigDecimal as bd
 
 
 class StockStopOrderTest {
-    private val market = TestPredefinedMarkets.KYIV1
-    private val date = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
-    private val time = LocalTime.of(13, 5)
-    private val dateTime = LocalDateTime.of(date, time)
+    private val testMarket = TestPredefinedMarkets.KYIV1
+    private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
+    private val testTime = LocalTime.of(13, 5)
+    private val testZonedDateTime = ZonedDateTime.of(testDate, testTime, testMarket.zoneId)
+    private val testCompany = TestPredefinedCompanies.APPLE
+    private val testUser = TestPredefinedUsers.USER1
 
     @Test
     fun toExecuteSellCurrencyOrder() {
@@ -28,29 +29,24 @@ class StockStopOrderTest {
         // client wants to sell 20 Apple shares (another currency UAH) by price >= 10.00
 
         val order = StockStopOrder.create(
+            user = testUser,
             side = Side.CLIENT,
             buySellType = BuySellType.SELL,
-            companySymbol = "AAPL",
-            company = TestPredefinedCompanies.APPLE,
+            companySymbol = testCompany.symbol,
+            company = testCompany,
             volume = bd("1000"),
             stopPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.DAY_ONLY,
-            marketSymbol = market.symbol,
-            market = market,
+            marketSymbol = testMarket.symbol,
+            market = testMarket,
         )
 
-        val quote = StockQuote(
-            marketSymbol = market.symbol,
-            dateTime = ZonedDateTime.of(dateTime, market.zoneId),
-            marketDate = date,
-            marketTime = time,
-            productSymbol = "AAPL",
+        val quote = StockQuote.of(
+            testMarket, testCompany, testZonedDateTime,
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
-            bid = Amount.of("0", USD),
-            ask = Amount.of("0", USD),
-        )
+            bid = bd("0"), ask = bd("0"), USD)
 
         SoftAssertions().apply {
 
@@ -59,7 +55,8 @@ class StockStopOrderTest {
             assertThat(order.volume).isEqualTo(bd("1000"))
             assertThat(order.stopPrice).isEqualTo(Amount.of("10.00 USD"))
             assertThat(order.dailyExecutionType).isEqualTo(DailyExecutionType.DAY_ONLY)
-            assertThat(order.company).isEqualTo(TestPredefinedCompanies.APPLE)
+            assertThat(order.company).isEqualTo(testCompany)
+            assertThat(order.product).isEqualTo(testCompany.symbol)
 
             assertThat(order.toExecute(quote.copy(bid = Amount.of("9.85", USD), ask = Amount.of("9.95", USD))))
                 .isFalse // because market price for client sell 10.05 < my desired limit sell price 10.00
@@ -88,29 +85,24 @@ class StockStopOrderTest {
         // client wants to sell 20 Apple shares (another currency UAH) by price >= 10.00
 
         val order = StockStopOrder.create(
+            user = testUser,
             side = Side.CLIENT,
             buySellType = BuySellType.BUY,
-            companySymbol = "AAPL",
-            company = TestPredefinedCompanies.APPLE,
+            companySymbol = testCompany.symbol,
+            company = testCompany,
             volume = bd("1000"),
             stopPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.GTC,
-            marketSymbol = market.symbol,
-            market = market,
+            marketSymbol = testMarket.symbol,
+            market = testMarket,
         )
 
-        val quote = StockQuote(
-            marketSymbol = market.symbol,
-            dateTime = ZonedDateTime.of(dateTime, market.zoneId),
-            marketDate = date,
-            marketTime = time,
-            productSymbol = "AAPL",
+        val quote = StockQuote.of(
+            testMarket, testCompany, testZonedDateTime,
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
-            bid = Amount.of("0", USD),
-            ask = Amount.of("0", USD),
-        )
+            bid = bd("0"), ask = bd("0"), USD)
 
         SoftAssertions().apply {
 

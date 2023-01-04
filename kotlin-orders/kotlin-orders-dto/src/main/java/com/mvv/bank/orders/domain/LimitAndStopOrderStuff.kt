@@ -1,6 +1,7 @@
 package com.mvv.bank.orders.domain
 
 import com.mvv.bank.util.checkInitialized
+import com.mvv.bank.util.checkPropertyInitialized
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KProperty
@@ -94,7 +95,7 @@ internal class StopLimitOrderSupport<Order: com.mvv.bank.orders.domain.Order<*, 
             return
         }
 
-        checkInitialized(limitStopPricePropName, limitStopPrice)
-        checkInitialized(dailyExecutionTypePropName, dailyExecutionType)
+        checkPropertyInitialized(limitStopPricePropName, limitStopPrice)
+        checkPropertyInitialized(dailyExecutionTypePropName, dailyExecutionType)
     }
 }

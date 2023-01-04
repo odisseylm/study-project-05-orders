@@ -1,7 +1,16 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.orders.service.CompanyService
 import com.mvv.bank.orders.service.MarketService
 import java.time.*
+
+
+class TestPredefinedUsers {
+    companion object {
+        val USER1 = User.of("vovan@gmail.com") //, "vovan")
+        //val USER2 = User.of("petro@gmail.com") //, "petro")
+    }
+}
 
 
 class TestPredefinedMarkets {
@@ -22,7 +31,7 @@ class TestPredefinedMarkets {
 
 
 class TestPredefinedCompanies {
-    companion object : CompanyFactory {
+    companion object : CompanyFactory, CompanyService {
         val APPLE: Company = TestCompanyImpl("Apple", "AAPL", "isin1234")
 
         override fun getCompanyData(symbol: String): Company =
@@ -30,6 +39,8 @@ class TestPredefinedCompanies {
                 APPLE.symbol -> APPLE
                 else -> throw IllegalArgumentException("Company [$symbol] is not found.")
             }
+
+        override fun companyBySymbol(companySymbol: String): Company = getCompanyData(companySymbol)
     }
 }
 

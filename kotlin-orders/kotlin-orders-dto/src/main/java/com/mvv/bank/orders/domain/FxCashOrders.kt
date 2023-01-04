@@ -73,8 +73,10 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
     override fun toExecute(quote: Quote): Boolean = limitOrderSupport.toExecute(quote)
 
     companion object {
+        // TODO: to inherit parameters we can put them into structure BaseParams and pass other specific params separately
         fun create(
             id: Long? = null,
+            user: User,
             side: Side,
             buySellType: BuySellType,
             buyCurrency: Currency,
@@ -99,6 +101,7 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
         ): FxCashLimitOrder {
             val order = FxCashLimitOrder()
             order.id = id
+            order.user = user
 
             order.side  = side
             order.buySellType  = buySellType
@@ -153,6 +156,7 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
     companion object {
         fun create(
             id: Long? = null,
+            user: User,
             side: Side,
             buySellType: BuySellType,
             buyCurrency: Currency,
@@ -177,6 +181,7 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
         ): FxCashStopOrder {
             val order = FxCashStopOrder()
             order.id = id
+            order.user = user
 
             order.side  = side
             order.buySellType  = buySellType
@@ -224,6 +229,7 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
     companion object {
         fun create(
             id: Long? = null,
+            user: User,
             side: Side,
             buySellType: BuySellType,
             buyCurrency: Currency,
@@ -246,6 +252,7 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
         ): FxCashMarketOrder {
             val order = FxCashMarketOrder()
             order.id = id
+            order.user = user
 
             order.side  = side
             order.buySellType  = buySellType

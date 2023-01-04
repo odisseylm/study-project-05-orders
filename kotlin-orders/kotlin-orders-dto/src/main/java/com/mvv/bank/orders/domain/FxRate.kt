@@ -16,7 +16,7 @@ import java.time.ZonedDateTime
 //
 data class FxRate (
     val marketSymbol: String,
-    val dateTime: ZonedDateTime,
+    val dateTime: ZonedDateTime, // TODO: rename to timestamp
     val marketDate: LocalDate,
     val marketTime: LocalTime,
 

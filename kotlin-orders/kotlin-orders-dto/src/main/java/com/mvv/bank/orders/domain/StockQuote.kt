@@ -12,7 +12,7 @@ interface Quote {
     val marketSymbol: String
     //val market: Market
 
-    val dateTime: ZonedDateTime
+    val dateTime: ZonedDateTime // TODO: rename to timestamp
 
     // date/time in market/exchange timezone
     val marketDate: LocalDate
@@ -61,4 +61,31 @@ data class StockQuote (
     val volume: BigDecimal? = null,
     //val averageVolume: BigDecimal? = null,
     val volume3m: BigDecimal? = null,
-) : Quote
+) : Quote {
+    companion object { } // for possibility to write companion extension functions
+}
+
+
+fun StockQuote.asPrice(buySellType: BuySellType): Amount =
+    when (buySellType) {
+        BuySellType.BUY  -> this.ask
+        BuySellType.SELL -> this.bid
+    }
+
+
+fun StockQuote.Companion.of(
+    market: Market,
+    company: Company,
+    dateTime: ZonedDateTime,
+    bid: BigDecimal,
+    ask: BigDecimal,
+    currency: Currency,
+): StockQuote = StockQuote(
+    marketSymbol = market.symbol,
+    productSymbol = company.symbol,
+    dateTime = dateTime,
+    marketDate = dateTime.withZoneSameInstant(market.zoneId).toLocalDate(),
+    marketTime = dateTime.withZoneSameInstant(market.zoneId).toLocalTime(),
+    bid = Amount.of(bid, currency),
+    ask = Amount.of(ask, currency),
+)

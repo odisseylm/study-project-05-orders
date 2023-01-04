@@ -3,18 +3,19 @@ package com.mvv.bank.orders.repository.jpa.entities
 import com.mvv.bank.jpa.SqlShortcutEnum
 import com.mvv.bank.jpa.SqlShortcutEnumConverter
 import com.mvv.bank.jpa.SqlShortcutEnumFactory
-import com.mvv.bank.orders.domain.AbstractFxCashOrder
-import com.mvv.bank.orders.domain.FxCashLimitOrder
-import com.mvv.bank.orders.domain.FxCashMarketOrder
-import com.mvv.bank.orders.domain.FxCashStopOrder
+import com.mvv.bank.orders.domain.*
 import jakarta.persistence.Converter
 import kotlin.reflect.KClass
 
 
-enum class OrderType (override val sqlShortcut: String, val domainType: KClass<out AbstractFxCashOrder>) : SqlShortcutEnum {
-    MARKET_ORDER("MKT", FxCashMarketOrder::class),
-    LIMIT_ORDER("LIM", FxCashLimitOrder::class),
-    STOP_ORDER("STOP", FxCashStopOrder::class),
+enum class OrderType (
+    override val sqlShortcut: String,
+    val cashDomainType: KClass<out AbstractFxCashOrder>,
+    val stockDomainType: KClass<out com.mvv.bank.orders.domain.StockOrder>,
+    ) : SqlShortcutEnum {
+    MARKET_ORDER("MKT", FxCashMarketOrder::class, StockMarketOrder::class),
+    LIMIT_ORDER("LIM", FxCashLimitOrder::class, StockLimitOrder::class),
+    STOP_ORDER("STOP", FxCashStopOrder::class, StockStopOrder::class),
     ;
 
     companion object {
