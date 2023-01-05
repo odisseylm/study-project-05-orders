@@ -17,18 +17,10 @@ fun <T: Any> internalNewInstance(type: KClass<T>): T {
         return primaryConstructor.call()
     }
 
-    val constructor = type.java.getDeclaredConstructor()
-    if (!constructor.canAccess(null)) { // for java before java 9 'constructor.isAccessible' should be used
-        constructor.trySetAccessible()
-    }
-    return constructor.newInstance()
+    return newJavaInstance(type.java)
 }
 
 fun <T: Any> newJavaInstance(type: Class<T>): T {
-
-    //val primaryConstructor = type.declaredConstructors
-    //    .find { it.parameterCount == 0 }
-    //    ?: throw IllegalStateException("Seems ${type.name} has no constructor without parameters.")
 
     val primaryConstructor = type.getDeclaredConstructor()
     if (!primaryConstructor.canAccess(null)) { // for java before java 9 'constructor.isAccessible' should be used
