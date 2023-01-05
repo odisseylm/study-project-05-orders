@@ -2,8 +2,11 @@ package com.mvv.bank.orders.repository.jpa.conversion
 
 import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
-import com.mvv.bank.orders.domain.*
+import com.mvv.bank.orders.domain.of
 import org.mapstruct.*
+import kotlin.reflect.KClass
+import com.mvv.bank.orders.domain.Currency as DomainCurrency
+import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 import com.mvv.bank.orders.domain.StockQuote as DomainStockQuote
 import com.mvv.bank.orders.domain.StockLimitOrder as DomainLimitOrder
 import com.mvv.bank.orders.domain.StockMarketOrder as DomainMarketOrder
@@ -15,7 +18,7 @@ import com.mvv.bank.orders.repository.jpa.entities.StockOrder as DtoOrder
 @Mapper(
     componentModel = MAP_STRUCT_COMPONENT_MODEL,
     config = DomainPrimitiveMappers::class,
-    imports = [Currency::class, Amount::class],
+    //imports = [Currency::class, Amount::class],
 )
 @Suppress("CdiInjectionPointsInspection")
 abstract class StockOrderMapper : AbstractJpaOrderMapper() {
@@ -96,7 +99,7 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
                 marketToDomain(dtoOrder.market)!!, companyToDomain(dtoOrder.product)!!,
                 resultingQuoteTimestamp,
                 bid = resultingQuoteBid, ask = resultingQuoteAsk,
-                Currency.of(dtoOrder.priceCurrency)
+                DomainCurrency.of(dtoOrder.priceCurrency)
             )
         }
     }
@@ -110,7 +113,5 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
             //else -> null
         }
 
-
-    @ObjectFactory
-    fun <T : DomainOrder> createDomainOrder(source: DtoOrder): T = newOrderInstance(source.orderType.stockDomainType)
+    override fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*> = orderType.stockDomainType
 }

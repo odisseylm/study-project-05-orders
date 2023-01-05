@@ -1,18 +1,10 @@
 package com.mvv.bank.orders.rest.entities
 
-import com.mvv.bank.orders.domain.*
-import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainCashOrder
-import com.mvv.bank.orders.domain.StockOrder as DomainStockOrder
-import kotlin.reflect.KClass
 
-
-enum class OrderType (
-    val cashDomainType: KClass<out DomainCashOrder>,
-    val stockDomainType: KClass<out DomainStockOrder>,
-) {
-    MARKET_ORDER(FxCashMarketOrder::class, StockMarketOrder::class),
-    LIMIT_ORDER(FxCashLimitOrder::class, StockLimitOrder::class),
-    STOP_ORDER(FxCashStopOrder::class, StockStopOrder::class),
+enum class OrderType {
+    MARKET_ORDER,
+    LIMIT_ORDER,
+    STOP_ORDER,
 }
 
 

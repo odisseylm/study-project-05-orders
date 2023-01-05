@@ -3,16 +3,24 @@ package com.mvv.bank.orders.rest.conversion
 import com.mvv.bank.log.safe
 import com.mvv.bank.orders.conversion.AbstractOrderMapper
 import com.mvv.bank.util.checkLateInitPropsAreInitialized
+
+import com.mvv.bank.orders.domain.OrderType as DomainOrderType
+import com.mvv.bank.orders.rest.entities.OrderType as DtoOrderType
 import com.mvv.bank.orders.rest.entities.BaseOrder as DtoBaseOrder
-import com.mvv.bank.orders.rest.entities.OrderType as DomainOrderType
+
 import org.mapstruct.AfterMapping
 import org.mapstruct.MappingTarget
 import org.mapstruct.BeforeMapping
+import org.mapstruct.ObjectFactory
 
 typealias DomainBaseOrder = com.mvv.bank.orders.domain.Order<*,*>
 
 
 abstract class AbstractRestOrderMapper : AbstractOrderMapper() {
+
+    abstract fun orderTypeToDomain(orderType: DtoOrderType): DomainOrderType
+    abstract fun orderTypeToDto(orderType: DomainOrderType): DtoOrderType
+
 
     @BeforeMapping
     @Suppress("UNUSED_PARAMETER")
@@ -28,7 +36,7 @@ abstract class AbstractRestOrderMapper : AbstractOrderMapper() {
 
     @BeforeMapping
     open fun validateDtoOrderBeforeLoading(source: DtoBaseOrder, @MappingTarget target: Any) {
-        if (source.orderType == DomainOrderType.MARKET_ORDER) {
+        if (source.orderType == DtoOrderType.MARKET_ORDER) {
             require(source.limitPrice == null && source.stopPrice == null) {
                 "Market price cannot have limit/stop price (${source.limitPrice.safe}/${source.stopPrice.safe})." }
             require(source.dailyExecutionType == null) {
@@ -41,4 +49,7 @@ abstract class AbstractRestOrderMapper : AbstractOrderMapper() {
     fun postInitDomainOrder(source: Any, @MappingTarget target: DomainBaseOrder) =
         target.validateCurrentState()
 
+    @ObjectFactory
+    fun <T : DomainBaseOrder> createDomainOrder(source: DtoBaseOrder): T =
+        newOrderInstance(chooseOrderTypeClass(orderTypeToDomain(source.orderType)))
 }

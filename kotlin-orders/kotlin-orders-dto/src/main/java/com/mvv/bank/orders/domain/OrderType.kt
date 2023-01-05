@@ -1,11 +1,15 @@
 package com.mvv.bank.orders.domain
 
+import kotlin.reflect.KClass
 
-enum class OrderType {
-    MARKET_ORDER,
-    LIMIT_ORDER,
-    STOP_ORDER,
-    //BUY_STOP_ORDER,
+
+enum class OrderType (
+    val cashDomainType: KClass<out AbstractFxCashOrder>,
+    val stockDomainType: KClass<out StockOrder>,
+) {
+    MARKET_ORDER(FxCashMarketOrder::class, StockMarketOrder::class),
+    LIMIT_ORDER(FxCashLimitOrder::class, StockLimitOrder::class),
+    STOP_ORDER(FxCashStopOrder::class, StockStopOrder::class),
 }
 
 

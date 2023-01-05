@@ -3,10 +3,12 @@ package com.mvv.bank.orders.rest.conversion
 import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import org.mapstruct.*
+import kotlin.reflect.KClass
 
 import com.mvv.bank.orders.rest.entities.StockOrder as DtoOrder
 
 import com.mvv.bank.orders.domain.StockOrder as DomainOrder
+import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 import com.mvv.bank.orders.domain.StockStopOrder as DomainStopOrder
 import com.mvv.bank.orders.domain.StockLimitOrder as DomainLimitOrder
 import com.mvv.bank.orders.domain.StockMarketOrder as DomainMarketOrder
@@ -85,6 +87,5 @@ abstract class StockOrderMapper: AbstractRestOrderMapper() {
             //else -> null
         }
 
-    @ObjectFactory
-    fun <T : DomainOrder> createDomainOrder(source: DtoOrder): T = newOrderInstance(source.orderType.stockDomainType)
+    override fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*> = orderType.stockDomainType
 }

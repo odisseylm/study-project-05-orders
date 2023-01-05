@@ -2,8 +2,13 @@ package com.mvv.bank.orders.repository.jpa.conversion
 
 import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
-import com.mvv.bank.orders.domain.*
+import com.mvv.bank.orders.domain.of
 import org.mapstruct.*
+import kotlin.reflect.KClass
+
+import com.mvv.bank.orders.domain.FxRate as DomainFxRate
+import com.mvv.bank.orders.domain.OrderType as DomainOrderType
+import com.mvv.bank.orders.domain.CurrencyPair as DomainCurrencyPair
 import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainOrder
 import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainLimitOrder
 import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainMarketOrder
@@ -80,7 +85,7 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
     abstract fun dtoToMarketOrder(source: DtoOrder, @MappingTarget target: DomainMarketOrder): DomainMarketOrder
 
-    fun mapResultingRate(dtoOrder: DtoOrder): FxRate? {
+    fun mapResultingRate(dtoOrder: DtoOrder): DomainFxRate? {
         val resultingRateTimestamp = dtoOrder.resultingRateTimestamp
         if (resultingRateTimestamp != null) {
             val resultingRateCcy1 = checkNotNull(dtoOrder.resultingRateCcy1) { "resultingRateCcy1 is null." }
@@ -88,8 +93,8 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
             val resultingRateBid  = checkNotNull(dtoOrder.resultingRateBid)  { "resultingRateBid is null."  }
             val resultingRateAsk  = checkNotNull(dtoOrder.resultingRateAsk)  { "resultingRateAsk is null."  }
 
-            return FxRate.of(marketToDomain(dtoOrder.market)!!, resultingRateTimestamp,
-                CurrencyPair.of(resultingRateCcy1, resultingRateCcy2),
+            return DomainFxRate.of(marketToDomain(dtoOrder.market)!!, resultingRateTimestamp,
+                DomainCurrencyPair.of(resultingRateCcy1, resultingRateCcy2),
                 bid = resultingRateBid, ask = resultingRateAsk)
         }
         return null
@@ -105,6 +110,5 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
         }
 
 
-    @ObjectFactory
-    fun <T : DomainOrder> createDomainOrder(source: DtoOrder): T = newOrderInstance(source.orderType.cashDomainType)
+    override fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*> = orderType.cashDomainType
 }

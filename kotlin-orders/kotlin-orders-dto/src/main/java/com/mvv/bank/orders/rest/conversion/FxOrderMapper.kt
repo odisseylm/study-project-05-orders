@@ -2,12 +2,16 @@ package com.mvv.bank.orders.rest.conversion
 
 import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
-import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainOrder
+
 import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainMarketOrder
 import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainLimitOrder
+import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainOrder
 import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
+import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 import com.mvv.bank.orders.rest.entities.FxOrder as DtoOrder
+
 import org.mapstruct.*
+import kotlin.reflect.KClass
 
 
 @Mapper(
@@ -86,6 +90,5 @@ abstract class FxOrderMapper: AbstractRestOrderMapper() {
             //else -> null
         }
 
-    @ObjectFactory
-    fun <T : DomainOrder> createDomainOrder(source: DtoOrder): T = newOrderInstance(source.orderType.cashDomainType)
+    override fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*> = orderType.cashDomainType
 }

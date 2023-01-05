@@ -2,8 +2,11 @@ package com.mvv.bank.orders.conversion
 
 import com.mvv.bank.orders.domain.CompanySymbol
 import com.mvv.bank.orders.domain.MarketSymbol
+
+import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 import com.mvv.bank.orders.domain.Company as DomainCompany
 import com.mvv.bank.orders.domain.Market as DomainMarket
+
 import com.mvv.bank.orders.service.CompanyService
 import com.mvv.bank.orders.service.MarketService
 import jakarta.inject.Inject
@@ -43,6 +46,7 @@ abstract class AbstractOrderMapper: Cloneable {
         return constructor!!.call() as T
     }
 
+    abstract fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*>
 
     // for easy testing
     public override fun clone(): AbstractOrderMapper = super.clone() as AbstractOrderMapper
