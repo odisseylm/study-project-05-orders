@@ -8,6 +8,8 @@ import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainLimitOrder
 import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainOrder
 import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
 import com.mvv.bank.orders.domain.OrderType as DomainOrderType
+
+import com.mvv.bank.orders.rest.entities.OrderType as DtoOrderType
 import com.mvv.bank.orders.rest.entities.FxOrder as DtoOrder
 
 import org.mapstruct.*
@@ -25,47 +27,33 @@ import kotlin.reflect.KClass
 @Suppress("CdiInjectionPointsInspection")
 abstract class FxOrderMapper: AbstractRestOrderMapper() {
 
+    override fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*> = orderType.cashDomainType
+
+    // ***************************************************************************************************
+
     // to avoid warnings
     @Mapping(target = "limitPrice", ignore = true)
     @Mapping(target = "stopPrice", ignore = true)
     @Mapping(target = "dailyExecutionType", ignore = true)
-    abstract fun baseOrderAttrsToDto(source: DomainOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
+    abstract fun baseOrderAttrsToDto(source: DomainOrder, @MappingTarget target: DtoOrder): DtoOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     // because earlier it was marked as ignored
     @Mapping(source = "limitPrice", target = "limitPrice")
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun limitOrderToDto(source: DomainLimitOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
+    abstract fun limitOrderToDto(source: DomainLimitOrder): DtoOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     // because earlier it was marked as ignored
     @Mapping(source = "stopPrice", target = "stopPrice")
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun stopOrderToDto(source: DomainStopOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
+    abstract fun stopOrderToDto(source: DomainStopOrder): DtoOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
-    abstract fun marketOrderToDto(source: DomainMarketOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
+    abstract fun marketOrderToDto(source: DomainMarketOrder): DtoOrder
 
-    // T O D O: can we do it better without this switch?
-    //fun toDto(source: DomainAbstractFxCashOrder?): RestFxOrder? =
-    //    if (source == null) null else
-    //        when (source.orderType) {
-    //            DomainOrderType.MARKET_ORDER -> marketOrderToDto(source as DomainFxCashMarketOrder)
-    //            DomainOrderType.LIMIT_ORDER  -> limitOrderToDto(source as DomainFxCashLimitOrder)
-    //            DomainOrderType.STOP_ORDER   -> stopOrderToDto(source as DomainFxCashStopOrder)
-    //        }
 
-    // T O D O: can we do it better without this switch?
-    fun toDto(source: DomainOrder?): DtoOrder? {
-        val target = DtoOrder()
-        return when (source) {
-            is DomainMarketOrder -> marketOrderToDto(source, target)
-            is DomainLimitOrder  -> limitOrderToDto(source, target)
-            is DomainStopOrder   -> stopOrderToDto(source, target)
-            else -> null
-        }
-    }
-
+    // ***************************************************************************************************
 
     @Mapping(target = "product", ignore = true)
     @Mapping(target = "resultingPrice", ignore = true)
@@ -73,22 +61,30 @@ abstract class FxOrderMapper: AbstractRestOrderMapper() {
     abstract fun baseOrderAttrsToDomain(source: DtoOrder, @MappingTarget target: DomainOrder): DomainOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    abstract fun dtoToLimitOrder(source: DtoOrder, @MappingTarget target: DomainLimitOrder): DomainLimitOrder
+    abstract fun dtoToLimitOrder(source: DtoOrder): DomainLimitOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    abstract fun dtoToStopOrder(source: DtoOrder, @MappingTarget target: DomainStopOrder): DomainStopOrder
+    abstract fun dtoToStopOrder(source: DtoOrder): DomainStopOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    abstract fun dtoToMarketOrder(source: DtoOrder, @MappingTarget target: DomainMarketOrder): DomainMarketOrder
+    abstract fun dtoToMarketOrder(source: DtoOrder): DomainMarketOrder
+
+
+    // ***************************************************************************************************
+
+    // T O D O: can we do it better without this switch?
+    fun toDto(source: DomainOrder): DtoOrder =
+        when (source.orderType) {
+            DomainOrderType.MARKET_ORDER -> marketOrderToDto(source as DomainMarketOrder)
+            DomainOrderType.LIMIT_ORDER  -> limitOrderToDto(source as DomainLimitOrder)
+            DomainOrderType.STOP_ORDER   -> stopOrderToDto(source as DomainStopOrder)
+        }
 
     // T O D O: can we do it better without this switch?
     fun toDomain(source: DtoOrder): DomainOrder =
-        when (val target = createDomainOrder<DomainOrder>(source)) {
-            is DomainMarketOrder -> dtoToMarketOrder(source, target)
-            is DomainLimitOrder  -> dtoToLimitOrder(source, target)
-            is DomainStopOrder   -> dtoToStopOrder(source, target)
-            //else -> null
+        when (source.orderType) {
+            DtoOrderType.MARKET_ORDER -> dtoToMarketOrder(source)
+            DtoOrderType.LIMIT_ORDER  -> dtoToLimitOrder(source)
+            DtoOrderType.STOP_ORDER   -> dtoToStopOrder(source)
         }
-
-    override fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*> = orderType.cashDomainType
 }

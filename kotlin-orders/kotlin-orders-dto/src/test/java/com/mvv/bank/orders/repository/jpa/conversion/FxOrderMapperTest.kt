@@ -26,10 +26,10 @@ import com.mvv.bank.orders.domain.FxRate as DomainFxRate
 import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 import com.mvv.bank.orders.domain.OrderState as DomainOrderState
 import com.mvv.bank.orders.domain.BuySellType as DomainBuySellType
-import com.mvv.bank.orders.domain.DailyExecutionType as DomainDailyExecutionType
 import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
 import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainLimitOrder
 import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainMarketOrder
+import com.mvv.bank.orders.domain.DailyExecutionType as DomainDailyExecutionType
 
 import com.mvv.bank.orders.repository.jpa.entities.Side as DtoSide
 import com.mvv.bank.orders.repository.jpa.entities.OrderType as DtoOrderType
@@ -72,7 +72,7 @@ internal class FxOrderMapperTest {
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
-        checkNotNull(dtoOrder)
+        //checkNotNull(dtoOrder)
 
         SoftAssertions().apply {
             assertThat(dtoOrder.id).isNull()
@@ -113,8 +113,8 @@ internal class FxOrderMapperTest {
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
+        //checkNotNull(dtoOrder)
 
-        checkNotNull(dtoOrder)
         SoftAssertions().apply {
             assertThat(dtoOrder.id).isEqualTo(567)
             assertThat(dtoOrder.orderType).isEqualTo(DtoOrderType.STOP_ORDER)
@@ -154,7 +154,7 @@ internal class FxOrderMapperTest {
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
-        checkNotNull(dtoOrder)
+        //checkNotNull(dtoOrder)
 
         SoftAssertions().apply {
             assertThat(dtoOrder.id).isEqualTo(456)
@@ -217,6 +217,7 @@ internal class FxOrderMapperTest {
 
 
         val domainOrder = orderMapper.toDomain(dtoOrder)
+        //val domainOrder = orderMapper.dtoToLimitOrder(dtoOrder)
 
         SoftAssertions().apply {
             assertThat(domainOrder.id).isEqualTo(567)

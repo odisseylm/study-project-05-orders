@@ -5,14 +5,17 @@ import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import com.mvv.bank.orders.domain.of
 import org.mapstruct.*
 import kotlin.reflect.KClass
+
+import com.mvv.bank.orders.domain.StockOrder as DomainOrder
 import com.mvv.bank.orders.domain.Currency as DomainCurrency
 import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 import com.mvv.bank.orders.domain.StockQuote as DomainStockQuote
+import com.mvv.bank.orders.domain.StockStopOrder as DomainStopOrder
 import com.mvv.bank.orders.domain.StockLimitOrder as DomainLimitOrder
 import com.mvv.bank.orders.domain.StockMarketOrder as DomainMarketOrder
-import com.mvv.bank.orders.domain.StockOrder as DomainOrder
-import com.mvv.bank.orders.domain.StockStopOrder as DomainStopOrder
+
 import com.mvv.bank.orders.repository.jpa.entities.StockOrder as DtoOrder
+import com.mvv.bank.orders.repository.jpa.entities.OrderType as DtoOrderType
 
 
 @Mapper(
@@ -22,6 +25,10 @@ import com.mvv.bank.orders.repository.jpa.entities.StockOrder as DtoOrder
 )
 @Suppress("CdiInjectionPointsInspection")
 abstract class StockOrderMapper : AbstractJpaOrderMapper() {
+
+    override fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*> = orderType.stockDomainType
+
+    // ***************************************************************************************************
 
     @Mapping(source = "resultingPrice.value", target = "resultingPrice")
     @Mapping(source = "resultingQuote.bid.value", target = "resultingQuoteBid")
@@ -38,38 +45,20 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
     @Mapping(source = "limitPrice.currency", target = "priceCurrency")
     // because earlier it was marked as ignored
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun limitOrderToDto(source: DomainLimitOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
+    abstract fun limitOrderToDto(source: DomainLimitOrder): DtoOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "stopPrice.value", target = "limitStopPrice")
     @Mapping(source = "stopPrice.currency", target = "priceCurrency")
     // because earlier it was marked as ignored
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun stopOrderToDto(source: DomainStopOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
+    abstract fun stopOrderToDto(source: DomainStopOrder): DtoOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
-    abstract fun marketOrderToDto(source: DomainMarketOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
+    abstract fun marketOrderToDto(source: DomainMarketOrder): DtoOrder
 
-    // T O D O: can we do it better without this switch?
-    //fun toDto(source: DomainAbstractFxCashOrder?): JpaFxOrder? =
-    //    if (source == null) null else
-    //        when (source.orderType) {
-    //            DomainOrderType.MARKET_ORDER -> marketOrderToDto(source as DomainFxCashMarketOrder)
-    //            DomainOrderType.LIMIT_ORDER  -> limitOrderToDto(source as DomainFxCashLimitOrder)
-    //            DomainOrderType.STOP_ORDER   -> stopOrderToDto(source as DomainFxCashStopOrder)
-    //        }
 
-    // T O D O: can we do it better without this switch?
-    fun toDto(source: DomainOrder?): DtoOrder? {
-        val target = DtoOrder()
-        return when (source) {
-            is DomainMarketOrder -> marketOrderToDto(source, target)
-            is DomainLimitOrder  -> limitOrderToDto(source, target)
-            is DomainStopOrder   -> stopOrderToDto(source, target)
-            else -> null
-        }
-    }
-
+    // ***************************************************************************************************
 
     @Mapping(source = "product", target = "company")
     // to avoid warnings
@@ -79,14 +68,14 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
     @Mapping(target = "limitPrice", expression = "java( Amount.of(source.getLimitStopPrice(), Currency.of(source.getPriceCurrency())) )")
-    abstract fun dtoToLimitOrder(source: DtoOrder, @MappingTarget target: DomainLimitOrder): DomainLimitOrder
+    abstract fun dtoToLimitOrder(source: DtoOrder): DomainLimitOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
     @Mapping(target = "stopPrice", expression = "java( Amount.of(source.getLimitStopPrice(), Currency.of(source.getPriceCurrency())) )")
-    abstract fun dtoToStopOrder(source: DtoOrder, @MappingTarget target: DomainStopOrder): DomainStopOrder
+    abstract fun dtoToStopOrder(source: DtoOrder): DomainStopOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    abstract fun dtoToMarketOrder(source: DtoOrder, @MappingTarget target: DomainMarketOrder): DomainMarketOrder
+    abstract fun dtoToMarketOrder(source: DtoOrder): DomainMarketOrder
 
     fun mapResultingQuote(dtoOrder: DtoOrder): DomainStockQuote? {
         val resultingQuoteTimestamp = dtoOrder.resultingQuoteTimestamp
@@ -104,14 +93,22 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
         }
     }
 
+
+    // ***************************************************************************************************
+
     // T O D O: can we do it better without this switch?
-    fun toDomain(source: DtoOrder): DomainOrder =
-        when (val target = createDomainOrder<DomainOrder>(source)) {
-            is DomainMarketOrder -> dtoToMarketOrder(source, target)
-            is DomainLimitOrder  -> dtoToLimitOrder(source, target)
-            is DomainStopOrder   -> dtoToStopOrder(source, target)
-            //else -> null
+    fun toDto(source: DomainOrder): DtoOrder =
+        when (source.orderType) {
+            DomainOrderType.MARKET_ORDER -> marketOrderToDto(source as DomainMarketOrder)
+            DomainOrderType.LIMIT_ORDER  -> limitOrderToDto(source as DomainLimitOrder)
+            DomainOrderType.STOP_ORDER   -> stopOrderToDto(source as DomainStopOrder)
         }
 
-    override fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*> = orderType.stockDomainType
+    // T O D O: can we do it better without this switch?
+    fun toDomain(source: DtoOrder): DomainOrder =
+        when (source.orderType) {
+            DtoOrderType.MARKET_ORDER -> dtoToMarketOrder(source)
+            DtoOrderType.LIMIT_ORDER  -> dtoToLimitOrder(source)
+            DtoOrderType.STOP_ORDER   -> dtoToStopOrder(source)
+        }
 }

@@ -10,9 +10,13 @@ import com.mvv.bank.orders.domain.Market as DomainMarket
 import com.mvv.bank.orders.service.CompanyService
 import com.mvv.bank.orders.service.MarketService
 import jakarta.inject.Inject
+import org.mapstruct.AfterMapping
+import org.mapstruct.MappingTarget
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
+
+typealias DomainBaseOrder = com.mvv.bank.orders.domain.Order<*,*>
 
 
 @Suppress("CdiInjectionPointsInspection", "MemberVisibilityCanBePrivate")
@@ -39,12 +43,15 @@ abstract class AbstractOrderMapper: Cloneable {
         if (companySymbol == null) null else companyService.companyBySymbol(companySymbol)
 
 
-    protected fun <T> newOrderInstance(type: KClass<*>): T {
-        val constructor = type.primaryConstructor
-            ?.apply { if (!isAccessible) isAccessible = true }
-        @Suppress("UNCHECKED_CAST")
-        return constructor!!.call() as T
-    }
+    @Suppress("UNCHECKED_CAST")
+    protected fun <T> newOrderInstance(type: KClass<*>): T =
+        type.primaryConstructor!!
+            .apply { if (!isAccessible) isAccessible = true }
+            .call() as T
+
+    @AfterMapping
+    open fun validateDomainOrderAfterCreation(source: Any, @MappingTarget target: DomainBaseOrder) =
+        target.validateCurrentState()
 
     abstract fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*>
 

@@ -72,7 +72,7 @@ internal class FxOrderMapperTest {
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
-        checkNotNull(dtoOrder)
+        //checkNotNull(dtoOrder)
 
         SoftAssertions().apply {
             assertThat(dtoOrder.id).isNull()
@@ -113,7 +113,7 @@ internal class FxOrderMapperTest {
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
-        checkNotNull(dtoOrder)
+        //checkNotNull(dtoOrder)
 
         SoftAssertions().apply {
             assertThat(dtoOrder.id).isEqualTo(567)
@@ -152,7 +152,7 @@ internal class FxOrderMapperTest {
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
-        checkNotNull(dtoOrder)
+        //checkNotNull(dtoOrder)
 
         SoftAssertions().apply {
             assertThat(dtoOrder.id).isEqualTo(456)

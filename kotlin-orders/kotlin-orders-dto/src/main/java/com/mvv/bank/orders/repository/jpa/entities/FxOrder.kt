@@ -15,6 +15,16 @@ class FxOrder : BaseOrder() {
     @Column(name = "SELL_CUR", nullable = false)
     lateinit var sellCurrency: String
 
+    @get:Transient
+    val priceCurrency: String get() =
+        when (buySellType) {
+            // opposite
+            //null -> null
+            BuySellType.BUY  -> sellCurrency
+            BuySellType.SELL -> buyCurrency
+        }
+
+
     @Column(name = "RES_TIMESTAMP")
     var resultingRateTimestamp: ZonedDateTime? = null
     @Column(name = "RES_CCY1")
