@@ -1,75 +1,82 @@
 package com.mvv.bank.orders.domain
 
 import com.mvv.bank.log.safe
+import javax.annotation.Tainted
+import javax.annotation.Untainted
+import javax.annotation.concurrent.Immutable
 
 
-class Email (val value: String) {
+@Untainted @Immutable
+class Email private constructor (@param:Tainted @field:Untainted val value: String) {
     init { validateEmail(value) }
+    @Untainted
     override fun toString(): String = value
     override fun equals(other: Any?): Boolean =
         (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as Email).value))
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic
-        fun of(email: String) = Email(email)
-        @JvmStatic
-        fun valueOf(email: String) = of(email)
+        @JvmStatic fun of(email: String) = Email(email)
+        // standard java method to get from string. It can help to integrate with other java frameworks.
+        @JvmStatic fun valueOf(email: String) = of(email)
     }
 }
 
 
-class Phone (val value: String) {
+@Untainted @Immutable
+class Phone private constructor (@param:Tainted @field:Untainted val value: String) {
     init { validatePhone(value) }
+    @Untainted
     override fun toString(): String = value
     override fun equals(other: Any?): Boolean =
         (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as Phone).value))
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic
-        fun of(email: String) = Phone(email)
-        @JvmStatic
-        fun valueOf(email: String) = of(email)
+        @JvmStatic fun of(email: String) = Phone(email)
+        // standard java method to get from string. It can help to integrate with other java frameworks.
+        @JvmStatic fun valueOf(email: String) = of(email)
     }
 }
 
 
 // it is not clear now what it should be??? phone and email can be changed? or cannot?
-class UserNaturalKey (val value: String) {
+@Untainted @Immutable
+class UserNaturalKey private constructor (@param:Tainted @field:Untainted val value: String) {
     init {
         // now we will use email but later will change it
-        Email(value) // used for validation only
+        Email.of(value) // used for validation only
     }
+    @Untainted
     override fun toString(): String = value
     override fun equals(other: Any?): Boolean =
         (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as UserNaturalKey).value))
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic
-        fun of(userNaturalKey: String) = UserNaturalKey(userNaturalKey)
-        @JvmStatic
-        fun valueOf(userNaturalKey: String) = of(userNaturalKey)
+        @JvmStatic fun of(userNaturalKey: String) = UserNaturalKey(userNaturalKey)
+        // standard java method to get from string. It can help to integrate with other java frameworks.
+        @JvmStatic fun valueOf(userNaturalKey: String) = of(userNaturalKey)
     }
 }
 
 
 // T O D O: think about natural-key
-class User (val naturalKey: UserNaturalKey) {
+@Untainted @Immutable
+class User private constructor (@param:Tainted @field:Untainted val naturalKey: UserNaturalKey) {
+    @get:Untainted
     val value: String get() = naturalKey.value
+    @Untainted
+    override fun toString(): String = "User[${naturalKey}]"
     override fun equals(other: Any?): Boolean =
         (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as User).value))
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic
-        fun of(naturalKey: UserNaturalKey) = User(naturalKey)
-        @JvmStatic
-        fun of(naturalKey: String) = User(UserNaturalKey(naturalKey))
-
-        @JvmStatic
-        fun valueOf(naturalKey: String) = of(naturalKey)
+        @JvmStatic fun of(naturalKey: UserNaturalKey) = User(naturalKey)
+        @JvmStatic fun of(naturalKey: String) = User(UserNaturalKey.of(naturalKey))
+        // standard java method to get from string. It can help to integrate with other java frameworks.
+        @JvmStatic fun valueOf(naturalKey: String) = of(naturalKey)
     }
 }
 

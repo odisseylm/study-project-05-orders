@@ -6,33 +6,28 @@ import com.mvv.bank.orders.domain.Currency.Companion.UAH
 import com.mvv.bank.orders.domain.Currency.Companion.USD
 import javax.annotation.Tainted
 import javax.annotation.Untainted
+import javax.annotation.concurrent.Immutable
 
 
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
-@Untainted
-class Currency private constructor (@param:Tainted val value: String) {
+@Untainted @Immutable
+class Currency private constructor (@param:Tainted @field:Untainted val value: String) {
     init { validateCurrency(value) }
-
+    @Untainted
     override fun toString() = value
-
     override fun hashCode(): Int = value.hashCode()
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as Currency
-        if (value != other.value) return false
-        return true
-    }
+    override fun equals(other: Any?): Boolean =
+        (this === other) ||
+        ((javaClass == other?.javaClass) && (value == (other as Currency).value))
 
     companion object {
         const val MIN_LENGTH: Int = 3
         const val MAX_LENGTH: Int = 3 // ??? probably it can be 4 for crypto ???
 
-        @JvmStatic
-        fun of(currency: String) = Currency(currency)
-        @JvmStatic // standard java method to get from string. It can help to integrate with other frameworks.
-        fun valueOf(currency: String) = of(currency)
+        @JvmStatic fun of(currency: String) = Currency(currency)
+        // standard java method to get from string. It can help to integrate with other java frameworks.
+        @JvmStatic fun valueOf(currency: String) = of(currency)
 
         // popular ones
         val UAH = Currency("UAH")
@@ -48,18 +43,15 @@ private const val CURRENCY_PAIR_SEPARATOR: Char = '_'
 
 // Now we do not use 'value class' because it is fully not compatible with java
 // (we need java now at least for using with mapstruct)
-@Untainted
+@Untainted @Immutable
 class CurrencyPair private constructor (
     val base: Currency,
     val counter: Currency,
     ) {
-
+    @Untainted
     private val asString = "${base}${CURRENCY_PAIR_SEPARATOR}${counter}"
-
-    // actually it can be without separator or the following '|', '/' can be used (what is better?)
+    @Untainted
     override fun toString() = asString
-
-    // optimization
     override fun equals(other: Any?): Boolean = (other is CurrencyPair) && other.asString == this.asString
     override fun hashCode(): Int = asString.hashCode()
 
@@ -82,15 +74,11 @@ class CurrencyPair private constructor (
         const val MIN_LENGTH: Int = Currency.MIN_LENGTH * 2 + 1
         const val MAX_LENGTH: Int = Currency.MAX_LENGTH * 2 + 1
 
-        @JvmStatic
-        fun of(base: Currency, counter: Currency) = CurrencyPair(base, counter)
-        @JvmStatic
-        fun of(base: String, counter: String) = of(Currency.of(base), Currency.of(counter))
-        @JvmStatic
-        fun of(currencyPair: String) = parseCurrencyPair(currencyPair)
-
-        @JvmStatic // standard java method to get from string. It can help to integrate with other java frameworks.
-        fun valueOf(currencyPair: String) = parseCurrencyPair(currencyPair)
+        @JvmStatic fun of(base: Currency, counter: Currency) = CurrencyPair(base, counter)
+        @JvmStatic fun of(base: String, counter: String) = of(Currency.of(base), Currency.of(counter))
+        @JvmStatic fun of(currencyPair: String) = parseCurrencyPair(currencyPair)
+        // standard java method to get from string. It can help to integrate with other java frameworks.
+        @JvmStatic fun valueOf(currencyPair: String) = parseCurrencyPair(currencyPair)
 
         // popular ones
         val USD_EUR = of(USD, EUR)

@@ -1,6 +1,9 @@
 package com.mvv.bank.orders.domain
 
 import com.mvv.bank.log.safe
+import javax.annotation.Tainted
+import javax.annotation.Untainted
+import javax.annotation.concurrent.Immutable
 
 
 // most probably shares, derivatives, and others should be inherited from it
@@ -10,18 +13,19 @@ import com.mvv.bank.log.safe
 //}
 
 
-class CompanySymbol private constructor (val value: String) {
+@Untainted @Immutable
+class CompanySymbol private constructor (@param:Tainted @field:Untainted val value: String) {
     init { validateCompanySymbol(value) }
+    @Untainted
     override fun toString(): String = value
     override fun equals(other: Any?): Boolean =
         (this === other) || ((this.javaClass == other?.javaClass) && (this.value == (other as CompanySymbol).value))
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic
-        fun of(companySymbol: String) = CompanySymbol(companySymbol)
-        @JvmStatic
-        fun valueOf(companySymbol: String) = of(companySymbol)
+        @JvmStatic fun of(companySymbol: String) = CompanySymbol(companySymbol)
+        // standard java method to get from string. It can help to integrate with other java frameworks.
+        @JvmStatic fun valueOf(companySymbol: String) = of(companySymbol)
     }
 }
 

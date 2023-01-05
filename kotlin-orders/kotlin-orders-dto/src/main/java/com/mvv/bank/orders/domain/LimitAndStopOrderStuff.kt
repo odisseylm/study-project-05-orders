@@ -48,11 +48,9 @@ internal class StopLimitOrderSupport<Order: com.mvv.bank.orders.domain.Order<*, 
         checkInitialized({ limitPrice }) { "Limit price is not set for order [${order.id}]." }
 
         check(limitPrice.currency == quote.bid.currency) {
-            "Quote $quote has incorrect currency ${quote.bid.currency}."
-        }
+            "Quote $quote has incorrect currency ${quote.bid.currency}." }
         check(limitPrice.currency == quote.ask.currency) {
-            "Quote $quote has incorrect currency ${quote.bid.currency}."
-        }
+            "Quote $quote has incorrect currency ${quote.bid.currency}." }
 
         // For Stock Exchange:
         //  bid - the highest price a buyer (dealer/bank/market) will pay to buy a specified number of shares of a stock
