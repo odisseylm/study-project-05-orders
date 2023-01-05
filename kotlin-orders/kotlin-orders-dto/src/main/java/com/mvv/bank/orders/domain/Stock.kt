@@ -76,7 +76,7 @@ NYSE - Nasdaq Real Time Price. Currency in USD
 
 
 private const val COMPANY_SYMBOL_MAX_LENGTH = 25
-private val companySymbolPattern = Regex("^[A-Z\\-.]*\$")
+private val companySymbolPattern = Regex("^[A-Z0-9\\-.]*\$")
 
 private fun validateCompanySymbol(marketSymbol: String?) {
     if (marketSymbol.isNullOrBlank() ||

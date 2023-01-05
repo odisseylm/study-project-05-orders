@@ -84,7 +84,7 @@ fun FxRate.asPrice(priceCurrency: Currency, buySellType: BuySellType): Amount {
         "FX rate ${this.currencyPair} does not contain currency $priceCurrency." }
 
     val price: BigDecimal = when (buySellType) {
-        BuySellType.BUY -> this.bid
+        BuySellType.BUY  -> this.bid
         BuySellType.SELL -> this.ask
     }
     val fixedPriceValue: BigDecimal = if (this.currencyPair.counter == priceCurrency) price else invertRate(price)

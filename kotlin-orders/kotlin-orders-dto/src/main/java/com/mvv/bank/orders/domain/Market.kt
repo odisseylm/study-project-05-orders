@@ -53,7 +53,7 @@ Stock Exchange symbols:
 
 
 private const val MARKET_SYMBOL_MAX_LENGTH = 25
-private val marketSymbolPattern = Regex("^[A-Z\\-.]*\$")
+private val marketSymbolPattern = Regex("^[A-Z0-9\\-.]*\$")
 
 private fun validateMarketSymbol(marketSymbol: String?) {
     if (marketSymbol.isNullOrBlank() ||
