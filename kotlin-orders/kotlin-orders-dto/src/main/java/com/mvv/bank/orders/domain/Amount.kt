@@ -15,7 +15,8 @@ class Amount private constructor (
     override fun toString(): String = "$value $currency"
     override fun equals(other: Any?): Boolean =
         (this === other) ||
-        ((this.javaClass == other?.javaClass) && (this.value == (other as Amount).value) && (currency == other.currency))
+        ((this.javaClass == other?.javaClass) && (currency == (other as Amount).currency) &&
+         (this.value.compareTo(other.value) == 0))
     override fun hashCode(): Int = 31 * value.hashCode() + currency.hashCode()
 
     companion object {
