@@ -28,15 +28,15 @@ abstract class FxOrderMapper: AbstractRestOrderMapper() {
     abstract fun baseOrderAttrsToDto(source: DomainOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
-    //@Mapping(source = "limitPrice.value", target = "limitPrice")
-    @Mapping(source = "limitPrice", target = "limitPrice") // because earlier it was marked as ignored
-    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
+    // because earlier it was marked as ignored
+    @Mapping(source = "limitPrice", target = "limitPrice")
+    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
     abstract fun limitOrderToDto(source: DomainLimitOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
-    //@Mapping(source = "stopPrice.value", target = "stopPrice")
-    @Mapping(source = "stopPrice", target = "stopPrice") // because earlier it was marked as ignored
-    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
+    // because earlier it was marked as ignored
+    @Mapping(source = "stopPrice", target = "stopPrice")
+    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
     abstract fun stopOrderToDto(source: DomainStopOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
@@ -69,20 +69,13 @@ abstract class FxOrderMapper: AbstractRestOrderMapper() {
     abstract fun baseOrderAttrsToDomain(source: DtoOrder, @MappingTarget target: DomainOrder): DomainOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    //@Mapping(target = "limitPrice", expression = "java( Amount.of(source.getLimitPrice(), target.getPriceCurrency()) )")
     abstract fun dtoToLimitOrder(source: DtoOrder, @MappingTarget target: DomainLimitOrder): DomainLimitOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    //@Mapping(target = "stopPrice", expression = "java( Amount.of(source.getStopPrice(), target.getPriceCurrency()) )")
     abstract fun dtoToStopOrder(source: DtoOrder, @MappingTarget target: DomainStopOrder): DomainStopOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
     abstract fun dtoToMarketOrder(source: DtoOrder, @MappingTarget target: DomainMarketOrder): DomainMarketOrder
-
-    @AfterMapping
-    @Suppress("UNUSED_PARAMETER")
-    fun postInitDomainOrder(source: DtoOrder, @MappingTarget target: DomainOrder) =
-        target.validateCurrentState()
 
     // T O D O: can we do it better without this switch?
     fun toDomain(source: DtoOrder): DomainOrder =

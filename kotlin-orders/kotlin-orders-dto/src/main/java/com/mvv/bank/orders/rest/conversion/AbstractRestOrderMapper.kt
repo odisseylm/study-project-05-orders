@@ -3,11 +3,13 @@ package com.mvv.bank.orders.rest.conversion
 import com.mvv.bank.log.safe
 import com.mvv.bank.orders.conversion.AbstractOrderMapper
 import com.mvv.bank.util.checkLateInitPropsAreInitialized
-import com.mvv.bank.orders.domain.StockOrder as DomainBaseOrder
 import com.mvv.bank.orders.rest.entities.BaseOrder as DtoBaseOrder
 import com.mvv.bank.orders.rest.entities.OrderType as DomainOrderType
+import org.mapstruct.AfterMapping
 import org.mapstruct.MappingTarget
 import org.mapstruct.BeforeMapping
+
+typealias DomainBaseOrder = com.mvv.bank.orders.domain.Order<*,*>
 
 
 abstract class AbstractRestOrderMapper : AbstractOrderMapper() {
@@ -33,5 +35,10 @@ abstract class AbstractRestOrderMapper : AbstractOrderMapper() {
                 "Market price cannot have daily execution type (${source.dailyExecutionType.safe})." }
         }
     }
+
+    @AfterMapping
+    @Suppress("UNUSED_PARAMETER")
+    fun postInitDomainOrder(source: Any, @MappingTarget target: DomainBaseOrder) =
+        target.validateCurrentState()
 
 }

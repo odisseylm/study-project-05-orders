@@ -26,18 +26,19 @@ abstract class StockOrderMapper: AbstractRestOrderMapper() {
     // to avoid warnings
     @Mapping(target = "limitPrice", ignore = true)
     @Mapping(target = "stopPrice", ignore = true)
-    //@Mapping(target = "priceCurrency", ignore = true)
     @Mapping(target = "dailyExecutionType", ignore = true)
     abstract fun baseOrderAttrsToDto(source: DomainOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
-    @Mapping(source = "limitPrice", target = "limitPrice") // because earlier it was marked as ignored
-    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
+    // because earlier it was marked as ignored
+    @Mapping(source = "limitPrice", target = "limitPrice")
+    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
     abstract fun limitOrderToDto(source: DomainLimitOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
-    @Mapping(source = "stopPrice", target = "stopPrice") // because earlier it was marked as ignored
-    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
+    // because earlier it was marked as ignored
+    @Mapping(source = "stopPrice", target = "stopPrice")
+    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
     abstract fun stopOrderToDto(source: DomainStopOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
@@ -63,17 +64,6 @@ abstract class StockOrderMapper: AbstractRestOrderMapper() {
         }
     }
 
-    /*
-    @BeforeMapping
-    @Suppress("UNUSED_PARAMETER") //, "unused")
-    fun validateInputDtoOrder(source: DtoOrder, @MappingTarget target: Any?) {
-        if (source.limitPrice != null || source.stopPrice != null) {
-            checkNotNull(source.priceCurrency) {
-                "Price currency is not set (however limit/stop price is [${source.limitPrice.safe}/${source.stopPrice.safe}/])" }
-        }
-    }
-    */
-
     @Mapping(source = "product", target = "company")
     abstract fun baseOrderAttrsToDomain(source: DtoOrder, @MappingTarget target: DomainOrder): DomainOrder
 
@@ -85,11 +75,6 @@ abstract class StockOrderMapper: AbstractRestOrderMapper() {
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
     abstract fun dtoToMarketOrder(source: DtoOrder, @MappingTarget target: DomainMarketOrder): DomainMarketOrder
-
-    @AfterMapping
-    @Suppress("UNUSED_PARAMETER")
-    fun postInitDomainOrder(source: DtoOrder, @MappingTarget target: DomainOrder) =
-        target.validateCurrentState()
 
     // T O D O: can we do it better without this switch?
     fun toDomain(source: DtoOrder): DomainOrder =

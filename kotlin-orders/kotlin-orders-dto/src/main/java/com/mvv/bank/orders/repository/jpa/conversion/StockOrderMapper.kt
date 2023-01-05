@@ -33,13 +33,15 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "limitPrice.value", target = "limitStopPrice")
     @Mapping(source = "limitPrice.currency", target = "priceCurrency")
-    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
+    // because earlier it was marked as ignored
+    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
     abstract fun limitOrderToDto(source: DomainLimitOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "stopPrice.value", target = "limitStopPrice")
     @Mapping(source = "stopPrice.currency", target = "priceCurrency")
-    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
+    // because earlier it was marked as ignored
+    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
     abstract fun stopOrderToDto(source: DomainStopOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
@@ -82,10 +84,6 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
     abstract fun dtoToMarketOrder(source: DtoOrder, @MappingTarget target: DomainMarketOrder): DomainMarketOrder
-
-    @AfterMapping
-    open fun postInitDomainOrder(source: DtoOrder, @MappingTarget target: DomainOrder) =
-        target.validateCurrentState()
 
     fun mapResultingQuote(dtoOrder: DtoOrder): DomainStockQuote? {
         val resultingQuoteTimestamp = dtoOrder.resultingQuoteTimestamp

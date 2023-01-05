@@ -2,16 +2,18 @@ package com.mvv.bank.orders.repository.jpa.conversion
 
 import com.mvv.bank.log.safe
 import com.mvv.bank.orders.conversion.AbstractOrderMapper
-import com.mvv.bank.orders.domain.Order as DomainBaseOrder
 import com.mvv.bank.orders.repository.jpa.entities.BaseOrder as DtoBaseOrder
 import com.mvv.bank.orders.repository.jpa.entities.OrderType as DomainOrderType
+import org.mapstruct.AfterMapping
 import org.mapstruct.BeforeMapping
 import org.mapstruct.MappingTarget
+
+typealias DomainBaseOrder = com.mvv.bank.orders.domain.Order<*,*>
 
 
 abstract class AbstractJpaOrderMapper : AbstractOrderMapper() {
     @BeforeMapping
-    open fun validateDomainOrderBeforeSaving(source: DomainBaseOrder<*, *>, @MappingTarget target: Any) =
+    open fun validateDomainOrderBeforeSaving(source: DomainBaseOrder, @MappingTarget target: Any) =
         source.validateCurrentState()
 
     @BeforeMapping
@@ -23,4 +25,8 @@ abstract class AbstractJpaOrderMapper : AbstractOrderMapper() {
                 "Market price cannot have daily execution type (${source.dailyExecutionType.safe})." }
         }
     }
+
+    @AfterMapping
+    open fun postInitDomainOrder(source: Any, @MappingTarget target: DomainBaseOrder) =
+        target.validateCurrentState()
 }
