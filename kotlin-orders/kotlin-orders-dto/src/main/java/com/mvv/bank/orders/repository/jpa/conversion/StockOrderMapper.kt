@@ -4,6 +4,7 @@ import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import com.mvv.bank.orders.domain.*
 import org.mapstruct.*
+import com.mvv.bank.orders.domain.StockQuote as DomainStockQuote
 import com.mvv.bank.orders.domain.StockLimitOrder as DomainLimitOrder
 import com.mvv.bank.orders.domain.StockMarketOrder as DomainMarketOrder
 import com.mvv.bank.orders.domain.StockOrder as DomainOrder
@@ -20,7 +21,6 @@ import com.mvv.bank.orders.repository.jpa.entities.StockOrder as DtoStockOrder
 @Suppress("CdiInjectionPointsInspection")
 abstract class StockOrderMapper : AbstractJpaOrderMapper() {
 
-    @Mapping(source = "market.symbol", target = "market")
     @Mapping(source = "resultingPrice.value", target = "resultingPrice")
     @Mapping(source = "resultingQuote.bid.value", target = "resultingQuoteBid")
     @Mapping(source = "resultingQuote.ask.value", target = "resultingQuoteAsk")
@@ -34,13 +34,13 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "limitPrice.value", target = "limitStopPrice")
     @Mapping(source = "limitPrice.currency", target = "priceCurrency")
-    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
+    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
     abstract fun limitOrderToDto(source: DomainLimitOrder?, @MappingTarget target: DtoStockOrder?): DtoStockOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "stopPrice.value", target = "limitStopPrice")
     @Mapping(source = "stopPrice.currency", target = "priceCurrency")
-    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
+    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
     abstract fun stopOrderToDto(source: DomainStopOrder?, @MappingTarget target: DtoStockOrder?): DtoStockOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
@@ -68,8 +68,8 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
 
 
     @Mapping(source = "product", target = "company")
-    @Mapping(target = "resultingPrice", expression = "java( ( source.getResultingPrice() == null ? null : Amount.of(source.getResultingPrice(), Currency.of(source.getPriceCurrency())) ) )")
-    @Mapping(target = "resultingQuote", ignore = true)
+    @Mapping(target = "resultingPrice", expression = "java( Amount.of(source.getResultingPrice(), Currency.of(source.getPriceCurrency())) )")
+    @Mapping(target = "resultingQuote", expression = "java( mapResultingQuote(source) )")
     abstract fun baseOrderAttrsToDomain(source: DtoStockOrder, @MappingTarget target: DomainOrder): DomainOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
@@ -84,17 +84,23 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
     abstract fun dtoToMarketOrder(source: DtoStockOrder, @MappingTarget target: DomainMarketOrder): DomainMarketOrder
 
     @AfterMapping
-    open fun postInitDomainOrder(source: DtoStockOrder, @MappingTarget target: DomainOrder) {
-        // if (source == null) return
+    open fun postInitDomainOrder(source: DtoStockOrder, @MappingTarget target: DomainOrder) =
+        target.validateCurrentState()
 
-        if (source.resultingQuoteTimestamp != null) {
-            target.resultingQuote = StockQuote.of(
-                target.market, target.company, source.resultingQuoteTimestamp!!,
-                bid = source.resultingQuoteBid!!, ask = source.resultingQuoteAsk!!, Currency.of(source.priceCurrency),
+    fun mapResultingQuote(dtoOrder: DtoOrder): DomainStockQuote? {
+        val resultingQuoteTimestamp = dtoOrder.resultingQuoteTimestamp
+        return if (resultingQuoteTimestamp == null) null
+        else {
+            val resultingQuoteBid = checkNotNull(dtoOrder.resultingQuoteBid) { "resultingQuoteBid is null." }
+            val resultingQuoteAsk = checkNotNull(dtoOrder.resultingQuoteAsk) { "resultingQuoteAsk is null." }
+
+            DomainStockQuote.of(
+                marketToDomain(dtoOrder.market)!!, companyToDomain(dtoOrder.product)!!,
+                resultingQuoteTimestamp,
+                bid = resultingQuoteBid, ask = resultingQuoteAsk,
+                Currency.of(dtoOrder.priceCurrency)
             )
         }
-
-        target.validateCurrentState()
     }
 
     // T O D O: can we do it better without this switch?
@@ -112,6 +118,4 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper() {
 
     @ObjectFactory
     fun <T : DomainOrder> resolve(source: DtoOrder): T = newOrderInstance(source.orderType.stockDomainType)
-
-    //override fun clone(): StockOrderMapper = super.clone() as StockOrderMapper
 }

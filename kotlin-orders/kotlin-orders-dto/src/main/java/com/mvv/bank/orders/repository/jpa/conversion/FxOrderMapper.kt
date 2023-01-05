@@ -15,13 +15,11 @@ import com.mvv.bank.orders.repository.jpa.entities.FxOrder as DtoOrder
 @Suppress("CdiInjectionPointsInspection")
 abstract class FxOrderMapper : AbstractJpaOrderMapper() {
 
-    @Mapping(source = "market.symbol", target = "market")
-    @Mapping(source = "resultingRate.currencyPair.base", target = "resultingRateCcy1")
-    @Mapping(source = "resultingRate.currencyPair.counter", target = "resultingRateCcy2")
-    @Mapping(source = "resultingRate.timestamp", target = "resultingRateTimestamp")
     @Mapping(source = "resultingRate.bid", target = "resultingRateBid")
     @Mapping(source = "resultingRate.ask", target = "resultingRateAsk")
-    @Mapping(source = "user.value", target = "user")
+    @Mapping(source = "resultingRate.timestamp", target = "resultingRateTimestamp")
+    @Mapping(source = "resultingRate.currencyPair.base", target = "resultingRateCcy1")
+    @Mapping(source = "resultingRate.currencyPair.counter", target = "resultingRateCcy2")
     // to avoid warnings
     @Mapping(target = "limitStopPrice", ignore = true)
     @Mapping(target = "dailyExecutionType", ignore = true)
@@ -29,12 +27,12 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "limitPrice.value", target = "limitStopPrice")
-    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
+    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
     abstract fun limitOrderToDto(source: DomainLimitOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "stopPrice.value", target = "limitStopPrice")
-    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
+    @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
     abstract fun stopOrderToDto(source: DomainStopOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
@@ -61,56 +59,42 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
     }
 
 
+    @Mapping(target = "resultingRate",  expression = "java( mapResultingRate(source) )")
+    // product is calculated property
     @Mapping(target = "product", ignore = true)
+    // resultingPrice/resultingQuote will be set automatically after setting rate (by side effect)
     @Mapping(target = "resultingPrice", ignore = true)
     @Mapping(target = "resultingQuote", ignore = true)
-    @Mapping(target = "resultingRate",  ignore = true)
-    // baseOrderAttrsToDomain
     abstract fun baseOrderAttrsToDomain(source: DtoOrder, @MappingTarget target: DomainOrder): DomainOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    @Mapping(target = "limitPrice", expression = "java( com.mvv.bank.orders.domain.Amount.of(source.getLimitStopPrice(), target.getPriceCurrency()) )")
+    @Mapping(target = "limitPrice", expression = "java( Amount.of(source.getLimitStopPrice(), target.getPriceCurrency()) )")
     abstract fun dtoToLimitOrder(source: DtoOrder, @MappingTarget target: DomainLimitOrder): DomainLimitOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    @Mapping(target = "stopPrice", expression = "java( com.mvv.bank.orders.domain.Amount.of(source.getLimitStopPrice(), target.getPriceCurrency()) )")
+    @Mapping(target = "stopPrice", expression = "java( Amount.of(source.getLimitStopPrice(), target.getPriceCurrency()) )")
     abstract fun dtoToStopOrder(source: DtoOrder, @MappingTarget target: DomainStopOrder): DomainStopOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
     abstract fun dtoToMarketOrder(source: DtoOrder, @MappingTarget target: DomainMarketOrder): DomainMarketOrder
 
     @AfterMapping
-    open fun postInitDomainOrder(source: DtoOrder, @MappingTarget target: DomainOrder) {
-        // if (source == null) return
-
-        // T???
-        val resultingRateTimestamp = source.resultingRateTimestamp
-        if (resultingRateTimestamp != null) {
-            val resultingRateCcy1 = source.resultingRateCcy1; val resultingRateCcy2 = source.resultingRateCcy2
-            val resultingRateBid  = source.resultingRateBid;  val resultingRateAsk  = source.resultingRateAsk
-
-            checkNotNull(resultingRateCcy1) { "resultingRateCcy1 is null." }
-            checkNotNull(resultingRateCcy2) { "resultingRateCcy2 is null." }
-            checkNotNull(resultingRateBid)  { "resultingRateBid is null."  }
-            checkNotNull(resultingRateAsk)  { "resultingRateAsk is null."  }
-
-            val asLocalDateTime = resultingRateTimestamp.withZoneSameInstant(target.market.zoneId).toLocalDateTime()
-
-            val rate = FxRate(
-                market = MarketSymbol.of(source.market),
-                timestamp = resultingRateTimestamp,
-                marketDate = asLocalDateTime.toLocalDate(),
-                marketTime = asLocalDateTime.toLocalTime(),
-                currencyPair = CurrencyPair.of(resultingRateCcy1, resultingRateCcy2),
-                bid = resultingRateBid,
-                ask = resultingRateAsk,
-            )
-
-            // there is side effect and resultingQuote/resultingPrice will be set too automatically
-            target.resultingRate = rate
-        }
-
+    open fun postInitDomainOrder(source: DtoOrder, @MappingTarget target: DomainOrder) =
         target.validateCurrentState()
+
+    fun mapResultingRate(dtoOrder: DtoOrder): FxRate? {
+        val resultingRateTimestamp = dtoOrder.resultingRateTimestamp
+        if (resultingRateTimestamp != null) {
+            val resultingRateCcy1 = checkNotNull(dtoOrder.resultingRateCcy1) { "resultingRateCcy1 is null." }
+            val resultingRateCcy2 = checkNotNull(dtoOrder.resultingRateCcy2) { "resultingRateCcy2 is null." }
+            val resultingRateBid  = checkNotNull(dtoOrder.resultingRateBid)  { "resultingRateBid is null."  }
+            val resultingRateAsk  = checkNotNull(dtoOrder.resultingRateAsk)  { "resultingRateAsk is null."  }
+
+            return FxRate.of(marketToDomain(dtoOrder.market)!!, resultingRateTimestamp,
+                CurrencyPair.of(resultingRateCcy1, resultingRateCcy2),
+                bid = resultingRateBid, ask = resultingRateAsk)
+        }
+        return null
     }
 
     // T O D O: can we do it better without this switch?
@@ -128,6 +112,4 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
 
     @ObjectFactory
     fun <T : DomainOrder> resolve(source: DtoOrder): T = newOrderInstance(source.orderType.cashDomainType)
-
-    //override fun clone(): FxOrderMapper = super.clone() as FxOrderMapper
 }
