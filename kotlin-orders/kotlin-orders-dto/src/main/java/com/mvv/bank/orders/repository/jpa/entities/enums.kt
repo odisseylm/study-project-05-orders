@@ -29,7 +29,7 @@ enum class OrderType (
 
 enum class Side (override val sqlShortcut: String) : SqlShortcutEnum {
     CLIENT("C"),
-    BANK_MARKER("BM"),
+    BANK_MARKET("BM"),
     ;
 
     companion object {

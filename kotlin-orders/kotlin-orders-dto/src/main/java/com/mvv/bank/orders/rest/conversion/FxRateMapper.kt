@@ -3,7 +3,7 @@ package com.mvv.bank.orders.rest.conversion
 import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import org.mapstruct.Mapper
-import com.mvv.bank.orders.rest.FxRate as RestFxRate
+import com.mvv.bank.orders.rest.entities.FxRate as RestFxRate
 import com.mvv.bank.orders.domain.FxRate as DomainFxRate
 
 

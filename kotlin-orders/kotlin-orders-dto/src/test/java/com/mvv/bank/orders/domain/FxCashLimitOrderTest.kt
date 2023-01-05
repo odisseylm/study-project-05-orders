@@ -176,6 +176,26 @@ class FxCashLimitOrderTest {
             .isExactlyInstanceOf(IllegalStateException::class.java)
     }
 
+    @Test
+    fun validationIsDone_forBankMarketSide_expectToFail() {
+        assertThatCode {
+                FxCashLimitOrder.create(
+                    side = Side.BANK_MARKET,
+                    user = testUser,
+                    buySellType = BuySellType.BUY,
+                    buyCurrency = EUR,
+                    sellCurrency = UAH,
+                    volume = bd("1000"),
+                    limitPrice = Amount.of("39.38", UAH),
+                    dailyExecutionType = DailyExecutionType.GTC,
+                    market = TestPredefinedMarkets.KYIV1,
+                    orderState = OrderState.EXECUTED,
+                )
+            }
+            .hasMessage("Currently only client side orders are supported.")
+            .isExactlyInstanceOf(IllegalStateException::class.java)
+    }
+
 
     @Test
     fun validationIsDoneWithCreatingOrderByDslLikeBuilder() {

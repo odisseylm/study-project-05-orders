@@ -1,4 +1,4 @@
-package com.mvv.bank.orders.rest
+package com.mvv.bank.orders.rest.entities
 
 
 class FxOrder: BaseOrder() {

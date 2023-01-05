@@ -39,7 +39,7 @@ import com.mvv.bank.orders.repository.jpa.entities.StockOrder as DtoOrder
 import java.math.BigDecimal as bd
 
 
-class StockOrderMapperTest {
+internal class StockOrderMapperTest {
     private val testMarket = TestPredefinedMarkets.KYIV1
     private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val testTime = LocalTime.of(13, 5)

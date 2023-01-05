@@ -1,4 +1,4 @@
-package com.mvv.bank.orders.rest
+package com.mvv.bank.orders.rest.entities
 
 import java.math.BigDecimal
 import java.time.ZonedDateTime
@@ -15,8 +15,8 @@ sealed class BaseOrder {
     lateinit var buySellType: BuySellType
     lateinit var volume: BigDecimal
 
-    var limitPrice: BigDecimal? = null
-    var stopPrice: BigDecimal? = null
+    var limitPrice: Amount? = null
+    var stopPrice:  Amount? = null
     var dailyExecutionType: DailyExecutionType? = null
 
     var placedAt:   ZonedDateTime? = null

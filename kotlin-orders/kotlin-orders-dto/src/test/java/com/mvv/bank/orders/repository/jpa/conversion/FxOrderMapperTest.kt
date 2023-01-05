@@ -41,7 +41,7 @@ import com.mvv.bank.orders.repository.jpa.entities.FxOrder as DtoOrder
 import java.math.BigDecimal as bd
 
 
-class FxOrderMapperTest {
+internal class FxOrderMapperTest {
     private val testMarket = TestPredefinedMarkets.KYIV1
     private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val testTime = LocalTime.of(13, 5)
@@ -382,6 +382,33 @@ class FxOrderMapperTest {
 
         assertThatCode { orderMapper.toDomain(dtoOrder) }
             .hasMessage("Market price cannot have limit/stop price (41.0).")
+    }
+
+    @Test
+    fun marketOrder_dtoToDomain_withBankMarketSide_expectsToFail() {
+
+        val dtoOrder: DtoOrder = DtoOrder().apply {
+            id = 567
+            user = testUser.value
+            orderType = DtoOrderType.MARKET_ORDER
+            side = DtoSide.BANK_MARKET
+            buySellType = DtoBuySellType.BUY
+            buyCurrency = "USD"
+            sellCurrency = "UAH"
+            volume = bd("2000")
+            market = testMarket.symbol.value
+            orderState = DtoOrderState.PLACED
+            resultingRateCcy1 = "USD"
+            resultingRateCcy2 = "UAH"
+            resultingRateTimestamp = testTimestamp
+            resultingRateBid = bd("39.00")
+            resultingRateAsk = bd("39.50")
+            placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
+            executedAt = ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]")
+        }
+
+        assertThatCode { orderMapper.toDomain(dtoOrder) }
+            .hasMessage("Currently only client side orders are supported.")
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.mvv.bank.orders.rest
+package com.mvv.bank.orders.rest.entities
 
 import com.mvv.bank.orders.domain.*
 import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainCashOrder
@@ -18,7 +18,7 @@ enum class OrderType (
 
 enum class Side {
     CLIENT,
-    BANK_MARKER,
+    BANK_MARKET,
 }
 
 

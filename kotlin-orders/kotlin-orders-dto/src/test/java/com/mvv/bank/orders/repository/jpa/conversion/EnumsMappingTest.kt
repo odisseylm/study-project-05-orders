@@ -3,13 +3,18 @@ package com.mvv.bank.orders.repository.jpa.conversion
 import com.mvv.bank.jpa.SqlShortcutEnum
 import com.mvv.bank.log.safe
 import com.mvv.bank.orders.domain.*
+import com.mvv.bank.orders.rest.entities.BuySellType
+import com.mvv.bank.orders.rest.entities.DailyExecutionType
+import com.mvv.bank.orders.rest.entities.OrderState
+import com.mvv.bank.orders.rest.entities.OrderType
+import com.mvv.bank.orders.rest.entities.Side
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredFunctions
 
 
-class EnumTypesTest {
+internal class EnumTypesTest {
 
     @Suppress("RemoveRedundantQualifierName")
     @Test
@@ -24,7 +29,7 @@ class EnumTypesTest {
             )
             convertBetweenDomainAndDto(
                 com.mvv.bank.orders.domain.OrderType::class,
-                com.mvv.bank.orders.rest.OrderType::class,
+                OrderType::class,
                 assertions,
             )
 
@@ -35,7 +40,7 @@ class EnumTypesTest {
             )
             convertBetweenDomainAndDto(
                 com.mvv.bank.orders.domain.Side::class,
-                com.mvv.bank.orders.rest.Side::class,
+                Side::class,
                 assertions,
             )
 
@@ -46,7 +51,7 @@ class EnumTypesTest {
             )
             convertBetweenDomainAndDto(
                 com.mvv.bank.orders.domain.BuySellType::class,
-                com.mvv.bank.orders.rest.BuySellType::class,
+                BuySellType::class,
                 assertions,
             )
 
@@ -57,7 +62,7 @@ class EnumTypesTest {
             )
             convertBetweenDomainAndDto(
                 com.mvv.bank.orders.domain.DailyExecutionType::class,
-                com.mvv.bank.orders.rest.DailyExecutionType::class,
+                DailyExecutionType::class,
                 assertions,
             )
 
@@ -68,7 +73,7 @@ class EnumTypesTest {
             )
             convertBetweenDomainAndDto(
                 com.mvv.bank.orders.domain.OrderState::class,
-                com.mvv.bank.orders.rest.OrderState::class,
+                OrderState::class,
                 assertions,
             )
 

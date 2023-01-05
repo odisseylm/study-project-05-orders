@@ -98,18 +98,15 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
     }
 
     // T O D O: can we do it better without this switch?
-    fun toDomain(source: DtoOrder): DomainOrder {
-        @Suppress("MoveVariableDeclarationIntoWhen")
-        val target = resolve<DomainOrder>(source)
-        return when (target) {
+    fun toDomain(source: DtoOrder): DomainOrder =
+        when (val target = createDomainOrder<DomainOrder>(source)) {
             is DomainMarketOrder -> dtoToMarketOrder(source, target)
             is DomainLimitOrder  -> dtoToLimitOrder(source, target)
             is DomainStopOrder   -> dtoToStopOrder(source, target)
             //else -> null
         }
-    }
 
 
     @ObjectFactory
-    fun <T : DomainOrder> resolve(source: DtoOrder): T = newOrderInstance(source.orderType.cashDomainType)
+    fun <T : DomainOrder> createDomainOrder(source: DtoOrder): T = newOrderInstance(source.orderType.cashDomainType)
 }

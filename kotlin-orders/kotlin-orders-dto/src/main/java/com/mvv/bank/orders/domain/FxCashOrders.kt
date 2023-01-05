@@ -1,5 +1,6 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.log.safe
 import com.mvv.bank.util.checkInitialized
 import java.math.BigDecimal
 import java.time.ZonedDateTime
@@ -63,6 +64,9 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
     override fun validateCurrentState() {
         super.validateCurrentState()
         limitOrderSupport.validateCurrentState()
+
+        check(limitPrice.currency == priceCurrency) {
+            "Limit price currency (${limitPrice.currency.safe}) differs from price currency (${priceCurrency.safe})." }
     }
 
     override fun validateNextState(nextState: OrderState) {
@@ -142,6 +146,9 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
     override fun validateCurrentState() {
         super.validateCurrentState()
         stopOrderSupport.validateCurrentState()
+
+        check(stopPrice.currency == priceCurrency) {
+            "Stop price currency (${stopPrice.currency.safe}) differs from price currency (${priceCurrency.safe})." }
     }
 
     override fun validateNextState(nextState: OrderState) {

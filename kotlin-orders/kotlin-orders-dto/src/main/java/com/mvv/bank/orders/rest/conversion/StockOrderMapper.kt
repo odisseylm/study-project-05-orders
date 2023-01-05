@@ -2,39 +2,40 @@ package com.mvv.bank.orders.rest.conversion
 
 import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
-import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainOrder
-import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainMarketOrder
-import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainLimitOrder
-import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
-import com.mvv.bank.orders.rest.entities.FxOrder as DtoOrder
 import org.mapstruct.*
+
+import com.mvv.bank.orders.rest.entities.StockOrder as DtoOrder
+
+import com.mvv.bank.orders.domain.StockOrder as DomainOrder
+import com.mvv.bank.orders.domain.StockStopOrder as DomainStopOrder
+import com.mvv.bank.orders.domain.StockLimitOrder as DomainLimitOrder
+import com.mvv.bank.orders.domain.StockMarketOrder as DomainMarketOrder
 
 
 @Mapper(
     componentModel = MAP_STRUCT_COMPONENT_MODEL,
     config = DomainPrimitiveMappers::class,
     uses = [
-        FxRateMapper::class,
+        StockQuoteMapper::class,
         AmountMapper::class,
     ]
 )
 @Suppress("CdiInjectionPointsInspection")
-abstract class FxOrderMapper: AbstractRestOrderMapper() {
+abstract class StockOrderMapper: AbstractRestOrderMapper() {
 
     // to avoid warnings
     @Mapping(target = "limitPrice", ignore = true)
     @Mapping(target = "stopPrice", ignore = true)
+    //@Mapping(target = "priceCurrency", ignore = true)
     @Mapping(target = "dailyExecutionType", ignore = true)
     abstract fun baseOrderAttrsToDto(source: DomainOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
-    //@Mapping(source = "limitPrice.value", target = "limitPrice")
     @Mapping(source = "limitPrice", target = "limitPrice") // because earlier it was marked as ignored
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
     abstract fun limitOrderToDto(source: DomainLimitOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
-    //@Mapping(source = "stopPrice.value", target = "stopPrice")
     @Mapping(source = "stopPrice", target = "stopPrice") // because earlier it was marked as ignored
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType") // because earlier it was marked as ignored
     abstract fun stopOrderToDto(source: DomainStopOrder?, @MappingTarget target: DtoOrder?): DtoOrder?
@@ -62,18 +63,24 @@ abstract class FxOrderMapper: AbstractRestOrderMapper() {
         }
     }
 
+    /*
+    @BeforeMapping
+    @Suppress("UNUSED_PARAMETER") //, "unused")
+    fun validateInputDtoOrder(source: DtoOrder, @MappingTarget target: Any?) {
+        if (source.limitPrice != null || source.stopPrice != null) {
+            checkNotNull(source.priceCurrency) {
+                "Price currency is not set (however limit/stop price is [${source.limitPrice.safe}/${source.stopPrice.safe}/])" }
+        }
+    }
+    */
 
-    @Mapping(target = "product", ignore = true)
-    @Mapping(target = "resultingPrice", ignore = true)
-    @Mapping(target = "resultingQuote", ignore = true)
+    @Mapping(source = "product", target = "company")
     abstract fun baseOrderAttrsToDomain(source: DtoOrder, @MappingTarget target: DomainOrder): DomainOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    //@Mapping(target = "limitPrice", expression = "java( Amount.of(source.getLimitPrice(), target.getPriceCurrency()) )")
     abstract fun dtoToLimitOrder(source: DtoOrder, @MappingTarget target: DomainLimitOrder): DomainLimitOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    //@Mapping(target = "stopPrice", expression = "java( Amount.of(source.getStopPrice(), target.getPriceCurrency()) )")
     abstract fun dtoToStopOrder(source: DtoOrder, @MappingTarget target: DomainStopOrder): DomainStopOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
@@ -94,5 +101,5 @@ abstract class FxOrderMapper: AbstractRestOrderMapper() {
         }
 
     @ObjectFactory
-    fun <T : DomainOrder> createDomainOrder(source: DtoOrder): T = newOrderInstance(source.orderType.cashDomainType)
+    fun <T : DomainOrder> createDomainOrder(source: DtoOrder): T = newOrderInstance(source.orderType.stockDomainType)
 }

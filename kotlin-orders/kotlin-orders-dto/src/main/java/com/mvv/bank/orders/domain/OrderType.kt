@@ -43,7 +43,7 @@ enum class Side {
      * The Sell-Side refers to firms that issue, sell, or trade securities, and includes investment banks,
      * advisory firms, and corporations.
      */
-    BANK_MARKER, // bank or market
+    BANK_MARKET, // bank or market
 }
 
 

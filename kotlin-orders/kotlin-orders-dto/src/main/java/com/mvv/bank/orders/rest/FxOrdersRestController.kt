@@ -1,6 +1,7 @@
 package com.mvv.bank.orders.rest
 
 import com.mvv.bank.orders.rest.conversion.FxOrderMapper
+import com.mvv.bank.orders.rest.entities.FxOrder
 import com.mvv.bank.orders.rest.exception.NotFoundException
 import com.mvv.bank.orders.service.FxOrderService
 import org.springframework.web.bind.annotation.GetMapping

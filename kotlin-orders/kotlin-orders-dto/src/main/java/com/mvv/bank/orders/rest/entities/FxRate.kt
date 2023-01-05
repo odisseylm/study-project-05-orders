@@ -1,4 +1,4 @@
-package com.mvv.bank.orders.rest
+package com.mvv.bank.orders.rest.entities
 
 import com.mvv.bank.orders.domain.CurrencyPair
 import java.math.BigDecimal

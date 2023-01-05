@@ -77,7 +77,7 @@ internal class StopLimitOrderSupport<Order: com.mvv.bank.orders.domain.Order<*, 
                 BuySellType.BUY -> quote.ask.value <= limitPrice.value
             }
 
-            Side.BANK_MARKER -> when (buySellType) {
+            Side.BANK_MARKET -> when (buySellType) {
                 BuySellType.SELL -> quote.ask.value >= limitPrice.value
                 BuySellType.BUY -> quote.bid.value <= limitPrice.value
             }
