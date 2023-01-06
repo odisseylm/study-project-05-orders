@@ -32,11 +32,11 @@ import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainMarketOrder
 import com.mvv.bank.orders.domain.DailyExecutionType as DomainDailyExecutionType
 
 import com.mvv.bank.orders.repository.jpa.entities.Side as DtoSide
+import com.mvv.bank.orders.repository.jpa.entities.FxOrder as DtoOrder
 import com.mvv.bank.orders.repository.jpa.entities.OrderType as DtoOrderType
 import com.mvv.bank.orders.repository.jpa.entities.OrderState as DtoOrderState
 import com.mvv.bank.orders.repository.jpa.entities.BuySellType as DtoBuySellType
 import com.mvv.bank.orders.repository.jpa.entities.DailyExecutionType as DtoDailyExecutionType
-import com.mvv.bank.orders.repository.jpa.entities.FxOrder as DtoOrder
 
 import java.math.BigDecimal as bd
 
@@ -50,7 +50,7 @@ internal class FxOrderMapperTest {
     private val testUser = TestPredefinedUsers.USER1
 
     private val orderMapper = Mappers.getMapper(FxOrderMapper::class.java).clone()
-        .also { initProperty(it, "marketService", TestPredefinedMarkets) }
+        .also { initProperty(it, "marketProvider", TestPredefinedMarkets) }
          as FxOrderMapper
 
 

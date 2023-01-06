@@ -41,8 +41,8 @@ interface Market {
 }
 
 
-interface MarketFactory {
-    fun market(marketSymbol: MarketSymbol): Market
+interface MarketProvider {
+    fun marketBySymbol(marketSymbol: MarketSymbol): Market
 }
 
 /*

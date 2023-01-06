@@ -37,9 +37,9 @@ interface Company {
 }
 
 
-interface CompanyFactory {
+interface CompanyProvider {
     // in general factory should return company data where Company.symbol = original symbol
-    fun getCompanyData(companySymbol: CompanySymbol): Company
+    fun companyBySymbol(companySymbol: CompanySymbol): Company
 }
 
 /*

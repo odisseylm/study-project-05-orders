@@ -1,20 +1,19 @@
 package com.mvv.bank.orders.conversion
 
+import com.mvv.bank.orders.domain.CompanyProvider
 import com.mvv.bank.orders.domain.CompanySymbol
+import com.mvv.bank.orders.domain.MarketProvider
 import com.mvv.bank.orders.domain.MarketSymbol
 
 import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 import com.mvv.bank.orders.domain.Company as DomainCompany
 import com.mvv.bank.orders.domain.Market as DomainMarket
 
-import com.mvv.bank.orders.service.CompanyService
-import com.mvv.bank.orders.service.MarketService
+import com.mvv.bank.util.internalNewInstance
 import jakarta.inject.Inject
 import org.mapstruct.AfterMapping
 import org.mapstruct.MappingTarget
 import kotlin.reflect.KClass
-import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.jvm.isAccessible
 
 typealias DomainBaseOrder = com.mvv.bank.orders.domain.Order<*,*>
 
@@ -22,9 +21,9 @@ typealias DomainBaseOrder = com.mvv.bank.orders.domain.Order<*,*>
 @Suppress("CdiInjectionPointsInspection", "MemberVisibilityCanBePrivate")
 abstract class AbstractOrderMapper: Cloneable {
     @Inject
-    protected lateinit var marketService: MarketService
+    protected lateinit var marketProvider: MarketProvider
     @Inject
-    protected lateinit var companyService: CompanyService
+    protected lateinit var companyProvider: CompanyProvider
 
     // Ideally it should be put into separate MarketMapper but easy pure unit testing it is there now
     // (to avoid injection sub-dependencies into dependencies)
@@ -32,7 +31,7 @@ abstract class AbstractOrderMapper: Cloneable {
     fun marketToDomain(marketSymbol: String?): DomainMarket? =
         if (marketSymbol == null) null else marketToDomain(MarketSymbol.of(marketSymbol))
     fun marketToDomain(marketSymbol: MarketSymbol?): DomainMarket? =
-        if (marketSymbol == null) null else marketService.marketBySymbol(marketSymbol)
+        if (marketSymbol == null) null else marketProvider.marketBySymbol(marketSymbol)
 
     // Ideally it should be put into separate MarketMapper but easy pure unit testing it is there now
     // (to avoid injection sub-dependencies into dependencies)
@@ -40,14 +39,11 @@ abstract class AbstractOrderMapper: Cloneable {
     fun companyToDomain(companySymbol: String?): DomainCompany? =
         if (companySymbol == null) null else companyToDomain(CompanySymbol.of(companySymbol))
     fun companyToDomain(companySymbol: CompanySymbol?): DomainCompany? =
-        if (companySymbol == null) null else companyService.companyBySymbol(companySymbol)
+        if (companySymbol == null) null else companyProvider.companyBySymbol(companySymbol)
 
 
     @Suppress("UNCHECKED_CAST")
-    protected fun <T> newOrderInstance(type: KClass<*>): T =
-        type.primaryConstructor!!
-            .apply { if (!isAccessible) isAccessible = true }
-            .call() as T
+    protected fun <T> newOrderInstance(type: KClass<*>): T = internalNewInstance(type) as T
 
     @AfterMapping
     open fun validateDomainOrderAfterCreation(source: Any, @MappingTarget target: DomainBaseOrder) =

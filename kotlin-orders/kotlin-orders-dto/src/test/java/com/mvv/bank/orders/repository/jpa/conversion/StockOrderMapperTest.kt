@@ -49,8 +49,8 @@ internal class StockOrderMapperTest {
     private val testUser = TestPredefinedUsers.USER1
 
     private val orderMapper = Mappers.getMapper(StockOrderMapper::class.java).clone()
-        .apply { initProperty(this, "marketService", TestPredefinedMarkets) }
-        .apply { initProperty(this, "companyService", TestPredefinedCompanies) }
+        .apply { initProperty(this, "marketProvider", TestPredefinedMarkets) }
+        .apply { initProperty(this, "companyProvider", TestPredefinedCompanies) }
         as StockOrderMapper
 
 

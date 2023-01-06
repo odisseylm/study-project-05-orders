@@ -1,8 +1,6 @@
 package com.mvv.bank.orders.domain.test.predefined
 
 import com.mvv.bank.orders.domain.*
-import com.mvv.bank.orders.service.CompanyService
-import com.mvv.bank.orders.service.MarketService
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -18,7 +16,7 @@ class TestPredefinedUsers {
 
 
 class TestPredefinedMarkets {
-    companion object : MarketFactory, MarketService {
+    companion object : MarketProvider {
         val NASDAQ: Market = TestMarketImpl("National Association of Securities Dealers Automated Quotation",
             MarketSymbol.of("NASDAQ"), ZoneId.of("America/New_York"), "",
             LocalTime.of(9, 0), LocalTime.of(17, 0))
@@ -31,23 +29,19 @@ class TestPredefinedMarkets {
                 KYIV1.symbol  -> KYIV1
                 else -> throw IllegalArgumentException("Market [$marketSymbol] is not found.")
             }
-
-        override fun market(marketSymbol: MarketSymbol): Market = marketBySymbol(marketSymbol)
     }
 }
 
 
 class TestPredefinedCompanies {
-    companion object : CompanyFactory, CompanyService {
+    companion object : CompanyProvider {
         val APPLE: Company = TestCompanyImpl("Apple", CompanySymbol.of("AAPL"), "isin1234")
 
-        override fun getCompanyData(companySymbol: CompanySymbol): Company =
+        override fun companyBySymbol(companySymbol: CompanySymbol): Company =
             when (companySymbol) {
                 APPLE.symbol -> APPLE
                 else -> throw IllegalArgumentException("Company [$companySymbol] is not found.")
             }
-
-        override fun companyBySymbol(companySymbol: CompanySymbol): Company = getCompanyData(companySymbol)
     }
 }
 

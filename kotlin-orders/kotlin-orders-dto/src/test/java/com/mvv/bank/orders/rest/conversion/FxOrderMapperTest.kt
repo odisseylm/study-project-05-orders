@@ -50,7 +50,7 @@ internal class FxOrderMapperTest {
     private val testUser = TestPredefinedUsers.USER1
 
     private val orderMapper = Mappers.getMapper(FxOrderMapper::class.java).clone()
-        .also { initProperty(it, "marketService", TestPredefinedMarkets) }
+        .also { initProperty(it, "marketProvider", TestPredefinedMarkets) }
          as FxOrderMapper
 
 
