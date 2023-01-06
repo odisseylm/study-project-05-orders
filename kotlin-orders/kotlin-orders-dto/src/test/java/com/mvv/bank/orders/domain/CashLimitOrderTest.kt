@@ -5,16 +5,16 @@ import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
 
 import com.mvv.bank.orders.domain.Currency.Companion.EUR
 import com.mvv.bank.orders.domain.Currency.Companion.UAH
-import org.assertj.core.api.SoftAssertions
 import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal as bd
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
+import java.math.BigDecimal as bd
 
 
-class FxCashStopOrderTest {
+internal class CashLimitOrderTest {
     private val testMarket = TestPredefinedMarkets.KYIV1
     private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val testTime = LocalTime.of(13, 5)
@@ -26,29 +26,34 @@ class FxCashStopOrderTest {
 
         // client wants to sell 20 EUR (another currency UAH) by price >= 39.38
 
-        val order = FxCashStopOrder.create(
+        val order = CashLimitOrder.create(
             side = Side.CLIENT,
             user = testUser,
             buySellType = BuySellType.SELL,
             sellCurrency = EUR,
             buyCurrency = UAH,
             volume = bd("1000"),
-            stopPrice = Amount.of("39.38", UAH),
+            limitPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
             market = testMarket,
         )
 
+        val rate = FxRate.of(
+            testMarket, testTimestamp, CurrencyPair.of("EUR_UAH"),
+            // In Foreign Exchange:
+            //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
+            //  ask - price of client 'buy'  (and dealer/bank 'sell')
+            bid = bd("39.37"), ask = bd("39.39"),
+        )
+
+
         SoftAssertions().apply {
 
-            assertThat(order.orderType).isEqualTo(OrderType.STOP_ORDER)
-
-            val rate = FxRate.of(
-                testMarket, testTimestamp, CurrencyPair.of("EUR_UAH"),
-                // In Foreign Exchange:
-                //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
-                //  ask - price of client 'buy'  (and dealer/bank 'sell')
-                bid = bd("39.37"), ask = bd("39.39"),
-            )
+            // mainly to suppress 'unused' warnings
+            assertThat(order.orderType).isEqualTo(OrderType.LIMIT_ORDER)
+            assertThat(order.volume).isEqualTo(bd("1000"))
+            assertThat(order.limitPrice).isEqualTo(Amount.of("39.38 UAH"))
+            assertThat(order.dailyExecutionType).isEqualTo(DailyExecutionType.GTC)
 
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
@@ -91,24 +96,29 @@ class FxCashStopOrderTest {
 
         // client wants to buy 20 EUR (another currency UAH) by price >= 39.38
 
-        val order = FxCashStopOrder.create(
+        val order = CashLimitOrder.create(
             side = Side.CLIENT,
             user = testUser,
             buySellType = BuySellType.BUY,
             buyCurrency = EUR,
             sellCurrency = UAH,
             volume = bd("1000"),
-            stopPrice = Amount.of("39.38", UAH),
+            limitPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
             market = testMarket,
         )
 
-        val rate = FxRate.of(
-            testMarket, testTimestamp, CurrencyPair.of("EUR_UAH"),
+        val rate = FxRate(
+            market = testMarket.symbol,
+            timestamp = testTimestamp,
+            marketDate = testDate,
+            marketTime = testTime,
+            currencyPair = CurrencyPair.of("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
-            bid = bd("39.37"), ask = bd("39.39"),
+            bid = bd("39.37"),
+            ask = bd("39.39"),
         )
 
         SoftAssertions().apply {
@@ -149,7 +159,7 @@ class FxCashStopOrderTest {
     @Test
     fun validationIsDone() {
         assertThatCode {
-                FxCashLimitOrder.create(
+                CashLimitOrder.create(
                     side = Side.CLIENT,
                     user = testUser,
                     buySellType = BuySellType.BUY,
@@ -161,6 +171,47 @@ class FxCashStopOrderTest {
                     market = TestPredefinedMarkets.KYIV1,
                     orderState = OrderState.EXECUTED,
                 )
+            }
+            .hasMessage("Id is not set or incorrect [null].")
+            .isExactlyInstanceOf(IllegalStateException::class.java)
+    }
+
+    @Test
+    fun validationIsDone_forBankMarketSide_expectToFail() {
+        assertThatCode {
+                CashLimitOrder.create(
+                    side = Side.BANK_MARKET,
+                    user = testUser,
+                    buySellType = BuySellType.BUY,
+                    buyCurrency = EUR,
+                    sellCurrency = UAH,
+                    volume = bd("1000"),
+                    limitPrice = Amount.of("39.38", UAH),
+                    dailyExecutionType = DailyExecutionType.GTC,
+                    market = TestPredefinedMarkets.KYIV1,
+                    orderState = OrderState.EXECUTED,
+                )
+            }
+            .hasMessage("Currently only client side orders are supported.")
+            .isExactlyInstanceOf(IllegalStateException::class.java)
+    }
+
+
+    @Test
+    fun validationIsDoneWithCreatingOrderByDslLikeBuilder() {
+        assertThatCode {
+            createOrder<CashLimitOrder> {
+                    user = TestPredefinedUsers.USER1
+                    side = Side.CLIENT
+                    buySellType = BuySellType.BUY
+                    buyCurrency = EUR
+                    sellCurrency = UAH
+                    volume = bd("1000")
+                    limitPrice = Amount.of("39.38", UAH)
+                    dailyExecutionType = DailyExecutionType.GTC
+                    market = TestPredefinedMarkets.KYIV1
+                    orderState = OrderState.EXECUTED
+                }
             }
             .hasMessage("Id is not set or incorrect [null].")
             .isExactlyInstanceOf(IllegalStateException::class.java)

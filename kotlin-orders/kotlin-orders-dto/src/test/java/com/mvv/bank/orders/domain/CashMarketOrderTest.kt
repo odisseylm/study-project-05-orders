@@ -11,7 +11,7 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 
 
-class FxCashMarketOrderTest {
+internal class CashMarketOrderTest {
     private val testMarket = TestPredefinedMarkets.KYIV1
     private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val testTime = LocalTime.of(13, 5)
@@ -20,7 +20,7 @@ class FxCashMarketOrderTest {
 
     @Test
     fun create() {
-        val order = FxCashMarketOrder.create(
+        val order = CashMarketOrder.create(
             side = Side.CLIENT,
             user = testUser,
             buySellType = BuySellType.SELL,

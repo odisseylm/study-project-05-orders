@@ -12,7 +12,7 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 
 
-class StockLimitOrderTest {
+internal class StockLimitOrderTest {
     private val testMarket = TestPredefinedMarkets.KYIV1
     private val testDate = LocalDate.of(2022, java.time.Month.DECEMBER, 23)
     private val testTime = LocalTime.of(13, 5)

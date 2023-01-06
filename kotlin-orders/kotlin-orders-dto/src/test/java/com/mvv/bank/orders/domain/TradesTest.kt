@@ -10,7 +10,7 @@ import java.math.BigDecimal as bd
 import java.time.ZonedDateTime
 
 
-class TradesTest {
+internal class TradesTest {
     private val now = ZonedDateTime.now()
 
     @Test

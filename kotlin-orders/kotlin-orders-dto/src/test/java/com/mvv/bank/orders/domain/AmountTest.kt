@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import java.math.BigDecimal as bd
 
 
-class AmountTest {
+internal class AmountTest {
 
     @Test
     fun create() {

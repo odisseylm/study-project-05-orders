@@ -1,23 +1,23 @@
 package com.mvv.bank.orders.executors
 
 import com.mvv.bank.orders.domain.*
-import com.mvv.bank.orders.repository.FxCashLimitOrderRepository
+import com.mvv.bank.orders.repository.CashLimitOrderRepository
 import com.mvv.bank.log.safe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.*
 
-private val log: Logger = LoggerFactory.getLogger(FxCashLimitOrderExecutor::class.java)
+private val log: Logger = LoggerFactory.getLogger(CashLimitOrderExecutor::class.java)
 
 // TODO: refactor to use start/stop/close
-class FxCashLimitOrderExecutor (
+class CashLimitOrderExecutor (
     private val dateTimeService: DateTimeService,
-    private val orderRepository: FxCashLimitOrderRepository,
+    private val orderRepository: CashLimitOrderRepository,
     private val market: Market,
-) : FxCashOrderExecutor {
-    private val orders : MutableList<FxCashLimitOrder> = CopyOnWriteArrayList()
+) : CashOrderExecutor {
+    private val orders : MutableList<CashLimitOrder> = CopyOnWriteArrayList()
     private val executor : ExecutorService = Executors.newFixedThreadPool(10) // TODO: move to configuration
-    private val processedOrders: BlockingQueue<FxCashLimitOrder> = LinkedBlockingQueue(32768)
+    private val processedOrders: BlockingQueue<CashLimitOrder> = LinkedBlockingQueue(32768)
     private val processedOrdersSavingThread = Thread({}, "Processed orders saver")
 
     override fun priceChanged(price: FxRate) {
@@ -32,7 +32,7 @@ class FxCashLimitOrderExecutor (
         }
     }
 
-    private fun executeOrder(order: FxCashLimitOrder, currentPrice: FxRate) {
+    private fun executeOrder(order: CashLimitOrder, currentPrice: FxRate) {
         try {
             executeOrderOnMarket(order, currentPrice)
             orderExecuted(order, currentPrice)
@@ -45,7 +45,7 @@ class FxCashLimitOrderExecutor (
     private val context: OrderContext get() =
         OrderContext.create(dateTimeService = dateTimeService, market = market)
 
-    private fun orderExecuted(order: FxCashLimitOrder, currentPrice: FxRate) {
+    private fun orderExecuted(order: CashLimitOrder, currentPrice: FxRate) {
         order.changeOrderState(OrderState.EXECUTED, context)
         order.resultingRate = currentPrice
 
@@ -54,7 +54,7 @@ class FxCashLimitOrderExecutor (
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun executeOrderOnMarket(order: FxCashLimitOrder, currentPrice: FxRate) {
+    private fun executeOrderOnMarket(order: CashLimitOrder, currentPrice: FxRate) {
         // T O D O: how to emulate it?
         // TODO: introduce service which can be substituted in tests
         //
@@ -64,7 +64,7 @@ class FxCashLimitOrderExecutor (
     private fun saveProcessedOrders() {
         val batchSize = 10 // TODO: move to configuration
         //val processedPart = mutableListOf<LimitOrder>()
-        val processedPart = ArrayList<FxCashLimitOrder>(batchSize)
+        val processedPart = ArrayList<CashLimitOrder>(batchSize)
 
         // blocking call
         val firstOrder = processedOrders.take()
@@ -76,7 +76,7 @@ class FxCashLimitOrderExecutor (
         saveOrders(processedPart)
     }
 
-    private fun saveOrders(processed: List<FxCashLimitOrder>) {
+    private fun saveOrders(processed: List<CashLimitOrder>) {
         orderRepository.saveOrders(processed)
     }
 }

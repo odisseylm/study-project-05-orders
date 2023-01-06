@@ -4,7 +4,7 @@ import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 
 
-class DomainPrimitivesTest {
+internal class DomainPrimitivesTest {
 
     @Test
     fun validateEmail() {

@@ -6,7 +6,7 @@ import java.math.BigDecimal
 import java.time.ZonedDateTime
 
 
-sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
+sealed class AbstractCashOrder : AbstractOrder<Currency, Quote>() {
 
     lateinit var buyCurrency: Currency
     lateinit var sellCurrency: Currency
@@ -53,7 +53,7 @@ sealed class AbstractFxCashOrder : AbstractOrder<Currency, Quote>() {
 }
 
 
-class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder<Currency, Quote> {
+class CashLimitOrder private constructor() : AbstractCashOrder(), LimitOrder<Currency, Quote> {
 
     private val limitOrderSupport = StopLimitOrderSupport(this, ::limitPrice, ::dailyExecutionType)
 
@@ -101,8 +101,8 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
             resultingRate: FxRate? = null,
             resultingPrice: Amount? = null,
             resultingQuote: Quote? = null,
-        ): FxCashLimitOrder {
-            val order = FxCashLimitOrder()
+        ): CashLimitOrder {
+            val order = CashLimitOrder()
             order.id = id
             order.user = user
 
@@ -135,7 +135,7 @@ class FxCashLimitOrder private constructor() : AbstractFxCashOrder(), LimitOrder
 }
 
 
-class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<Currency, Quote> {
+class CashStopOrder private constructor() : AbstractCashOrder(), StopOrder<Currency, Quote> {
 
     private val stopOrderSupport = StopLimitOrderSupport(this, ::stopPrice, ::dailyExecutionType)
 
@@ -182,8 +182,8 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
             resultingRate: FxRate? = null,
             resultingPrice: Amount? = null,
             resultingQuote: Quote? = null,
-        ): FxCashStopOrder {
-            val order = FxCashStopOrder()
+        ): CashStopOrder {
+            val order = CashStopOrder()
             order.id = id
             order.user = user
 
@@ -217,7 +217,7 @@ class FxCashStopOrder private constructor() : AbstractFxCashOrder(), StopOrder<C
 }
 
 
-class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
+class CashMarketOrder private constructor() : AbstractCashOrder() {
     override val orderType: OrderType = OrderType.MARKET_ORDER
 
     override fun toExecute(quote: Quote): Boolean {
@@ -251,8 +251,8 @@ class FxCashMarketOrder private constructor() : AbstractFxCashOrder() {
             resultingRate: FxRate? = null,
             resultingPrice: Amount? = null,
             resultingQuote: Quote? = null,
-        ): FxCashMarketOrder {
-            val order = FxCashMarketOrder()
+        ): CashMarketOrder {
+            val order = CashMarketOrder()
             order.id = id
             order.user = user
 

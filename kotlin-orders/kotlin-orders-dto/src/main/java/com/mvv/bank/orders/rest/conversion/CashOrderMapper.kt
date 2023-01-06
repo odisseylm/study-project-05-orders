@@ -4,15 +4,15 @@ import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import com.mvv.bank.orders.conversion.GenericOrderDtoDomainConversion
 
-import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainMarketOrder
-import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainLimitOrder
-import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainOrder
-import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
+import com.mvv.bank.orders.domain.CashMarketOrder as DomainMarketOrder
+import com.mvv.bank.orders.domain.CashLimitOrder as DomainLimitOrder
+import com.mvv.bank.orders.domain.AbstractCashOrder as DomainOrder
+import com.mvv.bank.orders.domain.CashStopOrder as DomainStopOrder
 import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 
 import com.mvv.bank.orders.rest.entities.OrderType as DtoOrderType
 import com.mvv.bank.orders.rest.entities.BaseOrder as DtoBaseOrder
-import com.mvv.bank.orders.rest.entities.FxOrder as DtoOrder
+import com.mvv.bank.orders.rest.entities.CashOrder as DtoOrder
 
 import org.mapstruct.*
 import kotlin.reflect.KClass
@@ -27,7 +27,7 @@ import kotlin.reflect.KClass
     ]
 )
 @Suppress("CdiInjectionPointsInspection")
-abstract class FxOrderMapper: AbstractRestOrderMapper(),
+abstract class CashOrderMapper: AbstractRestOrderMapper(),
     GenericOrderDtoDomainConversion<DtoBaseOrder, DtoOrder, DtoOrderType, DomainOrder, DomainMarketOrder, DomainLimitOrder, DomainStopOrder> {
 
     // Temporary overriding because MapStruct generates method twice in case of diamond inheritance.

@@ -4,7 +4,7 @@ import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 
 
-class CompanySymbolTest {
+internal class CompanySymbolTest {
 
     @Test
     fun validate() {

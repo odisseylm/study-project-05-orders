@@ -3,7 +3,7 @@ package com.mvv.bank.orders.domain
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class LimitUtilsTests {
+internal class LimitUtilsTests {
 
     @Test
     fun justUseDailyExecutionType() {

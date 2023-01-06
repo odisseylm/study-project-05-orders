@@ -9,7 +9,7 @@ import java.math.BigDecimal as bd
 import java.time.*
 
 
-class FxRateTest {
+internal class FxRateTest {
     private val testMarket = TestPredefinedMarkets.KYIV1
     private val testMarketDate = LocalDate.of(2022, 12, 19)
     private val testMarketTime = LocalTime.of(1, 2, 3)

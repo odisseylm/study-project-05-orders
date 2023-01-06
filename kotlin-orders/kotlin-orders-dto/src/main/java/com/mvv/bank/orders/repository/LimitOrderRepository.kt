@@ -1,7 +1,7 @@
 package com.mvv.bank.orders.repository
 
-import com.mvv.bank.orders.domain.FxCashLimitOrder
+import com.mvv.bank.orders.domain.CashLimitOrder
 
-interface FxCashLimitOrderRepository {
-    fun saveOrders(orders: List<FxCashLimitOrder>)
+interface CashLimitOrderRepository {
+    fun saveOrders(orders: List<CashLimitOrder>)
 }
