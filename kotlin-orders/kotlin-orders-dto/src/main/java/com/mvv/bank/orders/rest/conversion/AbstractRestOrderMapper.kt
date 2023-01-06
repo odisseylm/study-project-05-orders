@@ -2,6 +2,7 @@ package com.mvv.bank.orders.rest.conversion
 
 import com.mvv.bank.log.safe
 import com.mvv.bank.orders.conversion.AbstractOrderMapper
+import com.mvv.bank.orders.conversion.DomainBaseOrder
 import com.mvv.bank.util.checkLateInitPropsAreInitialized
 
 import com.mvv.bank.orders.domain.OrderType as DomainOrderType
@@ -12,23 +13,23 @@ import org.mapstruct.MappingTarget
 import org.mapstruct.BeforeMapping
 import org.mapstruct.ObjectFactory
 
-typealias DomainBaseOrder = com.mvv.bank.orders.domain.Order<*,*>
-
 
 abstract class AbstractRestOrderMapper : AbstractOrderMapper() {
 
-    abstract fun orderTypeToDomain(orderType: DtoOrderType): DomainOrderType
-    abstract fun orderTypeToDto(orderType: DomainOrderType): DtoOrderType
+    // it is for mixin OrderDtoDomainSupport
+    fun getOrderType(source: DtoBaseOrder): DtoOrderType = source.orderType
+    abstract fun orderTypeToDomain(source: DtoOrderType): DomainOrderType
+    abstract fun orderTypeToDto(source: DomainOrderType): DtoOrderType
 
 
     @BeforeMapping
     @Suppress("UNUSED_PARAMETER")
     fun validateDomainOrderBeforeConverting(source: DomainBaseOrder, @MappingTarget target: DtoBaseOrder) {
-        // We do not perform strict validation to have possibility to see probably wrong order
+        // We do not perform strict validation to have possibility to see/analyze probably wrong order.
         // source.validateCurrentState()
 
-        // but we will use simple validation because in any case we will have error/exception
-        // but less informative
+        // But we will use simple validation because to have better error message.
+        // (error/exception will be thrown in any case)
         checkLateInitPropsAreInitialized(source)
     }
 

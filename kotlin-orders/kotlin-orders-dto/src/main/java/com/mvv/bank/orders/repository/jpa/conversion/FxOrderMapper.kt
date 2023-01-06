@@ -2,23 +2,32 @@ package com.mvv.bank.orders.repository.jpa.conversion
 
 import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
+import com.mvv.bank.orders.conversion.GenericOrderDtoDomainConversion
 import com.mvv.bank.orders.domain.of
 import org.mapstruct.*
 import kotlin.reflect.KClass
+
+import com.mvv.bank.orders.domain.FxRate as DomainFxRate
+import com.mvv.bank.orders.domain.OrderType as DomainOrderType
+import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
 import com.mvv.bank.orders.domain.AbstractFxCashOrder as DomainOrder
 import com.mvv.bank.orders.domain.CurrencyPair as DomainCurrencyPair
 import com.mvv.bank.orders.domain.FxCashLimitOrder as DomainLimitOrder
 import com.mvv.bank.orders.domain.FxCashMarketOrder as DomainMarketOrder
-import com.mvv.bank.orders.domain.FxCashStopOrder as DomainStopOrder
-import com.mvv.bank.orders.domain.FxRate as DomainFxRate
-import com.mvv.bank.orders.domain.OrderType as DomainOrderType
+
 import com.mvv.bank.orders.repository.jpa.entities.FxOrder as DtoOrder
+import com.mvv.bank.orders.repository.jpa.entities.BaseOrder as DtoBaseOrder
 import com.mvv.bank.orders.repository.jpa.entities.OrderType as DtoOrderType
 
 
 @Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL, config = DomainPrimitiveMappers::class)
 @Suppress("CdiInjectionPointsInspection")
-abstract class FxOrderMapper : AbstractJpaOrderMapper() {
+abstract class FxOrderMapper : AbstractJpaOrderMapper(),
+    GenericOrderDtoDomainConversion<DtoBaseOrder, DtoOrder, DtoOrderType, DomainOrder,DomainMarketOrder, DomainLimitOrder, DomainStopOrder> {
+
+    // Temporary overriding because MapStruct generates method twice in case of diamond inheritance.
+    // T O D O: remove it when it is fixed in MapStruct
+    abstract override fun orderTypeToDomain(source: DtoOrderType): DomainOrderType
 
     override fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*> = orderType.cashDomainType
 
@@ -38,16 +47,16 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
     @Mapping(source = "limitPrice.value", target = "limitStopPrice")
     // because earlier it was marked as ignored
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun limitOrderToDto(source: DomainLimitOrder): DtoOrder
+    abstract override fun limitOrderToDto(source: DomainLimitOrder): DtoOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     @Mapping(source = "stopPrice.value", target = "limitStopPrice")
     // because earlier it was marked as ignored
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun stopOrderToDto(source: DomainStopOrder): DtoOrder
+    abstract override fun stopOrderToDto(source: DomainStopOrder): DtoOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
-    abstract fun marketOrderToDto(source: DomainMarketOrder): DtoOrder
+    abstract override fun marketOrderToDto(source: DomainMarketOrder): DtoOrder
 
 
     // ***************************************************************************************************
@@ -62,14 +71,14 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
     @Mapping(target = "limitPrice", expression = "java( Amount.of(source.getLimitStopPrice(), Currency.of(source.getPriceCurrency())) )")
-    abstract fun dtoToLimitOrder(source: DtoOrder): DomainLimitOrder
+    abstract override fun dtoToLimitOrder(source: DtoOrder): DomainLimitOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
     @Mapping(target = "stopPrice", expression = "java( Amount.of(source.getLimitStopPrice(), Currency.of(source.getPriceCurrency())) )")
-    abstract fun dtoToStopOrder(source: DtoOrder): DomainStopOrder
+    abstract override fun dtoToStopOrder(source: DtoOrder): DomainStopOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    abstract fun dtoToMarketOrder(source: DtoOrder): DomainMarketOrder
+    abstract override fun dtoToMarketOrder(source: DtoOrder): DomainMarketOrder
 
     fun mapResultingRate(dtoOrder: DtoOrder): DomainFxRate? {
         val resultingRateTimestamp = dtoOrder.resultingRateTimestamp
@@ -85,23 +94,4 @@ abstract class FxOrderMapper : AbstractJpaOrderMapper() {
         }
         return null
     }
-
-
-    // ***************************************************************************************************
-
-    // T O D O: can we do it better without this switch?
-    fun toDto(source: DomainOrder): DtoOrder =
-        when (source.orderType) {
-            DomainOrderType.MARKET_ORDER -> marketOrderToDto(source as DomainMarketOrder)
-            DomainOrderType.LIMIT_ORDER  -> limitOrderToDto(source as DomainLimitOrder)
-            DomainOrderType.STOP_ORDER   -> stopOrderToDto(source as DomainStopOrder)
-        }
-
-    // T O D O: can we do it better without this switch?
-    fun toDomain(source: DtoOrder): DomainOrder =
-        when (source.orderType) {
-            DtoOrderType.MARKET_ORDER -> dtoToMarketOrder(source)
-            DtoOrderType.LIMIT_ORDER  -> dtoToLimitOrder(source)
-            DtoOrderType.STOP_ORDER   -> dtoToStopOrder(source)
-        }
 }

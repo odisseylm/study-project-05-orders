@@ -2,10 +2,12 @@ package com.mvv.bank.orders.rest.conversion
 
 import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
+import com.mvv.bank.orders.conversion.GenericOrderDtoDomainConversion
 import org.mapstruct.*
 import kotlin.reflect.KClass
 
 import com.mvv.bank.orders.rest.entities.StockOrder as DtoOrder
+import com.mvv.bank.orders.rest.entities.BaseOrder as DtoBaseOrder
 import com.mvv.bank.orders.rest.entities.OrderType as DtoOrderType
 
 import com.mvv.bank.orders.domain.StockOrder as DomainOrder
@@ -24,7 +26,12 @@ import com.mvv.bank.orders.domain.StockMarketOrder as DomainMarketOrder
     ]
 )
 @Suppress("CdiInjectionPointsInspection")
-abstract class StockOrderMapper: AbstractRestOrderMapper() {
+abstract class StockOrderMapper: AbstractRestOrderMapper(),
+    GenericOrderDtoDomainConversion<DtoBaseOrder, DtoOrder, DtoOrderType, DomainOrder, DomainMarketOrder, DomainLimitOrder, DomainStopOrder> {
+
+    // Temporary overriding because MapStruct generates method twice in case of diamond inheritance.
+    // T O D O: remove it when it is fixed in MapStruct
+    abstract override fun orderTypeToDomain(source: DtoOrderType): DomainOrderType
 
     override fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*> = orderType.stockDomainType
 
@@ -40,16 +47,16 @@ abstract class StockOrderMapper: AbstractRestOrderMapper() {
     // because earlier it was marked as ignored
     @Mapping(source = "limitPrice", target = "limitPrice")
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun limitOrderToDto(source: DomainLimitOrder): DtoOrder
+    abstract override fun limitOrderToDto(source: DomainLimitOrder): DtoOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
     // because earlier it was marked as ignored
     @Mapping(source = "stopPrice", target = "stopPrice")
     @Mapping(source = "dailyExecutionType", target = "dailyExecutionType")
-    abstract fun stopOrderToDto(source: DomainStopOrder): DtoOrder
+    abstract override fun stopOrderToDto(source: DomainStopOrder): DtoOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDto")
-    abstract fun marketOrderToDto(source: DomainMarketOrder): DtoOrder
+    abstract override fun marketOrderToDto(source: DomainMarketOrder): DtoOrder
 
 
     // ***************************************************************************************************
@@ -58,30 +65,11 @@ abstract class StockOrderMapper: AbstractRestOrderMapper() {
     abstract fun baseOrderAttrsToDomain(source: DtoOrder, @MappingTarget target: DomainOrder): DomainOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    abstract fun dtoToLimitOrder(source: DtoOrder): DomainLimitOrder
+    abstract override fun dtoToLimitOrder(source: DtoOrder): DomainLimitOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    abstract fun dtoToStopOrder(source: DtoOrder): DomainStopOrder
+    abstract override fun dtoToStopOrder(source: DtoOrder): DomainStopOrder
 
     @InheritConfiguration(name = "baseOrderAttrsToDomain")
-    abstract fun dtoToMarketOrder(source: DtoOrder): DomainMarketOrder
-
-
-    // ***************************************************************************************************
-
-    // T O D O: can we do it better without this switch?
-    fun toDto(source: DomainOrder): DtoOrder =
-        when (source.orderType) {
-            DomainOrderType.MARKET_ORDER -> marketOrderToDto(source as DomainMarketOrder)
-            DomainOrderType.LIMIT_ORDER  -> limitOrderToDto(source as DomainLimitOrder)
-            DomainOrderType.STOP_ORDER   -> stopOrderToDto(source as DomainStopOrder)
-        }
-
-    // T O D O: can we do it better without this switch?
-    fun toDomain(source: DtoOrder): DomainOrder =
-        when (source.orderType) {
-            DtoOrderType.MARKET_ORDER -> dtoToMarketOrder(source)
-            DtoOrderType.LIMIT_ORDER  -> dtoToLimitOrder(source)
-            DtoOrderType.STOP_ORDER   -> dtoToStopOrder(source)
-        }
+    abstract override fun dtoToMarketOrder(source: DtoOrder): DomainMarketOrder
 }

@@ -2,6 +2,7 @@ package com.mvv.bank.orders.repository.jpa.conversion
 
 import com.mvv.bank.log.safe
 import com.mvv.bank.orders.conversion.AbstractOrderMapper
+import com.mvv.bank.orders.conversion.DomainBaseOrder
 
 import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 import com.mvv.bank.orders.repository.jpa.entities.OrderType as DtoOrderType
@@ -11,13 +12,13 @@ import org.mapstruct.BeforeMapping
 import org.mapstruct.MappingTarget
 import org.mapstruct.ObjectFactory
 
-typealias DomainBaseOrder = com.mvv.bank.orders.domain.Order<*,*>
-
 
 abstract class AbstractJpaOrderMapper : AbstractOrderMapper() {
 
-    abstract fun orderTypeToDomain(orderType: DtoOrderType): DomainOrderType
-    abstract fun orderTypeToDto(orderType: DomainOrderType): DtoOrderType
+    // it is for mixin OrderDtoDomainSupport
+    fun getOrderType(source: DtoBaseOrder): DtoOrderType = source.orderType
+    abstract fun orderTypeToDomain(source: DtoOrderType): DomainOrderType
+    abstract fun orderTypeToDto(source: DomainOrderType): DtoOrderType
 
     @BeforeMapping
     open fun validateDomainOrderBeforeConverting(source: DomainBaseOrder, @MappingTarget target: Any) =

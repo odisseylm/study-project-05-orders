@@ -53,6 +53,7 @@ abstract class AbstractOrderMapper: Cloneable {
     open fun validateDomainOrderAfterCreation(source: Any, @MappingTarget target: DomainBaseOrder) =
         target.validateCurrentState()
 
+    // It is designed to choose cash or stock order.
     abstract fun chooseOrderTypeClass(orderType: DomainOrderType): KClass<*>
 
     // for easy testing
