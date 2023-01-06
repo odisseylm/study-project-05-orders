@@ -18,7 +18,10 @@ abstract class AbstractJpaOrderMapper : AbstractOrderMapper() {
     // it is for mixin OrderDtoDomainSupport
     fun getOrderType(source: DtoBaseOrder): DtoOrderType = source.orderType
     abstract fun orderTypeToDomain(source: DtoOrderType): DomainOrderType
+    // Seems after adding orderTypeToDomain() we also need to add this opposite method
+    // otherwise MapStruct uses chooseOrderTypeClass() for mapping DomainOrderType->DtoOrderType. hm...
     abstract fun orderTypeToDto(source: DomainOrderType): DtoOrderType
+
 
     @BeforeMapping
     open fun validateDomainOrderBeforeConverting(source: DomainBaseOrder, @MappingTarget target: Any) =
