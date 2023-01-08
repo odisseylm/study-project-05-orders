@@ -21,4 +21,9 @@ class AppScalaTest_JUnit5 {
 class AppScalaJUnit5Test {
   @Test
   def testOK(): Unit = assertTrue(true)
+
+  @Test
+  def testOK2(): Unit = {
+    assertTrue(true)
+  }
 }
