@@ -1,7 +1,7 @@
 package com.mvv.bank.orders.domain
 
 
-class Currency private (val value: String) /* extends AnyVal */ {
+class Currency private (val value: String) /* extends AnyVal */ /* extends CanEqual[Currency, Currency] */ derives CanEqual {
   validateCurrency(value)
 
   override def toString: String = value
@@ -14,6 +14,8 @@ class Currency private (val value: String) /* extends AnyVal */ {
 
   override def hashCode(): Int = value.hashCode
 }
+
+//given CanEqual[Currency, Currency] = CanEqual.derived
 
 object Currency :
   def of(value: String): Currency = Currency(value)
