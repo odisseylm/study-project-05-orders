@@ -8,6 +8,57 @@ import java.time.ZonedDateTime
 
 sealed class AbstractCashOrder : AbstractOrder<Currency, Quote>() {
 
+    //typealias base = BaseCashOrderAttrs
+    class Base (
+        val id: Long? = null,
+        val user: User,
+        val side: Side,
+        val buySellType: BuySellType,
+        val buyCurrency: Currency,
+        val sellCurrency: Currency,
+        val volume: BigDecimal,
+        //val limitPrice: Amount,
+        //val dailyExecutionType: DailyExecutionType,
+
+        val market: Market,
+
+        val orderState: OrderState = OrderState.UNKNOWN,
+
+        val placedAt:   ZonedDateTime? = null,
+        val executedAt: ZonedDateTime? = null,
+        val canceledAt: ZonedDateTime? = null,
+        val expiredAt:  ZonedDateTime? = null,
+
+        val resultingRate: FxRate? = null,
+        val resultingPrice: Amount? = null,
+        val resultingQuote: Quote? = null,
+
+        ) {
+        fun copyToOrder(order: AbstractCashOrder) {
+            order.id = id
+            order.user = user
+
+            order.side  = side
+            order.buySellType  = buySellType
+            order.buyCurrency  = buyCurrency
+            order.sellCurrency = sellCurrency
+            order.volume = volume
+
+            order.market = market
+
+            order.orderState = orderState
+
+            order.placedAt   = placedAt
+            order.executedAt = executedAt
+            order.canceledAt = canceledAt
+            order.expiredAt  = expiredAt
+
+            order.resultingPrice = resultingPrice
+            order.resultingQuote = resultingQuote
+            order.resultingRate = resultingRate
+        }
+    }
+
     lateinit var buyCurrency: Currency
     lateinit var sellCurrency: Currency
 
@@ -53,6 +104,7 @@ sealed class AbstractCashOrder : AbstractOrder<Currency, Quote>() {
 }
 
 
+
 class CashLimitOrder private constructor() : AbstractCashOrder(), LimitOrder<Currency, Quote> {
 
     private val limitOrderSupport = StopLimitOrderSupport(this, ::limitPrice, ::dailyExecutionType)
@@ -77,58 +129,18 @@ class CashLimitOrder private constructor() : AbstractCashOrder(), LimitOrder<Cur
     override fun toExecute(quote: Quote): Boolean = limitOrderSupport.toExecute(quote)
 
     companion object {
-        // TODO: to inherit parameters we can put them into structure BaseParams and pass other specific params separately
         fun create(
-            id: Long? = null,
-            user: User,
-            side: Side,
-            buySellType: BuySellType,
-            buyCurrency: Currency,
-            sellCurrency: Currency,
-            volume: BigDecimal,
+            base: Base,
             limitPrice: Amount,
             dailyExecutionType: DailyExecutionType,
-
-            market: Market,
-
-            orderState: OrderState = OrderState.UNKNOWN,
-
-            placedAt:   ZonedDateTime? = null,
-            executedAt: ZonedDateTime? = null,
-            canceledAt: ZonedDateTime? = null,
-            expiredAt:  ZonedDateTime? = null,
-
-            resultingRate: FxRate? = null,
-            resultingPrice: Amount? = null,
-            resultingQuote: Quote? = null,
         ): CashLimitOrder {
             val order = CashLimitOrder()
-            order.id = id
-            order.user = user
+            base.copyToOrder(order)
 
-            order.side  = side
-            order.buySellType  = buySellType
-            order.buyCurrency  = buyCurrency
-            order.sellCurrency = sellCurrency
-            order.volume = volume
             order.limitPrice   = limitPrice
             order.dailyExecutionType = dailyExecutionType
 
-            order.market = market
-
-            order.orderState = orderState
-
-            order.placedAt   = placedAt
-            order.executedAt = executedAt
-            order.canceledAt = canceledAt
-            order.expiredAt  = expiredAt
-
-            order.resultingPrice = resultingPrice
-            order.resultingQuote = resultingQuote
-            order.resultingRate = resultingRate
-
             order.validateCurrentState()
-
             return order
         }
     }
@@ -160,57 +172,17 @@ class CashStopOrder private constructor() : AbstractCashOrder(), StopOrder<Curre
 
     companion object {
         fun create(
-            id: Long? = null,
-            user: User,
-            side: Side,
-            buySellType: BuySellType,
-            buyCurrency: Currency,
-            sellCurrency: Currency,
-            volume: BigDecimal,
+            base: Base,
             stopPrice: Amount,
             dailyExecutionType: DailyExecutionType,
-
-            market: Market,
-
-            orderState: OrderState = OrderState.UNKNOWN,
-
-            placedAt:   ZonedDateTime? = null,
-            executedAt: ZonedDateTime? = null,
-            canceledAt: ZonedDateTime? = null,
-            expiredAt:  ZonedDateTime? = null,
-
-            resultingRate: FxRate? = null,
-            resultingPrice: Amount? = null,
-            resultingQuote: Quote? = null,
         ): CashStopOrder {
             val order = CashStopOrder()
-            order.id = id
-            order.user = user
+            base.copyToOrder(order)
 
-            order.side  = side
-            order.buySellType  = buySellType
-            order.buyCurrency  = buyCurrency
-            order.sellCurrency = sellCurrency
-            order.volume = volume
-            order.stopPrice = stopPrice
+            order.stopPrice   = stopPrice
             order.dailyExecutionType = dailyExecutionType
 
-            order.market = market
-
-            order.orderState = orderState
-
-            order.placedAt   = placedAt
-            order.executedAt = executedAt
-            order.canceledAt = canceledAt
-            order.expiredAt  = expiredAt
-
-            order.resultingPrice = resultingPrice
-            order.resultingQuote = resultingQuote
-            // ! should be last because has side effect !
-            order.resultingRate = resultingRate
-
             order.validateCurrentState()
-
             return order
         }
     }
@@ -231,52 +203,11 @@ class CashMarketOrder private constructor() : AbstractCashOrder() {
 
     companion object {
         fun create(
-            id: Long? = null,
-            user: User,
-            side: Side,
-            buySellType: BuySellType,
-            buyCurrency: Currency,
-            sellCurrency: Currency,
-            volume: BigDecimal,
-
-            market: Market,
-
-            orderState: OrderState = OrderState.UNKNOWN,
-
-            placedAt:   ZonedDateTime? = null,
-            executedAt: ZonedDateTime? = null,
-            canceledAt: ZonedDateTime? = null,
-            expiredAt:  ZonedDateTime? = null,
-
-            resultingRate: FxRate? = null,
-            resultingPrice: Amount? = null,
-            resultingQuote: Quote? = null,
+            base: Base,
         ): CashMarketOrder {
             val order = CashMarketOrder()
-            order.id = id
-            order.user = user
-
-            order.side  = side
-            order.buySellType  = buySellType
-            order.buyCurrency  = buyCurrency
-            order.sellCurrency = sellCurrency
-            order.volume = volume
-
-            order.market = market
-
-            order.orderState = orderState
-
-            order.placedAt   = placedAt
-            order.executedAt = executedAt
-            order.canceledAt = canceledAt
-            order.expiredAt  = expiredAt
-
-            order.resultingPrice = resultingPrice
-            order.resultingQuote = resultingQuote
-            order.resultingRate = resultingRate
-
+            base.copyToOrder(order)
             order.validateCurrentState()
-
             return order
         }
     }

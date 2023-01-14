@@ -6,6 +6,51 @@ import java.time.ZonedDateTime
 
 
 sealed class StockOrder : AbstractOrder<CompanySymbol, StockQuote>() {
+
+    class Base (
+        val id: Long? = null,
+        val user: User,
+        val side: Side,
+        val buySellType: BuySellType,
+        val company: Company,
+        val volume: BigDecimal,
+
+        val market: Market,
+
+        val orderState: OrderState = OrderState.UNKNOWN,
+
+        val placedAt:   ZonedDateTime?   = null,
+        val executedAt: ZonedDateTime? = null,
+        val canceledAt: ZonedDateTime? = null,
+        val expiredAt:  ZonedDateTime?  = null,
+
+        val resultingPrice: Amount? = null,
+        val resultingQuote: StockQuote? = null,
+    ) {
+        fun copyToOrder(order: StockOrder) {
+            order.id = id
+            order.user = user
+
+            order.side  = side
+            order.buySellType = buySellType
+            order.product = company.symbol
+            order.company = company
+            order.volume = volume
+
+            order.market = market
+
+            order.orderState = orderState
+
+            order.placedAt   = placedAt
+            order.executedAt = executedAt
+            order.canceledAt = canceledAt
+            order.expiredAt  = expiredAt
+
+            order.resultingPrice = resultingPrice
+            order.resultingQuote = resultingQuote
+        }
+    }
+
     private val companyImpl = LateInitProperty<Company, Any>(
         changeable = false,
         postUpdate = { new, _ -> product = new.symbol },
@@ -50,54 +95,17 @@ class StockLimitOrder : StockOrder(), LimitOrder<CompanySymbol, StockQuote> {
 
     companion object {
         fun create(
-            id: Long? = null,
-            user: User,
-            side: Side,
-            buySellType: BuySellType,
-            company: Company,
-            volume: BigDecimal,
+            base: Base,
             limitPrice: Amount,
             dailyExecutionType: DailyExecutionType,
-
-            market: Market,
-
-            orderState: OrderState = OrderState.UNKNOWN,
-
-            placedAt:   ZonedDateTime?   = null,
-            executedAt: ZonedDateTime? = null,
-            canceledAt: ZonedDateTime? = null,
-            expiredAt:  ZonedDateTime?  = null,
-
-            resultingPrice: Amount? = null,
-            resultingQuote: StockQuote? = null,
         ): StockLimitOrder {
             val order = StockLimitOrder()
-            // TODO: how to fix this duplicated 19 lines???
-            order.id = id
-            order.user = user
+            base.copyToOrder(order)
 
-            order.side  = side
-            order.buySellType = buySellType
-            order.product = company.symbol
-            order.company = company
-            order.volume = volume
             order.limitPrice = limitPrice
             order.dailyExecutionType = dailyExecutionType
 
-            order.market = market
-
-            order.orderState = orderState
-
-            order.placedAt   = placedAt
-            order.executedAt = executedAt
-            order.canceledAt = canceledAt
-            order.expiredAt  = expiredAt
-
-            order.resultingPrice = resultingPrice
-            order.resultingQuote = resultingQuote
-
             order.validateCurrentState()
-
             return order
         }
     }
@@ -126,53 +134,17 @@ class StockStopOrder : StockOrder(), StopOrder<CompanySymbol, StockQuote> {
 
     companion object {
         fun create(
-            id: Long? = null,
-            user: User,
-            market: Market,
-            side: Side,
-
-            buySellType: BuySellType,
-            company: Company,
-            volume: BigDecimal,
+            base: Base,
             stopPrice: Amount,
             dailyExecutionType: DailyExecutionType,
-
-            orderState: OrderState = OrderState.UNKNOWN,
-
-            placedAt:   ZonedDateTime?   = null,
-            executedAt: ZonedDateTime? = null,
-            canceledAt: ZonedDateTime? = null,
-            expiredAt:  ZonedDateTime?  = null,
-
-            resultingPrice: Amount? = null,
-            resultingQuote: StockQuote? = null,
         ): StockStopOrder {
             val order = StockStopOrder()
-            // T O D O: how to fix this duplicated 19 lines???
-            order.id = id
-            order.user = user
-            order.market = market
+            base.copyToOrder(order)
 
-            order.side  = side
-            order.buySellType = buySellType
-            order.product = company.symbol
-            order.company = company
-            order.volume = volume
             order.stopPrice = stopPrice
             order.dailyExecutionType = dailyExecutionType
 
-            order.orderState = orderState
-
-            order.placedAt   = placedAt
-            order.executedAt = executedAt
-            order.canceledAt = canceledAt
-            order.expiredAt  = expiredAt
-
-            order.resultingPrice = resultingPrice
-            order.resultingQuote = resultingQuote
-
             order.validateCurrentState()
-
             return order
         }
     }
@@ -190,49 +162,12 @@ class StockMarketOrder : StockOrder() {
 
     companion object {
         fun create(
-            id: Long? = null,
-            user: User,
-            side: Side,
-            market: Market,
-
-            buySellType: BuySellType,
-            company: Company,
-            volume: BigDecimal,
-
-            orderState: OrderState = OrderState.UNKNOWN,
-
-            placedAt:   ZonedDateTime?   = null,
-            executedAt: ZonedDateTime? = null,
-            canceledAt: ZonedDateTime? = null,
-            expiredAt:  ZonedDateTime?  = null,
-
-            resultingPrice: Amount? = null,
-            resultingQuote: StockQuote? = null,
+            base: Base,
         ): StockMarketOrder {
             val order = StockMarketOrder()
-            // T O D O: how to fix this duplicated 19 lines???
-            order.id = id
-            order.user = user
-            order.market = market
-            order.side  = side
-
-            order.buySellType = buySellType
-            order.product = company.symbol
-            order.company = company
-            order.volume = volume
-
-            order.orderState = orderState
-
-            order.placedAt   = placedAt
-            order.executedAt = executedAt
-            order.canceledAt = canceledAt
-            order.expiredAt  = expiredAt
-
-            order.resultingPrice = resultingPrice
-            order.resultingQuote = resultingQuote
+            base.copyToOrder(order)
 
             order.validateCurrentState()
-
             return order
         }
     }

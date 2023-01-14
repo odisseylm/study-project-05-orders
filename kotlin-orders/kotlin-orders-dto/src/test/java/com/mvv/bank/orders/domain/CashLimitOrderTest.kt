@@ -1,5 +1,6 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.orders.domain.AbstractCashOrder.Base
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
 
@@ -27,15 +28,17 @@ internal class CashLimitOrderTest {
         // client wants to sell 20 EUR (another currency UAH) by price >= 39.38
 
         val order = CashLimitOrder.create(
-            side = Side.CLIENT,
-            user = testUser,
-            buySellType = BuySellType.SELL,
-            sellCurrency = EUR,
-            buyCurrency = UAH,
-            volume = bd("1000"),
+            Base(
+                side = Side.CLIENT,
+                user = testUser,
+                buySellType = BuySellType.SELL,
+                sellCurrency = EUR,
+                buyCurrency = UAH,
+                volume = bd("1000"),
+                market = testMarket,
+            ),
             limitPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
-            market = testMarket,
         )
 
         val rate = FxRate.of(
@@ -97,15 +100,17 @@ internal class CashLimitOrderTest {
         // client wants to buy 20 EUR (another currency UAH) by price >= 39.38
 
         val order = CashLimitOrder.create(
-            side = Side.CLIENT,
-            user = testUser,
-            buySellType = BuySellType.BUY,
-            buyCurrency = EUR,
-            sellCurrency = UAH,
-            volume = bd("1000"),
+            Base(
+                side = Side.CLIENT,
+                user = testUser,
+                buySellType = BuySellType.BUY,
+                buyCurrency = EUR,
+                sellCurrency = UAH,
+                volume = bd("1000"),
+                market = testMarket,
+            ),
             limitPrice = Amount.of("39.38", UAH),
             dailyExecutionType = DailyExecutionType.GTC,
-            market = testMarket,
         )
 
         val rate = FxRate(
@@ -160,16 +165,18 @@ internal class CashLimitOrderTest {
     fun validationIsDone() {
         assertThatCode {
                 CashLimitOrder.create(
-                    side = Side.CLIENT,
-                    user = testUser,
-                    buySellType = BuySellType.BUY,
-                    buyCurrency = EUR,
-                    sellCurrency = UAH,
-                    volume = bd("1000"),
+                    Base(
+                        side = Side.CLIENT,
+                        user = testUser,
+                        buySellType = BuySellType.BUY,
+                        buyCurrency = EUR,
+                        sellCurrency = UAH,
+                        volume = bd("1000"),
+                        market = TestPredefinedMarkets.KYIV1,
+                        orderState = OrderState.EXECUTED,
+                    ),
                     limitPrice = Amount.of("39.38", UAH),
                     dailyExecutionType = DailyExecutionType.GTC,
-                    market = TestPredefinedMarkets.KYIV1,
-                    orderState = OrderState.EXECUTED,
                 )
             }
             .hasMessage("Id is not set or incorrect [null].")
@@ -180,16 +187,18 @@ internal class CashLimitOrderTest {
     fun validationIsDone_forBankMarketSide_expectToFail() {
         assertThatCode {
                 CashLimitOrder.create(
-                    side = Side.BANK_MARKET,
-                    user = testUser,
-                    buySellType = BuySellType.BUY,
-                    buyCurrency = EUR,
-                    sellCurrency = UAH,
-                    volume = bd("1000"),
+                    Base(
+                        side = Side.BANK_MARKET,
+                        user = testUser,
+                        buySellType = BuySellType.BUY,
+                        buyCurrency = EUR,
+                        sellCurrency = UAH,
+                        volume = bd("1000"),
+                        market = TestPredefinedMarkets.KYIV1,
+                        orderState = OrderState.EXECUTED,
+                    ),
                     limitPrice = Amount.of("39.38", UAH),
                     dailyExecutionType = DailyExecutionType.GTC,
-                    market = TestPredefinedMarkets.KYIV1,
-                    orderState = OrderState.EXECUTED,
                 )
             }
             .hasMessage("Currently only client side orders are supported.")

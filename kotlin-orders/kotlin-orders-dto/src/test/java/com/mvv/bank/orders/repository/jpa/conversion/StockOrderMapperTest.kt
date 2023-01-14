@@ -1,5 +1,6 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
+import com.mvv.bank.orders.domain.StockOrder.Base
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedCompanies
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
@@ -58,16 +59,18 @@ internal class StockOrderMapperTest {
     fun limitOrder_domainToDto() {
 
         val domainOrder = DomainLimitOrder.create(
-            id = null,
-            user = testUser,
-            side = DomainSide.CLIENT,
-            buySellType = DomainBuySellType.BUY,
-            company = testCompany,
-            volume = bd("2000"),
+            Base(
+                id = null,
+                user = testUser,
+                side = DomainSide.CLIENT,
+                buySellType = DomainBuySellType.BUY,
+                company = testCompany,
+                volume = bd("2000"),
+                market = testMarket,
+                orderState = DomainOrderState.TO_BE_PLACED,
+            ),
             limitPrice = DomainAmount.of("40.0", DomainCurrency.USD),
             dailyExecutionType = DomainDailyExecutionType.GTC,
-            market = testMarket,
-            orderState = DomainOrderState.TO_BE_PLACED,
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
@@ -93,21 +96,23 @@ internal class StockOrderMapperTest {
     fun stopOrder_domainToDto() {
 
         val domainOrder = DomainStopOrder.create(
-            id = 567,
-            user = testUser,
-            side = DomainSide.CLIENT,
-            buySellType = DomainBuySellType.BUY,
-            company = testCompany,
-            volume = bd("2000"),
+            Base(
+                id = 567,
+                user = testUser,
+                side = DomainSide.CLIENT,
+                buySellType = DomainBuySellType.BUY,
+                company = testCompany,
+                volume = bd("2000"),
+                market = testMarket,
+                resultingQuote = DomainStockQuote.of(
+                    testMarket, testCompany, testTimestamp,
+                    bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD,
+                ),
+                orderState = DomainOrderState.PLACED,
+                placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"),
+            ),
             stopPrice = DomainAmount.of("40.0", DomainCurrency.USD),
             dailyExecutionType = DomainDailyExecutionType.GTC,
-            market = testMarket,
-            resultingQuote = DomainStockQuote.of(
-                testMarket, testCompany, testTimestamp,
-                bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD,
-            ),
-            orderState = DomainOrderState.PLACED,
-            placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
@@ -139,14 +144,16 @@ internal class StockOrderMapperTest {
     fun marketOrder_domainToDto() {
 
         val domainOrder = DomainMarketOrder.create(
-            id = 456,
-            user = testUser,
-            side = DomainSide.CLIENT,
-            buySellType = DomainBuySellType.BUY,
-            company = testCompany,
-            volume = bd("2000"),
-            market = testMarket,
-            orderState = DomainOrderState.PLACED,
+            Base(
+                id = 456,
+                user = testUser,
+                side = DomainSide.CLIENT,
+                buySellType = DomainBuySellType.BUY,
+                company = testCompany,
+                volume = bd("2000"),
+                market = testMarket,
+                orderState = DomainOrderState.PLACED,
+            )
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)

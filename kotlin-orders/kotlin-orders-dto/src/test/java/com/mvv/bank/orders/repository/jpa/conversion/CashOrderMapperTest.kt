@@ -6,6 +6,7 @@ import com.mvv.bank.orders.domain.FxRateAsQuote
 import com.mvv.bank.orders.domain.of
 
 import com.mvv.bank.orders.domain.*
+import com.mvv.bank.orders.domain.AbstractCashOrder.Base
 import com.mvv.bank.test.reflect.initProperty
 import com.mvv.bank.util.newInstance
 import org.assertj.core.api.Assertions.assertThatCode
@@ -58,17 +59,19 @@ internal class CashOrderMapperTest {
     fun limitOrder_domainToDto() {
 
         val domainOrder = DomainLimitOrder.create(
-            id = null,
-            user = testUser,
-            side = DomainSide.CLIENT,
-            buySellType = DomainBuySellType.BUY,
-            buyCurrency = DomainCurrency.USD,
-            sellCurrency = DomainCurrency.UAH,
-            volume = bd("2000"),
+            Base(
+                id = null,
+                user = testUser,
+                side = DomainSide.CLIENT,
+                buySellType = DomainBuySellType.BUY,
+                buyCurrency = DomainCurrency.USD,
+                sellCurrency = DomainCurrency.UAH,
+                volume = bd("2000"),
+                market = testMarket,
+                orderState = DomainOrderState.TO_BE_PLACED,
+            ),
             limitPrice = DomainAmount.of("40.0", DomainCurrency.UAH),
             dailyExecutionType = DomainDailyExecutionType.GTC,
-            market = testMarket,
-            orderState = DomainOrderState.TO_BE_PLACED,
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
@@ -94,22 +97,24 @@ internal class CashOrderMapperTest {
     fun stopOrder_domainToDto() {
 
         val domainOrder = DomainStopOrder.create(
-            id = 567,
-            user = testUser,
-            side = DomainSide.CLIENT,
-            buySellType = DomainBuySellType.BUY,
-            buyCurrency = DomainCurrency.USD,
-            sellCurrency = DomainCurrency.UAH,
-            volume = bd("2000"),
+            Base(
+                id = 567,
+                user = testUser,
+                side = DomainSide.CLIENT,
+                buySellType = DomainBuySellType.BUY,
+                buyCurrency = DomainCurrency.USD,
+                sellCurrency = DomainCurrency.UAH,
+                volume = bd("2000"),
+                market = testMarket,
+                resultingRate = DomainFxRate.of(
+                    testMarket, testTimestamp, DomainCurrencyPair.USD_UAH,
+                    bid = bd("39.00"), ask = bd("39.50"),
+                ),
+                orderState = DomainOrderState.PLACED,
+                placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"),
+            ),
             stopPrice = DomainAmount.of("40.0", DomainCurrency.UAH),
             dailyExecutionType = DomainDailyExecutionType.GTC,
-            market = testMarket,
-            resultingRate = DomainFxRate.of(
-                testMarket, testTimestamp, DomainCurrencyPair.USD_UAH,
-                bid = bd("39.00"), ask = bd("39.50"),
-            ),
-            orderState = DomainOrderState.PLACED,
-            placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]")
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)
@@ -142,15 +147,17 @@ internal class CashOrderMapperTest {
     fun marketOrder_domainToDto() {
 
         val domainOrder = DomainMarketOrder.create(
-            id = 456,
-            user = testUser,
-            side = DomainSide.CLIENT,
-            buySellType = DomainBuySellType.BUY,
-            buyCurrency = DomainCurrency.USD,
-            sellCurrency = DomainCurrency.UAH,
-            volume = bd("2000"),
-            market = testMarket,
-            orderState = DomainOrderState.PLACED,
+            Base(
+                id = 456,
+                user = testUser,
+                side = DomainSide.CLIENT,
+                buySellType = DomainBuySellType.BUY,
+                buyCurrency = DomainCurrency.USD,
+                sellCurrency = DomainCurrency.UAH,
+                volume = bd("2000"),
+                market = testMarket,
+                orderState = DomainOrderState.PLACED,
+            )
         )
 
         val dtoOrder = orderMapper.toDto(domainOrder)

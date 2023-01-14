@@ -4,6 +4,7 @@ import com.mvv.bank.orders.domain.test.predefined.TestPredefinedCompanies
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
 import com.mvv.bank.orders.domain.Currency.Companion.USD
+import com.mvv.bank.orders.domain.StockOrder.Base
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -32,14 +33,16 @@ internal class StockStopOrderTest {
         // client wants to sell 20 Apple shares (another currency UAH) by price >= 10.00
 
         val order = StockStopOrder.create(
-            user = testUser,
-            side = Side.CLIENT,
-            buySellType = BuySellType.SELL,
-            company = testCompany,
-            volume = bd("1000"),
+            Base(
+                user = testUser,
+                side = Side.CLIENT,
+                buySellType = BuySellType.SELL,
+                company = testCompany,
+                volume = bd("1000"),
+                market = testMarket,
+            ),
             stopPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.DAY_ONLY,
-            market = testMarket,
         )
 
         val quote = StockQuote.of(
@@ -87,14 +90,16 @@ internal class StockStopOrderTest {
         // client wants to sell 20 Apple shares (another currency UAH) by price >= 10.00
 
         val order = StockStopOrder.create(
-            user = testUser,
-            side = Side.CLIENT,
-            buySellType = BuySellType.BUY,
-            company = testCompany,
-            volume = bd("1000"),
+            Base(
+                user = testUser,
+                side = Side.CLIENT,
+                buySellType = BuySellType.BUY,
+                company = testCompany,
+                volume = bd("1000"),
+                market = testMarket,
+            ),
             stopPrice = Amount.of("10.00", USD),
             dailyExecutionType = DailyExecutionType.GTC,
-            market = testMarket,
         )
 
         val quote = StockQuote.of(

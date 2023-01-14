@@ -1,5 +1,6 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.orders.domain.AbstractCashOrder.Base
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
 
@@ -21,13 +22,15 @@ internal class CashMarketOrderTest {
     @Test
     fun create() {
         val order = CashMarketOrder.create(
-            side = Side.CLIENT,
-            user = testUser,
-            buySellType = BuySellType.SELL,
-            buyCurrency = Currency.USD,
-            sellCurrency = Currency.EUR,
-            volume = bd("1000"),
-            market = testMarket,
+            Base(
+                side = Side.CLIENT,
+                user = testUser,
+                buySellType = BuySellType.SELL,
+                buyCurrency = Currency.USD,
+                sellCurrency = Currency.EUR,
+                volume = bd("1000"),
+                market = testMarket,
+            ),
         )
 
         SoftAssertions().apply {

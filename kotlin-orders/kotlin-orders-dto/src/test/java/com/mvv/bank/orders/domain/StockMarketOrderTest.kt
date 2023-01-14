@@ -1,5 +1,6 @@
 package com.mvv.bank.orders.domain
 
+import com.mvv.bank.orders.domain.StockOrder.Base
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedCompanies
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
@@ -23,12 +24,14 @@ internal class StockMarketOrderTest {
     @Test
     fun create() {
         val order = StockMarketOrder.create(
-            user = testUser,
-            side = Side.CLIENT,
-            buySellType = BuySellType.SELL,
-            company = TestPredefinedCompanies.APPLE,
-            volume = bd("1000"),
-            market = testMarket,
+            Base(
+                user = testUser,
+                side = Side.CLIENT,
+                buySellType = BuySellType.SELL,
+                company = TestPredefinedCompanies.APPLE,
+                volume = bd("1000"),
+                market = testMarket,
+            )
         )
 
         val quote = StockQuote(
