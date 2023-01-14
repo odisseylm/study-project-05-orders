@@ -45,7 +45,9 @@ sealed interface Order<Product: Any, Quote: BaseQuote> {
     fun toExecute(quote: Quote): Boolean
 }
 
-interface OrderNaturalKey { }
+interface OrderNaturalKey {
+    // T O D O: implement
+}
 
 
 inline fun <reified T: Order<*,*>> createOrder(init: T.() -> Unit): T {
@@ -57,6 +59,50 @@ inline fun <reified T: Order<*,*>> createOrder(init: T.() -> Unit): T {
 
 
 sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quote> {
+
+    // This class mainly is introduced to avoid 'duplicate code' warning
+    @Suppress("ClassName") // It is named from '_' (as internal) because I cannot do it protected
+    /*protected*/ abstract class _BaseAttrs<Product: Any, Quote: BaseQuote> {
+        abstract val id: Long?
+        abstract val user: User
+        abstract val side: Side
+        abstract val buySellType: BuySellType
+        abstract val volume: BigDecimal
+
+        abstract val market: Market
+
+        abstract val orderState: OrderState
+
+        abstract val placedAt:   ZonedDateTime?
+        abstract val executedAt: ZonedDateTime?
+        abstract val canceledAt: ZonedDateTime?
+        abstract val expiredAt:  ZonedDateTime?
+
+        abstract val resultingPrice: Amount?
+        abstract val resultingQuote: Quote?
+
+        protected fun copyToOrder(order: AbstractOrder<Product, Quote>) {
+            order.id = id
+            order.user = user
+
+            order.side  = side
+            order.buySellType  = buySellType
+            order.volume = volume
+
+            order.market = market
+
+            order.orderState = orderState
+
+            order.placedAt   = placedAt
+            order.executedAt = executedAt
+            order.canceledAt = canceledAt
+            order.expiredAt  = expiredAt
+
+            order.resultingPrice = resultingPrice
+            order.resultingQuote = resultingQuote
+        }
+    }
+
     override var id: Long? = null
 
     override lateinit var user: User

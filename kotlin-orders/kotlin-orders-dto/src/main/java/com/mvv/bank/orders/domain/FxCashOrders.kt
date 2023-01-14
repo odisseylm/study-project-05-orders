@@ -9,49 +9,34 @@ import java.time.ZonedDateTime
 sealed class AbstractCashOrder : AbstractOrder<Currency, Quote>() {
 
     class Base (
-        private val id: Long? = null,
-        private val user: User,
-        private val side: Side,
-        private val buySellType: BuySellType,
-        private val buyCurrency: Currency,
-        private val sellCurrency: Currency,
-        private val volume: BigDecimal,
+        override val id: Long? = null,
+        override val user: User,
+        override val side: Side,
+        override val buySellType: BuySellType,
+        val buyCurrency: Currency,
+        val sellCurrency: Currency,
+        override val volume: BigDecimal,
 
-        private val market: Market,
+        override val market: Market,
 
-        private val orderState: OrderState = OrderState.UNKNOWN,
+        override val orderState: OrderState = OrderState.UNKNOWN,
 
-        private val placedAt:   ZonedDateTime? = null,
-        private val executedAt: ZonedDateTime? = null,
-        private val canceledAt: ZonedDateTime? = null,
-        private val expiredAt:  ZonedDateTime? = null,
+        override val placedAt:   ZonedDateTime? = null,
+        override val executedAt: ZonedDateTime? = null,
+        override val canceledAt: ZonedDateTime? = null,
+        override val expiredAt:  ZonedDateTime? = null,
 
-        private val resultingRate: FxRate? = null,
-        private val resultingPrice: Amount? = null,
-        private val resultingQuote: Quote? = null,
+        val resultingRate: FxRate? = null,
+        override val resultingPrice: Amount? = null,
+        override val resultingQuote: Quote? = null,
 
-        ) {
+        ) : _BaseAttrs<Currency, Quote>() {
         fun copyToOrder(order: AbstractCashOrder) {
-            order.id = id
-            order.user = user
+            super.copyToOrder(order)
 
-            order.side  = side
-            order.buySellType  = buySellType
             order.buyCurrency  = buyCurrency
             order.sellCurrency = sellCurrency
-            order.volume = volume
 
-            order.market = market
-
-            order.orderState = orderState
-
-            order.placedAt   = placedAt
-            order.executedAt = executedAt
-            order.canceledAt = canceledAt
-            order.expiredAt  = expiredAt
-
-            order.resultingPrice = resultingPrice
-            order.resultingQuote = resultingQuote
             order.resultingRate = resultingRate
         }
     }

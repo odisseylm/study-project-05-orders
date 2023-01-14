@@ -8,46 +8,28 @@ import java.time.ZonedDateTime
 sealed class StockOrder : AbstractOrder<CompanySymbol, StockQuote>() {
 
     class Base (
-        private val id: Long? = null,
-        private val user: User,
-        private val side: Side,
-        private val buySellType: BuySellType,
-        private val company: Company,
-        private val volume: BigDecimal,
+        override val id: Long? = null,
+        override val user: User,
+        override val side: Side,
+        override val buySellType: BuySellType,
+        val company: Company,
+        override val volume: BigDecimal,
 
-        private val market: Market,
+        override val market: Market,
 
-        private val orderState: OrderState = OrderState.UNKNOWN,
+        override val orderState: OrderState = OrderState.UNKNOWN,
 
-        private val placedAt:   ZonedDateTime?   = null,
-        private val executedAt: ZonedDateTime? = null,
-        private val canceledAt: ZonedDateTime? = null,
-        private val expiredAt:  ZonedDateTime?  = null,
+        override val placedAt:   ZonedDateTime?   = null,
+        override val executedAt: ZonedDateTime? = null,
+        override val canceledAt: ZonedDateTime? = null,
+        override val expiredAt:  ZonedDateTime?  = null,
 
-        private val resultingPrice: Amount? = null,
-        private val resultingQuote: StockQuote? = null,
-    ) {
+        override val resultingPrice: Amount? = null,
+        override val resultingQuote: StockQuote? = null,
+    ) : _BaseAttrs<CompanySymbol, StockQuote>() {
         fun copyToOrder(order: StockOrder) {
-            order.id = id
-            order.user = user
-
-            order.side  = side
-            order.buySellType = buySellType
-            order.product = company.symbol
+            super.copyToOrder(order)
             order.company = company
-            order.volume = volume
-
-            order.market = market
-
-            order.orderState = orderState
-
-            order.placedAt   = placedAt
-            order.executedAt = executedAt
-            order.canceledAt = canceledAt
-            order.expiredAt  = expiredAt
-
-            order.resultingPrice = resultingPrice
-            order.resultingQuote = resultingQuote
         }
     }
 
