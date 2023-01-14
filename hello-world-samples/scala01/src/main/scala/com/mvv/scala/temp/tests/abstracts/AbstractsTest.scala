@@ -4,6 +4,7 @@ package com.mvv.scala.temp.tests.abstracts
 trait Abstract1 :
   val stringVal: String
 
+//noinspection ScalaUnusedSymbol
 class Abstract1Impl0 extends Abstract1 :
   //override def stringVal: String = { "ggg" } // NOT allowed in scala
   override val stringVal: String = "fck"
@@ -19,7 +20,8 @@ trait Abstract2 :
   var stringVar: String
 
 class Abstract2Impl0 extends Abstract2 :
-  /*override*/ var stringVar: String = _ // !!! Strange - using 'override' is not allowed here
+  /*override*/
+  var stringVar: String = _ // !!! Strange - using 'override' is not allowed here
 
 //class Abstract2Impl1 extends Abstract2 :
 //  override val stringVal: String = "fck" // not allowed, it is logical
