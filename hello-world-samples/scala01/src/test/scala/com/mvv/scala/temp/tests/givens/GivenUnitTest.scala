@@ -6,8 +6,20 @@ import org.junit.jupiter.api.{DisplayName, Test}
 class GivenUnitTest {
 
   @Test
-  @DisplayName("doOperation")
-  def testDoOperation(): Unit = {
-    doOperation()
+  @DisplayName("doOperationWithContextParams")
+  def testDoOperationWithContextParams(): Unit = {
+    doOperationWithContextParams()
+  }
+
+  @Test
+  @DisplayName("doOperationWithContextParamsAsManuallySetGivens")
+  def testDoOperationWithContextParamsAsManuallySetGivens(): Unit = {
+    doOperationWithContextParamsAsManuallySetGivens()
+  }
+
+  @Test
+  @DisplayName("doOperationWithContextParamsAsAutoImportedGivens")
+  def testDoOperationWithContextParamsAsAutoImportedGivens(): Unit = {
+    doOperationWithContextParamsAsAutoImportedGivens()
   }
 }

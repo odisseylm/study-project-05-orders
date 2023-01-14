@@ -5,7 +5,8 @@ import com.mvv.scala.temp.tests.givens.givenss.DatabaseBlaBlaContexts.authDbCont
 import com.mvv.scala.temp.tests.givens.givenss.DatabaseBlaBlaContexts.accountDbContext
 import com.mvv.scala.temp.tests.givens.impl.{User, doOperationImpl}
 
-def doOperation(): Unit = {
+
+def doOperationWithContextParamsAsManuallySetGivens(): Unit = {
 
   val user: User = User("user1")
   val amount: BigDecimal = 5000
