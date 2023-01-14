@@ -8,24 +8,24 @@ import java.time.ZonedDateTime
 sealed class StockOrder : AbstractOrder<CompanySymbol, StockQuote>() {
 
     class Base (
-        val id: Long? = null,
-        val user: User,
-        val side: Side,
-        val buySellType: BuySellType,
-        val company: Company,
-        val volume: BigDecimal,
+        private val id: Long? = null,
+        private val user: User,
+        private val side: Side,
+        private val buySellType: BuySellType,
+        private val company: Company,
+        private val volume: BigDecimal,
 
-        val market: Market,
+        private val market: Market,
 
-        val orderState: OrderState = OrderState.UNKNOWN,
+        private val orderState: OrderState = OrderState.UNKNOWN,
 
-        val placedAt:   ZonedDateTime?   = null,
-        val executedAt: ZonedDateTime? = null,
-        val canceledAt: ZonedDateTime? = null,
-        val expiredAt:  ZonedDateTime?  = null,
+        private val placedAt:   ZonedDateTime?   = null,
+        private val executedAt: ZonedDateTime? = null,
+        private val canceledAt: ZonedDateTime? = null,
+        private val expiredAt:  ZonedDateTime?  = null,
 
-        val resultingPrice: Amount? = null,
-        val resultingQuote: StockQuote? = null,
+        private val resultingPrice: Amount? = null,
+        private val resultingQuote: StockQuote? = null,
     ) {
         fun copyToOrder(order: StockOrder) {
             order.id = id
