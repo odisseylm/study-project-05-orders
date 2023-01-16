@@ -1,5 +1,8 @@
 package com.mvv.bank.orders.rest.conversion
 
+import scala.language.unsafeNulls
+import com.mvv.utils.nn
+
 import org.assertj.core.api.{Assertions, SoftAssertions}
 import org.junit.jupiter.api.Test
 import org.mapstruct.factory.Mappers
@@ -31,7 +34,7 @@ class CashOrderMapperTest {
       dtoField = "value1",
     )
 
-    val domainOrder = mapper.toDomain(dtoOrder)
+    val domainOrder = nn(mapper).toDomain(dtoOrder)
 
     //SoftAssertions().->(
     //  assertThat(domainOrder.id).isEqualTo(123L)

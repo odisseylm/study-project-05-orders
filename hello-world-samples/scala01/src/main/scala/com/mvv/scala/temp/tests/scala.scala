@@ -6,6 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.annotation.{tailrec, targetName}
 import scala.util.Random
 
+import com.mvv.utils.nn
+
 //noinspection ScalaUnusedSymbol
 
 //class Class1 //:
@@ -65,7 +67,7 @@ class Ccc :
 
 class Employee(private var _name: String) {
   def name: String = _name
-  def nameToUpperCase: String = _name.toUpperCase
+  def nameToUpperCase: String = _name.toUpperCase.nn
   def name_=(aName: String): Unit = { this._name = aName }
   //def name4_= (name: String) = { this._name = name }
 }
@@ -122,7 +124,7 @@ extension (v: Rational)
 
 
 @main
-//noinspection ScalaUnusedSymbol,VarCouldBeVal,ScalaWeakerAccess
+//noinspection ScalaUnusedSymbol,VarCouldBeVal,ScalaWeakerAccess, All
 def main2(): Unit = {
 
   usageOfLazy()
