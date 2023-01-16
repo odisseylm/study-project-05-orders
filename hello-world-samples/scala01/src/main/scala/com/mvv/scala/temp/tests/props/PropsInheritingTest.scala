@@ -37,3 +37,27 @@ abstract class Base3 :
 class Derivs31 extends Base3 :
   override val bar = "baz"    // !!! It DOES work !!!
 
+
+class A {
+  var prop1: String = _
+
+  def f1: String = prop1
+  def f2: String = prop1.nn
+}
+
+
+class C:
+  val f: String = foo(f)
+  def foo(f2: String): String = f2
+
+
+@main
+def testNullPropInitValue(): Unit = {
+  println(A().prop1)
+  println(A().f1)
+  println(A().f2)
+
+  val c = new C()
+  c.f == "field is null"
+  // c.f == "field is null"
+}

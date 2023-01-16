@@ -19,15 +19,20 @@ def simplifyTop(expr: Expr): Expr =
     case BinOp("*", e, Num(1)) => println("match 3"); e
     case _ => println("match default"); expr
 
-val second1: List[Int] => Int =
-  case x :: y :: _ => y
+//noinspection ScalaUnusedSymbol
+val second1: List[Int] => Int = (_: @unchecked) match
+    case x :: y :: _ => y
 
-//noinspection ScalaUnnecessaryParentheses
+//noinspection ScalaUnnecessaryParentheses, ScalaUnusedSymbol
 val second2: (List[Int] => Int) =
   case x :: y :: _ => y
+  case _ => -333 // fuck
 
+//noinspection ScalaUnusedSymbol
+@unchecked
 val second3: PartialFunction[List[Int], Int] =
   case x :: y :: _ => y
+  case _ => -333 // fuck
 
 //noinspection ScalaUnusedSymbol
 def testMatches(): Unit = {

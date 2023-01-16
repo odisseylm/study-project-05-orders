@@ -1,7 +1,6 @@
 package com.mvv.bank.orders.rest.conversion
 
 import scala.language.unsafeNulls
-import com.mvv.utils.nn
 
 import org.assertj.core.api.{Assertions, SoftAssertions}
 import org.junit.jupiter.api.Test

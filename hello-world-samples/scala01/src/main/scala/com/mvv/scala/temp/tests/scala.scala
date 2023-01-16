@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.annotation.{tailrec, targetName}
 import scala.util.Random
 
-import com.mvv.utils.nn
 
 //noinspection ScalaUnusedSymbol
 
@@ -38,14 +37,14 @@ class Class5 :
     while true do
       val v1 = 123
         val v2 = 124
-          125
+        //  125
     126
   //noinspection RemoveRedundantReturn
   def bb(): Int =
     while true do
       val v1 = 123
         val v2 = 124
-          125
+        //  125
     return 126
 
 //noinspection ScalaUnusedSymbol,VarCouldBeVal,ScalaWeakerAccess,AccessorLikeMethodIsEmptyParen
@@ -129,27 +128,25 @@ def main2(): Unit = {
 
   usageOfLazy()
 
-  if (true) return
+  if (true) { return }
 
   usageOfDogTraits()
 
-  if (true) return
+  if (true) { return }
 
   usageOfBlackCatTraits()
 
-  if (true) return
+  if (true) { return }
 
   usageChild1()
 
-  if (true) return
+  if (true) { return }
 
   val get3 = ()=> { println("get3"); 3 }
 
   byNameAssert(get3() > 2)
 
-  if (true) {
-    return
-  }
+  if (true) { return }
 
 
   val r1 = Rational(22)
@@ -169,8 +166,7 @@ def main2(): Unit = {
   // r.toString
   // r.toString()
 
-  if (true)
-    return
+  if (true) { return }
 
 
   val obj = new Ccc()

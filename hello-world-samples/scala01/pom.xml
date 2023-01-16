@@ -362,6 +362,7 @@
             <configuration>
               <args>
                 <arg>-Yexplicit-nulls</arg>
+                <arg>-Ysafe-init</arg>
                 <!--<arg>-dependencyfile</arg>-->
                 <!--<arg>${project.build.directory}/.scala_dependencies</arg>-->
               </args>
