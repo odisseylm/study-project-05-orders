@@ -56,3 +56,17 @@ def main2(): Unit = {
 
 @inline
 final def sum(x: Int, y: Int): Int = x + y
+
+
+def test567(): Unit = {
+  val i = 666
+
+  // i is an integer
+  i match {
+    case 1 => println("January")
+    case 2 => println("February")
+    // catch the default with a variable so you can print it
+    case someVarName => println(s"Unexpected case: $someVarName")
+  }
+
+}
