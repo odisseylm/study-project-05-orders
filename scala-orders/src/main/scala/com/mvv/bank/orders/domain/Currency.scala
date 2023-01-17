@@ -17,10 +17,10 @@ case class Currency private (value: String) extends Equals derives CanEqual :
   override def toString: String = this.value
   override def hashCode: Int = this.value.hashCode
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Currency]
-  override def equals(other: Any): Boolean = other match {
+  override def equals(other: Any): Boolean = other match
     case that: Currency => (that canEqual this) && this.value == that.value
     case _ => false
-}
+
 
 
 //noinspection ScalaUnusedSymbol

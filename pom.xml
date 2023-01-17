@@ -130,10 +130,10 @@
 
     <!-- Tests -->
     <jupiter.version>5.9.1</jupiter.version>
-    <assertj.version>3.23.1</assertj.version>
+    <assertj.version>3.24.2</assertj.version>
     <jsonassert.version>1.5.1</jsonassert.version>
     <mockito-kotlin.version>4.1.0</mockito-kotlin.version>
-    <mockito.version>4.9.0</mockito.version>
+    <mockito.version>4.11.0</mockito.version>
     <net-byte-buddy.version>1.12.19</net-byte-buddy.version>
 
     <postgresql.version>42.5.1</postgresql.version>

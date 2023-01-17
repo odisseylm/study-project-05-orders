@@ -1,3 +1,4 @@
+*.iml
 
 /target/**
 /src/main/k8s/.preprocessed
