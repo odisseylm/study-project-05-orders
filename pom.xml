@@ -173,6 +173,7 @@
   <modules>
     <module>hello-world-samples/scala01</module>
     <module>kotlin-orders</module>
+    <module>scala-orders</module>
   </modules>
 
   <dependencyManagement>

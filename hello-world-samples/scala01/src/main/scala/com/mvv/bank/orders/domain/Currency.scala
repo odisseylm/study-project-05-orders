@@ -1,5 +1,9 @@
 package com.mvv.bank.orders.domain
 
+import scala.language.strictEquality
+
+import com.mvv.utils.isNull
+
 
 class Currency private (val value: String) /* extends AnyVal */ /* extends CanEqual[Currency, Currency] */ derives CanEqual {
   validateCurrency(value)
@@ -23,7 +27,7 @@ object Currency :
   def valueOf(value: String): Currency = Currency(value)
 
 private def validateCurrency(currency: String|Null): Unit = {
-  if (currency == null || currency.isBlank())
+  if (isNull(currency) || currency.nn.isBlank())
     throw IllegalArgumentException("Currency cannot be null or blank.")
 
   // T O D O: add other validation
