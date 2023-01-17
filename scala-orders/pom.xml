@@ -139,6 +139,13 @@
       <version>${mapstruct.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${apache-commons-lang3.version}</version>
+    </dependency>
+
+
     <!-- With this approach scala compiler will pick up MapStruct processor during compiling java sources. -->
     <dependency>
       <groupId>org.mapstruct</groupId>

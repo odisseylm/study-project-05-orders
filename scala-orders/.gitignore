@@ -1,0 +1,4 @@
+
+/target/**
+/src/main/k8s/.preprocessed
+/src/main/kubernetes/.preprocessed
