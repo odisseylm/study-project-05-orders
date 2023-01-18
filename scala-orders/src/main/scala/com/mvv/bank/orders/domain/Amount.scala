@@ -3,17 +3,10 @@ package com.mvv.bank.orders.domain
 import scala.language.strictEquality
 import javax.annotation.Untainted
 import javax.annotation.concurrent.Immutable
-
-import com.mvv.utils.require
+import com.mvv.utils.{!!, ifNull, require, requireNotBlank}
 import com.mvv.log.Logs.safe
-import com.mvv.utils.ifNull
-import com.mvv.utils.isNotBlank
-import com.mvv.utils.!!
-
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.{substringAfterLast, substringBeforeLast}
-
-//import scala.Predef.String
 
 
 @Untainted @Immutable
@@ -54,7 +47,7 @@ private def parseAmount(amount: String): Amount = {
     require(amount.length <= MAX_AMOUNT_LENGTH, s"Too long amount string [${amount.safe}] (${amount.length}).")
 
     val strCurrency = substringAfterLast(amount, ' ').ifNull("")
-    require(strCurrency.isNotBlank, s"Amount should have currency at the end (format like '155.46 USD' is expected).")
+    requireNotBlank(strCurrency, s"Amount should have currency at the end (format like '155.46 USD' is expected).")
 
     val strAmount = substringBeforeLast(amount, " ").!!
     Amount.of(BigDecimal(strAmount), Currency.of(strCurrency))

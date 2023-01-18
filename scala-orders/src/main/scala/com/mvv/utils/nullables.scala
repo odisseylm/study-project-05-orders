@@ -21,14 +21,6 @@ def isNotNull(v: Any|Null): Boolean =
   asRaw != null
 
 
-def isNullOrEmpty(string: CharSequence|Null): Boolean =
-  val asRawString = string.asInstanceOf[CharSequence]
-  asRawString == null && asRawString.isEmpty
-//def isNotNullOrEmpty(string: String|Null): Boolean = !isNullOrEmpty(string)
-
-
-def isNullOrBlank(string: CharSequence|Null): Boolean = StringUtils.isBlank(string)
-//def isNotNullOrBlank(string: String|Null): Boolean = !isBlank(string)
 
 extension [T](x: T|Null)
   inline def !! : T = nn(x)
