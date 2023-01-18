@@ -11,15 +11,10 @@ import scala.language.unsafeNulls
 //    assert(asRaw != null)
 //    x.asInstanceOf[T]
 
-// TODO: convert to extensions
-def isNull(v: Any|Null): Boolean =
-  val asRaw = v.asInstanceOf[AnyRef]
-  asRaw == null
 
-def isNotNull(v: Any|Null): Boolean =
-  val asRaw = v.asInstanceOf[AnyRef]
-  asRaw != null
-
+extension (v: AnyRef|Null)
+  inline def isNull: Boolean = v.asInstanceOf[AnyRef] == null
+  inline def isNotNull: Boolean = v.asInstanceOf[AnyRef] != null
 
 
 extension [T](x: T|Null)

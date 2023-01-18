@@ -6,7 +6,7 @@ package com.mvv.utils
 def requireNotNull[T](v: T|Null): T = requireNotNull[T](v, "Null value.")
 
 def requireNotNull[T](v: T|Null, msg: =>String): T =
-  if isNull(v) then throw IllegalArgumentException(msg) else v.nn
+  if v.isNull then throw IllegalArgumentException(msg) else v.nn
 
 def requireNotBlank(s: CharSequence|Null): CharSequence = requireNotBlank(s, "Blank value.")
 def requireNotBlank(s: CharSequence|Null, msg: =>String): CharSequence =

@@ -29,7 +29,7 @@ class ScalaBean1 {
 
 //val strXml = xml""
 
-var x1: String = _ // Idea shows as error but it is compiled
+//var x1: String = _ // Idea shows as error but it is compiled
 var x2: String = uninitialized
 
 class B :
