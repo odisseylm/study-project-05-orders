@@ -2,6 +2,8 @@ package com.mvv.utils
 
 //import scala.Predef.nn
 
+import com.mvv.utils.isNull
+
 
 def requireNotNull[T](v: T|Null): T = requireNotNull[T](v, "Null value.")
 

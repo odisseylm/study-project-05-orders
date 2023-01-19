@@ -12,7 +12,8 @@ import scala.language.unsafeNulls
 //    x.asInstanceOf[T]
 
 
-extension (v: AnyRef|Null)
+//extension (v: AnyRef|Null)
+extension [T](v: T|Null)
   inline def isNull: Boolean = v.asInstanceOf[AnyRef] == null
   inline def isNotNull: Boolean = v.asInstanceOf[AnyRef] != null
 

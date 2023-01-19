@@ -4,7 +4,7 @@ import scala.language.strictEquality
 import javax.annotation.Untainted
 import javax.annotation.concurrent.Immutable
 import com.mvv.utils.{!!, ifNull, require, requireNotBlank}
-import com.mvv.log.Logs.safe
+import com.mvv.log.safe
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.{substringAfterLast, substringBeforeLast}
 

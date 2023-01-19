@@ -4,7 +4,7 @@ object Logs :
   private val safeLength: Int = 512
 
   //@JvmStatic
-  private def trimToSafeString(obj: AnyRef|Null): String|Null = {
+  def trimToSafeString(obj: Any|Null): String|Null = {
     if obj == null then return null
 
     val str = obj.toString
@@ -12,6 +12,11 @@ object Logs :
     if str.length < safeLength then str
     else s"${str.substring(0, safeLength)} ..."
   }
-
-  extension (obj: AnyRef|Null)
+  // version for java
+  extension (obj: Any|Null)
     def safe: String|Null = Logs.trimToSafeString(obj)
+
+
+// version for scala
+extension (obj: Any|Null)
+  def safe: String|Null = Logs.trimToSafeString(obj)

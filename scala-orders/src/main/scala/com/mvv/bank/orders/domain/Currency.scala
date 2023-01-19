@@ -5,7 +5,7 @@ import javax.annotation.Untainted
 import javax.annotation.concurrent.Immutable
 import com.mvv.utils.{isNotNull, isNull, require, requireNotNull}
 import com.mvv.collections.in
-import com.mvv.log.Logs.safe
+import com.mvv.log.safe
 
 import scala.annotation.unused
 

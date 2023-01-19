@@ -6,7 +6,7 @@ import javax.annotation.concurrent.Immutable
 
 import com.mvv.utils.{isNotNull, isNull, require, requireNotBlank, requireNotNull}
 import com.mvv.collections.in
-import com.mvv.log.Logs.safe
+import com.mvv.log.safe
 
 import scala.util.matching.Regex
 import scala.annotation.unused

@@ -1,0 +1,90 @@
+package com.mvv.scala.props
+
+import com.mvv.log.safe
+import com.mvv.utils.ifNull
+import com.mvv.utils.isNullOrEmpty
+
+import scala.annotation.nowarn
+
+
+class UninitializedPropertyAccessException (msg: String) extends RuntimeException(msg)
+
+trait KProperty[T] :
+  def name: String
+
+object KProperty :
+  def simpleProperty[T](propertyName: String): KProperty[T] = SimplePropertyImpl(propertyName)
+
+private case class SimplePropertyImpl[T] (name: String) extends KProperty[T]
+
+
+// from Kotlin
+trait ReadOnlyProperty[/*in*/ T, /*out*/ V] :
+  def getValue(thisRef: T, property: KProperty[_]): V
+
+trait ReadWriteProperty[/*in*/ T, V] extends ReadOnlyProperty[T, V] :
+  def setValue(thisRef: T, property: KProperty[_], value: V): Unit
+
+
+
+// This class is designed because kotlin does not support 'late init' props with custom getter/setter
+class LateInitProperty[T, Owner] (
+    value: T|Null = null,
+    val propName: String|Null = null, // TODO: maybe Option ???
+
+    val changeable: Boolean = true,
+    // !!! Message should have exactly ${prev} and ${new} (not short forms like $prev and $new)
+    val changeErrorMessage: String|Null = null,
+
+    val validate:   (T, T|Null)=>Unit = {(n:T,p:T|Null)=>},
+    val preUpdate:  (T, T|Null)=>Unit = {(n:T,p:T|Null)=>},
+    val postUpdate: (T, T|Null)=>Unit = {(n:T,p:T|Null)=>},
+    // TODO: use these below with param names
+    //val validate:   (newValue: T, prevValue: T|Null)=>Unit = {(n,p)=>},
+    //val preUpdate:  (newValue: T, prevValue: T|Null)=>Unit = {(n,p)=>},
+    //val postUpdate: (newValue: T, prevValue: T|Null)=>Unit = {(n,p)=>},
+) extends ReadWriteProperty[Owner, T] with Equals derives CanEqual {
+    private var internalValue: T|Null = value
+    def asNullableValue: T|Null = internalValue
+    def asNonNullableValue: T = internalValue.nn
+    def set(v: T): Unit = {
+        val prev = this.internalValue
+        validateNonChangeable(v, prev)
+        validate(v, prev)
+        preUpdate(v, prev)
+        internalValue = v
+        postUpdate(v, prev)
+    }
+
+    private def validateNonChangeable(newValue: T, prevValue: T|Null): Unit =
+        if (!changeable && prevValue != null && newValue != prevValue)
+            val msg = changeErrorMessage.ifNull(defaultChangeErrorMessage)
+                .replace("${prev}", prevValue.safe.toString())
+                .nn.replace("${new}", newValue.safe.toString())
+            throw IllegalStateException(msg)
+
+    private def defaultChangeErrorMessage: String =
+        if propName.isNullOrEmpty then "Not allowed to change property (from [${prev}] to [${new}])."
+        else "Not allowed to change property '$propName' (from [${prev}] to [${new}])."
+
+
+    // T O D O: add logic to verify value on null only if T is nullable. Is it needed???
+    override /*operator*/ def getValue(thisRef: Owner, property: KProperty[_]): T =
+        val finalValueRef = asNullableValue
+        if finalValueRef != null then finalValueRef.nn
+        else throw UninitializedPropertyAccessException(s"Property [$propName] is not initialized yet.")
+
+    override /*operator*/ def setValue(thisRef: Owner, property: KProperty[_], value: T): Unit = set(value)
+
+    override def toString: String = "$internalValue"
+    override def canEqual(other: Any): Boolean = (other : @unchecked).isInstanceOf[LateInitProperty[T, Owner]]
+    override def equals(other: Any): Boolean = (other : @unchecked) match
+        case that: LateInitProperty[T,Owner] => (that canEqual this) && that.asNullableValue == this.asNullableValue
+        case _ => false
+
+    //noinspection HashCodeUsesVar // It is not designed to be map key
+    override def hashCode: Int =
+        val finalSafeRef = this.internalValue
+        if finalSafeRef == null then 42.hashCode else finalSafeRef.hashCode
+}
+
