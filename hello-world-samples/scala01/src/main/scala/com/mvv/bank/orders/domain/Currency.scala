@@ -17,7 +17,7 @@ class Currency private (val value: String) /* extends AnyVal */ /* extends CanEq
 
   override def toString: String = value
   //noinspection ScalaWeakerAccess
-  infix def canEqual(other: Any|Null): Boolean = /*(other != null) &&*/ other.isInstanceOf[Currency]
+  infix def canEqual(other: Any): Boolean = /*(other != null) &&*/ other.isInstanceOf[Currency]
   // for Scala 2.x
   //override def equals(other: Any): Boolean = other /*.asMatchable*/ match {
   //  case that: Currency => (that canEqual this) && this.value == that.value
