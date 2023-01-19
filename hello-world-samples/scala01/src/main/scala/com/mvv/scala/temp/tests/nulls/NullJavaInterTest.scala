@@ -9,7 +9,7 @@ import scala.compiletime.uninitialized
 def test55656(): Unit = {
   val ss = "  "
 
-  val trimmed1: String|Null = ss.trim
+  val trimmed1: String|Null = ss.trim //.trim
   val trimmed2: String = ss.trim.nn
 
   val jObj1 = new JavaClass()

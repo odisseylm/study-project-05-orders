@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test
 
 import scala.language.strictEquality	//Enables Multiversal-Equality
 
+
 case class Circle(radius: Float) derives CanEqual
 case class Square(side: Float) derives CanEqual
 

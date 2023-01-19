@@ -1,5 +1,6 @@
 package com.mvv.scala.temp.tests.nulls
 
+import scala.compiletime.uninitialized
 import scala.language.strictEquality
 //import scala.language.
 //import scala.language.unsafeNulls
@@ -9,7 +10,7 @@ case class Person(var username: String, var password: String)
 case class Student(username: String, nick: String|Null)
 
 class Student2 :
-  var username: String = _
+  var username: String = uninitialized
 
 
 @main

@@ -1,5 +1,7 @@
 package com.mvv.scala.temp.tests.abstracts
 
+import scala.compiletime.uninitialized
+
 
 trait Abstract1 :
   val stringVal: String
@@ -21,13 +23,13 @@ trait Abstract2 :
 
 class Abstract2Impl0 extends Abstract2 :
   /*override*/
-  var stringVar: String = _ // !!! Strange - using 'override' is not allowed here
+  var stringVar: String = uninitialized // _ // !!! Strange - using 'override' is not allowed here
 
 //class Abstract2Impl1 extends Abstract2 :
 //  override val stringVal: String = "fck" // not allowed, it is logical
 
 class Abstract2Impl2 extends Abstract2 :
-  private var _stringVar: String = _
+  private var _stringVar: String = uninitialized // _
   // !!! Strange - using 'override' is not allowed
   /*override*/ def stringVar: String = this._stringVar
   /*override*/ def stringVar_= (stringVar: String): Unit = { this._stringVar = stringVar }

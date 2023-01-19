@@ -1,6 +1,6 @@
 package com.mvv.scala.temp.tests.breaks
 
-import util.control.Breaks._
+import util.control.Breaks.*
 
 
 @main

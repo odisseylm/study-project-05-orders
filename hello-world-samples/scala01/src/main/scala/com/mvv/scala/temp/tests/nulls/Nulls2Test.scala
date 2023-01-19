@@ -17,3 +17,6 @@ def aaa(): Unit = {
   else
     println(s.length)
 }
+
+def foo(@javax.annotation.Nonnull a: Any): Unit = println(a.hashCode)
+//def foo2(@jakarta.validation.NotNull a: Any) = println(a.hashCode)

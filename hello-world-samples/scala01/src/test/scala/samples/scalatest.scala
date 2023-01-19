@@ -43,10 +43,10 @@ Here's an example of a FunSuite with Matchers mixed in:
 
 import org.junit.runner.RunWith
 import org.scalatest.funsuite.AnyFunSuite
-import flatspec._
-import matchers._
+import flatspec.*
+import matchers.*
 import scala.Symbol
-import should.Matchers._
+import should.Matchers.*
 
 //@RunWith(classOf[JUnitRunner])
 class ListSuite extends AnyFunSuite /*with should.Matchers*/ {
@@ -114,7 +114,10 @@ import scala.collection.mutable
 
 class Example23Spec extends AnyFlatSpec with org.scalatest.matchers.should.Matchers {
 
-  "A Stack" should "pop values in last-in-first-out order" in {
+  // need to wait for updated versions of scalatest-* artifacts
+  //"A Stack" should "pop values in last-in-first-out order" in {
+
+  "A Stack" `should` "pop values in last-in-first-out order" in {
     val stack = new mutable.Stack[Int]
     stack.push(1)
     stack.push(2)

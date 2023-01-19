@@ -15,7 +15,7 @@ def asd(): Unit = {
 
 class Abc {
   @(javax.annotation.Nonnull @beanGetter @getter)
-  var aaa: String = _
+  var aaa: String = uninitialized
 
 
 }
@@ -23,7 +23,7 @@ class Abc {
 //@BeanInfo
 class ScalaBean1 {
 
-  var prop1: String = _
+  var prop1: String = uninitialized
 }
 
 
@@ -33,7 +33,7 @@ class ScalaBean1 {
 var x2: String = uninitialized
 
 class B :
-  var x1: String = _
+  var x1: String = uninitialized
   var x2: String = uninitialized
 
 

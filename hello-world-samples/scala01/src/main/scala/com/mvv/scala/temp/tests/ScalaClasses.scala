@@ -8,7 +8,7 @@ class ScalaClass (
   val val1: String,
   ) {
   var var1: String = uninitialized
-  var var2: String = _
+  var var2: String = uninitialized // _ - using '_' is deprecated in Scala 3
   var var3: String = ""
 
   lazy val lazyVal: String = { "lazy value" }
@@ -23,10 +23,15 @@ object UsualClass1 :
   def unapply(obj: UsualClass1): Option[String] = Some(obj.prop1)
 
 
-def matchTest02(v: Any): Any =
+def matchTest02(v: Matchable): Any =
   v match
     case CaseClass1(vv) => vv
     case UsualClass1(vv) => vv
+
+def matchTest0222(v: Matchable): Any =
+  v match
+    case vv: CaseClass1 => vv
+    case vv: UsualClass1 => vv
 
 /*
 class Person(private var name: String) {
@@ -48,7 +53,7 @@ class Stock2 (_symbol: String) :
 
 //class Stock3 private () :
 class Stock3 :
-  private var _symbol: String = _
+  private var _symbol: String = uninitialized
   def symbol: String = this._symbol
   def symbol_= (symbol: String): Unit = { this._symbol = symbol }
 

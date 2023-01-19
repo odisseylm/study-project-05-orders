@@ -1,18 +1,19 @@
 package com.mvv.bank.orders.domain
 
 import scala.beans.BeanProperty
+import scala.compiletime.uninitialized
 
 class CashOrder {
   @BeanProperty
   var id: Long|Null = null
   @BeanProperty
-  var buyCurrency: Currency = _
+  var buyCurrency: Currency = uninitialized
   @BeanProperty
-  var sellCurrency: Currency = _
+  var sellCurrency: Currency = uninitialized
   @BeanProperty
-  var volume: BigDecimal = _
+  var volume: BigDecimal = uninitialized
   @BeanProperty
-  var limitPrice: Amount = _
+  var limitPrice: Amount = uninitialized
   @BeanProperty
-  var domainField: String = _
+  var domainField: String = uninitialized
 }

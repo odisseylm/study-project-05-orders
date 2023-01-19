@@ -5,9 +5,9 @@ import org.specs2.mutable.*
 import org.specs2.runner.*
 import collection.mutable.Stack
 
-import org.scalatest._
-import flatspec._
-import matchers._
+import org.scalatest.*
+import flatspec.*
+import matchers.*
 
 /**
  * Sample specification.

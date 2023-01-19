@@ -1,5 +1,7 @@
 package com.mvv.scala.temp.tests.typemixing
 
+import scala.compiletime.uninitialized
+
 
 trait A
 trait B
@@ -18,10 +20,10 @@ trait TypeMixing {
 }
 
 class TypeMixingClass {
-  var fieldOfMixedType1: String | Int = _
-  var fieldOfMixedType2: String & Int = _
-  var fieldOfMixedType3: A | B = _
-  var fieldOfMixedType4: A & B = _
+  var fieldOfMixedType1: String | Int = uninitialized
+  var fieldOfMixedType2: String & Int = uninitialized
+  var fieldOfMixedType3: A | B = uninitialized
+  var fieldOfMixedType4: A & B = uninitialized
 }
 
 

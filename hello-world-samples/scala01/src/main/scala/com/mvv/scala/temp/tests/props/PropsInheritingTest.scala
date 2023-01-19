@@ -1,5 +1,7 @@
 package com.mvv.scala.temp.tests.props
 
+import scala.compiletime.uninitialized
+
 
 abstract class Base1 :
   var prop1: String
@@ -39,13 +41,15 @@ class Derivs31 extends Base3 :
 
 
 class A {
-  var prop1: String = _
+  var prop1: String = uninitialized // _ '_' is deprecated in Scala3
 
   def f1: String = prop1
   def f2: String = prop1.nn
 }
 
 
+/*
+// compilation warning: Access non-initialized value f.
 class C:
   val f: String = foo(f)
   def foo(f2: String): String = f2
@@ -61,3 +65,4 @@ def testNullPropInitValue(): Unit = {
   c.f == "field is null"
   // c.f == "field is null"
 }
+*/

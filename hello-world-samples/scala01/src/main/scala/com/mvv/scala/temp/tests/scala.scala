@@ -98,7 +98,7 @@ class Rational(n: Int) :
     this(v.toInt)
 
   override def toString: String = s"n: $n"
-  def add(v: Rational): Rational = Rational(v.nn + this.n)
+  infix def add(v: Rational): Rational = Rational(v.nn + this.n)
   @targetName("lemon")
   def ::(v: Rational): Rational = Rational(v.nn + this.n)
   @targetName("cherry")
@@ -112,13 +112,13 @@ class Rational(n: Int) :
 // companion object
 object Rational :
   extension (v: Rational) // what is benefit ???
-    def add4(v2: Rational): Rational = Rational(v.nn + v2.nn)
+    infix def add4(v2: Rational): Rational = Rational(v.nn + v2.nn)
 
 
 extension (v: Rational)
   @targetName("append22")
-  def add2(v2: Rational): Rational = v.add(v2)
-  def add3(v2: Rational): Rational = v add v2
+  infix def add2(v2: Rational): Rational = v.add(v2)
+  infix def add3(v2: Rational): Rational = v add v2
 
 
 
@@ -484,7 +484,9 @@ trait VanillaFlavour {
   //drinkerRef: Drinker =>
   //this: Drink =>
   //this: Drinker =>
-  self: Drink with Drinker =>
+
+  //self: Drink with Drinker => // hm... 'with' is already deprecated
+  self: Drink & Drinker =>
 
   //def flavour = "vanilla"
   override def flavour = "vanilla"

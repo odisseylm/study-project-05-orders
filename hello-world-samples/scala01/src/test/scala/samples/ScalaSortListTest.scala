@@ -10,6 +10,7 @@ import scala.util.Random
 
 import scala.jdk.CollectionConverters.*
 
+
 class ScalaSortListTest {
 
   @Test
