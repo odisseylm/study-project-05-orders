@@ -34,6 +34,10 @@ class AmountTest {
     // in java they are NOT equal
     assertThat(jbd("12345.67")).isNotEqualTo(jbd("12345.6700"))
     assertThat(jbd("12345.67").hashCode).isNotEqualTo(jbd("12345.6700").hashCode)
+
+    // in java they are NOT equal
+    assertThat(jbd("3e5")).isNotEqualTo(jbd("30E4"))
+    assertThat(jbd("3E5").hashCode).isNotEqualTo(jbd("30e4").hashCode)
   }
 
   @Test
@@ -47,12 +51,20 @@ class AmountTest {
     // in scala they are DO equal
     assertThat(bd("12345.67")).isEqualTo(bd("12345.6700"))
     assertThat(bd("12345.67").hashCode).isEqualTo(bd("12345.6700").hashCode)
+    assertThat(bd("3E5").hashCode).isEqualTo(bd("30e4").hashCode)
   }
 
   @Test
   def amountEqualWithOnlyDifferentPrecision(): Unit = {
     assertThat(Amount(bd("12345.67"), Currency.USD))
       .isEqualTo(Amount(bd("12345.67000000"), Currency.USD))
+    assertThat(Amount(bd("12345.67"), Currency.USD).hashCode())
+      .isEqualTo(Amount(bd("12345.67000000"), Currency.USD).hashCode())
+
+    assertThat(Amount(bd("3e5"), Currency.USD))
+      .isEqualTo(Amount(bd("30E4"), Currency.USD))
+    assertThat(Amount(bd("3E5"), Currency.USD).hashCode())
+      .isEqualTo(Amount(bd("30e4"), Currency.USD).hashCode())
   }
 
 }

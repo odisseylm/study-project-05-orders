@@ -11,13 +11,15 @@ class Amount private constructor (
     val value: BigDecimal,
     val currency: Currency,
 ) {
+    private val withStrippedTrailingZeros by lazy { if (value.scale() != 0) value.stripTrailingZeros() else value }
     @Untainted
     override fun toString(): String = "$value $currency"
     override fun equals(other: Any?): Boolean =
         (this === other) ||
         ((this.javaClass == other?.javaClass) && (currency == (other as Amount).currency) &&
          (this.value.compareTo(other.value) == 0))
-    override fun hashCode(): Int = 31 * value.hashCode() + currency.hashCode()
+    override fun hashCode(): Int = 31 * withStrippedTrailingZeros.hashCode() + currency.hashCode()
+    //override fun hashCode(): Int = 31 * value.hashCode() + currency.hashCode()
 
     companion object {
         @JvmStatic fun of(amount: String) = parseAmount(amount)
