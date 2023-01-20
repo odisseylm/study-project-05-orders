@@ -1,3 +1,4 @@
+//noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
 import scala.reflect.ClassTag
@@ -71,7 +72,7 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
 
   // This class mainly is introduced to avoid 'duplicate code' warning
   //@Suppress("ClassName") // It is named from '_' (as internal) because I cannot do it protected
-  /*protected*/ trait _BaseAttrs[Product <: AnyRef, Quote <: BaseQuote] {
+  /*protected*/ trait _BaseAttrs[P <: AnyRef, Q <: BaseQuote] {
     val id: Long|Null
     val user: User
     val side: Side
@@ -88,9 +89,9 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
     val expiredAt:  ZonedDateTime|Null
 
     val resultingPrice: Amount|Null
-    val resultingQuote: Quote|Null
+    val resultingQuote: Q|Null
 
-    protected def copyToOrder(order: AbstractOrder[Product, Quote]): Unit = {
+    protected def copyToOrder(order: AbstractOrder[P, Q]): Unit = {
       order.id = id
       order.user = user
 

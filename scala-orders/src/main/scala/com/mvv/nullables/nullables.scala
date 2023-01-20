@@ -1,4 +1,4 @@
-package com.mvv.utils
+package com.mvv.nullables
 
 import org.apache.commons.lang3.StringUtils
 

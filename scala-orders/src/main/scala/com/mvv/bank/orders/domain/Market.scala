@@ -1,7 +1,11 @@
+//noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
+import javax.annotation.Tainted
+import scala.annotation.targetName
 import scala.language.strictEquality
 //
+import scala.annotation.meta.{field, getter, param}
 import scala.annotation.unused
 import scala.util.matching.Regex
 //
@@ -10,18 +14,31 @@ import java.time.LocalTime
 import java.time.LocalDate
 import java.time.ZonedDateTime
 //
+import javax.annotation.Tainted
 import javax.annotation.Untainted
 import javax.annotation.concurrent.Immutable
 //
-import com.mvv.utils.{isNotNull, isNull, require, requireNotNull, isBlank, isNullOrBlank, equalImpl}
+import com.mvv.nullables.{isNotNull, isNull}
+import com.mvv.utils.{require, requireNotNull, isBlank, isNullOrBlank, equalImpl}
 import com.mvv.collections.in
+import com.mvv.nullables.given
 import com.mvv.log.safe
 
 
 @Untainted @Immutable
+case class MarketSymbol private (
+  @(Tainted @param) @(Untainted @field @getter)
+  value: String
+  ) derives CanEqual :
+  validateMarketSymbol(value)
+  @Untainted
+  override def toString: String = value
+
+/*
+@Untainted @Immutable
 class MarketSymbol private (
-    //@param:Tainted @field:Untainted
-    val value: String
+  @(Tainted @param) @(Untainted @field @getter)
+  val value: String
   ) extends Equals derives CanEqual :
   validateMarketSymbol(value)
 
@@ -36,13 +53,11 @@ class MarketSymbol private (
   override def equals(other: Any): Boolean =
   // it is inlined and have resulting byte code similar to code with 'match'
     equalImpl(this, other) { _.value == _.value }
-
+*/
 
 object MarketSymbol :
-    //@JvmStatic
     def of(marketSymbol: String): MarketSymbol = MarketSymbol(marketSymbol)
     // standard java method to get from string. It can help to integrate with other java frameworks.
-    //@JvmStatic
     def valueOf(marketSymbol: String): MarketSymbol = of(marketSymbol)
 
 
@@ -75,15 +90,6 @@ private val MARKET_SYMBOL_MAX_LENGTH = 25
 //private val marketSymbolPattern = Regex("^[A-Z0-9\\-.]*\$")
 private val marketSymbolPattern = Regex("") // TODO: fix regex
 
-
-//given CanEqual[CharSequence, Null] = CanEqual.derived
-//given CanEqual[Null, CharSequence] = CanEqual.derived
-given CanEqual[CharSequence|Null, Null] = CanEqual.derived
-given CanEqual[Null, CharSequence|Null] = CanEqual.derived
-//given CanEqual[CharSequence, Null] = CanEqual.derived
-//given CanEqual[Null, CharSequence] = CanEqual.derived
-//given CanEqual[CharSequence|Null, Null] = CanEqual.derived
-//given CanEqual[Null, CharSequence|Null] = CanEqual.derived
 
 private def validateMarketSymbol(marketSymbol: CharSequence|Null): Unit =
   if (marketSymbol == null || marketSymbol.isBlank ||

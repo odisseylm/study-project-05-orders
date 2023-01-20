@@ -11,6 +11,18 @@ import com.mvv.utils.equalImpl
 
 // it is not clear now what it should be??? phone and email can be changed? or cannot?
 @Untainted @Immutable
+case class UserNaturalKey private (
+  @(Tainted @param) @(Untainted @field @getter)
+  value: String) derives CanEqual :
+
+  // now we will use email but later will change it
+  Email(value) // used for validation only
+
+  @Untainted
+  override def toString: String = value
+
+/*
+@Untainted @Immutable
 class UserNaturalKey private (
   @(Tainted @param) @(Untainted @field @getter)
   val value: String) extends Equals derives CanEqual :
@@ -29,6 +41,14 @@ class UserNaturalKey private (
   override def equals(other: Any): Boolean =
     // it is inlined and have resulting byte code similar to code with 'match'
     equalImpl(this, other) { _.value == _.value }
+*/
+
+given givenCanEqual_UserNaturalKey_Null: CanEqual[UserNaturalKey, Null] = CanEqual.derived
+given givenCanEqual_UserNaturalKeyNull_Null: CanEqual[UserNaturalKey|Null, Null] = CanEqual.derived
+given givenCanEqual_UserNaturalKeyNull_UserNaturalKey: CanEqual[UserNaturalKey|Null, UserNaturalKey] = CanEqual.derived
+given givenCanEqual_Null_UserNaturalKey: CanEqual[Null, UserNaturalKey] = CanEqual.derived
+given givenCanEqual_Null_UserNaturalKeyNull: CanEqual[Null, UserNaturalKey|Null] = CanEqual.derived
+given givenCanEqual_UserNaturalKey_UserNaturalKeyNull: CanEqual[UserNaturalKey, UserNaturalKey|Null] = CanEqual.derived
 
 
 object UserNaturalKey :
@@ -38,6 +58,17 @@ object UserNaturalKey :
   def valueOf(userNaturalKey: String): UserNaturalKey = apply(userNaturalKey)
 
 
+// T O D O: think about natural-key
+@Untainted @Immutable
+case class User private (
+  @(Tainted @param) @(Untainted @field @getter)
+  naturalKey: UserNaturalKey) derives CanEqual :
+  @Untainted
+  def value: String = naturalKey.value
+  @Untainted
+  override def toString: String = s"User[$naturalKey]"
+
+/*
 // T O D O: think about natural-key
 @Untainted @Immutable
 class User private (
@@ -56,6 +87,16 @@ class User private (
   override def equals(other: Any): Boolean =
     // it is inlined and have resulting byte code similar to code with 'match'
     equalImpl(this, other) { _.value == _.value }
+*/
+
+
+given givenCanEqual_User_Null: CanEqual[User, Null] = CanEqual.derived
+given givenCanEqual_UserNull_Null: CanEqual[User|Null, Null] = CanEqual.derived
+given givenCanEqual_UserNull_User: CanEqual[User|Null, User] = CanEqual.derived
+given givenCanEqual_Null_User: CanEqual[Null, User] = CanEqual.derived
+given givenCanEqual_Null_UserNull: CanEqual[Null, User|Null] = CanEqual.derived
+given givenCanEqual_User_UserNull: CanEqual[User, User|Null] = CanEqual.derived
+
 
 object User :
   def apply(naturalKey: UserNaturalKey): User = new User(naturalKey)

@@ -1,20 +1,33 @@
+//noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
+import scala.annotation.meta.{getter, field, param}
 import scala.language.strictEquality
 //
 import scala.annotation.unused
 import scala.util.matching.Regex
 //
+import javax.annotation.Tainted
 import javax.annotation.Untainted
 import javax.annotation.concurrent.Immutable
 //
-import com.mvv.utils.{isNotNull, isNull, require, requireNotBlank, requireNotNull, equalImpl}
+import com.mvv.nullables.{isNotNull, isNull}
+import com.mvv.utils.{require, requireNotBlank, requireNotNull, equalImpl}
 import com.mvv.collections.in
 import com.mvv.log.safe
 
 
 @Untainted @Immutable
-class Email private (/*@param:Tainted @field:Untainted*/ val value: String)
+case class Email private (
+  @(Tainted @param) @(Untainted @field @getter) value: String)
+  derives CanEqual :
+  validateEmail(value)
+  @Untainted
+  override def toString: String = this.value
+
+/*
+@Untainted @Immutable
+class Email private (@(Tainted @param) @(Untainted @field @getter) val value: String)
   extends Equals derives CanEqual :
 
   validateEmail(value)
@@ -30,6 +43,14 @@ class Email private (/*@param:Tainted @field:Untainted*/ val value: String)
   override def equals(other: Any): Boolean =
     // it is inlined and have resulting byte code similar to code with 'match'
     equalImpl(this, other) { _.value == _.value }
+*/
+
+given givenCanEqual_Email_Null: CanEqual[Email, Null] = CanEqual.derived
+given givenCanEqual_EmailNull_Null: CanEqual[Email|Null, Null] = CanEqual.derived
+given givenCanEqual_EmailNull_Email: CanEqual[Email|Null, Email] = CanEqual.derived
+given givenCanEqual_Null_Email: CanEqual[Null, Email] = CanEqual.derived
+given givenCanEqual_Null_EmailNull: CanEqual[Null, Email|Null] = CanEqual.derived
+given givenCanEqual_Email_EmailNull: CanEqual[Email, Email|Null] = CanEqual.derived
 
 
 object Email :
@@ -49,7 +70,7 @@ object Email :
 //private val emailStrictPattern = Regex("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@"
 //        + "[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$")
 private val emailOwaspPattern = Regex("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")
-private def validateEmail(email: CharSequence|Null): Unit =
+private def validateEmail(email: String|Null): Unit =
   requireNotBlank(email, "Email cannot be null/blank.")
   if (!emailOwaspPattern.matches(email.nn)) throw IllegalArgumentException(s"Invalid email [${email.safe}].")
 
@@ -58,7 +79,7 @@ private def validateEmail(email: CharSequence|Null): Unit =
 //private val phonePattern = Regex("^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{4}$")
 //private val phonePattern = Regex("^(\\+\\d{1,3}( )?)?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?\\d{3,4}[- .]?\\d{4}$")
 private val phonePattern = Regex("^\\+?[1-9][0-9]{7,14}$")
-private def validatePhone(email: CharSequence|Null): Unit =
+private def validatePhone(email: String|Null): Unit =
 //private def validatePhone(email: String|Null) =
   requireNotBlank(email, "Phone number cannot be null/blank.")
   if !phonePattern.matches(email.nn) then throw IllegalArgumentException(s"Invalid phone number [${email.safe}].")

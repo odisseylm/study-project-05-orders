@@ -3,7 +3,9 @@ package com.mvv.scala.props
 import scala.annotation.nowarn
 //
 import com.mvv.log.safe
-import com.mvv.utils.{ifNull, isNullOrEmpty, equalImpl}
+import com.mvv.nullables.ifNull
+import com.mvv.utils.isNullOrEmpty
+import com.mvv.utils.equalImpl
 
 
 class UninitializedPropertyAccessException (msg: String) extends RuntimeException(msg)
