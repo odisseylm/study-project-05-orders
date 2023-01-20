@@ -1,14 +1,13 @@
 //noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
-import scala.annotation.meta.{getter, field, param}
 import scala.language.strictEquality
 //
+import scala.annotation.meta.{getter, field, param}
 import scala.annotation.unused
 import scala.util.matching.Regex
 //
-import javax.annotation.Tainted
-import javax.annotation.Untainted
+import javax.annotation.{Tainted, Untainted}
 import javax.annotation.concurrent.Immutable
 //
 import com.mvv.nullables.{isNotNull, isNull}
@@ -19,11 +18,10 @@ import com.mvv.log.safe
 
 @Untainted @Immutable
 case class Email private (
-  @(Tainted @param) @(Untainted @field @getter) value: String)
-  derives CanEqual :
+  @(Tainted @param) @(Untainted @field @getter)
+  value: String) derives CanEqual :
   validateEmail(value)
-  @Untainted
-  override def toString: String = this.value
+  @Untainted override def toString: String = this.value
 
 /*
 @Untainted @Immutable
@@ -54,33 +52,29 @@ given givenCanEqual_Email_EmailNull: CanEqual[Email, Email|Null] = CanEqual.deri
 
 
 object Email :
-  def apply(email: String): Email = of(email)
+  def apply(@Tainted email: String): Email = new Emai(email)
 
-  // Java style
-  def of(email: String): Email = new Email(email)
-  // standard java method to get from string. It can help to integrate with other java frameworks.
-  def valueOf(email: String): Email = of(email)
+  // standard java methods to get from string. It can help to integrate with other java frameworks.
+  def of(@Tainted email: String): Email = Email(email)
+  def valueOf(@Tainted email: String): Email = Email(email)
 
 
 
 // see https://www.baeldung.com/java-email-validation-regex
 // RFC5322
-//private val emailRfc5322Pattern = Regex("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
-// Strict Regular Expression Validation
-//private val emailStrictPattern = Regex("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@"
+// regex "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$"
+// regex "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@"
 //        + "[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$")
 private val emailOwaspPattern = Regex("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")
-private def validateEmail(email: String|Null): Unit =
+private def validateEmail(@Tainted email: String|Null): Unit =
   requireNotBlank(email, "Email cannot be null/blank.")
   if (!emailOwaspPattern.matches(email.nn)) throw IllegalArgumentException(s"Invalid email [${email.safe}].")
 
 
 // see https://www.baeldung.com/java-regex-validate-phone-numbers
-//private val phonePattern = Regex("^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{4}$")
-//private val phonePattern = Regex("^(\\+\\d{1,3}( )?)?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?\\d{3,4}[- .]?\\d{4}$")
+// regex "^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{4}$"
+// regex "^(\\+\\d{1,3}( )?)?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?\\d{3,4}[- .]?\\d{4}$"
 private val phonePattern = Regex("^\\+?[1-9][0-9]{7,14}$")
-private def validatePhone(email: String|Null): Unit =
-//private def validatePhone(email: String|Null) =
+private def validatePhone(@Tainted email: String|Null): Unit =
   requireNotBlank(email, "Phone number cannot be null/blank.")
   if !phonePattern.matches(email.nn) then throw IllegalArgumentException(s"Invalid phone number [${email.safe}].")
-

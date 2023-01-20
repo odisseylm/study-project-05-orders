@@ -16,8 +16,6 @@ trait BaseQuote // TODO: temp, remove after adding/implementing BaseQuote
 
 //sealed
 trait Order[Product <: AnyRef, Quote <: BaseQuote] {
-  var tempLong666: Long
-  var tempString666: String
   var id: Long|Null
   var user: User
   var side: Side
@@ -112,10 +110,6 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
       order.resultingQuote = resultingQuote
     }
   }
-
-  //override var tempLong666: Long = uninitialized
-  var tempLong666: Long = 666
-  var tempString666: String = uninitialized
 
   var id: Long|Null //= uninitialized
 

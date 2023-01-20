@@ -37,4 +37,3 @@ private case class OrderContextImpl (
     override val dateTimeService: DateTimeService,
     override val market: Market,
   ) extends OrderContext
-

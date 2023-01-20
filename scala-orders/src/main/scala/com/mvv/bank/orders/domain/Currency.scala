@@ -1,27 +1,26 @@
 //noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
-import scala.annotation.meta.{getter, param}
 import scala.language.strictEquality
 //
-import javax.annotation.Untainted
-import javax.annotation.Tainted
+import scala.annotation.unused
+import scala.annotation.meta.{getter, param}
+//
+import javax.annotation.{Tainted, Untainted}
 import javax.annotation.concurrent.Immutable
 import com.mvv.nullables.{isNotNull, isNull}
 import com.mvv.utils.{require, requireNotNull, equalImpl}
 import com.mvv.collections.in
 import com.mvv.log.safe
 //
-import scala.annotation.unused
 
 
 @Untainted @Immutable
 case class Currency private (
-  @(Tainted @param) @(Untainted @getter)
-  value: String) extends Equals derives CanEqual :
+  @(Tainted @param) @(Untainted @field @getter)
+  value: String) derives CanEqual :
   validateCurrency(value)
-  @Untainted
-  override def toString: String = this.value
+  @Untainted override def toString: String = this.value
 
 
 /*
@@ -57,11 +56,12 @@ object Currency :
   val MAX_LENGTH: Int = 3 // ??? probably it can be 4 for crypto ???
   val LENGTH_RANGE: Range = Currency.MIN_LENGTH to Currency.MAX_LENGTH
 
-  def apply(currency: String): Currency = of(currency)
+  // T O D O: optimize to return predefined instances instead of creating new ones
+  def apply(@Tainted currency: String): Currency = new Currency(currency)
 
-  def of (currency: String): Currency = new Currency(currency)
-  // standard java method to get from string. It can help to integrate with other java frameworks.
-  def valueOf (currency: String): Currency = of(currency)
+  // standard java methods to get from string. It can help to integrate with other java frameworks.
+  def of(@Tainted currency: String): Currency = Currency(currency)
+  def valueOf(@Tainted currency: String): Currency = Currency(currency)
 
   // popular ones
   val UAH = new Currency("UAH")
@@ -81,11 +81,9 @@ private val CURRENCY_PAIR_SEPARATOR: Char = '_'
 case class CurrencyPair private (
   base: Currency,
   counter: Currency,
-  ) extends Equals derives CanEqual :
-  @Untainted
-  private val asString = s"$base$CURRENCY_PAIR_SEPARATOR$counter"
-  @Untainted
-  override def toString: String = asString
+  ) derives CanEqual :
+  @Untainted private val asString = s"$base$CURRENCY_PAIR_SEPARATOR$counter"
+  @Untainted override def toString: String = asString
 
 /*
 @Untainted @Immutable
@@ -132,10 +130,11 @@ object CurrencyPair :
   val MAX_LENGTH: Int = Currency.MAX_LENGTH * 2 + 1
 
   def of(base: Currency, counter: Currency): CurrencyPair = new CurrencyPair(base, counter)
-  def of(base: String, counter: String): CurrencyPair = of(Currency.of(base), Currency.of(counter))
-  def of (currencyPair: String): CurrencyPair = parseCurrencyPair(currencyPair)
-  // standard java method to get from string. It can help to integrate with other java frameworks.
-  def valueOf (currencyPair: String): CurrencyPair = parseCurrencyPair(currencyPair)
+  def of(@Tainted base: String, @Tainted counter: String): CurrencyPair = of(Currency(base), Currency(counter))
+
+  // standard java methods to get from string. It can help to integrate with other java frameworks.
+  def of(@Tainted currencyPair: String): CurrencyPair = parseCurrencyPair(currencyPair)
+  def valueOf (@Tainted currencyPair: String): CurrencyPair = parseCurrencyPair(currencyPair)
 
   import com.mvv.bank.orders.domain.Currency.{EUR, UAH, USD}
 
@@ -159,11 +158,11 @@ extension (currencyPair: CurrencyPair)
     containsCurrency (ccy1) && containsCurrency (ccy2)
 
 
-private def validateCurrency(currency: String|Null): Unit =
+private def validateCurrency(@Tainted currency: String|Null): Unit =
   require(isValidCurrency(currency), s"Invalid currency [${currency.safe}]." )
 
 
-private def isValidCurrency(currency: String|Null): Boolean =
+private def isValidCurrency(@Tainted currency: String|Null): Boolean =
   // see https://en.wikipedia.org/wiki/ISO_4217
   // see https://www.investopedia.com/terms/i/isocurrencycode.asp
   isNotNull(currency)
@@ -172,7 +171,7 @@ private def isValidCurrency(currency: String|Null): Boolean =
     && currency.nn.forall { ch => 'A' <= ch && ch <= 'Z' }
 
 
-private def parseCurrencyPair(stringCurrencyPair: String|Null): CurrencyPair = {
+private def parseCurrencyPair(@Tainted stringCurrencyPair: String|Null): CurrencyPair = {
   val str = requireNotNull(stringCurrencyPair, s"Invalid currency pair [${stringCurrencyPair.safe}].")
 
   val minLen = CurrencyPair.MIN_LENGTH
@@ -191,8 +190,8 @@ private def parseCurrencyPair(stringCurrencyPair: String|Null): CurrencyPair = {
   require(curList.length == 2,
     s"Invalid currency pair [${str.safe}] (format like 'USD${separator}EUR' is expected)." )
 
-  try { CurrencyPair.of(Currency.of(curList(0)), Currency.of(curList(1))) }
-  catch { case ex: Exception => throw IllegalArgumentException("Invalid currency pair [${currencyPair.safe}].", ex) }
+  try { CurrencyPair.of(Currency(curList(0)), Currency(curList(1))) }
+  catch { case ex: Exception => throw IllegalArgumentException(s"Invalid currency pair [${str.safe}].", ex) }
 }
 
 

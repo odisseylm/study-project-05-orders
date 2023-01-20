@@ -1,21 +1,15 @@
 //noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
-import javax.annotation.Tainted
-import scala.annotation.targetName
 import scala.language.strictEquality
 //
 import scala.annotation.meta.{field, getter, param}
-import scala.annotation.unused
+import scala.annotation.{targetName, unused}
 import scala.util.matching.Regex
 //
-import java.time.ZoneId
-import java.time.LocalTime
-import java.time.LocalDate
-import java.time.ZonedDateTime
+import java.time.{ZoneId, LocalTime, LocalDate, ZonedDateTime}
 //
-import javax.annotation.Tainted
-import javax.annotation.Untainted
+import javax.annotation.{Tainted, Untainted}
 import javax.annotation.concurrent.Immutable
 //
 import com.mvv.nullables.{isNotNull, isNull}
@@ -28,11 +22,9 @@ import com.mvv.log.safe
 @Untainted @Immutable
 case class MarketSymbol private (
   @(Tainted @param) @(Untainted @field @getter)
-  value: String
-  ) derives CanEqual :
+  value: String ) derives CanEqual :
   validateMarketSymbol(value)
-  @Untainted
-  override def toString: String = value
+  @Untainted override def toString: String = value
 
 /*
 @Untainted @Immutable
@@ -56,9 +48,11 @@ class MarketSymbol private (
 */
 
 object MarketSymbol :
-    def of(marketSymbol: String): MarketSymbol = MarketSymbol(marketSymbol)
-    // standard java method to get from string. It can help to integrate with other java frameworks.
-    def valueOf(marketSymbol: String): MarketSymbol = of(marketSymbol)
+    def apply(@Tainted marketSymbol: String): MarketSymbol = new MarketSymbol(marketSymbol)
+
+    // standard java methods to get from string. It can help to integrate with other java frameworks.
+    def of(@Tainted marketSymbol: String): MarketSymbol = MarketSymbol(marketSymbol)
+    def valueOf(@Tainted marketSymbol: String): MarketSymbol = MarketSymbol(marketSymbol)
 
 
 trait Market :
@@ -91,7 +85,7 @@ private val MARKET_SYMBOL_MAX_LENGTH = 25
 private val marketSymbolPattern = Regex("") // TODO: fix regex
 
 
-private def validateMarketSymbol(marketSymbol: CharSequence|Null): Unit =
+private def validateMarketSymbol(@Tainted marketSymbol: CharSequence|Null): Unit =
   if (marketSymbol == null || marketSymbol.isBlank ||
     (marketSymbol.length > MARKET_SYMBOL_MAX_LENGTH) ||
     !marketSymbolPattern.matches(marketSymbol))

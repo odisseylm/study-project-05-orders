@@ -1,3 +1,4 @@
+//noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
 import javax.annotation.Tainted
@@ -18,8 +19,7 @@ case class UserNaturalKey private (
   // now we will use email but later will change it
   Email(value) // used for validation only
 
-  @Untainted
-  override def toString: String = value
+  @Untainted override def toString: String = value
 
 /*
 @Untainted @Immutable
@@ -54,7 +54,6 @@ given givenCanEqual_UserNaturalKey_UserNaturalKeyNull: CanEqual[UserNaturalKey, 
 object UserNaturalKey :
   def apply(userNaturalKey: String): UserNaturalKey = new UserNaturalKey(userNaturalKey)
   // standard java method to get from string. It can help to integrate with other java frameworks.
-  @unused
   def valueOf(userNaturalKey: String): UserNaturalKey = apply(userNaturalKey)
 
 
@@ -63,10 +62,8 @@ object UserNaturalKey :
 case class User private (
   @(Tainted @param) @(Untainted @field @getter)
   naturalKey: UserNaturalKey) derives CanEqual :
-  @Untainted
-  def value: String = naturalKey.value
-  @Untainted
-  override def toString: String = s"User[$naturalKey]"
+  @Untainted def value: String = naturalKey.value
+  @Untainted override def toString: String = s"User[$naturalKey]"
 
 /*
 // T O D O: think about natural-key
@@ -100,10 +97,9 @@ given givenCanEqual_User_UserNull: CanEqual[User, User|Null] = CanEqual.derived
 
 object User :
   def apply(naturalKey: UserNaturalKey): User = new User(naturalKey)
-  def apply(naturalKey: String): User = new User(UserNaturalKey(naturalKey))
+  def apply(@Tainted naturalKey: String): User = new User(UserNaturalKey(naturalKey))
   // standard java method to get from string. It can help to integrate with other java frameworks.
-  @unused
-  def valueOf(naturalKey: String): User = apply(naturalKey)
+  def valueOf(@Tainted naturalKey: String): User = apply(naturalKey)
 
 
 /*

@@ -1,12 +1,13 @@
+//noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
 import scala.language.strictEquality
-import javax.annotation.Untainted
+//
+import javax.annotation.{Tainted, Untainted}
 import javax.annotation.concurrent.Immutable
 import com.mvv.nullables.ifNull
-import com.mvv.utils.{require, requireNotBlank, equalImpl}
+import com.mvv.utils.{equalImpl, require, requireNotBlank}
 import com.mvv.log.safe
-import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.{substringAfterLast, substringBeforeLast}
 
 
@@ -17,7 +18,7 @@ case class Amount private (
   value: BigDecimal,
   currency: Currency,
   ) derives CanEqual :
-  override def toString: String = s"$value $currency"
+  @Untained override def toString: String = s"$value $currency"
 
 /*
 @Untainted @Immutable
@@ -41,19 +42,18 @@ class Amount private (
 
 object Amount :
   // scala style
-  def apply(value: BigDecimal, currency: Currency): Amount = of(value, currency)
+  def apply(value: BigDecimal, currency: Currency): Amount = new Amount(value, currency)
 
-  def of(value: BigDecimal, currency: Currency): Amount = new Amount(value, currency)
 
-  // TODO: remove or rename, since it should be impl dependent on 'locals'
-  // standard java method to get from string. It can help to integrate with other java frameworks.
-  def valueOf(amount: String): Amount = parseAmount(amount)
+  // standard java methods to get from string. It can help to integrate with other java frameworks.
+  def of(value: BigDecimal, currency: Currency): Amount = Amount(value, currency)
+  def valueOf(@Tainted amount: String): Amount = parseAmount(amount)
 
 
 
 private val MAX_AMOUNT_LENGTH = 1000 + 1 + Currency.MAX_LENGTH
 
-private def parseAmount(amountString: String|Null): Amount = {
+private def parseAmount(@Tainted amountString: String|Null): Amount = {
   val amount: String = requireNotBlank(amountString, "Amount string is null/blank.")
   try {
     require(amount.length <= MAX_AMOUNT_LENGTH, s"Too long amount string [${amount.safe}] (${amount.length}).")
@@ -62,7 +62,7 @@ private def parseAmount(amountString: String|Null): Amount = {
     requireNotBlank(strCurrency, s"Amount should have currency at the end (format like '155.46 USD' is expected).")
 
     val strAmount = substringBeforeLast(amount, " ").nn
-    Amount(BigDecimal(strAmount), Currency.of(strCurrency))
+    Amount(BigDecimal(strAmount), Currency(strCurrency))
   }
   catch { case ex: Exception => throw IllegalArgumentException(s"Error of parsing amount [${amount.safe}].", ex) }
 }
