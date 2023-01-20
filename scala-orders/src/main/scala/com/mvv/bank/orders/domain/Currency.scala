@@ -1,12 +1,13 @@
 package com.mvv.bank.orders.domain
 
 import scala.language.strictEquality
+//
 import javax.annotation.Untainted
 import javax.annotation.concurrent.Immutable
-import com.mvv.utils.{isNotNull, isNull, require, requireNotNull}
+import com.mvv.utils.{isNotNull, isNull, require, requireNotNull, equalImpl}
 import com.mvv.collections.in
 import com.mvv.log.safe
-
+//
 import scala.annotation.unused
 
 
@@ -16,11 +17,14 @@ case class Currency private (value: String) extends Equals derives CanEqual :
   @Untainted
   override def toString: String = this.value
   override def hashCode: Int = this.value.hashCode
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[Currency]
-  override def equals(other: Any): Boolean = other match
-    case that: Currency => (that canEqual this) && this.value == that.value
-    case _ => false
-
+  infix override def canEqual(other: Any): Boolean = other.isInstanceOf[Currency]
+  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
+  //override def equals(other: Any): Boolean = other match
+  //  case that: Currency => that.canEqual(this) && this.value == that.value
+  //  case _ => false
+  override def equals(other: Any): Boolean =
+    // it is inlined and have resulting byte code similar to code with 'match'
+    equalImpl(this, other) { _.value == _.value }
 
 
 //noinspection ScalaUnusedSymbol
@@ -61,9 +65,13 @@ class CurrencyPair private (
 
   override def hashCode: Int = asString.hashCode
   override def canEqual(other: Any): Boolean = other.isInstanceOf[CurrencyPair]
-  override def equals(other: Any): Boolean = other match
-    case that: CurrencyPair => (that canEqual this) && this.asString == that.asString
-    case _ => false
+  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
+  //override def equals(other: Any): Boolean = other match
+  //  case that: CurrencyPair => that.canEqual(this) && this.asString == that.asString
+  //  case _ => false
+  override def equals(other: Any): Boolean =
+    // it is inlined and have resulting byte code similar to code with 'match'
+    equalImpl(this, other) { (v1, v2) => v1.base == v2.base && v1.counter == v2.counter }
 
   def copy(
     base: Currency = this.base,

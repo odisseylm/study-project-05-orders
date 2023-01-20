@@ -1,15 +1,17 @@
 package com.mvv.bank.orders.domain
 
 import scala.language.strictEquality
+//
+import scala.annotation.unused
+import scala.util.matching.Regex
+//
 import javax.annotation.Untainted
 import javax.annotation.concurrent.Immutable
-
-import com.mvv.utils.{isNotNull, isNull, require, requireNotBlank, requireNotNull}
+//
+import com.mvv.utils.{isNotNull, isNull, require, requireNotBlank, requireNotNull, equalImpl}
 import com.mvv.collections.in
 import com.mvv.log.safe
 
-import scala.util.matching.Regex
-import scala.annotation.unused
 
 @Untainted @Immutable
 class Email private (/*@param:Tainted @field:Untainted*/ val value: String)
@@ -21,19 +23,21 @@ class Email private (/*@param:Tainted @field:Untainted*/ val value: String)
   override def toString: String = this.value
   override def hashCode: Int = this.value.hashCode
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Email]
-  override def equals(other: Any): Boolean = other match
-    case that: Email => (that canEqual this) && this.value == that.value
-    case _ => false
+  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
+  //override def equals(other: Any): Boolean = other match
+  //  case that: Email => that.canEqual(this) && this.value == that.value
+  //  case _ => false
+  override def equals(other: Any): Boolean =
+    // it is inlined and have resulting byte code similar to code with 'match'
+    equalImpl(this, other) { _.value == _.value }
 
 
 object Email :
   def apply(email: String): Email = of(email)
 
   // Java style
-  //@JvmStatic
   def of(email: String): Email = new Email(email)
   // standard java method to get from string. It can help to integrate with other java frameworks.
-  //@JvmStatic
   def valueOf(email: String): Email = of(email)
 
 

@@ -1,18 +1,15 @@
 package com.mvv.bank.orders.domain
 
-import org.slf4j.Logger
-
-import java.time.ZonedDateTime
 import scala.reflect.ClassTag
+import scala.compiletime.uninitialized
+//
+import java.time.ZonedDateTime
+//
 import com.mvv.utils.newInstance
+import com.mvv.log.{Logger, LoggerMixin}
 import com.mvv.scala.props.KProperty
 import com.mvv.scala.props.LateInitProperty
 
-import scala.compiletime.uninitialized
-
-
-
-private val log: Logger = ??? // LoggerFactory.getLogger(classOf[Order[AnyRef,AnyRef]])
 
 trait BaseQuote // TODO: temp, remove after adding/implementing BaseQuote
 
@@ -57,7 +54,7 @@ trait Order[Product <: AnyRef, Quote <: BaseQuote] {
 trait OrderNaturalKey
   // T O D O: implement
 
-type BaseOrder = Order[_,_]
+type BaseOrder = Order[?,?]
 
 //inline def createOrder[T: ClassTag[_ <: Order333]](init: () => Unit): T =
 inline def createOrder[T <: BaseOrder](init: BaseOrder => Unit)(implicit ct: ClassTag[T]): T =
@@ -70,7 +67,7 @@ inline def createOrder[T <: BaseOrder](init: BaseOrder => Unit)(implicit ct: Cla
 
 
 //sealed
-abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Order[Product, Quote] {
+abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Order[Product, Quote] with LoggerMixin {
 
   // This class mainly is introduced to avoid 'duplicate code' warning
   //@Suppress("ClassName") // It is named from '_' (as internal) because I cannot do it protected

@@ -6,6 +6,8 @@ import javax.annotation.concurrent.Immutable
 import scala.annotation.meta.{field, getter, param}
 import scala.annotation.unused
 
+import com.mvv.utils.equalImpl
+
 
 // it is not clear now what it should be??? phone and email can be changed? or cannot?
 @Untainted @Immutable
@@ -20,9 +22,13 @@ class UserNaturalKey private (
   override def toString: String = value
   override def hashCode: Int = value.hashCode
   override def canEqual(other: Any): Boolean = other.isInstanceOf[UserNaturalKey]
-  override def equals(other: Any): Boolean = other match
-    case that: UserNaturalKey => (that canEqual this) && this.value == that.value
-    case _ => false
+  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
+  //override def equals(other: Any): Boolean = other match
+  //  case that: UserNaturalKey => that.canEqual(this) && this.value == that.value
+  //  case _ => false
+  override def equals(other: Any): Boolean =
+    // it is inlined and have resulting byte code similar to code with 'match'
+    equalImpl(this, other) { _.value == _.value }
 
 
 object UserNaturalKey :
@@ -43,9 +49,13 @@ class User private (
   override def toString: String = s"User[$naturalKey]"
   override def hashCode(): Int = value.hashCode
   override def canEqual(other: Any): Boolean = other.isInstanceOf[User]
-  override def equals(other: Any): Boolean = other match
-    case that: User => (that canEqual this) && this.value == that.value
-    case _ => false
+  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
+  //override def equals(other: Any): Boolean = other match
+  //  case that: User => that.canEqual(this) && this.value == that.value
+  //  case _ => false
+  override def equals(other: Any): Boolean =
+    // it is inlined and have resulting byte code similar to code with 'match'
+    equalImpl(this, other) { _.value == _.value }
 
 object User :
   def apply(naturalKey: UserNaturalKey): User = new User(naturalKey)

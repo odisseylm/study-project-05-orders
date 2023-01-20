@@ -16,8 +16,8 @@ trait StockStopOrder extends StockOrder
 
 
 enum OrderType (
-  val cashDomainType: Class[_ <: AbstractCashOrder],
-  val stockDomainType: Class[_ <: StockOrder],
+  val cashDomainType: Class[? <: AbstractCashOrder],
+  val stockDomainType: Class[? <: StockOrder],
   ) {
   case MARKET_ORDER extends OrderType(classOf[CashMarketOrder], classOf[StockMarketOrder])
   case LIMIT_ORDER extends OrderType(classOf[CashLimitOrder], classOf[StockLimitOrder])

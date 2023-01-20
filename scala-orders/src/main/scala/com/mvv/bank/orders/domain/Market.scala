@@ -1,19 +1,21 @@
 package com.mvv.bank.orders.domain
 
 import scala.language.strictEquality
-import javax.annotation.Untainted
-import javax.annotation.concurrent.Immutable
-import com.mvv.utils.{isNotNull, isNull, require, requireNotNull, isBlank, isNullOrBlank}
-import com.mvv.collections.in
-import com.mvv.log.safe
-
+//
+import scala.annotation.unused
+import scala.util.matching.Regex
+//
 import java.time.ZoneId
 import java.time.LocalTime
 import java.time.LocalDate
 import java.time.ZonedDateTime
-import scala.util.matching.Regex
-
-import scala.annotation.unused
+//
+import javax.annotation.Untainted
+import javax.annotation.concurrent.Immutable
+//
+import com.mvv.utils.{isNotNull, isNull, require, requireNotNull, isBlank, isNullOrBlank, equalImpl}
+import com.mvv.collections.in
+import com.mvv.log.safe
 
 
 @Untainted @Immutable
@@ -27,9 +29,13 @@ class MarketSymbol private (
   override def toString: String = value
   override def hashCode: Int = value.hashCode
   override def canEqual(other: Any): Boolean = other.isInstanceOf[MarketSymbol]
-  override def equals(other: Any): Boolean = other match
-    case that: MarketSymbol => (that canEqual this) && this.value == that.value
-    case _ => false
+  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
+  //override def equals(other: Any): Boolean = other match
+  //  case that: MarketSymbol => that.canEqual(this) && this.value == that.value
+  //  case _ => false
+  override def equals(other: Any): Boolean =
+  // it is inlined and have resulting byte code similar to code with 'match'
+    equalImpl(this, other) { _.value == _.value }
 
 
 object MarketSymbol :

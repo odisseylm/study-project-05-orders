@@ -20,7 +20,7 @@ class Currency private (val value: String) /* extends AnyVal */ /* extends CanEq
   infix def canEqual(other: Any): Boolean = /*(other != null) &&*/ other.isInstanceOf[Currency]
   // for Scala 2.x
   //override def equals(other: Any): Boolean = other /*.asMatchable*/ match {
-  //  case that: Currency => (that canEqual this) && this.value == that.value
+  //  case that: Currency => that.canEqual(this) && this.value == that.value
   //  case _ => false
   //}
   // for Scala 3.x

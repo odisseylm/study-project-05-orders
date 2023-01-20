@@ -1,10 +1,9 @@
 package com.mvv.scala.props
 
-import com.mvv.log.safe
-import com.mvv.utils.ifNull
-import com.mvv.utils.isNullOrEmpty
-
 import scala.annotation.nowarn
+//
+import com.mvv.log.safe
+import com.mvv.utils.{ifNull, isNullOrEmpty, equalImpl}
 
 
 class UninitializedPropertyAccessException (msg: String) extends RuntimeException(msg)
@@ -20,10 +19,10 @@ private case class SimplePropertyImpl[T] (name: String) extends KProperty[T]
 
 // from Kotlin
 trait ReadOnlyProperty[/*in*/ T, /*out*/ V] :
-  def getValue(thisRef: T, property: KProperty[_]): V
+  def getValue(thisRef: T, property: KProperty[?]): V
 
 trait ReadWriteProperty[/*in*/ T, V] extends ReadOnlyProperty[T, V] :
-  def setValue(thisRef: T, property: KProperty[_], value: V): Unit
+  def setValue(thisRef: T, property: KProperty[?], value: V): Unit
 
 
 
@@ -69,18 +68,22 @@ class LateInitProperty[T, Owner] (
 
 
     // T O D O: add logic to verify value on null only if T is nullable. Is it needed???
-    override /*operator*/ def getValue(thisRef: Owner, property: KProperty[_]): T =
+    override /*operator*/ def getValue(thisRef: Owner, property: KProperty[?]): T =
         val finalValueRef = asNullableValue
         if finalValueRef != null then finalValueRef.nn
         else throw UninitializedPropertyAccessException(s"Property [$propName] is not initialized yet.")
 
-    override /*operator*/ def setValue(thisRef: Owner, property: KProperty[_], value: T): Unit = set(value)
+    override /*operator*/ def setValue(thisRef: Owner, property: KProperty[?], value: T): Unit = set(value)
 
     override def toString: String = "$internalValue"
     override def canEqual(other: Any): Boolean = (other : @unchecked).isInstanceOf[LateInitProperty[T, Owner]]
-    override def equals(other: Any): Boolean = (other : @unchecked) match
-        case that: LateInitProperty[T,Owner] => (that canEqual this) && that.asNullableValue == this.asNullableValue
-        case _ => false
+    // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
+    //override def equals(other: Any): Boolean = (other : @unchecked) match
+    //    case that: LateInitProperty[T,Owner] => that.canEqual(this) && that.asNullableValue == this.asNullableValue
+    //    case _ => false
+    override def equals(other: Any): Boolean =
+      // it is inlined and have resulting byte code similar to code with 'match'
+      equalImpl(this, other) { _.asNullableValue == _.asNullableValue }
 
     //noinspection HashCodeUsesVar // It is not designed to be map key
     override def hashCode: Int =

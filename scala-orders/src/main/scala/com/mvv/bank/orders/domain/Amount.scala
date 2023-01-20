@@ -3,7 +3,7 @@ package com.mvv.bank.orders.domain
 import scala.language.strictEquality
 import javax.annotation.Untainted
 import javax.annotation.concurrent.Immutable
-import com.mvv.utils.{!!, ifNull, require, requireNotBlank}
+import com.mvv.utils.{!!, ifNull, require, requireNotBlank, equalImpl}
 import com.mvv.log.safe
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.{substringAfterLast, substringBeforeLast}
@@ -17,9 +17,13 @@ case class Amount private (
   override def toString: String = s"$value $currency"
   override def hashCode: Int = 31 * value.hashCode + currency.hashCode
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Amount]
-  override def equals(other: Any): Boolean = other match
-    case that: Amount => (that canEqual this) && this.currency == that.currency && (this.value.compare(that.value) == 0)
-    case _ => false
+  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
+  //override def equals(other: Any): Boolean = other match
+  //  case that: Amount => that.canEqual(this) && this.currency == that.currency && (this.value.compare(that.value) == 0)
+  //  case _ => false
+  override def equals(other: Any): Boolean =
+    // it is inlined and have resulting byte code similar to code with 'match'
+    equalImpl(this, other) { (v1, v2) => v1.currency == v2.currency && v1.value == v2.value }
 
 
 object Amount :
