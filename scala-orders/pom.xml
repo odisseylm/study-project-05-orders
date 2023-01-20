@@ -18,14 +18,19 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <encoding>UTF-8</encoding>
-    <!--<scala.version>2.13.10</scala.version>-->
-    <scala.version>3.2.1</scala.version>
-    <!--<scala.compat.version>2.12</scala.compat.version>-->
+
+    <!--<scala.version>3.2.2</scala.version>-->
+    <!--<scala-sbt.version>1.8.0</scala-sbt.version>-->
+    <scala.version>3.3.0-RC1-bin-20230116-d99d9bf-NIGHTLY</scala.version>
+    <scala-sbt.version>2.0.0-alpha7</scala-sbt.version>
+
     <scala.compat.version>3</scala.compat.version>
     <spec2.version>4.17.0</spec2.version>
 
     <scala.scalatest-version>3.2.15</scala.scalatest-version>
-    <scala.spec2-version>5.2.0</scala.spec2-version>
+    <!--<scala.scalatest-version>3.3.0-SNAP3</scala.scalatest-version>-->
+    <!--<spec2.version>4.17.0</spec2.version>-->
+    <scala-spec2.version>5.2.0</scala-spec2.version>
 
     <mapstruct.version>1.5.3.Final</mapstruct.version>
 
@@ -46,7 +51,12 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala3-library_3</artifactId>
-      <version>3.2.1</version>
+      <version>${scala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang.modules</groupId>
+      <artifactId>scala-xml_3</artifactId>
+      <version>2.1.0</version>
     </dependency>
     <!--<dependency>-->
     <!--  <groupId>org.portable-scala</groupId>-->
@@ -78,12 +88,12 @@
     <!--<dependency>-->
     <!--  <groupId>org.scala-lang</groupId>-->
     <!--  <artifactId>scaladoc_3</artifactId>-->
-    <!--  <version>3.2.2</version>-->
+    <!--  <version>${scala.version}</version>-->
     <!--</dependency>-->
     <!--<dependency>-->
     <!--  <groupId>org.scala-lang</groupId>-->
     <!--  <artifactId>scala3-compiler_3</artifactId>-->
-    <!--  <version>3.2.2</version>-->
+    <!--  <version>${scala.version}</version>-->
     <!--</dependency>-->
     <!--<dependency>-->
     <!--  <groupId>org.scala-lang</groupId>-->
@@ -93,21 +103,20 @@
     <!--<dependency>-->
     <!--  <groupId>org.scala-lang</groupId>-->
     <!--  <artifactId>scala3-tasty-inspector_3</artifactId>-->
-    <!--  <version>3.2.2</version>-->
+    <!--  <version>${scala.version}</version>-->
     <!--</dependency>-->
     <!--<dependency>-->
     <!--  <groupId>org.scala-lang</groupId>-->
     <!--  <artifactId>scala3-interfaces</artifactId>-->
-    <!--  <version>3.2.2</version>-->
+    <!--  <version>${scala.version}</version>-->
     <!--</dependency>-->
     <!--<dependency>-->
     <!--  With Vulnerabilities from dependencies from jackson-databind  -->
     <!--  Use com.fasterxml.jackson.core:jackson-databind:+2.14.1       -->
     <!--  <groupId>org.scala-lang</groupId>-->
     <!--  <artifactId>scala3-language-server_3</artifactId>-->
-    <!--  <version>3.2.2</version>-->
+    <!--  <version>${scala.version}</version>-->
     <!--</dependency>-->
-
 
     <!--<dependency>-->
     <!--  <groupId>org.scala-lang</groupId>-->
@@ -258,13 +267,13 @@
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-core_3</artifactId>
-      <version>${scala.spec2-version}</version>
+      <version>${scala-spec2.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-junit_3</artifactId>
-      <version>${scala.spec2-version}</version>
+      <version>${scala-spec2.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -272,58 +281,58 @@
     <!--<dependency>-->
     <!--  <groupId>org.specs2</groupId>-->
     <!--  <artifactId>specs2-tests_3</artifactId>-->
-    <!--  <version>${scala.spec2-version}</version>-->
+    <!--  <version>${scala-spec2.version}</version>-->
     <!--  <scope>test</scope>-->
     <!--</dependency>-->
     <!--<dependency>-->
     <!--  <groupId>org.specs2</groupId>-->
     <!--  <artifactId>specs2-guide_3</artifactId>-->
-    <!--  <version>${scala.spec2-version}</version>-->
+    <!--  <version>${scala-spec2.version}</version>-->
     <!--  <scope>test</scope>-->
     <!--</dependency>-->
     <!--<dependency>-->
     <!--  <groupId>org.specs2</groupId>-->
     <!--  <artifactId>specs2-examples_3</artifactId>-->
-    <!--  <version>${scala.spec2-version}</version>-->
+    <!--  <version>${scala-spec2.version}</version>-->
     <!--  <scope>test</scope>-->
     <!--</dependency>-->
 
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-scalacheck_3</artifactId>
-      <version>${scala.spec2-version}</version>
+      <version>${scala-spec2.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-matcher_3</artifactId>
-      <version>${scala.spec2-version}</version>
+      <version>${scala-spec2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-matcher-extra_3</artifactId>
-      <version>${scala.spec2-version}</version>
+      <version>${scala-spec2.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-html_3</artifactId>
-      <version>${scala.spec2-version}</version>
+      <version>${scala-spec2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-xml_3</artifactId>
-      <version>${scala.spec2-version}</version>
+      <version>${scala-spec2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-markdown_3</artifactId>
-      <version>${scala.spec2-version}</version>
+      <version>${scala-spec2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.specs2</groupId>
       <artifactId>specs2-fp_3</artifactId>
-      <version>${scala.spec2-version}</version>
+      <version>${scala-spec2.version}</version>
     </dependency>
 
     <!-- Seems for previous specs2 version -->
@@ -444,6 +453,16 @@
               <args>
                 <arg>-Yexplicit-nulls</arg>
                 <arg>-Ysafe-init</arg>
+                <arg>-source</arg><arg>future</arg>
+                <arg>-feature</arg>
+                <arg>-deprecation</arg>
+
+                <!-- Seems ignored/unsupported :-( -->
+                <!--<arg>-Yjava-null</arg>-->
+                <!--<arg>-Yflow-typing</arg>-->
+                <!--<arg>-Yjava-interop-checker-framework</arg>-->
+                <!--<arg>-Yjava-interop-optimistic</arg>-->
+
                 <!--<arg>-dependencyfile</arg>-->
                 <!--<arg>${project.build.directory}/.scala_dependencies</arg>-->
               </args>
@@ -465,6 +484,63 @@
           </execution>
           -->
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala3-compiler_3</artifactId>
+            <version>${scala.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.scala-sbt</groupId>
+            <artifactId>compiler-interface</artifactId>
+            <version>${scala-sbt.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.scala-sbt</groupId>
+            <artifactId>zinc_3</artifactId>
+            <version>${scala-sbt.version}</version>
+          </dependency>
+          <!-- Maven does not allow to exclude dependency, for that reason we use our non-existent version. -->
+          <dependency>
+            <groupId>org.scala-sbt</groupId>
+            <artifactId>zinc_2.13</artifactId>
+            <version>666</version>
+          </dependency>
+
+          <!--
+          <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala3-compiler_3</artifactId>
+            <version>3.3.0-RC1-bin-20230116-d99d9bf-NIGHTLY</version>
+          </dependency>
+
+          <dependency>
+            <groupId>org.scala-sbt</groupId>
+            <artifactId>zinc_3</artifactId>
+            <version>${scala-sbt.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.scala-sbt</groupId>
+            <artifactId>zinc-compile_3</artifactId>
+            <version>${scala-sbt.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.scala-sbt</groupId>
+            <artifactId>zinc-classpath_3</artifactId>
+            <version>${scala-sbt.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.scala-sbt</groupId>
+            <artifactId>collections_3</artifactId>
+            <version>2.0.0-alpha5</version>
+          </dependency>
+          <dependency>
+            <groupId>org.scala-sbt</groupId>
+            <artifactId>zinc-persist-core-assembly</artifactId>
+            <version>${scala-sbt.version}</version>
+          </dependency>
+          -->
+        </dependencies>
       </plugin>
 
       <plugin>
