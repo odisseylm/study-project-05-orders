@@ -18,7 +18,7 @@ class AmountTest {
 
     assertThat(Amount.of(bd("12345.678"), Currency.USD))
       .isEqualTo(Amount(bd("12345.678"), Currency("USD")))
-    assertThat(Amount.valueOf(bd("12345.678"), Currency.USD))
+    assertThat(Amount.valueOf("12345.678 USD"))
       .isEqualTo(Amount(bd("12345.678"), Currency("USD")))
 
     assertThat(Amount(bd("12345.678"), Currency.USD))

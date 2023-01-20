@@ -18,7 +18,7 @@ case class Amount private (
   value: BigDecimal,
   currency: Currency,
   ) derives CanEqual :
-  @Untained override def toString: String = s"$value $currency"
+  @Untainted override def toString: String = s"$value $currency"
 
 /*
 @Untainted @Immutable

@@ -4,7 +4,7 @@ package com.mvv.bank.orders.domain
 import scala.language.strictEquality
 //
 import scala.annotation.unused
-import scala.annotation.meta.{getter, param}
+import scala.annotation.meta.{field, getter, param}
 //
 import javax.annotation.{Tainted, Untainted}
 import javax.annotation.concurrent.Immutable
@@ -129,8 +129,13 @@ object CurrencyPair :
   val MIN_LENGTH: Int = Currency.MIN_LENGTH * 2 + 1
   val MAX_LENGTH: Int = Currency.MAX_LENGTH * 2 + 1
 
-  def of(base: Currency, counter: Currency): CurrencyPair = new CurrencyPair(base, counter)
-  def of(@Tainted base: String, @Tainted counter: String): CurrencyPair = of(Currency(base), Currency(counter))
+  // T O D O: optimize to return predefined instances instead of creating new ones
+  def apply(base: Currency, counter: Currency): CurrencyPair = new CurrencyPair(base, counter)
+  def apply(@Tainted base: String, @Tainted counter: String): CurrencyPair = CurrencyPair(Currency(base), Currency(counter))
+
+  // to use from java (for example from MapStruct)
+  def of(base: Currency, counter: Currency): CurrencyPair = CurrencyPair(base, counter)
+  def of(@Tainted base: String, @Tainted counter: String): CurrencyPair = CurrencyPair(Currency(base), Currency(counter))
 
   // standard java methods to get from string. It can help to integrate with other java frameworks.
   def of(@Tainted currencyPair: String): CurrencyPair = parseCurrencyPair(currencyPair)

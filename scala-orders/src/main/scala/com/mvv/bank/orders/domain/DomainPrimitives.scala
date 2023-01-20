@@ -52,7 +52,7 @@ given givenCanEqual_Email_EmailNull: CanEqual[Email, Email|Null] = CanEqual.deri
 
 
 object Email :
-  def apply(@Tainted email: String): Email = new Emai(email)
+  def apply(@Tainted email: String): Email = new Email(email)
 
   // standard java methods to get from string. It can help to integrate with other java frameworks.
   def of(@Tainted email: String): Email = Email(email)
