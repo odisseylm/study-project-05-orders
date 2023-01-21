@@ -1,4 +1,4 @@
-package com.mvv.scala.temp.tests.`macro`
+package com.mvv.scala.temp.tests.macros
 
 
 /*
@@ -30,8 +30,6 @@ def inspectCode(x: Expr[Any])(using Quotes): Expr[Any] =
   x
 
 
-
-
 //inline def logged[T](inline x: T): T = ${ loggedCode('x)  }
 //def loggedCode[T](x: Expr[T])(using Type[T], Quotes): Expr[T] = {  }
 
@@ -45,14 +43,5 @@ def testCode(ignore: Expr[Boolean], computation: Expr[Unit])(using Quotes) =
   else Expr.block(List(computation), Expr(true))
 
 
-//def newCode(ignore: Expr[String], computation: Expr[Unit])(using Quotes): scala.quoted.Expr[T] =
-//def newCode234()(using Quotes): scala.quoted.Expr[String] =
-//  //Exprs.asExprOf
-//  //Expr.asExprOf[String]("val v345 = 1")
-//  Expr.summon[String]("val v345 = 1")
-
-//val msg = Expr("Hello")
-//val printHello = '{ print($msg) }
-//println(printHello.show) // print("Hello")
 
 

@@ -1,5 +1,5 @@
 //noinspection TypeAnnotation
-package com.mvv.scala.temp.tests.`macro`
+package com.mvv.scala.temp.tests.macros
 
 import scala.deriving.*
 import scala.quoted.*
