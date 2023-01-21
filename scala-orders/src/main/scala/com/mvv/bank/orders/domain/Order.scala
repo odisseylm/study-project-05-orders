@@ -1,6 +1,8 @@
 //noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
+import scala.language.strictEquality
+//
 import scala.reflect.ClassTag
 import scala.compiletime.uninitialized
 //

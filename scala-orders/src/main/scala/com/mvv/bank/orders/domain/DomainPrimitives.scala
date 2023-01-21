@@ -10,7 +10,7 @@ import scala.util.matching.Regex
 import javax.annotation.{Tainted, Untainted}
 import javax.annotation.concurrent.Immutable
 //
-import com.mvv.nullables.{isNotNull, isNull}
+import com.mvv.nullables.{isNotNull, isNull, NullableCanEqualGivens}
 import com.mvv.utils.{require, requireNotBlank, requireNotNull, equalImpl}
 import com.mvv.collections.in
 import com.mvv.log.safe
@@ -43,15 +43,8 @@ class Email private (@(Tainted @param) @(Untainted @field @getter) val value: St
     equalImpl(this, other) { _.value == _.value }
 */
 
-given givenCanEqual_Email_Null: CanEqual[Email, Null] = CanEqual.derived
-given givenCanEqual_EmailNull_Null: CanEqual[Email|Null, Null] = CanEqual.derived
-given givenCanEqual_EmailNull_Email: CanEqual[Email|Null, Email] = CanEqual.derived
-given givenCanEqual_Null_Email: CanEqual[Null, Email] = CanEqual.derived
-given givenCanEqual_Null_EmailNull: CanEqual[Null, Email|Null] = CanEqual.derived
-given givenCanEqual_Email_EmailNull: CanEqual[Email, Email|Null] = CanEqual.derived
 
-
-object Email :
+object Email extends NullableCanEqualGivens[Email] :
   def apply(@Tainted email: String): Email = new Email(email)
 
   // standard java methods to get from string. It can help to integrate with other java frameworks.

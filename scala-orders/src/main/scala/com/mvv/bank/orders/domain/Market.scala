@@ -8,11 +8,10 @@ import scala.annotation.{targetName, unused}
 import scala.util.matching.Regex
 //
 import java.time.{ZoneId, LocalTime, LocalDate, ZonedDateTime}
-//
 import javax.annotation.{Tainted, Untainted}
 import javax.annotation.concurrent.Immutable
 //
-import com.mvv.nullables.{isNotNull, isNull}
+import com.mvv.nullables.{isNotNull, isNull, NullableCanEqualGivens}
 import com.mvv.utils.{require, requireNotNull, isBlank, isNullOrBlank, equalImpl}
 import com.mvv.collections.in
 import com.mvv.nullables.given
@@ -47,7 +46,7 @@ class MarketSymbol private (
     equalImpl(this, other) { _.value == _.value }
 */
 
-object MarketSymbol :
+object MarketSymbol extends NullableCanEqualGivens[MarketSymbol] :
     def apply(@Tainted marketSymbol: String): MarketSymbol = new MarketSymbol(marketSymbol)
 
     // standard java methods to get from string. It can help to integrate with other java frameworks.

@@ -1,11 +1,17 @@
+//noinspection ScalaFileName
 package com.mvv.nullables
 
 
-given givenCanEqual_CharSequence_Null: CanEqual[CharSequence, Null] = CanEqual.derived
-given givenCanEqual_CharSequenceNull_Null: CanEqual[CharSequence|Null, Null] = CanEqual.derived
-given givenCanEqual_CharSequenceNull_CharSequence: CanEqual[CharSequence|Null, CharSequence] = CanEqual.derived
-given givenCanEqual_Null_CharSequence: CanEqual[Null, CharSequence] = CanEqual.derived
-given givenCanEqual_Null_CharSequenceNull: CanEqual[Null, CharSequence|Null] = CanEqual.derived
-given givenCanEqual_CharSequence_CharSequenceNull: CanEqual[CharSequence, CharSequence|Null] = CanEqual.derived
+trait NullableCanEqualGivens[T] :
+  given givenCanEqual_Type_Type: CanEqual[T, T] = CanEqual.derived
+  given givenCanEqual_Type_Null: CanEqual[T, Null] = CanEqual.derived
+  given givenCanEqual_TypeNull_Null: CanEqual[T|Null, Null] = CanEqual.derived
+  given givenCanEqual_TypeNull_Type: CanEqual[T|Null, T] = CanEqual.derived
+  given givenCanEqual_Null_Type: CanEqual[Null, T] = CanEqual.derived
+  given givenCanEqual_Null_TypeNull: CanEqual[Null, T|Null] = CanEqual.derived
+  given givenCanEqual_Type_TypeNull: CanEqual[T, T|Null] = CanEqual.derived
+  given givenCanEqual_TypeNull_TypeNull: CanEqual[T|Null, T|Null] = CanEqual.derived
+
+
 
 

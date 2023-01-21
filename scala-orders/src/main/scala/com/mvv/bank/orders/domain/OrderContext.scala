@@ -1,5 +1,7 @@
 package com.mvv.bank.orders.domain
 
+import scala.language.strictEquality
+//
 import java.time.{Clock, Instant, ZoneId, ZonedDateTime}
 
 

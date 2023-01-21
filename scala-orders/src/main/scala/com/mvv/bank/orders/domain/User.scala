@@ -1,12 +1,14 @@
 //noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
-import javax.annotation.Tainted
-import javax.annotation.Untainted
+import scala.language.strictEquality
+//
+import javax.annotation.{Tainted, Untainted}
 import javax.annotation.concurrent.Immutable
 import scala.annotation.meta.{field, getter, param}
 import scala.annotation.unused
-
+//
+import com.mvv.nullables.NullableCanEqualGivens
 import com.mvv.utils.equalImpl
 
 
@@ -43,15 +45,8 @@ class UserNaturalKey private (
     equalImpl(this, other) { _.value == _.value }
 */
 
-given givenCanEqual_UserNaturalKey_Null: CanEqual[UserNaturalKey, Null] = CanEqual.derived
-given givenCanEqual_UserNaturalKeyNull_Null: CanEqual[UserNaturalKey|Null, Null] = CanEqual.derived
-given givenCanEqual_UserNaturalKeyNull_UserNaturalKey: CanEqual[UserNaturalKey|Null, UserNaturalKey] = CanEqual.derived
-given givenCanEqual_Null_UserNaturalKey: CanEqual[Null, UserNaturalKey] = CanEqual.derived
-given givenCanEqual_Null_UserNaturalKeyNull: CanEqual[Null, UserNaturalKey|Null] = CanEqual.derived
-given givenCanEqual_UserNaturalKey_UserNaturalKeyNull: CanEqual[UserNaturalKey, UserNaturalKey|Null] = CanEqual.derived
 
-
-object UserNaturalKey :
+object UserNaturalKey extends NullableCanEqualGivens[UserNaturalKey] :
   def apply(userNaturalKey: String): UserNaturalKey = new UserNaturalKey(userNaturalKey)
   // standard java method to get from string. It can help to integrate with other java frameworks.
   def valueOf(userNaturalKey: String): UserNaturalKey = apply(userNaturalKey)
@@ -87,15 +82,7 @@ class User private (
 */
 
 
-given givenCanEqual_User_Null: CanEqual[User, Null] = CanEqual.derived
-given givenCanEqual_UserNull_Null: CanEqual[User|Null, Null] = CanEqual.derived
-given givenCanEqual_UserNull_User: CanEqual[User|Null, User] = CanEqual.derived
-given givenCanEqual_Null_User: CanEqual[Null, User] = CanEqual.derived
-given givenCanEqual_Null_UserNull: CanEqual[Null, User|Null] = CanEqual.derived
-given givenCanEqual_User_UserNull: CanEqual[User, User|Null] = CanEqual.derived
-
-
-object User :
+object User extends NullableCanEqualGivens[User] :
   def apply(naturalKey: UserNaturalKey): User = new User(naturalKey)
   def apply(@Tainted naturalKey: String): User = new User(UserNaturalKey(naturalKey))
   // standard java method to get from string. It can help to integrate with other java frameworks.

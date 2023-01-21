@@ -11,7 +11,7 @@ trait NullableCanEqualGivens[Type] :
   given givenCanEqual_TypeNull_Type: CanEqual[Type|Null, Type] = CanEqual.derived
   given givenCanEqual_Null_Type: CanEqual[Null, Type] = CanEqual.derived
   given givenCanEqual_Null_TypeNull: CanEqual[Null, Type|Null] = CanEqual.derived
-  given givenCanEqual_Type1_Type1Null: CanEqual[Type, Type|Null] = CanEqual.derived
+  given givenCanEqual_Type_TypeNull: CanEqual[Type, Type|Null] = CanEqual.derived
 
 
 class Type1 derives CanEqual

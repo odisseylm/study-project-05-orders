@@ -5,10 +5,12 @@ import scala.language.strictEquality
 //
 import javax.annotation.{Tainted, Untainted}
 import javax.annotation.concurrent.Immutable
-import com.mvv.nullables.ifNull
+import org.apache.commons.lang3.StringUtils.{substringAfterLast, substringBeforeLast}
+//
+import com.mvv.nullables.{ifNull, NullableCanEqualGivens}
 import com.mvv.utils.{equalImpl, require, requireNotBlank}
 import com.mvv.log.safe
-import org.apache.commons.lang3.StringUtils.{substringAfterLast, substringBeforeLast}
+
 
 
 // scala fixes BigDecimal and does not use trailing zero during equals/hashCode
@@ -40,7 +42,7 @@ class Amount private (
     equalImpl(this, other) { (v1, v2) => v1.currency == v2.currency && v1.value == v2.value }
 */
 
-object Amount :
+object Amount extends NullableCanEqualGivens[Amount] :
   // scala style
   def apply(value: BigDecimal, currency: Currency): Amount = new Amount(value, currency)
 

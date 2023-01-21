@@ -1,6 +1,10 @@
 package com.mvv.bank.orders.domain
 
+import scala.language.strictEquality
+//
 import scala.reflect.ClassTag
+//
+import com.mvv.nullables.NullableCanEqualGivens
 
 
 // TODO: temp, remove after adding/implementing these classes
@@ -23,6 +27,7 @@ enum OrderType (
   case LIMIT_ORDER extends OrderType(classOf[CashLimitOrder], classOf[StockLimitOrder])
   case STOP_ORDER extends OrderType(classOf[CashStopOrder], classOf[StockStopOrder])
 }
+object OrderType extends NullableCanEqualGivens[OrderType]
 
 
 enum BuySellType extends Enum[BuySellType] {
@@ -33,11 +38,13 @@ enum BuySellType extends Enum[BuySellType] {
       BUY
     , SELL
 }
+object BuySellType extends NullableCanEqualGivens[BuySellType]
 
 
 enum DailyExecutionType (val humanName: String) :
   case DAY_ONLY extends DailyExecutionType("Day Only")
   case GTC      extends DailyExecutionType("Good 'til Canceled")
+object DailyExecutionType extends NullableCanEqualGivens[DailyExecutionType]
 
 
 
@@ -65,7 +72,7 @@ enum Side :
      * advisory firms, and corporations.
      */
     , BANK_MARKET // bank or market
-
+object Side extends NullableCanEqualGivens[Side]
 
 
 enum OrderState :
@@ -76,6 +83,7 @@ enum OrderState :
     , EXECUTED
     , EXPIRED
     , CANCELED
+object OrderState extends NullableCanEqualGivens[OrderState]
 
 
 
@@ -89,13 +97,10 @@ val OrderState.asVerb get() =
         OrderState.CANCELED -> "cancel"
         OrderState.EXPIRED  -> "expire"
     }
-*/
 
-/*
+
 enum class OrderCancelReason {
     EXPIRED,
     CANCELED_BY_USER,
 }
 */
-
-

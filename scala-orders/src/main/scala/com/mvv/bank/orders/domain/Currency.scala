@@ -8,11 +8,11 @@ import scala.annotation.meta.{field, getter, param}
 //
 import javax.annotation.{Tainted, Untainted}
 import javax.annotation.concurrent.Immutable
-import com.mvv.nullables.{isNotNull, isNull}
+//
+import com.mvv.nullables.{isNotNull, isNull, NullableCanEqualGivens}
 import com.mvv.utils.{require, requireNotNull, equalImpl}
 import com.mvv.collections.in
 import com.mvv.log.safe
-//
 
 
 @Untainted @Immutable
@@ -41,17 +41,7 @@ class Currency private (value: String) extends Equals derives CanEqual :
 */
 
 
-given givenCanEqual_Currency_Null: CanEqual[Currency, Null] = CanEqual.derived
-given givenCanEqual_CurrencyNull_Null: CanEqual[Currency|Null, Null] = CanEqual.derived
-given givenCanEqual_CurrencyNull_Currency: CanEqual[Currency|Null, Currency] = CanEqual.derived
-given givenCanEqual_Null_Currency: CanEqual[Null, Currency] = CanEqual.derived
-given givenCanEqual_Null_CurrencyNull: CanEqual[Null, Currency|Null] = CanEqual.derived
-given givenCanEqual_Currency_CurrencyNull: CanEqual[Currency, Currency|Null] = CanEqual.derived
-
-
-
-//noinspection ScalaUnusedSymbol
-object Currency :
+object Currency extends NullableCanEqualGivens[Currency]:
   val MIN_LENGTH: Int = 3
   val MAX_LENGTH: Int = 3 // ??? probably it can be 4 for crypto ???
   val LENGTH_RANGE: Range = Currency.MIN_LENGTH to Currency.MAX_LENGTH
@@ -72,7 +62,6 @@ object Currency :
 
 
 private val CURRENCY_PAIR_SEPARATOR: Char = '_'
-
 
 
 //noinspection ScalaUnusedSymbol // TODO: add tests and remove this comment
@@ -123,9 +112,7 @@ extension (self: CurrencyPair)
   def inverted: CurrencyPair = CurrencyPair.of(base = self.counter, counter = self.base)
 
 
-//noinspection ScalaUnusedSymbol,ScalaWeakerAccess
-// @unused
-object CurrencyPair :
+object CurrencyPair extends NullableCanEqualGivens[CurrencyPair] :
   val MIN_LENGTH: Int = Currency.MIN_LENGTH * 2 + 1
   val MAX_LENGTH: Int = Currency.MAX_LENGTH * 2 + 1
 
