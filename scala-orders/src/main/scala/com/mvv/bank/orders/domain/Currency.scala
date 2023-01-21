@@ -150,11 +150,11 @@ extension (currencyPair: CurrencyPair)
     containsCurrency (ccy1) && containsCurrency (ccy2)
 
 
-private def validateCurrency(@Tainted currency: String|Null): Unit =
+private def validateCurrency(@Tainted currency: String): Unit =
   require(isValidCurrency(currency), s"Invalid currency [${currency.safe}]." )
 
 
-private def isValidCurrency(@Tainted currency: String|Null): Boolean =
+private def isValidCurrency(@Tainted currency: String): Boolean =
   // see https://en.wikipedia.org/wiki/ISO_4217
   // see https://www.investopedia.com/terms/i/isocurrencycode.asp
   isNotNull(currency)
@@ -163,7 +163,7 @@ private def isValidCurrency(@Tainted currency: String|Null): Boolean =
     && currency.nn.forall { ch => 'A' <= ch && ch <= 'Z' }
 
 
-private def parseCurrencyPair(@Tainted stringCurrencyPair: String|Null): CurrencyPair = {
+private def parseCurrencyPair(@Tainted stringCurrencyPair: String): CurrencyPair = {
   val str = requireNotNull(stringCurrencyPair, s"Invalid currency pair [${stringCurrencyPair.safe}].")
 
   val minLen = CurrencyPair.MIN_LENGTH

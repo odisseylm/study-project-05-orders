@@ -59,7 +59,7 @@ object Email extends NullableCanEqualGivens[Email] :
 // regex "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@"
 //        + "[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$")
 private val emailOwaspPattern = Regex("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")
-private def validateEmail(@Tainted email: String|Null): Unit =
+private def validateEmail(@Tainted email: String): Unit =
   requireNotBlank(email, "Email cannot be null/blank.")
   if (!emailOwaspPattern.matches(email.nn)) throw IllegalArgumentException(s"Invalid email [${email.safe}].")
 
@@ -68,6 +68,6 @@ private def validateEmail(@Tainted email: String|Null): Unit =
 // regex "^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{4}$"
 // regex "^(\\+\\d{1,3}( )?)?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?\\d{3,4}[- .]?\\d{4}$"
 private val phonePattern = Regex("^\\+?[1-9][0-9]{7,14}$")
-private def validatePhone(@Tainted email: String|Null): Unit =
+private def validatePhone(@Tainted email: String): Unit =
   requireNotBlank(email, "Phone number cannot be null/blank.")
   if !phonePattern.matches(email.nn) then throw IllegalArgumentException(s"Invalid phone number [${email.safe}].")

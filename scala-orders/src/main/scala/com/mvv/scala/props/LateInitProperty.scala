@@ -78,6 +78,8 @@ class LateInitProperty[T, Owner] (
 
     override /*operator*/ def setValue(thisRef: Owner, property: KProperty[?], value: T): Unit = set(value)
 
+    //???
+
     override def toString: String = "$internalValue"
     override def canEqual(other: Any): Boolean = (other : @unchecked).isInstanceOf[LateInitProperty[T, Owner]]
     // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
@@ -92,5 +94,12 @@ class LateInitProperty[T, Owner] (
     override def hashCode: Int =
         val finalSafeRef = this.internalValue
         if finalSafeRef == null then 42.hashCode else finalSafeRef.hashCode
+
+    def apply(value: T): Unit = set(value)
+    def `=` (value: T): Unit = set(value)
 }
 
+//object LateInitProperty :
+//  given aaa: scala.Conversion[T, LateInitProperty[T, ?]] = {
+//    def apply(x: T): U
+//  }

@@ -269,7 +269,7 @@ sealed class AbstractOrder<Product: Any, Quote: BaseQuote> : Order<Product, Quot
             OrderState.EXECUTED -> {
                 checkId(id)
                 check(this.orderState == OrderState.PLACED) {
-                    "Impossible to to cancel order with status ${this.orderState}." }
+                    "Impossible to to execute order with status ${this.orderState}." }
             }
         }
     }

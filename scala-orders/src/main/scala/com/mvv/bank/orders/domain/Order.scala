@@ -8,43 +8,45 @@ import scala.compiletime.uninitialized
 //
 import java.time.ZonedDateTime
 //
-import com.mvv.utils.newInstance
-import com.mvv.log.{Logger, LoggerMixin}
-import com.mvv.scala.props.KProperty
-import com.mvv.scala.props.LateInitProperty
+import com.mvv.utils.{ newInstance, check, checkId, checkNotNull, checkNotBlank, require, requireNotBlank }
+import com.mvv.nullables.isNull
+import com.mvv.utils.{ removePrefix, uncapitalize}
+import com.mvv.log.{safe, Logger, LoggerMixin}
+import com.mvv.scala.props.{ checkRequiredPropsAreInitialized, checkPropertyInitialized, BeanProp, KProperty, LateInitProperty }
 
 
 trait BaseQuote // TODO: temp, remove after adding/implementing BaseQuote
 
 //sealed
 trait Order[Product <: AnyRef, Quote <: BaseQuote] {
-  var id: Long|Null
-  var user: User
-  var side: Side
-  val orderType: OrderType
-  var buySellType: BuySellType
-  var product: Product
+  def id: Option[Long]
+
+  def user: User
+  def market: Market
+  def side: Side
+
+  def orderType: OrderType
+  def buySellType: BuySellType
+  def product: Product
   // for most equities it will be integer (but for currencies and for some equities it will be float numbers)
-  var volume: BigDecimal
+  def volume: BigDecimal
 
   // Several variables are used to see problems in case of signal race abd if both
   // operations are happened 'cancel' and 'execute/expire'.
   // Probably it would be better to use Instant? But I do not see advantages of Instant comparing with ZonedDateTime.
-  var placedAt:   ZonedDateTime|Null
-  var executedAt: ZonedDateTime|Null
-  var canceledAt: ZonedDateTime|Null
-  var expiredAt:  ZonedDateTime|Null
+  def placedAt:   Option[ZonedDateTime]
+  def executedAt: Option[ZonedDateTime]
+  def canceledAt: Option[ZonedDateTime]
+  def expiredAt:  Option[ZonedDateTime]
 
-  var market: Market
+  def orderState: OrderState
 
-  var orderState: OrderState
-
-  var resultingPrice: Amount|Null
+  def resultingPrice: Option[Amount]
   // it is optional/temporary (mainly for debugging; most probably after loading order from database it will be lost)
-  var resultingQuote: Quote|Null
+  def resultingQuote: Option[Quote]
 
   // you can change state only to proper next valid state
-  def changeOrderState(nextOrderState: OrderState, context: OrderContext): Unit
+  def changeOrderState(nextOrderState: OrderState)(using context: OrderContext): Unit
   def validateCurrentState(): Unit
   def validateNextState(nextState: OrderState): Unit
 
@@ -57,14 +59,12 @@ trait OrderNaturalKey
 
 type BaseOrder = Order[?,?]
 
-//inline def createOrder[T: ClassTag[_ <: Order333]](init: () => Unit): T =
+
 inline def createOrder[T <: BaseOrder](init: BaseOrder => Unit)(implicit ct: ClassTag[T]): T =
   val order = newInstance[T]()
   init(order)
   order.validateCurrentState()
   order
-
-
 
 
 //sealed
@@ -73,7 +73,7 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
   // This class mainly is introduced to avoid 'duplicate code' warning
   //@Suppress("ClassName") // It is named from '_' (as internal) because I cannot do it protected
   /*protected*/ trait _BaseAttrs[P <: AnyRef, Q <: BaseQuote] {
-    val id: Long|Null
+    val id: Option[Long]
     val user: User
     val side: Side
     val buySellType: BuySellType
@@ -83,126 +83,125 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
 
     val orderState: OrderState
 
-    val placedAt:   ZonedDateTime|Null
-    val executedAt: ZonedDateTime|Null
-    val canceledAt: ZonedDateTime|Null
-    val expiredAt:  ZonedDateTime|Null
+    val placedAt:   Option[ZonedDateTime]
+    val executedAt: Option[ZonedDateTime]
+    val canceledAt: Option[ZonedDateTime]
+    val expiredAt:  Option[ZonedDateTime]
 
-    val resultingPrice: Amount|Null
-    val resultingQuote: Q|Null
+    val resultingPrice: Option[Amount]
+    val resultingQuote: Option[Q]
 
     protected def copyToOrder(order: AbstractOrder[P, Q]): Unit = {
-      order.id = id
-      order.user = user
+      order._id = id
+      order._user = user
 
-      order.side  = side
-      order.buySellType  = buySellType
-      order.volume = volume
+      order._side(side)
+      order._buySellType  = buySellType
+      order._volume = volume
 
-      order.market = market
+      order._market = market
 
-      order.orderState = orderState
+      order._orderState = orderState
 
-      order.placedAt   = placedAt
-      order.executedAt = executedAt
-      order.canceledAt = canceledAt
-      order.expiredAt  = expiredAt
+      order._placedAt   = placedAt
+      order._executedAt = executedAt
+      order._canceledAt = canceledAt
+      order._expiredAt  = expiredAt
 
-      order.resultingPrice = resultingPrice
-      order.resultingQuote = resultingQuote
+      order._resultingPrice = resultingPrice
+      order._resultingQuote = resultingQuote
     }
   }
 
-  var id: Long|Null //= uninitialized
+  protected var _id: Option[Long] = None
+  def id: Option[Long] = _id
 
-  /*lateinit*/ var user: User //= uninitialized
+  protected var _user: User
+  def user: User = _user
 
   private val _side = LateInitProperty[Side, AnyRef](
     changeable = false,
     changeErrorMessage = "Changing order side is not allowed (from ${prev} to ${new}).", // !!! ordinal string !!!
   )
-  //override var _side: Side by sideImpl   // Scala does not support property delegation
   def side: Side = _side.getValue(this, KProperty.simpleProperty[Side]("side"))
-  def side_= (side: Side): Unit = _side.set(side)
+  protected def side_= (side: Side): Unit = _side.set(side)
 
-  /*lateinit*/ var product: Product
-  /*lateinit*/ var volume: BigDecimal
+  protected var _product: Product
+  def product: Product = _product
 
-  /*lateinit*/ var market: Market
+  protected var _volume: BigDecimal
+  def volume: BigDecimal = _volume
 
-  /*lateinit*/ var buySellType: BuySellType
-  var orderState: OrderState = OrderState.UNKNOWN
+  protected var _market: Market
+  def market: Market = _market
+
+  protected var _buySellType: BuySellType
+  def buySellType: BuySellType = _buySellType
+
+  protected var _orderState: OrderState = OrderState.UNKNOWN
+  def orderState: OrderState = _orderState
 
   // probably it would be better to use Instant? But I do not see advantages of Instant comparing with ZonedDateTime
-  var placedAt:   ZonedDateTime|Null = null
-  var executedAt: ZonedDateTime|Null = null
-  var canceledAt: ZonedDateTime|Null = null
-  var expiredAt:  ZonedDateTime|Null = null
+  protected var _placedAt:   Option[ZonedDateTime] = None
+  def placedAt: Option[ZonedDateTime] = _placedAt
 
-  var resultingPrice: Amount|Null = null
+  protected var _executedAt: Option[ZonedDateTime] = None
+  def executedAt: Option[ZonedDateTime] = _executedAt
+
+  protected var _canceledAt: Option[ZonedDateTime] = None
+  def canceledAt: Option[ZonedDateTime] = _canceledAt
+
+  protected var _expiredAt:  Option[ZonedDateTime] = None
+  def expiredAt:  Option[ZonedDateTime] = _expiredAt
+
+  protected var _resultingPrice: Option[Amount] = None
+  var resultingPrice: Option[Amount] = _resultingPrice
+
   // it is optional/temporary (mainly for debugging; most probably after loading order from database it will be lost)
-  var resultingQuote: Quote|Null = null
+  protected var _resultingQuote: Option[Quote] = None
+  var resultingQuote: Option[Quote] = _resultingQuote
 
-  /*
-  private var orderStateValue: OrderState = orderState // there 'orderState' is param
-  // Seems there is no easier way to implement it using provided by kotlin field/value for setter
-  // because this property is inherited, and kotlin does not allow to create private setter.
-  override val orderState: OrderState get() = orderStateValue
 
-  // Seems there is no easier way ...
-  private var placedAtValue: ZonedDateTime? = placedAt // there 'placedAt' is param
-  override val placedAt: ZonedDateTime? get() = placedAtValue
-
-  // Seems there is no easier way ...
-  private var marketValue: Market? = market // there 'market' is param
-  override val market: Market? get() = marketValue
-  */
-
-  /*
-  override fun changeOrderState(nextOrderState: OrderState, context: OrderContext): Unit = {
+  override def changeOrderState(nextOrderState: OrderState)(using context: OrderContext): Unit = {
     val currentOrderState = this.orderState
     if (nextOrderState == currentOrderState) {
-      log.warn("Attempt to set the same state for order $id.") // T O D O: probably not needed
+      log.warn(s"Attempt to set the same state for order ${id.safe}.") // T O D O: probably not needed
       return
     }
 
     validateCurrentState()
     validateNextState(nextOrderState)
 
-    this.orderState = nextOrderState
+    this._orderState = nextOrderState
+    import com.mvv.implicits.ImplicitConversion.autoOption
 
-    when (orderState) {
-      OrderState.UNKNOWN -> throw IllegalStateException("Impossible to change state to $orderState.")
-      OrderState.TO_BE_PLACED -> {
-      }
-      OrderState.PLACED -> {
+    orderState match {
+      case OrderState.UNKNOWN => throw IllegalStateException(s"Impossible to change state to ${orderState.safe}.")
+      case OrderState.TO_BE_PLACED => // Nothing to do
+      case OrderState.PLACED =>
         // it is used if it is done locally (instead of real server)
-        this.placedAt = context.now()
-        this.market = context.market
-      }
-      OrderState.EXECUTED -> {
+        this._placedAt = Some(context.now())
+        this._market = context.market
+      case OrderState.EXECUTED =>
         // it is used if it is done locally there (instead of real server)
-        this.executedAt = context.now()
-      }
-      OrderState.CANCELED -> {
+        this._executedAt = context.now()
+      case OrderState.CANCELED =>
         // it is used if it is done locally there (instead of real server)
-        this.canceledAt = context.now()
-      }
-      OrderState.EXPIRED -> {
+        this._canceledAt = context.now()
+      case OrderState.EXPIRED =>
         // it is used if it is done locally there (instead of real server)
-        this.expiredAt = context.now()
-      }
+        this._expiredAt = context.now()
     }
   }
 
-  override fun validateCurrentState() {
+  override def validateCurrentState(): Unit = {
     if (orderState == OrderState.UNKNOWN) {
-      log.warn("Attempt to validate current state of order with status $orderState.")
+      log.warn(s"Attempt to validate current state of order with status ${orderState.safe}.")
       return
     }
 
-    checkLateInitPropsAreInitialized(this)
-    check(side == Side.CLIENT) { "Currently only client side orders are supported." }
+    checkRequiredPropsAreInitialized(this)
+    check(side == Side.CLIENT, s"Currently only client side orders are supported.")
 
     /*
     checkPropertyInitialized(::orderType)
@@ -216,37 +215,31 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
     checkPropertyInitialized(::market)
     */
 
-    when (orderState) {
-      OrderState.UNKNOWN -> { }
-      OrderState.TO_BE_PLACED -> {
+    orderState match {
+      case OrderState.UNKNOWN => // nothing to do
+      case OrderState.TO_BE_PLACED =>
+        import com.mvv.nullables.AnyCanEqualGivens.given
         check(id == null)
-      }
-      OrderState.PLACED -> {
+      case OrderState.PLACED =>
         checkId(id)
-      }
-      OrderState.EXECUTED -> {
+      case OrderState.EXECUTED =>
         checkId(id)
-        checkPropertyInitialized(::placedAt)
-        checkPropertyInitialized(::resultingPrice)
-        checkPropertyInitialized(::resultingQuote)
-      }
-      OrderState.EXPIRED -> {
+        checkPropertyInitialized(BeanProp(placedAt))
+        checkPropertyInitialized(BeanProp(resultingPrice))
+        checkPropertyInitialized(BeanProp(resultingQuote))
+      case OrderState.EXPIRED =>
         checkId(id)
-        checkPropertyInitialized(::expiredAt)
-      }
-      OrderState.CANCELED -> {
+        checkPropertyInitialized(BeanProp(expiredAt))
+      case OrderState.CANCELED =>
         checkId(id)
-        checkPropertyInitialized(::canceledAt)
-      }
+        checkPropertyInitialized(BeanProp(canceledAt))
     }
   }
 
-  override fun validateNextState(nextState: OrderState) {
-    if (nextState == OrderState.UNKNOWN) {
-      return
-    }
+  override def validateNextState(nextState: OrderState): Unit = {
+    if (nextState == OrderState.UNKNOWN) { return }
 
-    checkLateInitPropsAreInitialized(this)
+    checkRequiredPropsAreInitialized(this)
 
     /*
     checkInitialized(::orderType)
@@ -257,34 +250,27 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
     checkInitialized(::orderState)
     */
 
-    @Suppress("KotlinConstantConditions")
-    when (nextState) {
-      OrderState.UNKNOWN -> { }
-      OrderState.TO_BE_PLACED -> {
-        check(id == null)
-        check(this.orderState == OrderState.UNKNOWN) {
-          "Impossible to to place order with status ${this.orderState}." }
-      }
-      OrderState.PLACED -> {
-        log.warn("Placing/booking order is done on server side and nothing to validate.")
+    nextState match {
+      case OrderState.UNKNOWN => // nothing to do
+      case OrderState.TO_BE_PLACED =>
+        check(id.isNull, s"Seems order $id is already placed.")
+        check(this.orderState == OrderState.UNKNOWN,
+          s"Impossible to to place order with status ${this.orderState.safe}.")
+      case OrderState.PLACED =>
+        log.warn(s"Placing/booking order is done on server side and nothing to validate.")
         //checkId(id)
-      }
-      OrderState.EXPIRED -> {
+      case OrderState.EXPIRED =>
         checkId(id)
-        check(this.orderState == OrderState.PLACED) {
-          "Impossible to to expire order with status ${this.orderState}." }
-      }
-      OrderState.CANCELED -> {
+        check(this.orderState == OrderState.PLACED,
+          s"Impossible to to expire order with status ${this.orderState.safe}.")
+      case OrderState.CANCELED =>
         checkId(id)
-        check(this.orderState == OrderState.PLACED) {
-          "Impossible to to cancel order with status ${this.orderState}." }
-      }
-      OrderState.EXECUTED -> {
+        check(this.orderState == OrderState.PLACED,
+          s"Impossible to to cancel order with status ${this.orderState.safe}.")
+      case OrderState.EXECUTED =>
         checkId(id)
-        check(this.orderState == OrderState.PLACED) {
-          "Impossible to to cancel order with status ${this.orderState}." }
-      }
+        check(this.orderState == OrderState.PLACED,
+          s"Impossible to to execute order with status ${this.orderState.safe}.")
     }
   }
-  */
 }

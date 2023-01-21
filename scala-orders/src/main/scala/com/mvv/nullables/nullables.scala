@@ -1,8 +1,9 @@
 package com.mvv.nullables
 
+import scala.language.unsafeNulls
+//
 import org.apache.commons.lang3.StringUtils
 
-import scala.language.unsafeNulls
 
 
 //extension [T](x: T | Null)

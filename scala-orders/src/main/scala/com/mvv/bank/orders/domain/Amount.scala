@@ -55,7 +55,7 @@ object Amount extends NullableCanEqualGivens[Amount] :
 
 private val MAX_AMOUNT_LENGTH = 1000 + 1 + Currency.MAX_LENGTH
 
-private def parseAmount(@Tainted amountString: String|Null): Amount = {
+private def parseAmount(@Tainted amountString: String): Amount = {
   val amount: String = requireNotBlank(amountString, "Amount string is null/blank.")
   try {
     require(amount.length <= MAX_AMOUNT_LENGTH, s"Too long amount string [${amount.safe}] (${amount.length}).")

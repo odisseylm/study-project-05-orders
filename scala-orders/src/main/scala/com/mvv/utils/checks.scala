@@ -3,12 +3,17 @@ package com.mvv.utils
 //import scala.Predef.nn
 
 import com.mvv.nullables.isNull
+import com.mvv.log.safe
 
 import scala.annotation.targetName
 
 
-def requireNotNull[T](v: T|Null): T = requireNotNull[T](v, "Null value.")
+def require(expr: Boolean): Unit = require(expr, "requirement failed")
+def require(expr: Boolean, msg: =>String): Unit =
+  if !expr then throw IllegalArgumentException(msg)
 
+
+def requireNotNull[T](v: T|Null): T = requireNotNull[T](v, "Null value.")
 def requireNotNull[T](v: T|Null, msg: =>String): T =
   if v.isNull then throw IllegalArgumentException(msg) else v.nn
 
@@ -31,12 +36,36 @@ private def requireNotBlankStringImpl(s: String|Null, msg: =>String): String =
 //  if isNullOrBlank(v) then throw IllegalArgumentException(msg) else v.nn
 
 
-def require(expr: Boolean): Unit = require(expr, "requirement failed")
 
-def require(expr: Boolean, msg: =>String): Unit =
-  if !expr then throw IllegalArgumentException(msg)
 
-// TODO: find better name
-def requireWith(expr: Boolean)(msg: ()=>String): Unit =
-  if !expr then throw IllegalArgumentException(msg())
+def check(expr: Boolean): Unit = check(expr, "requirement failed")
+def check(expr: Boolean, msg: =>String): Unit =
+  if !expr then throw IllegalStateException(msg)
 
+
+def checkNotNull[T](v: T|Null): T = checkNotNull[T](v, "Null value.")
+def checkNotNull[T](v: T|Null, msg: =>String): T =
+  if v.isNull then throw IllegalStateException(msg) else v.nn
+
+
+inline def checkNotBlankCS(s: CharSequence|Null): CharSequence = checkNotBlankCSImpl(s, "Blank value.")
+inline def checkNotBlankCS(s: CharSequence|Null, msg: =>String): CharSequence = checkNotBlankCSImpl(s, msg)
+private def checkNotBlankCSImpl(s: CharSequence|Null, msg: =>String): CharSequence =
+  if s.isNullOrBlank then throw IllegalStateException(msg) else s.nn
+
+
+inline def checkNotBlank(s: String|Null): String = checkNotBlankStringImpl(s, "Blank value.")
+inline def checkNotBlank(s: String|Null, msg: =>String): String = checkNotBlankStringImpl(s, msg)
+private def checkNotBlankStringImpl(s: String|Null, msg: =>String): String =
+  if s.isNullOrBlank then throw IllegalStateException(msg) else s.nn
+
+
+def checkId[T <: Long](id: T|Null, msg: =>String): Unit = checkIdImpl(id, msg)
+def checkId[T <: Long](id: T|Null): Unit = checkId(id, s"Id is not set or incorrect [${id.safe}].")
+
+def checkId[T <: Long](id: Option[T], msg: =>String): Unit = checkIdImpl(if id.isEmpty then null else id.get , msg)
+def checkId[T <: Long](id: Option[T]): Unit = checkId(id, s"Id is not set or incorrect [${id.safe}].")
+
+private def checkIdImpl[T <: Long](id: T|Null, msg: =>String): Unit =
+  import com.mvv.nullables.AnyCanEqualGivens.given
+  check(id != null && id.nn.intValue != 0 && id.nn.intValue != -1, msg)

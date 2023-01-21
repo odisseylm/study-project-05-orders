@@ -84,7 +84,7 @@ private val MARKET_SYMBOL_MAX_LENGTH = 25
 private val marketSymbolPattern = Regex("") // TODO: fix regex
 
 
-private def validateMarketSymbol(@Tainted marketSymbol: CharSequence|Null): Unit =
+private def validateMarketSymbol(@Tainted marketSymbol: CharSequence): Unit =
   if (marketSymbol == null || marketSymbol.isBlank ||
     (marketSymbol.length > MARKET_SYMBOL_MAX_LENGTH) ||
     !marketSymbolPattern.matches(marketSymbol))
