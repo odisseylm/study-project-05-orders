@@ -1,5 +1,12 @@
 package com.mvv.scala.temp.tests.reflection
 
+import scala.reflect.ClassTag
+//import scala.reflect.runtime.universe.TypeTag
+import scala.reflect.Selectable
+import scala.reflect.NameTransformer
+import scala.reflect.ScalaSignature
+import scala.reflect.Enum
+
 //import scala.language.implicitConversions
 //import scala.language.reflectiveCalls
 //import scala.language.dynamics
@@ -7,17 +14,25 @@ package com.mvv.scala.temp.tests.reflection
 //import scala.language.experimental.macros
 
 
+/*
+def checkLateInitPropsAreInitialized[T](obj: T)(implicit classTag: ClassTag[T]): Unit = {
+  classTag.members
+    .collect { case m: MethodSymbol if m.isCaseAccessor => m }.toList
+}
+*/
+
+//noinspection ScalaUnusedSymbol
 def aaa(): Unit = {
   //scala.reflect.runtime.
 }
 
 
+/*
 import scala.reflect.runtime.universe.*
 
 def classAccessors[T: TypeTag]: List[MethodSymbol] =
   typeOf[T].members.collect { case m: MethodSymbol if m.isCaseAccessor => m }.toList
 
-/*
 
 Starting Scala 2.13, case classes (which are an implementation of Product)
  are now provided with a productElementNames method which returns an iterator over their field's names.
