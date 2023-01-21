@@ -21,4 +21,5 @@ extension [T](v: T|Null)
 extension [T](x: T|Null)
   inline def !! : T = nn(x)
   inline def ifNull(action: =>T): T =
+    import com.mvv.nullables.AnyCanEqualGivens.given
     if x == null then action else x

@@ -1,10 +1,12 @@
 package com.mvv.log
 
+
 object Logs :
   private val safeLength: Int = 512
 
   //@JvmStatic
   def trimToSafeString(obj: Any|Null): String|Null = {
+    import com.mvv.nullables.AnyCanEqualGivens.given
     if obj == null then return null
 
     val str = obj.toString

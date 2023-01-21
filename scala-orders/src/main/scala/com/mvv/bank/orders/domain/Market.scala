@@ -14,7 +14,7 @@ import javax.annotation.concurrent.Immutable
 import com.mvv.nullables.{isNotNull, isNull, NullableCanEqualGivens}
 import com.mvv.utils.{require, requireNotNull, isBlank, isNullOrBlank, equalImpl}
 import com.mvv.collections.in
-import com.mvv.nullables.given
+import com.mvv.nullables.CharSequenceCanEqualGivens.given
 import com.mvv.log.safe
 
 

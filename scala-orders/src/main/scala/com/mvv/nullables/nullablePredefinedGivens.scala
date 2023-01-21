@@ -10,11 +10,26 @@ package com.mvv.nullables
 //given givenCanEqual_CharSequenceNull_CharSequenceNull: CanEqual[CharSequence|Null, CharSequence|Null] = CanEqual.derived
 
 
-object CharSequenceCanEqualGivens extends NullableCanEqualGivens[java.lang.CharSequence]
-object StringCanEqualGivens extends NullableCanEqualGivens[java.lang.String]
+trait AnyCanEqualGivens extends NullableCanEqualGivens[Any]
+object AnyCanEqualGivens extends AnyCanEqualGivens
+
+trait AnyRefCanEqualGivens extends NullableCanEqualGivens[AnyRef]
+object AnyRefCanEqualGivens extends AnyRefCanEqualGivens
+
+trait CharSequenceCanEqualGivens extends NullableCanEqualGivens[java.lang.CharSequence]
+object CharSequenceCanEqualGivens extends CharSequenceCanEqualGivens
+
+trait StringCanEqualGivens extends NullableCanEqualGivens[java.lang.String]
+object StringCanEqualGivens extends StringCanEqualGivens
 
 
 // TODO: how to reexport if it is possible
-object AllCanEqualGivens :
-  import CharSequenceCanEqualGivens.given
-  import StringCanEqualGivens.given
+// TODO: put all CanEqual givens there (except general Any/AnyRef)
+//object AllCanEqualGivens :
+//  import CharSequenceCanEqualGivens.given
+//  import StringCanEqualGivens.given
+
+//object AllCanEqualGivens22
+//  extends CharSequenceCanEqualGivens
+//  //with    StringCanEqualGivens
+

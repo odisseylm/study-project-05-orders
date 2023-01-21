@@ -453,6 +453,7 @@
               <args>
                 <arg>-Yexplicit-nulls</arg>
                 <arg>-Ysafe-init</arg>
+                <arg>-language:strictEquality</arg>
                 <arg>-source</arg><arg>future</arg>
                 <arg>-feature</arg>
                 <arg>-deprecation</arg>

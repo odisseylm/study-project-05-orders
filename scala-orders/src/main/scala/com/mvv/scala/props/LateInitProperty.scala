@@ -45,6 +45,7 @@ class LateInitProperty[T, Owner] (
     //val preUpdate:  (newValue: T, prevValue: T|Null)=>Unit = {(n,p)=>},
     //val postUpdate: (newValue: T, prevValue: T|Null)=>Unit = {(n,p)=>},
 ) extends ReadWriteProperty[Owner, T] with Equals derives CanEqual {
+    import com.mvv.nullables.AnyCanEqualGivens.given
     private var internalValue: T|Null = value
     def asNullableValue: T|Null = internalValue
     def asNonNullableValue: T = internalValue.nn
