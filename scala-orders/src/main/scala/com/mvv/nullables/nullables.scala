@@ -23,3 +23,9 @@ extension [T](x: T|Null)
   inline def ifNull(action: =>T): T =
     import com.mvv.nullables.AnyCanEqualGivens.given
     if x == null then action else x
+
+
+// This method only for the future, possibly
+// from https://stackoverflow.com/questions/48713965/scala-how-to-determine-if-a-type-is-nullable
+def isNullablePureType[T](arg: T)(implicit sn: Null <:< T = null, sar: T <:< AnyRef = null): Boolean =
+  sn != null && sar != null

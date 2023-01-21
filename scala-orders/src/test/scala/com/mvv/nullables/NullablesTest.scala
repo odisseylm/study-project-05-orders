@@ -1,5 +1,7 @@
 package com.mvv.nullables
 
+import org.junit.jupiter.api.DisplayName
+
 import scala.language.unsafeNulls
 //
 import org.assertj.core.api.Assertions
@@ -34,6 +36,15 @@ class NullablesTest {
     assertThat("".isNotNull).isTrue
     val notNullStr: String = ""
     assertThat(notNullStr.isNotNull).isTrue
+  }
+
+  @Test
+  @DisplayName("isNullableType")
+  def testIsNullablePureType(): Unit = {
+    assertThat(isNullablePureType(10)).isFalse
+
+    assertThat(isNullablePureType(null)).isTrue
+    assertThat(isNullablePureType("")).isTrue
   }
 
 }
