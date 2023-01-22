@@ -19,9 +19,12 @@ class MarketSymbol private constructor (@param:Tainted @field:Untainted val valu
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic fun of(marketSymbol: String) = MarketSymbol(marketSymbol)
+        operator fun invoke(marketSymbol: String) = MarketSymbol(marketSymbol)
+
+        // for java (MapStruct so on)
+        @JvmStatic fun of(marketSymbol: String) = invoke(marketSymbol)
         // standard java method to get from string. It can help to integrate with other java frameworks.
-        @JvmStatic fun valueOf(marketSymbol: String) = of(marketSymbol)
+        @JvmStatic fun valueOf(marketSymbol: String) = invoke(marketSymbol)
     }
 }
 

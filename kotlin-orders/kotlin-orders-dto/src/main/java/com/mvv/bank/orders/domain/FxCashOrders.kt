@@ -175,10 +175,10 @@ class CashMarketOrder private constructor() : AbstractCashOrder() {
     override val orderType: OrderType = OrderType.MARKET_ORDER
 
     override fun toExecute(quote: Quote): Boolean {
-        val rateCurrencyPair = CurrencyPair.of(Currency.of(quote.product), quote.bid.currency)
-        val orderCurrencyPair = CurrencyPair.of(buyCurrency, sellCurrency)
+        val rateCurrencyPair = CurrencyPair(Currency(quote.product), quote.bid.currency)
+        val orderCurrencyPair = CurrencyPair(buyCurrency, sellCurrency)
 
-        check(rateCurrencyPair == orderCurrencyPair || rateCurrencyPair == orderCurrencyPair.inverted()) {
+        check(rateCurrencyPair == orderCurrencyPair || rateCurrencyPair == orderCurrencyPair.inverted) {
             "FX rate currencies $rateCurrencyPair does not suite order currencies $orderCurrencyPair." }
         return true
     }

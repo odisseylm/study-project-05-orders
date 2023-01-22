@@ -32,7 +32,7 @@ internal class CurrencyTest {
             assertThat(currencyPair.counter).isEqualTo(Currency.of("EUR"))
 
             assertThat(CurrencyPair.valueOf("USD_EUR")).isEqualTo(currencyPair)
-            assertThat(CurrencyPair.of("USD_EUR")).isEqualTo(currencyPair)
+            assertThat(CurrencyPair.valueOf("USD_EUR")).isEqualTo(currencyPair)
 
             assertThatCode { CurrencyPair.valueOf("USD EUR") }
                 .hasMessage("Invalid currency pair [USD EUR] (format like 'USD_EUR' is expected).")
@@ -59,7 +59,7 @@ internal class CurrencyTest {
         SoftAssertions().apply {
 
             assertThat(CurrencyPair.USD_EUR.copy(counter = Currency.UAH))
-                .isEqualTo(CurrencyPair.of("USD_UAH"))
+                .isEqualTo(CurrencyPair.valueOf("USD_UAH"))
             assertThat(CurrencyPair.USD_EUR.copy(counter = Currency.UAH))
                 .isEqualTo(CurrencyPair.USD_UAH)
             assertThat(CurrencyPair.USD_EUR.copy(counter = Currency.UAH))

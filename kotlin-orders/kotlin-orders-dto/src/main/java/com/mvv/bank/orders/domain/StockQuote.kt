@@ -58,7 +58,7 @@ data class StockQuote (
     val volume3m: BigDecimal? = null,
 ) : Quote {
     override val product: String get() = company.value
-    companion object { } // for possibility to write companion extension functions
+    companion object // for possibility to write companion extension functions
 }
 
 
@@ -69,7 +69,7 @@ fun StockQuote.asPrice(buySellType: BuySellType): Amount =
     }
 
 
-fun StockQuote.Companion.of(
+operator fun StockQuote.Companion.invoke(
     market: Market,
     company: Company,
     timestamp: ZonedDateTime,
@@ -82,6 +82,6 @@ fun StockQuote.Companion.of(
     timestamp = timestamp,
     marketDate = timestamp.withZoneSameInstant(market.zoneId).toLocalDate(),
     marketTime = timestamp.withZoneSameInstant(market.zoneId).toLocalTime(),
-    bid = Amount.of(bid, currency),
-    ask = Amount.of(ask, currency),
+    bid = Amount(bid, currency),
+    ask = Amount(ask, currency),
 )

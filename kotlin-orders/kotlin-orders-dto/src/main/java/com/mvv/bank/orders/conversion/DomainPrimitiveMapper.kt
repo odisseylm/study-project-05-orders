@@ -8,7 +8,7 @@ import org.mapstruct.MapperConfig
 @Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL)
 interface CurrencyMapper {
     fun toDto(currency: Currency?): String? = currency?.toString()
-    fun toDomain(currency: String?): Currency? = if (currency == null) null else Currency.valueOf(currency)
+    fun toDomain(currency: String?): Currency? = if (currency == null) null else Currency(currency)
 }
 
 
@@ -22,35 +22,35 @@ interface UserMapper {
 @Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL)
 interface EmailMapper {
     fun toDto(email: Email?): String? = email?.value
-    fun toDomain(email: String?): Email? = if (email == null) null else Email.of(email)
+    fun toDomain(email: String?): Email? = if (email == null) null else Email(email)
 }
 
 
 @Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL)
 interface PhoneMapper {
     fun toDto(phone: Phone?): String? = phone?.value
-    fun toDomain(phone: String?): Phone? = if (phone == null) null else Phone.of(phone)
+    fun toDomain(phone: String?): Phone? = if (phone == null) null else Phone(phone)
 }
 
 
 @Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL)
 interface UserNaturalKeyMapper {
     fun toDto(userNaturalKey: UserNaturalKey?): String? = userNaturalKey?.value
-    fun toDomain(userNaturalKey: String?): UserNaturalKey? = if (userNaturalKey == null) null else UserNaturalKey.of(userNaturalKey)
+    fun toDomain(userNaturalKey: String?): UserNaturalKey? = if (userNaturalKey == null) null else UserNaturalKey(userNaturalKey)
 }
 
 
 @Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL)
 interface MarketSymbolMapper {
     fun toDto(marketSymbol: MarketSymbol?): String? = marketSymbol?.value
-    fun toDomain(marketSymbol: String?): MarketSymbol? = if (marketSymbol == null) null else MarketSymbol.of(marketSymbol)
+    fun toDomain(marketSymbol: String?): MarketSymbol? = if (marketSymbol == null) null else MarketSymbol(marketSymbol)
 }
 
 
 @Mapper(componentModel = MAP_STRUCT_COMPONENT_MODEL)
 interface CompanySymbolMapper {
     fun toDto(companySymbol: CompanySymbol?): String? = companySymbol?.value
-    fun toDomain(companySymbol: String?): CompanySymbol? = if (companySymbol == null) null else CompanySymbol.of(companySymbol)
+    fun toDomain(companySymbol: String?): CompanySymbol? = if (companySymbol == null) null else CompanySymbol(companySymbol)
 }
 
 

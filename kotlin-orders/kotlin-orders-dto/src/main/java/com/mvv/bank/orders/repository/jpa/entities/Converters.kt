@@ -9,7 +9,7 @@ import jakarta.persistence.Converter
 @Converter(autoApply = true)
 class CurrencyConverter : AttributeConverterAdapter<Currency, String> (
     valueToSqlText = { it.toString() },
-    sqlTextToEnum = { Currency.valueOf(it) },
+    sqlTextToEnum = { Currency(it) },
 )
 
 

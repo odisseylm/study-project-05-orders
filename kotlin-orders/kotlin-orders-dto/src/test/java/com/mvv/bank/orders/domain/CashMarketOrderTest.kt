@@ -38,18 +38,18 @@ internal class CashMarketOrderTest {
             assertThat(order.orderType).isEqualTo(OrderType.MARKET_ORDER)
 
             assertThat(
-                order.toExecute(FxRate.of(testMarket, testTimestamp, CurrencyPair.EUR_USD, bid = bd("1.1"), ask = bd("1.15")))
+                order.toExecute(FxRate(testMarket, testTimestamp, CurrencyPair.EUR_USD, bid = bd("1.1"), ask = bd("1.15")))
                 ).isTrue
 
             assertThatCode {
-                order.toExecute(FxRate.of(testMarket, testTimestamp, CurrencyPair.EUR_UAH, bid = bd("1.1"), ask = bd("1.15")))
+                order.toExecute(FxRate(testMarket, testTimestamp, CurrencyPair.EUR_UAH, bid = bd("1.1"), ask = bd("1.15")))
                 }
                 .hasMessage("FX rate EUR_UAH does not suite order currencies (with price currency USD).")
                 .isExactlyInstanceOf(IllegalStateException::class.java)
 
             assertThatCode {
                 order.toExecute(
-                    FxRate.of(testMarket, testTimestamp, CurrencyPair.USD_UAH, bid = bd("1.1"), ask = bd("1.15")))
+                    FxRate(testMarket, testTimestamp, CurrencyPair.USD_UAH, bid = bd("1.1"), ask = bd("1.15")))
                 }
                 .hasMessage("FX rate currencies UAH_USD does not suite order currencies USD_EUR.")
                 .isExactlyInstanceOf(IllegalStateException::class.java)

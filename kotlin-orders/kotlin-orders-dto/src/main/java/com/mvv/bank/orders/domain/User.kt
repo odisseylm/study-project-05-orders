@@ -10,7 +10,7 @@ import javax.annotation.concurrent.Immutable
 class UserNaturalKey private constructor (@param:Tainted @field:Untainted val value: String) {
     init {
         // now we will use email but later will change it
-        Email.of(value) // used for validation only
+        Email(value) // used for validation only
     }
     @Untainted
     override fun toString(): String = value
@@ -19,9 +19,12 @@ class UserNaturalKey private constructor (@param:Tainted @field:Untainted val va
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic fun of(userNaturalKey: String) = UserNaturalKey(userNaturalKey)
+        operator fun invoke(userNaturalKey: String) = UserNaturalKey(userNaturalKey)
+
+        // for java (MapStruct so on)
+        @JvmStatic fun of(userNaturalKey: String) = invoke(userNaturalKey)
         // standard java method to get from string. It can help to integrate with other java frameworks.
-        @JvmStatic fun valueOf(userNaturalKey: String) = of(userNaturalKey)
+        @JvmStatic fun valueOf(userNaturalKey: String) = invoke(userNaturalKey)
     }
 }
 
@@ -38,8 +41,11 @@ class User private constructor (@param:Tainted @field:Untainted val naturalKey: 
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic fun of(naturalKey: UserNaturalKey) = User(naturalKey)
-        @JvmStatic fun of(naturalKey: String) = User(UserNaturalKey.of(naturalKey))
+        operator fun invoke(naturalKey: UserNaturalKey) = User(naturalKey)
+
+        // for java (MapStruct so on)
+        @JvmStatic fun of(naturalKey: UserNaturalKey) = invoke(naturalKey)
+        @JvmStatic fun of(naturalKey: String) = invoke(UserNaturalKey.of(naturalKey))
         // standard java method to get from string. It can help to integrate with other java frameworks.
         @JvmStatic fun valueOf(naturalKey: String) = of(naturalKey)
     }

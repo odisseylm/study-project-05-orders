@@ -23,9 +23,12 @@ class CompanySymbol private constructor (@param:Tainted @field:Untainted val val
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic fun of(companySymbol: String) = CompanySymbol(companySymbol)
+        operator fun invoke(companySymbol: String) = CompanySymbol(companySymbol)
+
+        // for java (MapStruct so on)
+        @JvmStatic fun of(companySymbol: String) = invoke(companySymbol)
         // standard java method to get from string. It can help to integrate with other java frameworks.
-        @JvmStatic fun valueOf(companySymbol: String) = of(companySymbol)
+        @JvmStatic fun valueOf(companySymbol: String) = invoke(companySymbol)
     }
 }
 

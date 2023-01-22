@@ -17,9 +17,9 @@ internal class FxRateTest {
 
     @Test
     fun getMid() {
-        val rate = FxRate.of(
+        val rate = FxRate(
             testMarket, marketZonedDateTime,
-            CurrencyPair.of("EUR_USD"), bd("1.05"), bd("1.07"))
+            currencyPair("EUR_USD"), bd("1.05"), bd("1.07"))
         assertThat(rate.mid).isEqualTo(bd("1.06"))
     }
 
@@ -27,7 +27,7 @@ internal class FxRateTest {
     fun getSpread() {
         val rate = FxRate(
             testMarket.symbol, marketZonedDateTime, testMarketDate, testMarketTime,
-            CurrencyPair.of("EUR_USD"), bd("1.05"), bd("1.07"))
+            currencyPair("EUR_USD"), bd("1.05"), bd("1.07"))
         assertThat(rate.spread).isEqualTo(bd("0.02"))
     }
 
@@ -77,7 +77,7 @@ internal class FxRateTest {
         val rate = FxRate(testMarket.symbol, zonedDateTime, marketDate, marketTime,
             CurrencyPair.of("AAA", "ZZZ"), bid = bd("10"), ask = bd("100")
         )
-        val inverted = rate.inverted()
+        val inverted = rate.inverted
 
         assertThat(inverted)
             .isEqualTo(FxRate(testMarket.symbol, zonedDateTime, marketDate, marketTime,

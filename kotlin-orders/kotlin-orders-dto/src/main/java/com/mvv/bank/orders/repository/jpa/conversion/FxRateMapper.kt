@@ -15,7 +15,7 @@ interface FxRateMapper {
 
     fun fromDto(source: JpaFxRate?): DomainFxRate? =
         if (source == null) null else DomainFxRate(
-            MarketSymbol.of(source.market), source.timestamp, source.marketDate, source.marketTime,
+            MarketSymbol(source.market), source.timestamp, source.marketDate, source.marketTime,
             CurrencyPair.of(source.cur1, source.cur2), bid = source.bid, ask = source.ask)
 
 

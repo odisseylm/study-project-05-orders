@@ -22,17 +22,17 @@ class Amount private constructor (
     //override fun hashCode(): Int = 31 * value.hashCode() + currency.hashCode()
 
     companion object {
-        @JvmStatic fun of(amount: String) = parseAmount(amount)
-        @JvmStatic fun of(amount: BigDecimal, currency: Currency) = Amount(amount, currency)
-        @JvmStatic fun of(amount: String, currency: Currency) = of(BigDecimal(amount), currency)
+        operator fun invoke(amount: BigDecimal, currency: Currency) = Amount(amount, currency)
 
+        // for java (MapStruct and so on)
+        @JvmStatic fun of(amount: BigDecimal, currency: Currency) = Amount(amount, currency)
         // standard java method to get from string. It can help to integrate with other java frameworks.
         @JvmStatic fun valueOf(amount: String) = parseAmount(amount)
     }
 }
 
-operator fun Amount.times(m: BigDecimal) = Amount.of(this.value * m, this.currency)
-operator fun BigDecimal.times(amount: Amount) = Amount.of(this * amount.value, amount.currency)
+operator fun Amount.times(m: BigDecimal) = Amount(this.value * m, this.currency)
+operator fun BigDecimal.times(amount: Amount) = Amount(this * amount.value, amount.currency)
 
 
 
@@ -47,7 +47,7 @@ private fun parseAmount(amount: String): Amount {
         check(strCurrency.isNotBlank()) { "Amount should have currency at the end (format like '155.46 USD' is expected)." }
 
         val strAmount = amount.substringBeforeLast(' ')
-        return Amount.of(BigDecimal(strAmount), Currency.of(strCurrency))
+        return Amount(BigDecimal(strAmount), Currency.of(strCurrency))
     }
     catch (ex: Exception) {
         throw IllegalArgumentException("Error of parsing amount ${amount.safe}.", ex)

@@ -16,9 +16,12 @@ class Email private constructor (@param:Tainted @field:Untainted val value: Stri
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic fun of(email: String) = Email(email)
+        operator fun invoke(email: String) = Email(email)
+
+        // for Java (MapStruct so on)
+        @JvmStatic fun of(email: String) = invoke(email)
         // standard java method to get from string. It can help to integrate with other java frameworks.
-        @JvmStatic fun valueOf(email: String) = of(email)
+        @JvmStatic fun valueOf(email: String) = invoke(email)
     }
 }
 
@@ -33,9 +36,12 @@ class Phone private constructor (@param:Tainted @field:Untainted val value: Stri
     override fun hashCode(): Int = value.hashCode()
 
     companion object {
-        @JvmStatic fun of(email: String) = Phone(email)
+        operator fun invoke(email: String) = Phone(email)
+
+        // for java (MapStruct, so on)
+        @JvmStatic fun of(email: String) = invoke(email)
         // standard java method to get from string. It can help to integrate with other java frameworks.
-        @JvmStatic fun valueOf(email: String) = of(email)
+        @JvmStatic fun valueOf(email: String) = invoke(email)
     }
 }
 

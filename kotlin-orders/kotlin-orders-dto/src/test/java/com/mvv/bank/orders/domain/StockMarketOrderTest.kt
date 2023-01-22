@@ -43,8 +43,8 @@ internal class StockMarketOrderTest {
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
-            bid = Amount.of("0", Currency.USD),
-            ask = Amount.of("0", Currency.USD),
+            bid = amount("0 USD"),
+            ask = amount("0 USD"),
         )
 
         SoftAssertions().apply {
@@ -56,7 +56,7 @@ internal class StockMarketOrderTest {
 
             assertThat(order.toExecute(quote)).isTrue
 
-            assertThatCode { order.toExecute(quote.copy(company = CompanySymbol.of("GOOGLE"))) }
+            assertThatCode { order.toExecute(quote.copy(company = CompanySymbol("GOOGLE"))) }
                 .hasMessage("This quote is for another product (order: AAPL, quote: GOOGLE).")
                 .isExactlyInstanceOf(IllegalStateException::class.java)
 

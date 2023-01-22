@@ -24,7 +24,7 @@ data class StockQuote (
 
 
 // mainly for testing (probably it is better to move it to test sources...)
-fun StockQuote.Companion.of(
+operator fun StockQuote.Companion.invoke(
     market: Market,
     company: Company,
     timestamp: ZonedDateTime,

@@ -3,7 +3,7 @@ package com.mvv.bank.orders.repository.jpa.conversion
 import com.mvv.bank.orders.conversion.DomainPrimitiveMappers
 import com.mvv.bank.orders.conversion.MAP_STRUCT_COMPONENT_MODEL
 import com.mvv.bank.orders.conversion.GenericOrderDtoDomainConversion
-import com.mvv.bank.orders.domain.of
+import com.mvv.bank.orders.domain.invoke
 import org.mapstruct.*
 import kotlin.reflect.KClass
 
@@ -91,11 +91,11 @@ abstract class StockOrderMapper : AbstractJpaOrderMapper(),
             val resultingQuoteBid = checkNotNull(dtoOrder.resultingQuoteBid) { "resultingQuoteBid is null." }
             val resultingQuoteAsk = checkNotNull(dtoOrder.resultingQuoteAsk) { "resultingQuoteAsk is null." }
 
-            DomainStockQuote.of(
+            DomainStockQuote(
                 marketToDomain(dtoOrder.market)!!, companyToDomain(dtoOrder.product)!!,
                 resultingQuoteTimestamp,
                 bid = resultingQuoteBid, ask = resultingQuoteAsk,
-                DomainCurrency.of(dtoOrder.priceCurrency)
+                DomainCurrency(dtoOrder.priceCurrency)
             )
         }
     }

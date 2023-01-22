@@ -40,7 +40,7 @@ data class FxRate (
     companion object // only for writing extension functions
 }
 
-fun FxRate.Companion.of(market: Market, timestamp: ZonedDateTime, currencyPair: CurrencyPair, bid: BigDecimal, ask: BigDecimal) =
+operator fun FxRate.Companion.invoke(market: Market, timestamp: ZonedDateTime, currencyPair: CurrencyPair, bid: BigDecimal, ask: BigDecimal) =
     FxRate(
         market = market.symbol, timestamp = timestamp,
         marketDate = timestamp.withZoneSameInstant(market.zoneId).toLocalDate(),
@@ -51,7 +51,7 @@ fun FxRate.Companion.of(market: Market, timestamp: ZonedDateTime, currencyPair: 
 val FxRate.mid: BigDecimal get() = (bid + ask) / BigDecimal.valueOf(2) // math context is not needed there (at least now)
 val FxRate.spread: BigDecimal get() = ask - bid
 // TODO: should we swap bid and ask ???
-fun FxRate.inverted(): FxRate = this.copy(currencyPair = this.currencyPair.inverted(), bid = invertRate(this.bid), ask = invertRate(this.ask))
+val FxRate.inverted get(): FxRate = this.copy(currencyPair = this.currencyPair.inverted, bid = invertRate(this.bid), ask = invertRate(this.ask))
 
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -64,10 +64,10 @@ data class FxRateAsQuote (
     override val marketDate: LocalDate get() = rate.marketDate
     override val marketTime: LocalTime get() = rate.marketTime
     override val timestamp: ZonedDateTime get() = rate.timestamp
-    override val bid: Amount get() = Amount.of(
+    override val bid: Amount get() = Amount(
         // TODO: should be invertRate(rate.bid) or invertRate(rate.ask)
         if (priceCurrency == rate.currencyPair.counter) rate.bid else invertRate(rate.bid), priceCurrency)
-    override val ask: Amount get() = Amount.of(
+    override val ask: Amount get() = Amount(
         // TODO: should be invertRate(rate.ask) or invertRate(rate.bid)
         if (priceCurrency == rate.currencyPair.counter) rate.ask else invertRate(rate.ask), priceCurrency)
     init {
@@ -88,7 +88,7 @@ fun FxRate.asPrice(priceCurrency: Currency, buySellType: BuySellType): Amount {
         BuySellType.SELL -> this.ask
     }
     val fixedPriceValue: BigDecimal = if (this.currencyPair.counter == priceCurrency) price else invertRate(price)
-    return Amount.of(fixedPriceValue, priceCurrency)
+    return Amount(fixedPriceValue, priceCurrency)
 }
 
 fun invertRate(price: BigDecimal): BigDecimal {

@@ -3,7 +3,7 @@ package com.mvv.bank.orders.repository.jpa.conversion
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
 import com.mvv.bank.orders.domain.FxRateAsQuote
-import com.mvv.bank.orders.domain.of
+import com.mvv.bank.orders.domain.invoke
 
 import com.mvv.bank.orders.domain.*
 import com.mvv.bank.orders.domain.AbstractCashOrder.Base
@@ -70,7 +70,7 @@ internal class CashOrderMapperTest {
                 market = testMarket,
                 orderState = DomainOrderState.TO_BE_PLACED,
             ),
-            limitPrice = DomainAmount.of("40.0", DomainCurrency.UAH),
+            limitPrice = DomainAmount(bd("40.0"), DomainCurrency.UAH),
             dailyExecutionType = DomainDailyExecutionType.GTC,
         )
 
@@ -106,14 +106,14 @@ internal class CashOrderMapperTest {
                 sellCurrency = DomainCurrency.UAH,
                 volume = bd("2000"),
                 market = testMarket,
-                resultingRate = DomainFxRate.of(
+                resultingRate = DomainFxRate(
                     testMarket, testTimestamp, DomainCurrencyPair.USD_UAH,
                     bid = bd("39.00"), ask = bd("39.50"),
                 ),
                 orderState = DomainOrderState.PLACED,
                 placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"),
             ),
-            stopPrice = DomainAmount.of("40.0", DomainCurrency.UAH),
+            stopPrice = DomainAmount(bd("40.0"), DomainCurrency.UAH),
             dailyExecutionType = DomainDailyExecutionType.GTC,
         )
 
@@ -238,16 +238,16 @@ internal class CashOrderMapperTest {
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            val rate = DomainFxRate.of(
+            val rate = DomainFxRate(
                 testMarket, testTimestamp, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50"))
             assertThat(domainOrder.resultingRate).isEqualTo(rate)
             assertThat(domainOrder.resultingQuote).isEqualTo(FxRateAsQuote(rate, domainOrder.priceCurrency))
-            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.00"), DomainCurrency.UAH))
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount(bd("39.00"), DomainCurrency.UAH))
 
             assertThat(domainOrder).isExactlyInstanceOf(DomainLimitOrder::class.java)
             if (domainOrder is DomainLimitOrder) {
-                assertThat(domainOrder.limitPrice).isEqualTo(DomainAmount.of("40.0", DomainCurrency.UAH))
+                assertThat(domainOrder.limitPrice).isEqualTo(DomainAmount(bd("40.0"), DomainCurrency.UAH))
                 assertThat(domainOrder.dailyExecutionType).isEqualTo(DomainDailyExecutionType.GTC)
             }
 
@@ -295,19 +295,19 @@ internal class CashOrderMapperTest {
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            val rate = DomainFxRate.of(
+            val rate = DomainFxRate(
                 testMarket, testTimestamp, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50"))
             assertThat(domainOrder.resultingRate).isEqualTo(rate)
             assertThat(domainOrder.resultingQuote).isEqualTo(FxRateAsQuote(rate, domainOrder.priceCurrency))
-            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.00"), DomainCurrency.UAH))
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount(bd("39.00"), DomainCurrency.UAH))
 
             assertThat(domainOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
             assertThat(domainOrder.expiredAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]"))
 
             assertThat(domainOrder).isExactlyInstanceOf(DomainStopOrder::class.java)
             if (domainOrder is DomainStopOrder) {
-                assertThat(domainOrder.stopPrice).isEqualTo(DomainAmount.of("40.0", DomainCurrency.UAH))
+                assertThat(domainOrder.stopPrice).isEqualTo(DomainAmount(bd("40.0"), DomainCurrency.UAH))
                 assertThat(domainOrder.dailyExecutionType).isEqualTo(DomainDailyExecutionType.DAY_ONLY)
             }
 
@@ -353,12 +353,12 @@ internal class CashOrderMapperTest {
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            val rate = DomainFxRate.of(
+            val rate = DomainFxRate(
                 testMarket, testTimestamp, DomainCurrencyPair.USD_UAH,
                 bid = bd("39.00"), ask = bd("39.50"))
             assertThat(domainOrder.resultingRate).isEqualTo(rate)
             assertThat(domainOrder.resultingQuote).isEqualTo(FxRateAsQuote(rate, domainOrder.priceCurrency))
-            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.00"), DomainCurrency.UAH))
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount(bd("39.00"), DomainCurrency.UAH))
 
             assertThat(domainOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
             assertThat(domainOrder.executedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:06:20+02:00[Europe/Kiev]"))

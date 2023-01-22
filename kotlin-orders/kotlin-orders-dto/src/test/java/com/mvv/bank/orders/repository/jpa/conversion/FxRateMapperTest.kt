@@ -1,11 +1,12 @@
 package com.mvv.bank.orders.repository.jpa.conversion
 
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
-import com.mvv.bank.orders.domain.of
 
 import com.mvv.bank.orders.conversion.CurrencyMapper
 import com.mvv.bank.orders.domain.Currency
 import com.mvv.bank.orders.domain.CurrencyPair
+import com.mvv.bank.orders.domain.currencyPair
+import com.mvv.bank.orders.domain.invoke
 import com.mvv.bank.orders.repository.jpa.entities.FxRate as JpaFxRate
 import com.mvv.bank.orders.domain.FxRate as DomainFxRate
 import org.assertj.core.api.SoftAssertions
@@ -29,10 +30,10 @@ internal class CurrencyMapperTest {
 
             assertThat(currencyMapper.toDto(null)).isNull()
 
-            assertThat(currencyMapper.toDomain("USD")).isEqualTo(Currency.of("USD"))
+            assertThat(currencyMapper.toDomain("USD")).isEqualTo(Currency("USD"))
             assertThat(currencyMapper.toDomain("USD")).isEqualTo(Currency.USD)
 
-            assertThat(currencyMapper.toDto(Currency.of("USD"))).isEqualTo("USD")
+            assertThat(currencyMapper.toDto(Currency("USD"))).isEqualTo("USD")
             assertThat(currencyMapper.toDto(Currency.USD)).isEqualTo("USD")
 
             assertThatCode { currencyMapper.toDomain("USD ") }
@@ -61,7 +62,7 @@ internal class FxRateMapperTest {
             assertThat(mapper).isNotNull
 
             val dto = mapper.toDto(
-                DomainFxRate.of(testMarket, testTimestamp, CurrencyPair.EUR_USD, bid = bd("1.1"), ask = bd("1.2")))
+                DomainFxRate(testMarket, testTimestamp, CurrencyPair.EUR_USD, bid = bd("1.1"), ask = bd("1.2")))
 
             assertThat(dto).isNotNull
 
@@ -102,7 +103,7 @@ internal class FxRateMapperTest {
             assertThat(domainObj).isNotNull
 
             checkNotNull(domainObj) // for kotlin only
-            assertThat(domainObj.currencyPair).isEqualTo(CurrencyPair.of("EUR_USD"))
+            assertThat(domainObj.currencyPair).isEqualTo(currencyPair("EUR_USD"))
             assertThat(domainObj.market).isNotNull.isEqualTo(testMarket.symbol)
             assertThat(domainObj.marketDate).isNotNull.isEqualTo(testDate)
             assertThat(domainObj.marketTime).isNotNull.isEqualTo(testTime)

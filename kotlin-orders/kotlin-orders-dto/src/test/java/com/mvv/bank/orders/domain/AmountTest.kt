@@ -23,21 +23,21 @@ internal class AmountTest {
             }
 
             run {
-                val amount = Amount.of("12.34", Currency.of("USD"))
+                val amount = Amount(bd("12.34"), Currency.of("USD"))
                 assertThat(amount.value).isEqualTo(bd("12.34"))
                 assertThat(amount.currency).isEqualTo(Currency.of("USD"))
                 assertThat(amount.currency.value).isEqualTo("USD")
             }
 
             run {
-                val amount = Amount.of("12.34", USD)
+                val amount = Amount(bd("12.34"), USD)
                 assertThat(amount.value).isEqualTo(bd("12.34"))
                 assertThat(amount.currency).isEqualTo(Currency.of("USD"))
                 assertThat(amount.currency.value).isEqualTo("USD")
             }
 
             run {
-                val amount = Amount.of("12.34 USD")
+                val amount = Amount.valueOf("12.34 USD")
                 assertThat(amount.value).isEqualTo(bd("12.34"))
                 assertThat(amount.currency).isEqualTo(Currency.of("USD"))
                 assertThat(amount.currency.value).isEqualTo("USD")
@@ -57,11 +57,11 @@ internal class AmountTest {
     fun compare() {
         SoftAssertions().apply {
 
-            assertThat(Amount.of("1234.5", USD)).isEqualTo(Amount.of("1234.5", USD))
-            assertThat(Amount.of("1234.5", USD)).isNotEqualTo(Amount.of("1234.5", EUR))
+            assertThat(Amount(bd("1234.5"), USD)).isEqualTo(Amount(bd("1234.5"), USD))
+            assertThat(Amount(bd("1234.5"), USD)).isNotEqualTo(Amount(bd("1234.5"), EUR))
 
             // with another precision
-            assertThat(Amount.of("1234.5", USD)).isEqualTo(Amount.of("1234.50", USD))
+            assertThat(Amount(bd("1234.5"), USD)).isEqualTo(Amount(bd("1234.50"), USD))
 
         }.assertAll()
     }
@@ -80,13 +80,13 @@ internal class AmountTest {
             println(bd("3e5").scale())
             println(bd("3e5").precision())
 
-            assertThat(Amount.of("0", USD).hashCode()).isEqualTo(Amount.of("0", USD).hashCode())
-            assertThat(Amount.of("1234.5", USD).hashCode()).isEqualTo(Amount.of("1234.5", USD).hashCode())
-            assertThat(Amount.of("1234.5", USD).hashCode()).isNotEqualTo(Amount.of("1234.5", EUR).hashCode())
+            assertThat(Amount(bd("0"), USD).hashCode()).isEqualTo(Amount(bd("0"), USD).hashCode())
+            assertThat(Amount(bd("1234.5"), USD).hashCode()).isEqualTo(Amount(bd("1234.5"), USD).hashCode())
+            assertThat(Amount(bd("1234.5"), USD).hashCode()).isNotEqualTo(Amount(bd("1234.5"), EUR).hashCode())
 
             // with another precision
-            assertThat(Amount.of("1234.5", USD).hashCode()).isEqualTo(Amount.of("1234.5000", USD).hashCode())
-            assertThat(Amount.of("3e5", USD).hashCode()).isEqualTo(Amount.of("30e4", USD).hashCode())
+            assertThat(Amount(bd("1234.5"), USD).hashCode()).isEqualTo(Amount(bd("1234.5000"), USD).hashCode())
+            assertThat(Amount(bd("3e5"), USD).hashCode()).isEqualTo(Amount(bd("30e4"), USD).hashCode())
 
         }.assertAll()
     }

@@ -18,9 +18,9 @@ class TestPredefinedUsers {
 class TestPredefinedMarkets {
     companion object : MarketProvider {
         val NASDAQ: Market = TestMarketImpl("National Association of Securities Dealers Automated Quotation",
-            MarketSymbol.of("NASDAQ"), ZoneId.of("America/New_York"), "",
+            MarketSymbol("NASDAQ"), ZoneId.of("America/New_York"), "",
             LocalTime.of(9, 0), LocalTime.of(17, 0))
-        val KYIV1:  Market = TestMarketImpl("KYIV1", MarketSymbol.of("KYIV1"),
+        val KYIV1:  Market = TestMarketImpl("KYIV1", MarketSymbol("KYIV1"),
             ZoneId.of("Europe/Kiev"), "", LocalTime.of(9, 0), LocalTime.of(17, 0))
 
         override fun marketBySymbol(marketSymbol: MarketSymbol): Market =
@@ -35,7 +35,7 @@ class TestPredefinedMarkets {
 
 class TestPredefinedCompanies {
     companion object : CompanyProvider {
-        val APPLE: Company = TestCompanyImpl("Apple", CompanySymbol.of("AAPL"), "isin1234")
+        val APPLE: Company = TestCompanyImpl("Apple", CompanySymbol("AAPL"), "isin1234")
 
         override fun companyBySymbol(companySymbol: CompanySymbol): Company =
             when (companySymbol) {

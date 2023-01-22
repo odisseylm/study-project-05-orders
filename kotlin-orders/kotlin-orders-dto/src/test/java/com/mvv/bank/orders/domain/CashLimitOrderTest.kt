@@ -37,12 +37,12 @@ internal class CashLimitOrderTest {
                 volume = bd("1000"),
                 market = testMarket,
             ),
-            limitPrice = Amount.of("39.38", UAH),
+            limitPrice = amount("39.38 UAH"),
             dailyExecutionType = DailyExecutionType.GTC,
         )
 
-        val rate = FxRate.of(
-            testMarket, testTimestamp, CurrencyPair.of("EUR_UAH"),
+        val rate = FxRate(
+            testMarket, testTimestamp, currencyPair("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
@@ -55,7 +55,7 @@ internal class CashLimitOrderTest {
             // mainly to suppress 'unused' warnings
             assertThat(order.orderType).isEqualTo(OrderType.LIMIT_ORDER)
             assertThat(order.volume).isEqualTo(bd("1000"))
-            assertThat(order.limitPrice).isEqualTo(Amount.of("39.38 UAH"))
+            assertThat(order.limitPrice).isEqualTo(Amount.valueOf("39.38 UAH"))
             assertThat(order.dailyExecutionType).isEqualTo(DailyExecutionType.GTC)
 
             // In Foreign Exchange:
@@ -76,19 +76,19 @@ internal class CashLimitOrderTest {
                 .isTrue
 
             // for inverted rate
-            assertThat(order.toExecute(rate.copy(bid = bd("39.35"), ask = bd("39.37")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.35"), ask = bd("39.37")).inverted))
                 .isFalse
-            assertThat(order.toExecute(rate.copy(bid = bd("39.36"), ask = bd("39.38")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.36"), ask = bd("39.38")).inverted))
                 .isFalse
-            assertThat(order.toExecute(rate.copy(bid = bd("39.37"), ask = bd("39.39")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.37"), ask = bd("39.39")).inverted))
                 .isFalse
             // T O D O: it is false due to loosing precision!!! Is it ok, or we should add price rounding
-            assertThat(order.toExecute(rate.copy(bid = bd("39.38"), ask = bd("39.40")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.38"), ask = bd("39.40")).inverted))
                 .isFalse
             // 0.0005 is added to bid=39.38 to get bid=39.38 after double inverting
-            assertThat(order.toExecute(rate.copy(bid = bd("39.3805"), ask = bd("39.40")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.3805"), ask = bd("39.40")).inverted))
                 .isTrue
-            assertThat(order.toExecute(rate.copy(bid = bd("39.39"), ask = bd("39.41")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.39"), ask = bd("39.41")).inverted))
                 .isTrue
 
         }.assertAll()
@@ -109,7 +109,7 @@ internal class CashLimitOrderTest {
                 volume = bd("1000"),
                 market = testMarket,
             ),
-            limitPrice = Amount.of("39.38", UAH),
+            limitPrice = amount("39.38 UAH"),
             dailyExecutionType = DailyExecutionType.GTC,
         )
 
@@ -118,7 +118,7 @@ internal class CashLimitOrderTest {
             timestamp = testTimestamp,
             marketDate = testDate,
             marketTime = testTime,
-            currencyPair = CurrencyPair.of("EUR_UAH"),
+            currencyPair = currencyPair("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
@@ -146,15 +146,15 @@ internal class CashLimitOrderTest {
                 .isFalse
 
             // for inverted rate
-            assertThat(order.toExecute(rate.copy(bid = bd("39.35"), ask = bd("39.37")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.35"), ask = bd("39.37")).inverted))
                 .isTrue
-            assertThat(order.toExecute(rate.copy(bid = bd("39.36"), ask = bd("39.38")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.36"), ask = bd("39.38")).inverted))
                 .isTrue
-            assertThat(order.toExecute(rate.copy(bid = bd("39.37"), ask = bd("39.39")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.37"), ask = bd("39.39")).inverted))
                 .isFalse
-            assertThat(order.toExecute(rate.copy(bid = bd("39.38"), ask = bd("39.40")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.38"), ask = bd("39.40")).inverted))
                 .isFalse
-            assertThat(order.toExecute(rate.copy(bid = bd("39.39"), ask = bd("39.41")).inverted()))
+            assertThat(order.toExecute(rate.copy(bid = bd("39.39"), ask = bd("39.41")).inverted))
                 .isFalse
 
         }.assertAll()
@@ -175,7 +175,7 @@ internal class CashLimitOrderTest {
                         market = TestPredefinedMarkets.KYIV1,
                         orderState = OrderState.EXECUTED,
                     ),
-                    limitPrice = Amount.of("39.38", UAH),
+                    limitPrice = amount("39.38 UAH"),
                     dailyExecutionType = DailyExecutionType.GTC,
                 )
             }
@@ -197,7 +197,7 @@ internal class CashLimitOrderTest {
                         market = TestPredefinedMarkets.KYIV1,
                         orderState = OrderState.EXECUTED,
                     ),
-                    limitPrice = Amount.of("39.38", UAH),
+                    limitPrice = amount("39.38 UAH"),
                     dailyExecutionType = DailyExecutionType.GTC,
                 )
             }
@@ -216,7 +216,7 @@ internal class CashLimitOrderTest {
                     buyCurrency = EUR
                     sellCurrency = UAH
                     volume = bd("1000")
-                    limitPrice = Amount.of("39.38", UAH)
+                    limitPrice = amount("39.38 UAH")
                     dailyExecutionType = DailyExecutionType.GTC
                     market = TestPredefinedMarkets.KYIV1
                     orderState = OrderState.EXECUTED

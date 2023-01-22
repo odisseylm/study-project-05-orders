@@ -23,10 +23,10 @@ interface StockQuoteMapper {
 
     fun toDomain(quote: DtoStockQuote?): DomainStockQuote? = if (quote == null) null
         else DomainStockQuote(
-            market = MarketSymbol.of(quote.market), company = CompanySymbol.of(quote.company),
+            market = MarketSymbol(quote.market), company = CompanySymbol(quote.company),
             timestamp = quote.timestamp, marketDate = quote.marketDate, marketTime = quote.marketTime,
-            bid = DomainAmount.of(quote.bid.value, DomainCurrency.of(quote.bid.currency)),
-            ask = DomainAmount.of(quote.ask.value, DomainCurrency.of(quote.ask.currency)),
+            bid = DomainAmount(quote.bid.value, DomainCurrency(quote.bid.currency)),
+            ask = DomainAmount(quote.ask.value, DomainCurrency(quote.ask.currency)),
             )
 
     /*

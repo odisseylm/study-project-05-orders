@@ -25,9 +25,12 @@ class Currency private constructor (@param:Tainted @field:Untainted val value: S
         const val MIN_LENGTH: Int = 3
         const val MAX_LENGTH: Int = 3 // ??? probably it can be 4 for crypto ???
 
-        @JvmStatic fun of(currency: String) = Currency(currency)
+        operator fun invoke(currency: String) = Currency(currency) // T O D O: add caching of predefined currencies
+
+        // for java (MapStruct so on)
+        @JvmStatic fun of(currency: String) = invoke(currency)
         // standard java method to get from string. It can help to integrate with other java frameworks.
-        @JvmStatic fun valueOf(currency: String) = of(currency)
+        @JvmStatic fun valueOf(currency: String) = invoke(currency)
 
         // popular ones
         val UAH = Currency("UAH")
@@ -67,16 +70,18 @@ class CurrencyPair private constructor (
             else -> throw IllegalArgumentException("No opposite currency to $currency in $this.")
         }
 
-    fun inverted(): CurrencyPair = of(base = this.counter, counter = this.base)
+    val inverted get(): CurrencyPair = of(base = this.counter, counter = this.base)
 
     @Suppress("unused")
     companion object {
         const val MIN_LENGTH: Int = Currency.MIN_LENGTH * 2 + 1
         const val MAX_LENGTH: Int = Currency.MAX_LENGTH * 2 + 1
 
-        @JvmStatic fun of(base: Currency, counter: Currency) = CurrencyPair(base, counter)
-        @JvmStatic fun of(base: String, counter: String) = of(Currency.of(base), Currency.of(counter))
-        @JvmStatic fun of(currencyPair: String) = parseCurrencyPair(currencyPair)
+        operator fun invoke(base: Currency, counter: Currency) = CurrencyPair(base, counter)
+
+        // for Java (MapStruct so on)
+        @JvmStatic fun of(base: Currency, counter: Currency) = invoke(base, counter)
+        @JvmStatic fun of(base: String, counter: String) = invoke(Currency.of(base), Currency.of(counter))
         // standard java method to get from string. It can help to integrate with other java frameworks.
         @JvmStatic fun valueOf(currencyPair: String) = parseCurrencyPair(currencyPair)
 

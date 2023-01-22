@@ -11,34 +11,34 @@ internal class MarketSymbolTest {
         SoftAssertions().apply {
 
             assertThat(MarketSymbol.of("GOOGLE").value).isEqualTo("GOOGLE")
-            assertThat(MarketSymbol.of("GOOGLE").toString()).isEqualTo("GOOGLE")
+            assertThat(MarketSymbol.valueOf("GOOGLE").toString()).isEqualTo("GOOGLE")
 
-            assertThat(MarketSymbol.of("GOOGLE.KT").value).isEqualTo("GOOGLE.KT")
-            assertThat(MarketSymbol.of("GOOGLE-KT").value).isEqualTo("GOOGLE-KT")
+            assertThat(MarketSymbol("GOOGLE.KT").value).isEqualTo("GOOGLE.KT")
+            assertThat(MarketSymbol("GOOGLE-KT").value).isEqualTo("GOOGLE-KT")
 
             // Max length 25
-            assertThat(MarketSymbol.of("A".repeat(25)).toString()).isEqualTo("A".repeat(25))
-            assertThatCode { MarketSymbol.of("A".repeat(26)).toString() }
+            assertThat(MarketSymbol("A".repeat(25)).toString()).isEqualTo("A".repeat(25))
+            assertThatCode { MarketSymbol("A".repeat(26)).toString() }
                 .hasMessage("Invalid market symbol [AAAAAAAAAAAAAAAAAAAAAAAAAA].")
 
-            assertThatCode { MarketSymbol.of("").toString() }
+            assertThatCode { MarketSymbol("").toString() }
                 .hasMessage("Invalid market symbol [].")
-            assertThatCode { MarketSymbol.of(" ").toString() }
+            assertThatCode { MarketSymbol(" ").toString() }
                 .hasMessage("Invalid market symbol [ ].")
-            assertThatCode { MarketSymbol.of(" GOOGLE").toString() }
+            assertThatCode { MarketSymbol(" GOOGLE").toString() }
                 .hasMessage("Invalid market symbol [ GOOGLE].")
-            assertThatCode { MarketSymbol.of("GOOGLE ").toString() }
+            assertThatCode { MarketSymbol("GOOGLE ").toString() }
                 .hasMessage("Invalid market symbol [GOOGLE ].")
-            assertThatCode { MarketSymbol.of("GOO GLE").toString() }
+            assertThatCode { MarketSymbol("GOO GLE").toString() }
                 .hasMessage("Invalid market symbol [GOO GLE].")
 
-            assertThatCode { MarketSymbol.of("GOOGLE'KT").toString() }
+            assertThatCode { MarketSymbol("GOOGLE'KT").toString() }
                 .hasMessage("Invalid market symbol [GOOGLE'KT].")
-            assertThatCode { MarketSymbol.of("GOOGLE`KT").toString() }
+            assertThatCode { MarketSymbol("GOOGLE`KT").toString() }
                 .hasMessage("Invalid market symbol [GOOGLE`KT].")
-            assertThatCode { MarketSymbol.of("GOOGLE/KT").toString() }
+            assertThatCode { MarketSymbol("GOOGLE/KT").toString() }
                 .hasMessage("Invalid market symbol [GOOGLE/KT].")
-            assertThatCode { MarketSymbol.of("GOOGLE\\KT").toString() }
+            assertThatCode { MarketSymbol("GOOGLE\\KT").toString() }
                 .hasMessage("Invalid market symbol [GOOGLE\\KT].")
 
         }.assertAll()

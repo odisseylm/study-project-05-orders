@@ -29,7 +29,7 @@ abstract class AbstractOrderMapper: Cloneable {
     // (to avoid injection sub-dependencies into dependencies)
     fun marketToDto(market: DomainMarket?): String? = market?.symbol?.value
     fun marketToDomain(marketSymbol: String?): DomainMarket? =
-        if (marketSymbol == null) null else marketToDomain(MarketSymbol.of(marketSymbol))
+        if (marketSymbol == null) null else marketToDomain(MarketSymbol(marketSymbol))
     fun marketToDomain(marketSymbol: MarketSymbol?): DomainMarket? =
         if (marketSymbol == null) null else marketProvider.marketBySymbol(marketSymbol)
 
@@ -37,7 +37,7 @@ abstract class AbstractOrderMapper: Cloneable {
     // (to avoid injection sub-dependencies into dependencies)
     fun companyToDto(company: DomainCompany?): String? = company?.symbol?.value
     fun companyToDomain(companySymbol: String?): DomainCompany? =
-        if (companySymbol == null) null else companyToDomain(CompanySymbol.of(companySymbol))
+        if (companySymbol == null) null else companyToDomain(CompanySymbol(companySymbol))
     fun companyToDomain(companySymbol: CompanySymbol?): DomainCompany? =
         if (companySymbol == null) null else companyProvider.companyBySymbol(companySymbol)
 

@@ -4,7 +4,7 @@ import com.mvv.bank.orders.domain.AbstractStockOrder.Base
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedCompanies
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers
-import com.mvv.bank.orders.domain.of
+import com.mvv.bank.orders.domain.invoke
 
 import com.mvv.bank.test.reflect.initProperty
 import com.mvv.bank.util.newInstance
@@ -69,7 +69,7 @@ internal class StockOrderMapperTest {
                 market = testMarket,
                 orderState = DomainOrderState.TO_BE_PLACED,
             ),
-            limitPrice = DomainAmount.of("40.0", DomainCurrency.USD),
+            limitPrice = DomainAmount(bd("40.0"), DomainCurrency.USD),
             dailyExecutionType = DomainDailyExecutionType.GTC,
         )
 
@@ -104,14 +104,14 @@ internal class StockOrderMapperTest {
                 company = testCompany,
                 volume = bd("2000"),
                 market = testMarket,
-                resultingQuote = DomainStockQuote.of(
+                resultingQuote = DomainStockQuote(
                     testMarket, testCompany, testTimestamp,
                     bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD,
                 ),
                 orderState = DomainOrderState.PLACED,
                 placedAt = ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"),
             ),
-            stopPrice = DomainAmount.of("40.0", DomainCurrency.USD),
+            stopPrice = DomainAmount(bd("40.0"), DomainCurrency.USD),
             dailyExecutionType = DomainDailyExecutionType.GTC,
         )
 
@@ -231,15 +231,15 @@ internal class StockOrderMapperTest {
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.50"), DomainCurrency.USD))
-            assertThat(domainOrder.resultingQuote).isEqualTo(DomainStockQuote.of(
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount(bd("39.50"), DomainCurrency.USD))
+            assertThat(domainOrder.resultingQuote).isEqualTo(DomainStockQuote(
                 testMarket, testCompany, testTimestamp,
                 bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD,
             ))
 
             assertThat(domainOrder).isExactlyInstanceOf(DomainLimitOrder::class.java)
             if (domainOrder is DomainLimitOrder) {
-                assertThat(domainOrder.limitPrice).isEqualTo(DomainAmount.of(bd("40.0"), DomainCurrency.USD))
+                assertThat(domainOrder.limitPrice).isEqualTo(DomainAmount(bd("40.0"), DomainCurrency.USD))
                 assertThat(domainOrder.dailyExecutionType).isEqualTo(DomainDailyExecutionType.GTC)
             }
 
@@ -289,8 +289,8 @@ internal class StockOrderMapperTest {
 
             val quote = DomainStockQuote(
                 testMarket.symbol, testCompany.symbol, testTimestamp, testDate, testTime,
-                bid = DomainAmount.of(bd("39.00"), DomainCurrency.USD), ask = DomainAmount.of(bd("39.50"), DomainCurrency.USD))
-            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.00"), DomainCurrency.USD))
+                bid = DomainAmount(bd("39.00"), DomainCurrency.USD), ask = DomainAmount(bd("39.50"), DomainCurrency.USD))
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount(bd("39.00"), DomainCurrency.USD))
             assertThat(domainOrder.resultingQuote).isEqualTo(quote)
 
             assertThat(domainOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))
@@ -298,7 +298,7 @@ internal class StockOrderMapperTest {
 
             assertThat(domainOrder).isExactlyInstanceOf(DomainStopOrder::class.java)
             if (domainOrder is DomainStopOrder) {
-                assertThat(domainOrder.stopPrice).isEqualTo(DomainAmount.of("40.0", DomainCurrency.USD))
+                assertThat(domainOrder.stopPrice).isEqualTo(DomainAmount(bd("40.0"), DomainCurrency.USD))
                 assertThat(domainOrder.dailyExecutionType).isEqualTo(DomainDailyExecutionType.DAY_ONLY)
             }
 
@@ -344,10 +344,10 @@ internal class StockOrderMapperTest {
             assertThat(domainOrder.market).isNotNull.isEqualTo(testMarket)
             assertThat(domainOrder.orderState).isEqualTo(DomainOrderState.PLACED)
 
-            val stockQuote = DomainStockQuote.of(
+            val stockQuote = DomainStockQuote(
                 testMarket, testCompany, testTimestamp,
                 bid = bd("39.00"), ask = bd("39.50"), DomainCurrency.USD)
-            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount.of(bd("39.50"), DomainCurrency.USD))
+            assertThat(domainOrder.resultingPrice).isEqualTo(DomainAmount(bd("39.50"), DomainCurrency.USD))
             assertThat(domainOrder.resultingQuote).isEqualTo(stockQuote)
 
             assertThat(domainOrder.placedAt).isEqualTo(ZonedDateTime.parse("2023-01-03T01:05:20+02:00[Europe/Kiev]"))

@@ -11,5 +11,5 @@ import com.mvv.bank.orders.rest.entities.Amount as DtoAmount
 interface AmountMapper {
     fun toDto(source: DomainAmount?): DtoAmount?
     fun toDomain(source: DtoAmount?): DomainAmount? = if (source == null) null
-        else DomainAmount.of(source.value, DomainCurrency.of(source.currency))
+        else DomainAmount(source.value, DomainCurrency(source.currency))
 }
