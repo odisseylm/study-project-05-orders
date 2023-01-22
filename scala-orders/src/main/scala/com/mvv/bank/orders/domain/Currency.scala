@@ -102,16 +102,6 @@ class CurrencyPair private (
 */
 
 
-extension (self: CurrencyPair)
-  def oppositeCurrency(oppositeTo: Currency): Currency =
-    oppositeTo match
-      case self.base    => self.counter
-      case self.counter => self.base
-      case _ => throw IllegalArgumentException(s"No opposite currency to $oppositeTo in $self.")
-
-  def inverted: CurrencyPair = CurrencyPair.of(base = self.counter, counter = self.base)
-
-
 object CurrencyPair extends NullableCanEqualGivens[CurrencyPair] :
   val MIN_LENGTH: Int = Currency.MIN_LENGTH * 2 + 1
   val MAX_LENGTH: Int = Currency.MAX_LENGTH * 2 + 1
@@ -130,6 +120,20 @@ object CurrencyPair extends NullableCanEqualGivens[CurrencyPair] :
 
   import com.mvv.bank.orders.domain.Currency.{EUR, UAH, USD}
 
+  extension (currencyPair: CurrencyPair)
+    def oppositeCurrency(oppositeTo: Currency): Currency =
+      oppositeTo match
+        case currencyPair.base    => currencyPair.counter
+        case currencyPair.counter => currencyPair.base
+        case _ => throw IllegalArgumentException(s"No opposite currency to $oppositeTo in $currencyPair.")
+
+    def inverted: CurrencyPair = CurrencyPair(base = currencyPair.counter, counter = currencyPair.base)
+    def containsCurrency(currency: Currency): Boolean =
+      currencyPair.base == currency || currencyPair.counter == currency
+    def containsCurrencies(ccy1: Currency, ccy2: Currency): Boolean =
+      containsCurrency(ccy1) && containsCurrency(ccy2)
+
+
   // popular ones
   val USD_EUR: CurrencyPair = of(USD, EUR)
   val EUR_USD: CurrencyPair = of(EUR, USD)
@@ -142,12 +146,6 @@ object CurrencyPair extends NullableCanEqualGivens[CurrencyPair] :
 
   // feel free to add other popular ones...
 
-
-extension (currencyPair: CurrencyPair)
-  def containsCurrency (currency: Currency): Boolean =
-    currencyPair.base == currency || currencyPair.counter == currency
-  def containsCurrencies (ccy1: Currency, ccy2: Currency): Boolean =
-    containsCurrency (ccy1) && containsCurrency (ccy2)
 
 
 private def validateCurrency(@Tainted currency: String): Unit =

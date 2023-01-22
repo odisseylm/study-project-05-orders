@@ -9,13 +9,8 @@ import com.mvv.nullables.NullableCanEqualGivens
 
 // TODO: temp, remove after adding/implementing these classes
 trait StockOrder
-trait AbstractCashOrder
-
-trait CashMarketOrder extends AbstractCashOrder
 trait StockMarketOrder extends StockOrder
-trait CashLimitOrder extends AbstractCashOrder
 trait StockLimitOrder extends StockOrder
-trait CashStopOrder extends AbstractCashOrder
 trait StockStopOrder extends StockOrder
 
 

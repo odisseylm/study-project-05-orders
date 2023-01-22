@@ -1,6 +1,7 @@
 //noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
+
 import scala.language.strictEquality
 //
 import scala.reflect.ClassTag
@@ -9,16 +10,17 @@ import scala.compiletime.uninitialized
 import java.time.ZonedDateTime
 //
 import com.mvv.utils.{ newInstance, check, checkId, checkNotNull, checkNotBlank, require, requireNotBlank }
-import com.mvv.nullables.isNull
 import com.mvv.utils.{ removePrefix, uncapitalize}
 import com.mvv.log.{safe, Logger, LoggerMixin}
+import com.mvv.nullables.{ isNull, NullableCanEqualGivens }
 import com.mvv.scala.props.{ checkRequiredPropsAreInitialized, checkPropertyInitialized, BeanProp, KProperty, LateInitProperty }
 
 
-trait BaseQuote // TODO: temp, remove after adding/implementing BaseQuote
+
+type BaseQuote = Quote
 
 //sealed
-trait Order[Product <: AnyRef, Quote <: BaseQuote] {
+trait Order[Product, Quote <: BaseQuote] :
   def id: Option[Long]
 
   def user: User
@@ -51,8 +53,9 @@ trait Order[Product <: AnyRef, Quote <: BaseQuote] {
   def validateNextState(nextState: OrderState): Unit
 
   def toExecute(quote: Quote): Boolean
-}
+end Order
 
+object Order // extends NullableCanEqualGivens[Order] // TODO: why compile error
 
 trait OrderNaturalKey
   // T O D O: implement
@@ -72,51 +75,11 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
 
   // This class mainly is introduced to avoid 'duplicate code' warning
   //@Suppress("ClassName") // It is named from '_' (as internal) because I cannot do it protected
-  /*protected*/ trait _BaseAttrs[P <: AnyRef, Q <: BaseQuote] {
-    val id: Option[Long]
-    val user: User
-    val side: Side
-    val buySellType: BuySellType
-    val volume: BigDecimal
-
-    val market: Market
-
-    val orderState: OrderState
-
-    val placedAt:   Option[ZonedDateTime]
-    val executedAt: Option[ZonedDateTime]
-    val canceledAt: Option[ZonedDateTime]
-    val expiredAt:  Option[ZonedDateTime]
-
-    val resultingPrice: Option[Amount]
-    val resultingQuote: Option[Q]
-
-    protected def copyToOrder(order: AbstractOrder[P, Q]): Unit = {
-      order._id = id
-      order._user = user
-
-      order._side(side)
-      order._buySellType  = buySellType
-      order._volume = volume
-
-      order._market = market
-
-      order._orderState = orderState
-
-      order._placedAt   = placedAt
-      order._executedAt = executedAt
-      order._canceledAt = canceledAt
-      order._expiredAt  = expiredAt
-
-      order._resultingPrice = resultingPrice
-      order._resultingQuote = resultingQuote
-    }
-  }
 
   protected var _id: Option[Long] = None
   def id: Option[Long] = _id
 
-  protected var _user: User
+  protected var _user: User = uninitialized
   def user: User = _user
 
   private val _side = LateInitProperty[Side, AnyRef](
@@ -126,16 +89,16 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
   def side: Side = _side.getValue(this, KProperty.simpleProperty[Side]("side"))
   protected def side_= (side: Side): Unit = _side.set(side)
 
-  protected var _product: Product
+  protected var _product: Product = uninitialized
   def product: Product = _product
 
-  protected var _volume: BigDecimal
+  protected var _volume: BigDecimal = uninitialized
   def volume: BigDecimal = _volume
 
-  protected var _market: Market
+  protected var _market: Market = uninitialized
   def market: Market = _market
 
-  protected var _buySellType: BuySellType
+  protected var _buySellType: BuySellType = uninitialized
   def buySellType: BuySellType = _buySellType
 
   protected var _orderState: OrderState = OrderState.UNKNOWN
@@ -274,3 +237,48 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
     }
   }
 }
+
+
+object AbstractOrder :
+  //protected
+  trait _BaseAttrs[P <: AnyRef, Q <: BaseQuote] :
+    val id: Option[Long]
+    val user: User
+    val side: Side
+    val buySellType: BuySellType
+    val volume: BigDecimal
+
+    val market: Market
+
+    val orderState: OrderState
+
+    val placedAt: Option[ZonedDateTime]
+    val executedAt: Option[ZonedDateTime]
+    val canceledAt: Option[ZonedDateTime]
+    val expiredAt: Option[ZonedDateTime]
+
+    val resultingPrice: Option[Amount]
+    val resultingQuote: Option[Q]
+
+    protected def copyToOrder(order: AbstractOrder[P, Q]): Unit =
+      order._id = id
+      order._user = user
+
+      order._side(side)
+      order._buySellType = buySellType
+      order._volume = volume
+
+      order._market = market
+
+      order._orderState = orderState
+
+      order._placedAt = placedAt
+      order._executedAt = executedAt
+      order._canceledAt = canceledAt
+      order._expiredAt = expiredAt
+
+      order._resultingPrice = resultingPrice
+      order._resultingQuote = resultingQuote
+    end copyToOrder
+  end _BaseAttrs
+

@@ -45,6 +45,11 @@ def checkRequiredPropsAreInitialized[T](obj: T)(implicit classTag: ClassTag[T]):
 
 case class BeanProp[T](value: T, propName: String = "")
 
+// TODO: add support of Option too
 def checkPropertyInitialized[T](prop: BeanProp[T]): Unit =
   if (prop.value.isNull)
     throw UninitializedPropertyAccessException("Property is not initialized.")
+
+def checkPropertyInitialized[T](prop: BeanProp[T], msg: =>String): Unit =
+  if (prop.value.isNull)
+    throw UninitializedPropertyAccessException(msg)

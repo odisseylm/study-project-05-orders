@@ -12,11 +12,20 @@ class UninitializedPropertyAccessException (msg: String) extends RuntimeExceptio
 
 trait KProperty[T] :
   def name: String
+  def value: T
 
 object KProperty :
-  def simpleProperty[T](propertyName: String): KProperty[T] = SimplePropertyImpl(propertyName)
+  def simpleProperty[T](propertyName: String): KProperty[T] = SimplePropertyImpl(propertyName, valueNotSupported)
+  def simpleProperty[T](propertyName: String, value: ()=>T): KProperty[T] =
+    SimplePropertyImpl(propertyName, value)
 
-private case class SimplePropertyImpl[T] (name: String) extends KProperty[T]
+private def valueNotSupported[T]: T = throw IllegalStateException("Getting value is not implemented/supported.")
+
+private case class SimplePropertyImpl[T] (
+  name: String,
+  valueF: ()=>T,
+  ) extends KProperty[T] :
+  override def value: T = valueF()
 
 
 // from Kotlin

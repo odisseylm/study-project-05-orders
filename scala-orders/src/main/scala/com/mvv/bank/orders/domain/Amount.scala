@@ -46,11 +46,14 @@ object Amount extends NullableCanEqualGivens[Amount] :
   // scala style
   def apply(value: BigDecimal, currency: Currency): Amount = new Amount(value, currency)
 
-
   // standard java methods to get from string. It can help to integrate with other java frameworks.
   def of(value: BigDecimal, currency: Currency): Amount = Amount(value, currency)
   def valueOf(@Tainted amount: String): Amount = parseAmount(amount)
 
+  extension (amount: Amount)
+    def * (m: BigDecimal): Amount = Amount(amount.value * m, amount.currency)
+  extension (m: BigDecimal)
+    def * (amount: Amount): Amount = Amount(amount.value * m, amount.currency)
 
 
 private val MAX_AMOUNT_LENGTH = 1000 + 1 + Currency.MAX_LENGTH
