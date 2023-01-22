@@ -26,7 +26,7 @@ class TradesTest {
             buyCurrency = Currency.EUR,
             sellCurrency = Currency.UAH,
             volume = bd("1000"),
-            price = Amount.of(bd("36.7"), Currency.UAH),
+            price = amount("36.7 UAH"),
             tradedAt = now,
         )
 
@@ -42,7 +42,7 @@ class TradesTest {
             a.assertThat(trade.priceCurrency).isEqualTo(Currency.UAH)
 
             a.assertThat(trade.volume).isEqualTo(bd(1000))
-            a.assertThat(trade.price).isEqualTo(Amount.valueOf("36.7 UAH"))
+            a.assertThat(trade.price).isEqualTo(amount("36.7 UAH"))
             a.assertThat(trade.tradedAt).isEqualTo(now)
 
         }.assertAll()
@@ -56,7 +56,7 @@ class TradesTest {
             company = TestPredefinedCompanies.APPLE.symbol,
             buySellType = BuySellType.BUY,
             volume = bd("1000"),
-            price = Amount.of(bd("95.55"), Currency.USD),
+            price = amount("95.55 USD"),
             tradedAt = now,
         )
 
@@ -68,7 +68,7 @@ class TradesTest {
             a.assertThat(trade.product).isEqualTo(TestPredefinedCompanies.APPLE.symbol)
             a.assertThat(trade.company).isEqualTo(TestPredefinedCompanies.APPLE.symbol)
             a.assertThat(trade.volume).isEqualTo(bd(1000))
-            a.assertThat(trade.price).isEqualTo(Amount.valueOf("95.55 USD"))
+            a.assertThat(trade.price).isEqualTo(amount("95.55 USD"))
             a.assertThat(trade.tradedAt).isEqualTo(now)
 
         }.assertAll()

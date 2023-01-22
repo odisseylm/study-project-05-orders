@@ -62,8 +62,8 @@ object StockQuote extends NullableCanEqualGivens[StockQuote] :
     timestamp = timestamp,
     marketDate = timestamp.withZoneSameInstant(market.zoneId).nn.toLocalDate.nn,
     marketTime = timestamp.withZoneSameInstant(market.zoneId).nn.toLocalTime.nn,
-    bid = Amount.of(bid, currency),
-    ask = Amount.of(ask, currency),
+    bid = Amount(bid, currency),
+    ask = Amount(ask, currency),
   )
 
   extension (quote: StockQuote)

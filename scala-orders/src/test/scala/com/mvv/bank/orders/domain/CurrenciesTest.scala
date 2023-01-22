@@ -40,6 +40,8 @@ class CurrenciesTest {
   @Test
   def currencyPair(): Unit =
     assertThat(CurrencyPair("USD", "EUR").toString).isEqualTo("USD_EUR")
+    assertThat(CurrencyPair.of("USD", "EUR").toString).isEqualTo("USD_EUR")
+    assertThat(CurrencyPair.of(Currency("USD"), Currency("EUR")).toString).isEqualTo("USD_EUR")
     assertThat(CurrencyPair.of("USD_EUR").toString).isEqualTo("USD_EUR")
     assertThat(CurrencyPair.valueOf("USD_EUR")).isEqualTo(CurrencyPair.USD_EUR)
 
@@ -57,7 +59,7 @@ class CurrenciesTest {
   @Test
   @Disabled("For manual debugging")
   def temp(): Unit = {
-    assertThatCode ( () => CurrencyPair.of("U") )
+    assertThatCode ( () => CurrencyPair.valueOf("U") )
       .hasMessage("Invalid currency [null].")
       .isExactlyInstanceOf(classOf[IllegalArgumentException])
   }

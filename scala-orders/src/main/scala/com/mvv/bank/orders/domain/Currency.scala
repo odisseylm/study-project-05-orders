@@ -135,14 +135,14 @@ object CurrencyPair extends NullableCanEqualGivens[CurrencyPair] :
 
 
   // popular ones
-  val USD_EUR: CurrencyPair = of(USD, EUR)
-  val EUR_USD: CurrencyPair = of(EUR, USD)
+  val USD_EUR: CurrencyPair = new CurrencyPair(USD, EUR)
+  val EUR_USD: CurrencyPair = new CurrencyPair(EUR, USD)
 
-  val USD_UAH: CurrencyPair = of(USD, UAH)
-  val UAH_USD: CurrencyPair = of(UAH, USD)
+  val USD_UAH: CurrencyPair = new CurrencyPair(USD, UAH)
+  val UAH_USD: CurrencyPair = new CurrencyPair(UAH, USD)
 
-  val EUR_UAH: CurrencyPair = of(EUR, UAH)
-  val UAH_EUR: CurrencyPair = of(UAH, EUR)
+  val EUR_UAH: CurrencyPair = new CurrencyPair(EUR, UAH)
+  val UAH_EUR: CurrencyPair = new CurrencyPair(UAH, EUR)
 
   // feel free to add other popular ones...
 
@@ -180,7 +180,7 @@ private def parseCurrencyPair(@Tainted stringCurrencyPair: String): CurrencyPair
   require(curList.length == 2,
     s"Invalid currency pair [${str.safe}] (format like 'USD${separator}EUR' is expected)." )
 
-  try { CurrencyPair.of(Currency(curList(0)), Currency(curList(1))) }
+  try { CurrencyPair(Currency(curList(0)), Currency(curList(1))) }
   catch { case ex: Exception => throw IllegalArgumentException(s"Invalid currency pair [${str.safe}].", ex) }
 }
 

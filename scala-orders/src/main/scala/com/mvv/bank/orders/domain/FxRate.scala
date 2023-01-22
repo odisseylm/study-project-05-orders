@@ -69,7 +69,7 @@ object FxRate extends NullableCanEqualGivens[FxRate] :
         case BuySellType.SELL => rate.ask
 
       val fixedPriceValue: BigDecimal = if (rate.currencyPair.counter == priceCurrency) price else invertRate(price)
-      Amount.of(fixedPriceValue, priceCurrency)
+      Amount(fixedPriceValue, priceCurrency)
 
 
 case class FxRateAsQuote (

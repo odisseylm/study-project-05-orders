@@ -85,30 +85,30 @@ class AmountTest {
       SoftAssertions().runTests { a =>
 
           run {
-              val amount = Amount.of(bd("12.34"), Currency.of("USD"))
+              val amount = Amount(bd("12.34"), Currency("USD"))
               a.assertThat(amount.value).isEqualTo(bd("12.34"))
-              a.assertThat(amount.currency).isEqualTo(Currency.of("USD"))
+              a.assertThat(amount.currency).isEqualTo(Currency("USD"))
               a.assertThat(amount.currency.value).isEqualTo("USD")
           }
 
           run {
-              val amount = Amount.of(bd("12.34"), Currency.of("USD"))
+              val amount = Amount(bd("12.34"), Currency("USD"))
               a.assertThat(amount.value).isEqualTo(bd("12.34"))
-              a.assertThat(amount.currency).isEqualTo(Currency.of("USD"))
+              a.assertThat(amount.currency).isEqualTo(Currency("USD"))
               a.assertThat(amount.currency.value).isEqualTo("USD")
           }
 
           run {
-              val amount = Amount.of(bd("12.34"), USD)
+              val amount = Amount(bd("12.34"), USD)
               a.assertThat(amount.value).isEqualTo(bd("12.34"))
-              a.assertThat(amount.currency).isEqualTo(Currency.of("USD"))
+              a.assertThat(amount.currency).isEqualTo(Currency("USD"))
               a.assertThat(amount.currency.value).isEqualTo("USD")
           }
 
           run {
               val amount = Amount.valueOf("12.34 USD")
               a.assertThat(amount.value).isEqualTo(bd("12.34"))
-              a.assertThat(amount.currency).isEqualTo(Currency.of("USD"))
+              a.assertThat(amount.currency).isEqualTo(Currency("USD"))
               a.assertThat(amount.currency.value).isEqualTo("USD")
           }
 
@@ -126,11 +126,11 @@ class AmountTest {
   def compare(): Unit =  {
       SoftAssertions().runTests { a =>
 
-          a.assertThat(Amount.of(bd("1234.5"), USD)).isEqualTo(Amount.of(bd("1234.5"), USD))
-          a.assertThat(Amount.of(bd("1234.5"), USD)).isNotEqualTo(Amount.of(bd("1234.5"), EUR))
+          a.assertThat(Amount(bd("1234.5"), USD)).isEqualTo(Amount(bd("1234.5"), USD))
+          a.assertThat(Amount(bd("1234.5"), USD)).isNotEqualTo(Amount(bd("1234.5"), EUR))
 
           // with another precision
-          a.assertThat(Amount.of(bd("1234.5"), USD)).isEqualTo(Amount.of(bd("1234.50"), USD))
+          a.assertThat(Amount(bd("1234.5"), USD)).isEqualTo(Amount(bd("1234.50"), USD))
 
       }.assertAll()
   }
@@ -149,13 +149,13 @@ class AmountTest {
           println(bd("3e5").scale)
           println(bd("3e5").precision)
 
-          a.assertThat(Amount.of(bd("0"), USD).hashCode()).isEqualTo(Amount.of(bd("0"), USD).hashCode())
-          a.assertThat(Amount.of(bd("1234.5"), USD).hashCode()).isEqualTo(Amount.of(bd("1234.5"), USD).hashCode())
-          a.assertThat(Amount.of(bd("1234.5"), USD).hashCode()).isNotEqualTo(Amount.of(bd("1234.5"), EUR).hashCode())
+          a.assertThat(Amount(bd("0"), USD).hashCode()).isEqualTo(Amount(bd("0"), USD).hashCode())
+          a.assertThat(Amount(bd("1234.5"), USD).hashCode()).isEqualTo(Amount(bd("1234.5"), USD).hashCode())
+          a.assertThat(Amount(bd("1234.5"), USD).hashCode()).isNotEqualTo(Amount(bd("1234.5"), EUR).hashCode())
 
           // with another precision
-          a.assertThat(Amount.of(bd("1234.5"), USD).hashCode()).isEqualTo(Amount.of(bd("1234.5000"), USD).hashCode())
-          a.assertThat(Amount.of(bd("3e5"), USD).hashCode()).isEqualTo(Amount.of(bd("30e4"), USD).hashCode())
+          a.assertThat(Amount(bd("1234.5"), USD).hashCode()).isEqualTo(Amount(bd("1234.5000"), USD).hashCode())
+          a.assertThat(Amount(bd("3e5"), USD).hashCode()).isEqualTo(Amount(bd("30e4"), USD).hashCode())
 
       }.assertAll()
   }

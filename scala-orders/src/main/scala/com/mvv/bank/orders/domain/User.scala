@@ -48,6 +48,8 @@ class UserNaturalKey private (
 
 object UserNaturalKey extends NullableCanEqualGivens[UserNaturalKey] :
   def apply(userNaturalKey: String): UserNaturalKey = new UserNaturalKey(userNaturalKey)
+  // for java (MapStruct so on)
+  def of(userNaturalKey: String): UserNaturalKey = apply(userNaturalKey)
   // standard java method to get from string. It can help to integrate with other java frameworks.
   def valueOf(userNaturalKey: String): UserNaturalKey = apply(userNaturalKey)
 
@@ -85,6 +87,8 @@ class User private (
 object User extends NullableCanEqualGivens[User] :
   def apply(naturalKey: UserNaturalKey): User = new User(naturalKey)
   def apply(@Tainted naturalKey: String): User = new User(UserNaturalKey(naturalKey))
+  // for java (MapStruct so on)
+  def of(@Tainted naturalKey: String): User = apply(naturalKey)
   // standard java method to get from string. It can help to integrate with other java frameworks.
   def valueOf(@Tainted naturalKey: String): User = apply(naturalKey)
 

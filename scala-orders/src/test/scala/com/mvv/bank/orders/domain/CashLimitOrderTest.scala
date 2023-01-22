@@ -44,7 +44,7 @@ class CashLimitOrderTest {
         )
 
         val rate = FxRate(
-            testMarket, testTimestamp, CurrencyPair.of("EUR_UAH"),
+            testMarket, testTimestamp, currencyPair("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
@@ -57,7 +57,7 @@ class CashLimitOrderTest {
             // mainly to suppress 'unused' warnings
             a.assertThat(order.orderType).isEqualTo(OrderType.LIMIT_ORDER)
             a.assertThat(order.volume).isEqualTo(bd("1000"))
-            a.assertThat(order.limitPrice).isEqualTo(Amount.valueOf("39.38 UAH"))
+            a.assertThat(order.limitPrice).isEqualTo(amount("39.38 UAH"))
             a.assertThat(order.dailyExecutionType).isEqualTo(DailyExecutionType.GTC)
 
             // In Foreign Exchange:
@@ -121,7 +121,7 @@ class CashLimitOrderTest {
             timestamp = testTimestamp,
             marketDate = testDate,
             marketTime = testTime,
-            currencyPair = CurrencyPair.of("EUR_UAH"),
+            currencyPair = currencyPair("EUR_UAH"),
             // In Foreign Exchange:
             //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
             //  ask - price of client 'buy'  (and dealer/bank 'sell')
@@ -178,7 +178,7 @@ class CashLimitOrderTest {
                         market = TestPredefinedMarkets.KYIV1,
                         orderState = OrderState.EXECUTED,
                     ),
-                    limitPrice = Amount.of(bd("39.38"), UAH),
+                    limitPrice = amount("39.38 UAH"),
                     dailyExecutionType = DailyExecutionType.GTC,
                 )
             }
@@ -200,7 +200,7 @@ class CashLimitOrderTest {
                         market = TestPredefinedMarkets.KYIV1,
                         orderState = OrderState.EXECUTED,
                     ),
-                    limitPrice = Amount.of(bd("39.38"), UAH),
+                    limitPrice = amount("39.38 UAH"),
                     dailyExecutionType = DailyExecutionType.GTC,
                 )
             }
