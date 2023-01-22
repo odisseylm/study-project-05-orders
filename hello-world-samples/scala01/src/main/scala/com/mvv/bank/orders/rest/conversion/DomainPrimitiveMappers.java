@@ -14,3 +14,8 @@ interface CurrencyMapper extends com.mvv.bank.orders.rest.conversion.impl.Curren
 @Mapper(uses = CurrencyMapper.class)
 interface AmountMapper extends com.mvv.bank.orders.rest.conversion.impl.AmountMapper {
 }
+
+
+@Mapper
+interface OptionMapper extends com.mvv.bank.orders.rest.conversion.impl.OptionMapper {
+}

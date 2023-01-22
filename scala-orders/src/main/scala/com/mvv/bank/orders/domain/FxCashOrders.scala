@@ -23,7 +23,7 @@ sealed abstract class AbstractCashOrder extends AbstractOrder[Currency, Quote] {
 
   // It also can be used to set resultingPrice/resultingQuote from FX rate during order execution (if they are not set).
   // It is optional/temporary (mainly for debugging; most probably after loading order from database it will be lost).
-  protected var _resultingRate: Option[FxRate] = None
+  private var _resultingRate: Option[FxRate] = None
   def resultingRate: Option[FxRate] = _resultingRate
   // TODO: make it protected
   def resultingRate_= (value: Option[FxRate]): Unit = {
@@ -34,7 +34,7 @@ sealed abstract class AbstractCashOrder extends AbstractOrder[Currency, Quote] {
 
     if (value.isDefined)
       if resultingPrice.isEmpty then
-        resultingPrice = value.map(_.asPrice(priceCurrency, buySellType)) // TODO: test with inverted rate
+        _resultingPrice = value.map(_.asPrice(priceCurrency, buySellType)) // TODO: test with inverted rate
       if resultingQuote.isEmpty then
         resultingQuote = value.map(FxRateAsQuote(_, priceCurrency)) // TODO: test with inverted rate
   }
@@ -85,19 +85,14 @@ object AbstractCashOrder :
     override val resultingPrice: Option[Amount] = None,
     override val resultingQuote: Option[Quote] = None,
 
-  ) extends AbstractOrder._BaseAttrs[Currency, Quote]:
+  ) extends AbstractOrder._BaseAttrs[Currency, Quote, AbstractCashOrder]:
 
-    def copyToOrder(order: AbstractCashOrder): Unit =
+    override def copyToOrder(order: AbstractCashOrder): Unit =
       super.copyToOrder(order)
       order._buyCurrency = buyCurrency
       order._sellCurrency = sellCurrency
       order.resultingRate = resultingRate
   end Base
-
-
-trait CashMarketOrder extends AbstractCashOrder
-trait CashStopOrder extends AbstractCashOrder
-
 
 
 class CashLimitOrder private () extends AbstractCashOrder, LimitOrder[Currency, Quote] :
@@ -134,6 +129,7 @@ end CashLimitOrder
 
 
 object CashLimitOrder  extends NullableCanEqualGivens[CashLimitOrder]:
+  //noinspection DuplicatedCode
   def apply(
           base: AbstractCashOrder.Base,
           limitPrice: Amount,
@@ -149,70 +145,72 @@ object CashLimitOrder  extends NullableCanEqualGivens[CashLimitOrder]:
     order
 
 
-/*
-class CashStopOrder private constructor() : AbstractCashOrder(), StopOrder<Currency, Quote> {
 
-    private val stopOrderSupport = StopLimitOrderSupport(this, ::stopPrice, ::dailyExecutionType)
+class CashStopOrder private () extends AbstractCashOrder, StopOrder[Currency, Quote] :
 
-    override val orderType: OrderType = OrderType.STOP_ORDER
-    override lateinit var stopPrice: Amount
-    override lateinit var dailyExecutionType: DailyExecutionType
+  private val stopOrderSupport = StopLimitOrderSupport[Currency, Quote](
+    this, "stoPrice", () => stopPrice, "dailyExecutionType", () => dailyExecutionType)
+  // TODO: use it ::stopPrice, ::dailyExecutionType)
 
-    override fun validateCurrentState() {
-        super.validateCurrentState()
-        stopOrderSupport.validateCurrentState()
+  override val orderType: OrderType = OrderType.STOP_ORDER
 
-        check(stopPrice.currency == priceCurrency) {
-            "Stop price currency (${stopPrice.currency.safe}) differs from price currency (${priceCurrency.safe})." }
-    }
+  private var _stopPrice: Amount = uninitialized
+  override def stopPrice: Amount = _stopPrice
 
-    override fun validateNextState(nextState: OrderState) {
-        super.validateNextState(nextState)
-        stopOrderSupport.validateNextState(nextState)
-    }
+  private var _dailyExecutionType: DailyExecutionType = uninitialized
+  override def dailyExecutionType: DailyExecutionType = _dailyExecutionType
 
-    override fun toExecute(quote: Quote): Boolean = stopOrderSupport.toExecute(quote)
+  override def validateCurrentState(): Unit =
+    super.validateCurrentState()
+    stopOrderSupport.validateCurrentState()
 
-    companion object {
-        fun create(
-            base: Base,
-            stopPrice: Amount,
-            dailyExecutionType: DailyExecutionType,
-        ): CashStopOrder {
-            val order = CashStopOrder()
-            base.copyToOrder(order)
+    check(stopPrice.currency == priceCurrency,
+      "Stop price currency (${stopPrice.currency.safe}) differs from price currency (${priceCurrency.safe}).")
 
-            order.stopPrice   = stopPrice
-            order.dailyExecutionType = dailyExecutionType
+  override def validateNextState(nextState: OrderState): Unit =
+    super.validateNextState(nextState)
+    stopOrderSupport.validateNextState(nextState)
 
-            order.validateCurrentState()
-            return order
-        }
-    }
-}
+  override def toExecute(quote: Quote): Boolean = stopOrderSupport.toExecute(quote)
+
+end CashStopOrder
+
+object CashStopOrder extends NullableCanEqualGivens[CashStopOrder] :
+  //noinspection DuplicatedCode
+  def apply(
+      base: AbstractCashOrder.Base,
+      stopPrice: Amount,
+      dailyExecutionType: DailyExecutionType,
+  ): CashStopOrder =
+      val order = new CashStopOrder()
+      base.copyToOrder(order)
+
+      order._stopPrice = stopPrice
+      order._dailyExecutionType = dailyExecutionType
+
+      order.validateCurrentState()
+      order
+
+end CashStopOrder
 
 
-class CashMarketOrder private constructor() : AbstractCashOrder() {
-    override val orderType: OrderType = OrderType.MARKET_ORDER
 
-    override fun toExecute(quote: Quote): Boolean {
-        val rateCurrencyPair = CurrencyPair.of(Currency.of(quote.product), quote.bid.currency)
-        val orderCurrencyPair = CurrencyPair.of(buyCurrency, sellCurrency)
+class CashMarketOrder private () extends AbstractCashOrder :
+  override val orderType: OrderType = OrderType.MARKET_ORDER
 
-        check(rateCurrencyPair == orderCurrencyPair || rateCurrencyPair == orderCurrencyPair.inverted()) {
-            "FX rate currencies $rateCurrencyPair does not suite order currencies $orderCurrencyPair." }
-        return true
-    }
+  override def toExecute(quote: Quote): Boolean =
+    val rateCurrencyPair = CurrencyPair(Currency (quote.product), quote.bid.currency)
+    val orderCurrencyPair = CurrencyPair(buyCurrency, sellCurrency)
 
-    companion object {
-        fun create(
-            base: Base,
-        ): CashMarketOrder {
-            val order = CashMarketOrder()
-            base.copyToOrder(order)
-            order.validateCurrentState()
-            return order
-        }
-    }
-}
-*/
+    check (rateCurrencyPair == orderCurrencyPair || rateCurrencyPair == orderCurrencyPair.inverted,
+    s"FX rate currencies ${rateCurrencyPair.safe} does not suite order currencies ${orderCurrencyPair.safe}.")
+    true
+
+
+object CashMarketOrder extends NullableCanEqualGivens[CashMarketOrder] :
+  def apply(base: AbstractCashOrder.Base): CashMarketOrder =
+    val order = new CashMarketOrder()
+    base.copyToOrder(order)
+    order.validateCurrentState()
+    order
+

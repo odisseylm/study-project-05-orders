@@ -63,7 +63,7 @@ trait OrderNaturalKey
 type BaseOrder = Order[?,?]
 
 
-inline def createOrder[T <: BaseOrder](init: BaseOrder => Unit)(implicit ct: ClassTag[T]): T =
+inline def createOrder[T <: BaseOrder](init: T => Unit)(implicit ct: ClassTag[T]): T =
   val order = newInstance[T]()
   init(order)
   order.validateCurrentState()
@@ -118,11 +118,12 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
   def expiredAt:  Option[ZonedDateTime] = _expiredAt
 
   protected var _resultingPrice: Option[Amount] = None
-  var resultingPrice: Option[Amount] = _resultingPrice
+  def resultingPrice: Option[Amount] = _resultingPrice
 
   // it is optional/temporary (mainly for debugging; most probably after loading order from database it will be lost)
-  protected var _resultingQuote: Option[Quote] = None
-  var resultingQuote: Option[Quote] = _resultingQuote
+  private var _resultingQuote: Option[Quote] = None
+  def resultingQuote: Option[Quote] = _resultingQuote
+  protected def resultingQuote_= (quote: Option[Quote]): Unit = _resultingQuote = quote
 
 
   override def changeOrderState(nextOrderState: OrderState)(using context: OrderContext): Unit = {
@@ -159,7 +160,7 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
 
   override def validateCurrentState(): Unit = {
     if (orderState == OrderState.UNKNOWN) {
-      log.warn(s"Attempt to validate current state of order with status ${orderState.safe}.")
+      //log.warn(s"Attempt to validate current state of order with status ${orderState.safe}.")
       return
     }
 
@@ -241,7 +242,7 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
 
 object AbstractOrder :
   //protected
-  trait _BaseAttrs[P <: AnyRef, Q <: BaseQuote] :
+  trait _BaseAttrs[P <: AnyRef, Q <: BaseQuote, OrderType <: AbstractOrder[P, Q]] : // TODO: try to remain only Order type parameter
     val id: Option[Long]
     val user: User
     val side: Side
@@ -257,10 +258,7 @@ object AbstractOrder :
     val canceledAt: Option[ZonedDateTime]
     val expiredAt: Option[ZonedDateTime]
 
-    val resultingPrice: Option[Amount]
-    val resultingQuote: Option[Q]
-
-    protected def copyToOrder(order: AbstractOrder[P, Q]): Unit =
+    protected def copyToOrder(order: OrderType): Unit =
       order._id = id
       order._user = user
 
@@ -280,5 +278,8 @@ object AbstractOrder :
       order._resultingPrice = resultingPrice
       order._resultingQuote = resultingQuote
     end copyToOrder
+    val resultingPrice: Option[Amount]
+
+    val resultingQuote: Option[Q]
   end _BaseAttrs
 

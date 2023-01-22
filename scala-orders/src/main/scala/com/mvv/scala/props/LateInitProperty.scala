@@ -19,7 +19,7 @@ object KProperty :
   def simpleProperty[T](propertyName: String, value: ()=>T): KProperty[T] =
     SimplePropertyImpl(propertyName, value)
 
-private def valueNotSupported[T]: T = throw IllegalStateException("Getting value is not implemented/supported.")
+private def valueNotSupported[T]: ()=>T = () => throw IllegalStateException("Getting value is not implemented/supported.")
 
 private case class SimplePropertyImpl[T] (
   name: String,

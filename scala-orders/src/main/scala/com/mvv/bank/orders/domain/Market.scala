@@ -80,8 +80,7 @@ Stock Exchange symbols:
 
 
 private val MARKET_SYMBOL_MAX_LENGTH = 25
-//private val marketSymbolPattern = Regex("^[A-Z0-9\\-.]*\$")
-private val marketSymbolPattern = Regex("") // TODO: fix regex
+private val marketSymbolPattern = Regex("^[A-Z0-9\\-.]*$")
 
 
 private def validateMarketSymbol(@Tainted marketSymbol: CharSequence): Unit =

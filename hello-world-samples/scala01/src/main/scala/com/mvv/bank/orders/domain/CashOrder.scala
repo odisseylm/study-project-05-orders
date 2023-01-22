@@ -7,6 +7,10 @@ class CashOrder {
   @BeanProperty
   var id: Long|Null = null
   @BeanProperty
+  var nullableLongProp: Long | Null = null
+  @BeanProperty
+  var optionLongProp1: Option[Long] = None
+  @BeanProperty
   var buyCurrency: Currency = uninitialized
   @BeanProperty
   var sellCurrency: Currency = uninitialized

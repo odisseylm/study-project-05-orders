@@ -7,16 +7,9 @@ import scala.reflect.ClassTag
 import com.mvv.nullables.NullableCanEqualGivens
 
 
-// TODO: temp, remove after adding/implementing these classes
-trait StockOrder
-trait StockMarketOrder extends StockOrder
-trait StockLimitOrder extends StockOrder
-trait StockStopOrder extends StockOrder
-
-
 enum OrderType (
   val cashDomainType: Class[? <: AbstractCashOrder],
-  val stockDomainType: Class[? <: StockOrder],
+  val stockDomainType: Class[? <: AbstractStockOrder],
   ) {
   case MARKET_ORDER extends OrderType(classOf[CashMarketOrder], classOf[StockMarketOrder])
   case LIMIT_ORDER extends OrderType(classOf[CashLimitOrder], classOf[StockLimitOrder])

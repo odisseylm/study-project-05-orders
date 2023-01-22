@@ -1,3 +1,4 @@
+//noinspection ScalaUnusedSymbol
 package com.mvv.utils
 
 //import scala.Predef.nn
@@ -64,7 +65,7 @@ def checkId[T <: Long](id: T|Null, msg: =>String): Unit = checkIdImpl(id, msg)
 def checkId[T <: Long](id: T|Null): Unit = checkId(id, s"Id is not set or incorrect [${id.safe}].")
 
 def checkId[T <: Long](id: Option[T], msg: =>String): Unit = checkIdImpl(if id.isEmpty then null else id.get , msg)
-def checkId[T <: Long](id: Option[T]): Unit = checkId(id, s"Id is not set or incorrect [${id.safe}].")
+def checkId[T <: Long](id: Option[T]): Unit = checkId(id, s"Id is not set or incorrect [${toValueOrNull(id).safe}].")
 
 private def checkIdImpl[T <: Long](id: T|Null, msg: =>String): Unit =
   import com.mvv.nullables.AnyCanEqualGivens.given
