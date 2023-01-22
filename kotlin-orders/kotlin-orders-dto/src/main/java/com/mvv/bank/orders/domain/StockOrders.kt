@@ -5,7 +5,7 @@ import java.math.BigDecimal
 import java.time.ZonedDateTime
 
 
-sealed class StockOrder : AbstractOrder<CompanySymbol, StockQuote>() {
+sealed class AbstractStockOrder : AbstractOrder<CompanySymbol, StockQuote>() {
 
     class Base (
         override val id: Long? = null,
@@ -27,7 +27,7 @@ sealed class StockOrder : AbstractOrder<CompanySymbol, StockQuote>() {
         override val resultingPrice: Amount? = null,
         override val resultingQuote: StockQuote? = null,
     ) : _BaseAttrs<CompanySymbol, StockQuote>() {
-        fun copyToOrder(order: StockOrder) {
+        fun copyToOrder(order: AbstractStockOrder) {
             super.copyToOrder(order)
             order.company = company
         }
@@ -50,7 +50,7 @@ sealed class StockOrder : AbstractOrder<CompanySymbol, StockQuote>() {
         }
 }
 
-class StockLimitOrder : StockOrder(), LimitOrder<CompanySymbol, StockQuote> {
+class StockLimitOrder : AbstractStockOrder(), LimitOrder<CompanySymbol, StockQuote> {
 
     private val limitOrderSupport = StopLimitOrderSupport(this,
         //"limitPrice", { this.limitPrice },
@@ -94,7 +94,7 @@ class StockLimitOrder : StockOrder(), LimitOrder<CompanySymbol, StockQuote> {
 }
 
 
-class StockStopOrder : StockOrder(), StopOrder<CompanySymbol, StockQuote> {
+class StockStopOrder : AbstractStockOrder(), StopOrder<CompanySymbol, StockQuote> {
 
     private val stopOrderSupport = StopLimitOrderSupport(this, ::stopPrice, ::dailyExecutionType)
 
@@ -133,7 +133,7 @@ class StockStopOrder : StockOrder(), StopOrder<CompanySymbol, StockQuote> {
 }
 
 
-class StockMarketOrder : StockOrder() {
+class StockMarketOrder : AbstractStockOrder() {
     override val orderType: OrderType = OrderType.MARKET_ORDER
 
     override fun toExecute(quote: StockQuote): Boolean {

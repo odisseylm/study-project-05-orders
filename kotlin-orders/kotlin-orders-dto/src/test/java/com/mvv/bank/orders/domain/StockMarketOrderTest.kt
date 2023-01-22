@@ -1,6 +1,6 @@
 package com.mvv.bank.orders.domain
 
-import com.mvv.bank.orders.domain.StockOrder.Base
+import com.mvv.bank.orders.domain.AbstractStockOrder.Base
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedCompanies
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedMarkets
 import com.mvv.bank.orders.domain.test.predefined.TestPredefinedUsers

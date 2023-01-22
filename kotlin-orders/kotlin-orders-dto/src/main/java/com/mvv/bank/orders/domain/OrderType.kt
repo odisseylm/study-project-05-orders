@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 
 enum class OrderType (
     val cashDomainType: KClass<out AbstractCashOrder>,
-    val stockDomainType: KClass<out StockOrder>,
+    val stockDomainType: KClass<out AbstractStockOrder>,
 ) {
     MARKET_ORDER(CashMarketOrder::class, StockMarketOrder::class),
     LIMIT_ORDER(CashLimitOrder::class, StockLimitOrder::class),

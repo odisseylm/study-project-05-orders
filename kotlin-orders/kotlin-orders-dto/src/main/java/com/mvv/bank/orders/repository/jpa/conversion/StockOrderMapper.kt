@@ -7,7 +7,7 @@ import com.mvv.bank.orders.domain.of
 import org.mapstruct.*
 import kotlin.reflect.KClass
 
-import com.mvv.bank.orders.domain.StockOrder as DomainOrder
+import com.mvv.bank.orders.domain.AbstractStockOrder as DomainOrder
 import com.mvv.bank.orders.domain.Currency as DomainCurrency
 import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 import com.mvv.bank.orders.domain.StockQuote as DomainStockQuote

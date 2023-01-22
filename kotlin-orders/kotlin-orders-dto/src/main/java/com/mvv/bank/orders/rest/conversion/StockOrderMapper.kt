@@ -10,9 +10,9 @@ import com.mvv.bank.orders.rest.entities.StockOrder as DtoOrder
 import com.mvv.bank.orders.rest.entities.BaseOrder as DtoBaseOrder
 import com.mvv.bank.orders.rest.entities.OrderType as DtoOrderType
 
-import com.mvv.bank.orders.domain.StockOrder as DomainOrder
 import com.mvv.bank.orders.domain.OrderType as DomainOrderType
 import com.mvv.bank.orders.domain.StockStopOrder as DomainStopOrder
+import com.mvv.bank.orders.domain.AbstractStockOrder as DomainOrder
 import com.mvv.bank.orders.domain.StockLimitOrder as DomainLimitOrder
 import com.mvv.bank.orders.domain.StockMarketOrder as DomainMarketOrder
 
