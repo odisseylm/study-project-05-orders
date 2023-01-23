@@ -1,6 +1,7 @@
 package com.mvv.scala.temp.tests.macros2
 
 import com.mvv.scala.macros.asPropValue
+import com.mvv.scala.macros.PropValue
 
 def aa(): Unit = {}
 
@@ -11,11 +12,18 @@ def localVal: String = "gjhgjhgjh3333"
 def localFunction1: String = "gjhgjhgjh"
 def localFunction2(): String = "gjhgjhgjh"
 
+
+@main
+def Bbbbbb_test2(): Unit = {
+  Bbbbbb().test2()
+}
+
 class Bbbbbb :
   val aaaStr: String = "str54646"
   val aaa: Rfvtgb = Rfvtgb("54646")
   def bbb1: Rfvtgb = Rfvtgb("54646")
   def bbb2(): Rfvtgb = Rfvtgb("54646")
+  def optionProp: Option[Rfvtgb] = Option(Rfvtgb("54646"))
 
   def test1(): Unit = {
     val ccc = asBeanValue(aaa)
@@ -29,7 +37,7 @@ class Bbbbbb :
 
     //val jhdgfhdg = Bbbbbb.this.aaa
 
-    inspect( aaa)
+    inspect(aaa)
     //inspect(s"asdf: $aaa")
 
     val er1 = asBeanValue2(67890)
@@ -43,19 +51,36 @@ class Bbbbbb :
     val sss1_1 = asBeanValue3(aaa)
     val sss1_2 = asBeanValue3(bbb1)
     val sss1_3 = asBeanValue3(bbb2())
+  }
 
+  def test2(): Unit = {
     val sss2_0 = asPropValue(aaaStr)
     val sss2_1 = asPropValue(aaa)
     val sss2_2 = asPropValue(bbb1)
     val sss2_3 = asPropValue(bbb2())
+    val sss2_4 = asPropValue(optionProp)
 
+    println(s" $sss2_0 $sss2_1 $sss2_2 $sss2_3 $sss2_4 ")
+
+    val a1: Option[String] = sss2_0.value
+    val a2_1: Option[Rfvtgb] = optionProp
+    val a2_2: Option[Rfvtgb] = sss2_4.value
+
+    println(s" $a1 $a2_1 $a2_2 ")
+
+    require(sss2_4.value == optionProp)
+    require(sss2_0.value.orNull == aaaStr)
+  }
+
+  /*
+  def shouldBeCompiledWithError(): Unit = {
     val sss3_1 = asPropValue(localVal)
     val sss3_2 = asPropValue(localFunction1)
     val sss3_3 = asPropValue(localFunction2())
-
-
-    println(s" $sss2_0 $sss2_1 $sss2_2 $sss2_3 ")
+    println(s" $sss3_1 $sss3_2 $sss3_3")
   }
+  */
 
-  val ddd3: BeanPropertyValue[Any, Any] = asBeanValue(aaa)
+  //val ddd3: BeanPropertyValue[Any, Any] = asBeanValue(aaa)
+  val ddd3: PropValue[Any, Any] = asPropValue(aaa)
 

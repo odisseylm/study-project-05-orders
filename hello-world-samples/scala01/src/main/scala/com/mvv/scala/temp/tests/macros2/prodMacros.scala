@@ -14,21 +14,28 @@ import com.mvv.scala.macros.Logger as log
 inline def asPropValue[T](@unused inline expr: T): PropValue[T, Any] =
   ${ asPropValueImpl[T]('expr) }
 
+inline def asPropValue[T](@unused inline expr: Option[T]): PropValue[T, Any] =
+  ${ asPropOptionValueImpl[T]('expr) }
+
 
 private def asPropValueImpl[T](expr: Expr[T])(using t: Type[T])(using Quotes): Expr[PropValue[T, Any]] = {
-  val exprText: String = expr.show
-  log.debug(s"asPropValueImpl => expr: [$exprText]")
+  log.debug(s"asPropValue => expr: [${expr.show}]")
 
-  val propName = extractPropName(expr)
-  //noinspection ScalaUnusedSymbol
-  val propNameExpr: Expr[String] = Expr(propName)
-
+  @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
   val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Any]($propNameExpr, $expr) }
 
-  log.debug(s"asPropValueImpl => resulting expr: [${propValueExpr.show}]")
+  log.debug(s"asPropValue => resulting expr: [${propValueExpr.show}]")
   propValueExpr
+}
 
-  //'{ com.mvv.scala.macros.PropValue[T, Any]($propNameExpr, $expr, null) }
+private def asPropOptionValueImpl[T](expr: Expr[Option[T]])(using t: Type[T])(using Quotes): Expr[PropValue[T, Any]] = {
+  log.debug(s"asPropOptionValue => expr: [${expr.show}]")
+
+  @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
+  val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Any]($propNameExpr, $expr) }
+
+  log.debug(s"asPropOptionValue => resulting expr: [${propValueExpr.show}]")
+  propValueExpr
 }
 
 
@@ -41,13 +48,13 @@ private def extractPropName(expr: Expr[?])(using Quotes): String =
   if (sepIndex == -1)
     import quotes.reflect.report
     //logCompilationError(s"Seems expression [$exprText] is not property.", expr)
-    report.errorAndAbort(s"Seems expression [${failedExpressionText(expr)}] is not property.", expr)
+    report.errorAndAbort(s"Seems expression [${reportedFailedExprAsText(expr)}] is not property.", expr)
 
   val propName = exprText.substring(sepIndex + separator.length).nn
   propName
 
 
-private def failedExpressionText(expr: Expr[Any])(using Quotes): String =
+private def reportedFailedExprAsText(expr: Expr[Any])(using Quotes): String =
   import quotes.reflect.Position
   Position.ofMacroExpansion.sourceCode
     .map(sourceCode => s"${expr.show} used in $sourceCode")
@@ -67,6 +74,11 @@ private def logCompilationError(errorMessage: String, expr: Expr[Any])(using Quo
 
 
 
+
+
+
+
+// TODO: move below functions to debug file
 //noinspection ScalaUnusedSymbol
 // Debug functions
 // temp
