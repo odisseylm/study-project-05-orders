@@ -40,12 +40,14 @@ class Bbbbbb :
     inspect(aaa)
     //inspect(s"asdf: $aaa")
 
+    /*
     val er1 = asBeanValue2(67890)
     val er2 = asBeanValue2(aaa)
     val er3 = asBeanValue2(bbb1)
     // val er3_ = asBeanValue2(bbb1()) /// <=== Good! Compilation error
     // val er4 = asBeanValue2(bbb2)    /// <=== Good! Compilation error
     val er4_ = asBeanValue2(bbb2())
+    */
 
     val sss1_0 = asBeanValue3(aaaStr)
     val sss1_1 = asBeanValue3(aaa)
