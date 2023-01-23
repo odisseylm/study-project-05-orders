@@ -289,6 +289,23 @@ def asBeanValue2Impl(expr: Expr[Any])(using q: Quotes): Expr[Any] = {
   } // <=== working !!!!!
 }
 
+
+inline def asBeanValue3[T](@unused inline expr: T): BeanPropertyValue[T, Any] =
+  ${ asBeanValue3Impl[T]('expr) }
+
+
+def asBeanValue3Impl[T](expr: Expr[T])(using t: Type[T])(using q: Quotes): Expr[BeanPropertyValue[T, Any]] = {
+  val aa: String = expr.show
+  println(s"\n\n=============================\nasBeanValue2Impl: $aa")
+  val aa22: Expr[String] = Expr(expr.show)
+
+  val eee = '{ com.mvv.scala.temp.tests.macros2.BeanPropertyValue.beanPropertyValue[T, Any]($aa22, $expr) }
+
+  println(s"eee ${eee.show}")
+  eee
+}
+
+
 private def printFields(label: String, obj: Any): Unit =
   println(label)
   import scala.language.unsafeNulls
@@ -343,3 +360,4 @@ List(ValDef(aaa,Ident(String),L
 ClassSymbol.defTree: TypeDef(Bbbbbb,Template(DefDef(<init>,List(List()),TypeTr...
 List(ValDef(aaa,Ident(Rfvtgb),Apply(Select(Ident(Rfvtgb),apply),List(Literal(Constant(54646)))))
 */
+
