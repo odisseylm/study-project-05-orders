@@ -2,7 +2,10 @@
 package com.mvv.scala.temp.tests.macros2
 
 import com.mvv.scala.macros.asPropValue
+import com.mvv.scala.macros.asPropValue as _pv
 import com.mvv.scala.macros.PropValue
+
+import java.time.ZonedDateTime
 
 def aa(): Unit = {}
 
@@ -13,13 +16,17 @@ def localVal: String = "gjhgjhgjh3333"
 def localFunction1: String = "gjhgjhgjh"
 def localFunction2(): String = "gjhgjhgjh"
 
+extension [T](v: T|Null)
+  inline def nnn: T =
+    require(v != null); v.asInstanceOf[T]
 
 @main
 def Bbbbbb_test2(): Unit = {
   Bbbbbb().test2()
 }
 
-//noinspection ScalaWeakerAccess
+
+//noinspection TypeAnnotation ScalaWeakerAccess
 class Bbbbbb :
   val aaaStr: String = "str54646"
   val aaa: Rfvtgb = Rfvtgb("54646")
@@ -96,14 +103,11 @@ class Bbbbbb :
 
   //val ddd3: BeanPropertyValue[Any, Any] = asBeanValue(aaa)
   // !!! in this case generated code also will use [Any, Any]
-  //noinspection TypeAnnotation // Explicit type is not use to verify generated types
   val ddd3: PropValue[Rfvtgb, Any] = asPropValue(aaa)
-  //noinspection TypeAnnotation // Explicit type is not use to verify generated types
   val ddd4 = asPropValue(aaa)
-  //noinspection TypeAnnotation // Explicit type is not use to verify generated types
   val ddd5 = asPropValue(optionProp)
-  //noinspection TypeAnnotation // Explicit type is not use to verify generated types
   val ddd6 = asPropValue(this, aaa)
-  //noinspection TypeAnnotation // Explicit type is not use to verify generated types
   val ddd7 = asPropValue(this, optionProp)
+
+
 

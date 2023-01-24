@@ -1,4 +1,4 @@
-//noinspection DuplicatedCode
+//noinspection DuplicatedCode ScalaUnusedSymbol
 package com.mvv.scala.macros
 
 import com.sun.tools.javac.code.TypeTag
@@ -14,21 +14,18 @@ import com.mvv.scala.macros.Logger as log
 
 
 // TODO: try to fix warning
-inline def asPropValue[T](@unused inline expr: T): PropValue[T, Any] =
+inline def asPropValue[T](inline expr: T): PropValue[T, Any] =
   ${ asPropValueImpl[T, Any]('{ null }, 'expr) }
-inline def asPropValue[T, O](@unused inline ownerExpr: O, @unused inline expr: T): PropValue[T, O] =
+inline def asPropValue[T, O](inline ownerExpr: O, inline expr: T): PropValue[T, O] =
   ${ asPropValueImpl[T, O]('ownerExpr, 'expr) }
 
 
-//noinspection ScalaUnusedSymbol
 inline def asPropValue[T](inline expr: Option[T]): PropValue[T, Any] =
   ${ asPropOptionValueImpl[T, Any]('{ null }, 'expr) }
-//noinspection ScalaUnusedSymbol
 inline def asPropValue[T, O](inline ownerExpr: O, inline expr: Option[T]): PropValue[T, O] =
   ${ asPropOptionValueImpl[T, O]('ownerExpr, 'expr) }
 
 
-//noinspection ScalaUnusedSymbol
 private def asPropValueImpl[T, O](ownerExpr: Expr[O], expr: Expr[T])
                                          (using t: Type[T])(using o: Type[O])
                                          (using Quotes): Expr[PropValue[T, O]] = {
@@ -48,7 +45,6 @@ private def asPropValueImpl[T, O](ownerExpr: Expr[O], expr: Expr[T])
 }
 
 
-//noinspection ScalaUnusedSymbol
 private def asPropOptionValueImpl[T, O](ownerExpr: Expr[O], expr: Expr[Option[T]])
                                                (using t: Type[T])(using o: Type[O])
                                                (using Quotes): Expr[PropValue[T, O]] = {
@@ -67,7 +63,6 @@ private def asPropOptionValueImpl[T, O](ownerExpr: Expr[O], expr: Expr[Option[T]
 }
 
 
-//noinspection ScalaUnusedSymbol
 private def findClassExpr[T](using Type[T], Quotes): Option[Expr[Class[T]]] =
   import quotes.reflect.*
   val asString: String = Type.show[T]
