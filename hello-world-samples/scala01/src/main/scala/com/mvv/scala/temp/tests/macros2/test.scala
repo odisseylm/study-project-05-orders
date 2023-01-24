@@ -1,3 +1,4 @@
+//noinspection ScalaUnusedSymbol ScalaWeakerAccess
 package com.mvv.scala.temp.tests.macros2
 
 import com.mvv.scala.macros.asPropValue
@@ -18,6 +19,7 @@ def Bbbbbb_test2(): Unit = {
   Bbbbbb().test2()
 }
 
+//noinspection ScalaWeakerAccess
 class Bbbbbb :
   val aaaStr: String = "str54646"
   val aaa: Rfvtgb = Rfvtgb("54646")

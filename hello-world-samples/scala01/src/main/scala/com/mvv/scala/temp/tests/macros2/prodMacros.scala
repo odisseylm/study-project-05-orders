@@ -15,85 +15,78 @@ import com.mvv.scala.macros.Logger as log
 
 // TODO: try to fix warning
 inline def asPropValue[T](@unused inline expr: T): PropValue[T, Any] =
-  ${ asPropValueImpl[T]('expr) }
-inline def asPropValue[T, Owner/*:ClassTag*/](@unused inline ownerExpr: Owner, @unused inline expr: T): PropValue[T, Owner] =
-  ${ asPropValueImplWithThis[T, Owner]('ownerExpr, 'expr) }
+  ${ asPropValueImpl[T, Any]('{ null }, 'expr) }
+inline def asPropValue[T, O](@unused inline ownerExpr: O, @unused inline expr: T): PropValue[T, O] =
+  ${ asPropValueImpl[T, O]('ownerExpr, 'expr) }
 
 
-inline def asPropValue[T](@unused inline expr: Option[T]): PropValue[T, Any] =
-  ${ asPropOptionValueImpl[T]('expr) }
-inline def asPropValue[T, Owner](@unused inline ownerExpr: Owner, @unused inline expr: Option[T]): PropValue[T, Owner] =
-  ${ asPropOptionValueImplWithThis[T, Owner]('ownerExpr, 'expr) }
+//noinspection ScalaUnusedSymbol
+inline def asPropValue[T](inline expr: Option[T]): PropValue[T, Any] =
+  ${ asPropOptionValueImpl[T, Any]('{ null }, 'expr) }
+//noinspection ScalaUnusedSymbol
+inline def asPropValue[T, O](inline ownerExpr: O, inline expr: Option[T]): PropValue[T, O] =
+  ${ asPropOptionValueImpl[T, O]('ownerExpr, 'expr) }
 
 
-private def asPropValueImpl[T](expr: Expr[T])(using t: Type[T])(using Quotes): Expr[PropValue[T, Any]] = {
-  log.debug(s"asPropValue => expr: [${expr.show}]")
-  log.debug(s"${ getCompilationSource(expr) }")
-
-  @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
-  val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Any]($propNameExpr, $expr) }
-
-  log.debug(s"asPropValue => resulting expr: [${propValueExpr.show}]")
-  propValueExpr
-}
-
-private def asPropValueImplWithThis[T, Owner](ownerExpr: Expr[Owner], expr: Expr[T])
-                        (using t: Type[T])(using o: Type[Owner])
-                        (using Quotes): Expr[PropValue[T, Owner]] = {
+//noinspection ScalaUnusedSymbol
+private def asPropValueImpl[T, O](ownerExpr: Expr[O], expr: Expr[T])
+                                         (using t: Type[T])(using o: Type[O])
+                                         (using Quotes): Expr[PropValue[T, O]] = {
   log.debug(s"asPropValue => expr: [${ownerExpr.show}], [${expr.show}]")
   log.debug(s"${ getCompilationSource(expr) }")
 
-  @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
-  @unused val ownerTypeExpr: Expr[ClassTag[Owner]] = getClassTag[Owner]
-  val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Owner]($propNameExpr, $expr, $ownerTypeExpr) }
+  val propNameExpr: Expr[String] = Expr(extractPropName(expr))
+
+  val propValueExpr: Expr[PropValue[T, O]] = findClassExpr[O]
+    .map(typeExpr =>
+      '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, $typeExpr) })
+    .getOrElse(
+      '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, ${ getClassTagExpr[O] }) })
 
   log.debug(s"asPropValue => resulting expr: [${propValueExpr.show}]")
   propValueExpr
 }
 
 
-private def asPropOptionValueImpl[T](expr: Expr[Option[T]])(using t: Type[T])(using Quotes): Expr[PropValue[T, Any]] = {
+//noinspection ScalaUnusedSymbol
+private def asPropOptionValueImpl[T, O](ownerExpr: Expr[O], expr: Expr[Option[T]])
+                                               (using t: Type[T])(using o: Type[O])
+                                               (using Quotes): Expr[PropValue[T, O]] = {
   log.debug(s"asPropOptionValue => expr: [${expr.show}]")
 
-  @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
-  val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Any]($propNameExpr, $expr) }
+  val propNameExpr: Expr[String] = Expr(extractPropName(expr))
 
-  //extractOwnerType_NonWorking(expr)
-
-  log.debug(s"asPropOptionValue => resulting expr: [${propValueExpr.show}]")
-  propValueExpr
-}
-
-private def asPropOptionValueImplWithThis[T, Owner](ownerExpr: Expr[Owner], expr: Expr[Option[T]])
-                        (using t: Type[T])(using o: Type[Owner])
-                        (using Quotes): Expr[PropValue[T, Owner]] = {
-  log.debug(s"asPropOptionValue => expr: [${expr.show}]")
-
-  @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
-  @unused val ownerTypeExpr: Expr[ClassTag[Owner]] = getClassTag[Owner]
-  val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Owner]($propNameExpr, $expr, $ownerTypeExpr) }
+  val propValueExpr: Expr[PropValue[T, O]] = findClassExpr[O]
+    .map( typeExpr =>
+      '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, $typeExpr) }  )
+    .getOrElse (
+      '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, ${ getClassTagExpr[O] }) }  )
 
   log.debug(s"asPropOptionValue => resulting expr: [${propValueExpr.show}]")
   propValueExpr
 }
 
 
-private def getClassTag[T](using Type[T], Quotes): Expr[ClassTag[T]] = {
+//noinspection ScalaUnusedSymbol
+private def findClassExpr[T](using Type[T], Quotes): Option[Expr[Class[T]]] =
   import quotes.reflect.*
+  val asString: String = Type.show[T]
+  if asString.startsWitOneOf("java.", "javax.", "scala.")
+    then try { Option(Expr(Class.forName(asString).asInstanceOf[Class[T]])) } catch { case _ : Exception => None }
+    else None
 
-  // TODO: optimized for standard java/scala types (return Class[T])
 
-  Expr.summon[ClassTag[T]] match {
-    case Some(ct) =>
-      ct
+private def getClassTagExpr[T](using Type[T], Quotes): Expr[ClassTag[T]] =
+  import quotes.reflect.*
+  Expr.summon[ClassTag[T]] match
+    case Some(ct) => ct
     case None =>
-      report.error(
-        s"Unable to find a ClassTag for type ${Type.show[T]}",
-        Position.ofMacroExpansion
-      )
+      report.error(s"Unable to find a ClassTag for type ${Type.show[T]}", Position.ofMacroExpansion)
       throw new Exception("Error when applying macro")
-  }
-}
+
+
+extension (s: String)
+  private def startsWitOneOf(prefixes: String*): Boolean = prefixes.exists(s.startsWith)
 
 
 private def extractPropName(expr: Expr[?])(using Quotes): String =
@@ -111,6 +104,7 @@ private def extractPropName(expr: Expr[?])(using Quotes): String =
   propName
 
 
+//noinspection ScalaUnusedSymbol
 private def reportedFailedExprAsText(expr: Expr[Any])(using Quotes): String =
   import quotes.reflect.Position
   Position.ofMacroExpansion.sourceCode
@@ -156,10 +150,12 @@ private def printFields(label: String, obj: Any): Unit =
 private def printField(label: String, obj: Any, prop: String): Unit =
   try { println(s"$label.$prop: ${ getProp(obj, prop) }") } catch { case _: Exception => }
 
+//noinspection ScalaUnusedSymbol
 private def allMethods(obj: Any): List[String] =
   import scala.language.unsafeNulls
   obj.getClass.getMethods .map(_.getName) .toList
 
+//noinspection ScalaUnusedSymbol
 private def allMethodsDetail(obj: Any): String =
   import scala.language.unsafeNulls
   obj.getClass.getMethods /*.map(_.getName)*/ .toList .mkString("\n")
@@ -361,6 +357,7 @@ String Symbols$Symbol.showFullName(Contexts$Context)
 */
 
 
+//noinspection ScalaUnusedSymbol
 private def extractOwnerType_NonWorking[T](expr: Expr[T])(using t: Type[T])(using Quotes): Option[Class[T]] =
   val exprText: String = expr.show
   val separator = ".this."

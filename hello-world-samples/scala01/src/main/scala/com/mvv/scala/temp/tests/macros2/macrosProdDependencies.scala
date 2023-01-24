@@ -19,22 +19,22 @@ private class PropValueImpl[PropertyType, OwnerType] (
 
 
 object PropValue :
-  def apply[PropertyType, OwnerType](propName: String, propValue: PropertyType|Null, propOwner: Class[OwnerType]|Null): PropValue[PropertyType, OwnerType] =
+  def apply[T, O](propName: String, propValue: T|Null, propOwner: Class[O]|Null): PropValue[T, O] =
     new PropValueImpl(propName, toOption(propValue), toOption(propOwner))
-  def apply[PropertyType, OwnerType](propName: String, propValue: Option[PropertyType], propOwner: Class[OwnerType]|Null): PropValue[PropertyType, OwnerType] =
+  def apply[T, O](propName: String, propValue: Option[T], propOwner: Class[O]|Null): PropValue[T, O] =
     new PropValueImpl(propName, toOption(propValue), toOption(propOwner))
 
   // Seems it is impossible to get class of processing/compiling now class
   // for that reason hack with ClassTag is used
-  def apply[PropertyType, OwnerType](propName: String, propValue: PropertyType|Null, propOwner: ClassTag[OwnerType]|Null): PropValue[PropertyType, OwnerType] =
+  def apply[T, O](propName: String, propValue: T|Null, propOwner: ClassTag[O]|Null): PropValue[T, O] =
     new PropValueImpl(propName, toOption(propValue), classTagToClass(propOwner))
-  def apply[PropertyType, OwnerType](propName: String, propValue: Option[PropertyType], propOwner: ClassTag[OwnerType]|Null): PropValue[PropertyType, OwnerType] =
+  def apply[T, O](propName: String, propValue: Option[T], propOwner: ClassTag[O]|Null): PropValue[T, O] =
     new PropValueImpl(propName, toOption(propValue), classTagToClass(propOwner))
 
   // !!! Do not use default param with macros (it generates really bad code with temporary variables for defaults)
-  def apply[PropertyType, OwnerType](propName: String, propValue: PropertyType|Null): PropValue[PropertyType, OwnerType] =
+  def apply[P, O](propName: String, propValue: P|Null): PropValue[P, O] =
     new PropValueImpl(propName, toOption(propValue), None)
-  def apply[PropertyType, OwnerType](propName: String, propValue: Option[PropertyType]): PropValue[PropertyType, OwnerType] =
+  def apply[T, O](propName: String, propValue: Option[T]): PropValue[T, O] =
     new PropValueImpl(propName, toOption(propValue), None)
 
 

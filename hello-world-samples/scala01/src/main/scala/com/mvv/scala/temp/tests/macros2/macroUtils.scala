@@ -1,6 +1,8 @@
 //package com.mvv.scala.temp.tests.macros2
 package com.mvv.scala.macros
 
+import scala.collection.StringOps
+
 
 enum LogLevel :
   // In spite of scala code convention it is better to use log-level in upper case
@@ -34,7 +36,7 @@ private class ConsoleLogger
   //override val currentLogeLevel: LogLevel = LogLevel.Trace
   protected override def appendMessage(logLevel: LogLevel, msg: => String): Unit =
     val out = if logLevel.ordinal < LogLevel.WARN.ordinal then Console.out else Console.err
-    out.println(s"Scala macros $logLevel $msg")
+    out.println(s"Scala macros ${logLevel.toString.padTo(5, ' ')} $msg")
 
 
 private def macrosLogLevel: LogLevel = LogLevel.TRACE
