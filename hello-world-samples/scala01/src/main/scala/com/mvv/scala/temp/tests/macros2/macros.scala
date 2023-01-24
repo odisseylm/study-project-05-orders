@@ -3,6 +3,7 @@ package com.mvv.scala.temp.tests.macros2
 import scala.annotation.unused
 import scala.quoted.{Expr, Quotes}
 import scala.quoted.*
+import scala.reflect.ClassTag
 
 
 inline def asBeanValue(@unused inline expr: Any): BeanPropertyValue[Any, Any] =
@@ -361,3 +362,19 @@ ClassSymbol.defTree: TypeDef(Bbbbbb,Template(DefDef(<init>,List(List()),TypeTr..
 List(ValDef(aaa,Ident(Rfvtgb),Apply(Select(Ident(Rfvtgb),apply),List(Literal(Constant(54646)))))
 */
 
+
+
+private def getClassTag[T](using Type[T], Quotes): Expr[ClassTag[T]] = {
+  import quotes.reflect.*
+
+  Expr.summon[ClassTag[T]] match {
+    case Some(ct) =>
+      ct
+    case None =>
+      report.error(
+        s"Unable to find a ClassTag for type ${Type.show[T]}",
+        Position.ofMacroExpansion
+      )
+      throw new Exception("Error when applying macro")
+  }
+}

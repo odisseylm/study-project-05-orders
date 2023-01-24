@@ -1,11 +1,14 @@
 //noinspection DuplicatedCode
 package com.mvv.scala.macros
 
+import com.sun.tools.javac.code.TypeTag
+
 import scala.Option
 import scala.annotation.unused
 import scala.compiletime.error
 import scala.quoted.*
 import scala.quoted.{Expr, Quotes, Type}
+import scala.reflect.ClassTag
 //
 import com.mvv.scala.macros.Logger as log
 
@@ -13,13 +16,19 @@ import com.mvv.scala.macros.Logger as log
 // TODO: try to fix warning
 inline def asPropValue[T](@unused inline expr: T): PropValue[T, Any] =
   ${ asPropValueImpl[T]('expr) }
+inline def asPropValue[T, Owner/*:ClassTag*/](@unused inline ownerExpr: Owner, @unused inline expr: T): PropValue[T, Owner] =
+  ${ asPropValueImplWithThis[T, Owner]('ownerExpr, 'expr) }
+
 
 inline def asPropValue[T](@unused inline expr: Option[T]): PropValue[T, Any] =
   ${ asPropOptionValueImpl[T]('expr) }
+inline def asPropValue[T, Owner](@unused inline ownerExpr: Owner, @unused inline expr: Option[T]): PropValue[T, Owner] =
+  ${ asPropOptionValueImplWithThis[T, Owner]('ownerExpr, 'expr) }
 
 
 private def asPropValueImpl[T](expr: Expr[T])(using t: Type[T])(using Quotes): Expr[PropValue[T, Any]] = {
   log.debug(s"asPropValue => expr: [${expr.show}]")
+  log.debug(s"${ getCompilationSource(expr) }")
 
   @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
   val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Any]($propNameExpr, $expr) }
@@ -28,16 +37,62 @@ private def asPropValueImpl[T](expr: Expr[T])(using t: Type[T])(using Quotes): E
   propValueExpr
 }
 
+private def asPropValueImplWithThis[T, Owner](ownerExpr: Expr[Owner], expr: Expr[T])
+                        (using t: Type[T])(using o: Type[Owner])
+                        (using Quotes): Expr[PropValue[T, Owner]] = {
+  log.debug(s"asPropValue => expr: [${ownerExpr.show}], [${expr.show}]")
+  log.debug(s"${ getCompilationSource(expr) }")
+
+  @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
+  @unused val ownerTypeExpr: Expr[ClassTag[Owner]] = getClassTag[Owner]
+  val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Owner]($propNameExpr, $expr, $ownerTypeExpr) }
+
+  log.debug(s"asPropValue => resulting expr: [${propValueExpr.show}]")
+  propValueExpr
+}
+
+
 private def asPropOptionValueImpl[T](expr: Expr[Option[T]])(using t: Type[T])(using Quotes): Expr[PropValue[T, Any]] = {
   log.debug(s"asPropOptionValue => expr: [${expr.show}]")
 
   @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
   val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Any]($propNameExpr, $expr) }
 
-  extractOwnerType_NonWorking(expr)
+  //extractOwnerType_NonWorking(expr)
 
   log.debug(s"asPropOptionValue => resulting expr: [${propValueExpr.show}]")
   propValueExpr
+}
+
+private def asPropOptionValueImplWithThis[T, Owner](ownerExpr: Expr[Owner], expr: Expr[Option[T]])
+                        (using t: Type[T])(using o: Type[Owner])
+                        (using Quotes): Expr[PropValue[T, Owner]] = {
+  log.debug(s"asPropOptionValue => expr: [${expr.show}]")
+
+  @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
+  @unused val ownerTypeExpr: Expr[ClassTag[Owner]] = getClassTag[Owner]
+  val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Owner]($propNameExpr, $expr, $ownerTypeExpr) }
+
+  log.debug(s"asPropOptionValue => resulting expr: [${propValueExpr.show}]")
+  propValueExpr
+}
+
+
+private def getClassTag[T](using Type[T], Quotes): Expr[ClassTag[T]] = {
+  import quotes.reflect.*
+
+  // TODO: optimized for standard java/scala types (return Class[T])
+
+  Expr.summon[ClassTag[T]] match {
+    case Some(ct) =>
+      ct
+    case None =>
+      report.error(
+        s"Unable to find a ClassTag for type ${Type.show[T]}",
+        Position.ofMacroExpansion
+      )
+      throw new Exception("Error when applying macro")
+  }
 }
 
 
@@ -73,6 +128,15 @@ private def logCompilationError(errorMessage: String, expr: Expr[Any])(using Quo
   log.error(s"  At ${pos.sourceFile}:${pos.startLine}:${pos.startColumn}")
   log.error(s"     ${pos.sourceFile}:${pos.endLine}:${pos.endColumn}")
   pos.sourceCode.foreach(v => log.error(s"     $v"))
+
+
+//noinspection ScalaUnusedSymbol
+private def getCompilationSource(expr: Expr[Any])(using Quotes): String =
+  import quotes.reflect.Position
+  val pos = Position.ofMacroExpansion
+    s"""  At ${pos.sourceFile}:${pos.startLine}:${pos.startColumn}
+       |    ${pos.sourceFile}:${pos.endLine}:${pos.endColumn}"""
+  //pos.sourceCode.foreach(v => log.error(s"     $v"))
 
 
 

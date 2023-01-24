@@ -72,6 +72,15 @@ class Bbbbbb :
 
     require(sss2_4.value == optionProp)
     require(sss2_0.value.orNull == aaaStr)
+
+    //val sss3_0: PropValue[String, Any] = asPropValue(() => aaaStr)
+    //val sss3_0: PropValue[String, Bbbbbb] = asPropValue(this, o => o.aaaStr)
+    val sss3_0: PropValue[String, Bbbbbb] = asPropValue(this, aaaStr)
+    val sss3_1: PropValue[Rfvtgb, Bbbbbb] = asPropValue(this, optionProp)
+    val sss4_0 = asPropValue(this, aaaStr)
+    val sss4_1 = asPropValue(this, optionProp)
+    println(s" $sss3_0 $sss3_1 ")
+
   }
 
   /*
@@ -84,5 +93,15 @@ class Bbbbbb :
   */
 
   //val ddd3: BeanPropertyValue[Any, Any] = asBeanValue(aaa)
-  val ddd3: PropValue[Any, Any] = asPropValue(aaa)
+  // !!! in this case generated code also will use [Any, Any]
+  //noinspection TypeAnnotation // Explicit type is not use to verify generated types
+  val ddd3: PropValue[Rfvtgb, Any] = asPropValue(aaa)
+  //noinspection TypeAnnotation // Explicit type is not use to verify generated types
+  val ddd4 = asPropValue(aaa)
+  //noinspection TypeAnnotation // Explicit type is not use to verify generated types
+  val ddd5 = asPropValue(optionProp)
+  //noinspection TypeAnnotation // Explicit type is not use to verify generated types
+  val ddd6 = asPropValue(this, aaa)
+  //noinspection TypeAnnotation // Explicit type is not use to verify generated types
+  val ddd7 = asPropValue(this, optionProp)
 
