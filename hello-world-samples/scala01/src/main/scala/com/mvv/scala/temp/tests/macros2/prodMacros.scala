@@ -34,7 +34,7 @@ private def asPropOptionValueImpl[T](expr: Expr[Option[T]])(using t: Type[T])(us
   @unused val propNameExpr: Expr[String] = Expr(extractPropName(expr))
   val propValueExpr = '{ com.mvv.scala.macros.PropValue[T, Any]($propNameExpr, $expr) }
 
-  //extractOwnerType(expr)
+  extractOwnerType_NonWorking(expr)
 
   log.debug(s"asPropOptionValue => resulting expr: [${propValueExpr.show}]")
   propValueExpr
@@ -314,6 +314,7 @@ private def extractOwnerType_NonWorking[T](expr: Expr[T])(using t: Type[T])(usin
   //import quotes.reflect.tree.given
   import quotes.reflect.Tree
   import quotes.reflect.Tree.*
+  import quotes.reflect.ClassDefMethods
 
   val exprTerm = expr.asTerm
   //log.debug(s"\n\n\n%%%% exprTerm: $exprTerm")
@@ -338,6 +339,78 @@ private def extractOwnerType_NonWorking[T](expr: Expr[T])(using t: Type[T])(usin
   import quotes.reflect.Inlined.*
   import quotes.reflect.Select
   import quotes.reflect.Select.*
+  import quotes.reflect.ClassDef
+
+  /*
+  printFields("ClassDef", ClassDef)
+  printFields("ClassDef", ClassDef)
+  printFields("ClassDef.parents", ClassDefMethods.parents)
+  printFields("ClassDef.body", ClassDefMethods.body)
+  printFields("ClassDef.constructor", ClassDefMethods.constructor)
+  printFields("ClassDef.self", ClassDefMethods.self)
+
+  printFields("DefDef", DefDef)
+
+  /*
+  printFields("DefDefMethods", DefDefMethods)
+  printFields("DefDefMethods.paramss", DefDefMethods.paramss)
+  printFields("DefDefMethods.leadingTypeParams", DefDefMethods.leadingTypeParams)
+  printFields("DefDefMethods.trailingParamss", DefDefMethods.trailingParamss)
+  printFields("DefDefMethods.termParamss", DefDefMethods.termParamss)
+  printFields("DefDefMethods.returnTpt", DefDefMethods.returnTpt)
+  printFields("DefDefMethods.rhs", DefDefMethods.rhs)
+  */
+
+  printFields("ValDefMethods.tpt", ValDefMethods.tpt)
+  printFields("ValDefMethods.rhs", ValDefMethods.rhs)
+
+  printFields("Ref", Ref)
+  printFields("Ref.term", Ref.term)
+
+  printFields("Ident", Ident)
+  printFields("Select", Select)
+
+  printFields("New", New)
+  //printFields("ApplyMethods", ApplyMethods)
+  //printFields("ApplyMethods.fun", ApplyMethods.fun)
+  printFields("Super", Super)
+  printFields("Typed", Typed)
+  printFields("Closure", Closure)
+  printFields("SummonFrom", SummonFrom)
+  printFields("Return", Return)
+  printFields("Inlined", Inlined)
+  //printFields("Inlined", Inlined.call)
+  //printFields("Inlined", Inlined.bindings)
+  //printFields("Inlined", Inlined.body)
+  printFields("SelectOuter", SelectOuter)
+  printFields("TypeTree", TypeTree)
+  printFields("Refined", Refined)
+  printFields("Applied", Applied)
+  printFields("LambdaTypeTree", LambdaTypeTree)
+  printFields("TypeBind", TypeBind)
+  printFields("Bind", Bind)
+  printFields("Selector", Selector)
+  printFields("Selector", Selector)
+  printFields("RenameSelector", RenameSelector)
+  printFields("OmitSelector", OmitSelector)
+  printFields("GivenSelector", GivenSelector)
+  printFields("TypeRef", TypeRef)
+  printFields("SuperType", SuperType)
+  printFields("Refinement", Refinement)
+  printFields("AppliedType", AppliedType)
+  printFields("ThisType", ThisType)
+  printFields("RecursiveThis", RecursiveThis)
+  printFields("Symbol", Symbol)
+  printFields("defn", defn)
+  printFields("Flags", Flags)
+  printFields("Position", Position)
+  printFields("Position", Position)
+  printFields("SourceFile", SourceFile)
+  printFields("Printer", Printer)
+  //printFields("Nested", Nested)
+  */
+
+  if true then return None
 
   /*
   exprTerm.pos
