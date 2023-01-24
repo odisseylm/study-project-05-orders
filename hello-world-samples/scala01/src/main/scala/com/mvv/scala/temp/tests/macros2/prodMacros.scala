@@ -1,4 +1,4 @@
-//noinspection DuplicatedCode ScalaUnusedSymbol
+//noinspection DuplicatedCode , ScalaUnusedSymbol
 package com.mvv.scala.macros
 
 import com.sun.tools.javac.code.TypeTag
@@ -13,7 +13,6 @@ import scala.reflect.ClassTag
 import com.mvv.scala.macros.Logger as log
 
 
-// TODO: try to fix warning
 inline def asPropValue[T](inline expr: T): PropValue[T, Any] =
   ${ asPropValueImpl[T, Any]('{ null }, 'expr) }
 inline def asPropValue[T, O](inline ownerExpr: O, inline expr: T): PropValue[T, O] =
