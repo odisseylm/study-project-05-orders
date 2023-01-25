@@ -103,8 +103,8 @@ private def asPropImpl[T, O](thisExpr: Expr[O], getterExpr: Expr[T], isWritable:
       '{ null.asInstanceOf[O] }
 
   val propValueExpr: Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] =
-    if !isWritable then
-      val setAsLambdaExpr = setterAsLambdaExpr[T](getterExpr)
+    if isWritable then
+      val setAsLambdaExpr = setterAsLambdaExpr[T,O](getterExpr, thisExpr)
       thisTypeAsClass
         .map(typeExpr =>
           '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $setAsLambdaExpr, $thisExprToPass, $typeExpr) })
@@ -132,13 +132,64 @@ private def getterOptionAsLambdaExpr[T](getterExpr: Expr[Option[T]])(using t: Ty
   //??? //'{ () => getterFullMethodName }
   '{ () => $getterExpr }
 
-private def setterAsLambdaExpr[T](getterExpr: Expr[T])(using t: Type[T])(using Quotes): Expr[(T|Null)=>Unit] =
+private def setterAsLambdaExpr[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
+                                   (using t: Type[T])(using o: Type[O])(using Quotes): Expr[(T|Null)=>Unit] =
   //???
   val getterFullMethodName = getterExpr.show
   val setterFullMethodName = s"${getterFullMethodName}_="
   //'{ v => setterFullMethodName(v)  }
+  //'{ (v: T|Null) => com.mvv.scala.temp.tests.macros2.TesPropsClass.this.method333(v.asInstanceOf[T]) }
+  //
+  // Error: value method333 is not a member of object com.mvv.scala.macros.prodMacros$package
+  //'{ (v: T|Null) => this.method333(v.asInstanceOf[T]) }
+  //
+  //'{ (v: T|Null) => ($thisExpr).method333(v.asInstanceOf[T]) }
+  //
   // TODO: implement !!!
   '{ v => { } }
+
+
+private def temp567[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
+                                   (using t: Type[T])(using o: Type[O])(using Quotes): Unit = {
+  import scala.quoted
+  import quotes.reflect.*
+
+  val myMethodSymbol = Symbol.newMethod(
+    Symbol.spliceOwner,
+    "myMethod",
+    MethodType(
+      List())( // parameter list - here a single parameter
+      _ => List(), // type of the parameter - here dynamic, given as a TypeRepr
+      _ => TypeRepr.of[Int]) // return type - here static, always Int
+  )
+
+  /*
+  // tree representing: def myMethod(param) = ...
+  val myMethodDef = DefDef(
+    myMethodSymbol, {
+      case List(List(paramTerm: Term)) => Some(myMethodBody(paramTerm).changeOwner(myMethodSymbol))
+    }
+  )
+  */
+
+  /*
+  val myMethodSymbol = Symbol.newMethod(
+    Symbol.spliceOwner,
+    "myMethod",
+    MethodType(
+      List("param"))( // parameter list - here a single parameter
+      _ => List(typeReprOfParam), // type of the parameter - here dynamic, given as a TypeRepr
+      _ => TypeRepr.of[Int])) // return type - here static, always Int
+
+  // tree representing: def myMethod(param) = ...
+  val myMethodDef = DefDef(
+    myMethodSymbol, {
+      case List(List(paramTerm: Term)) => Some(myMethodBody(paramTerm).changeOwner(myMethodSymbol))
+    }
+  )
+  */
+}
+
 
 private def setterOptionAsLambdaExpr[T](getterExpr: Expr[Option[T]])(using t: Type[T])(using Quotes): Expr[Option[T]=>Unit] =
   //???
@@ -180,7 +231,7 @@ private def asPropOptionImpl[T, O](thisExpr: Expr[O], getterExpr: Expr[Option[T]
     '{ null.asInstanceOf[O] }
 
   val propValueExpr: Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] =
-    if !isWritable then
+    if isWritable then
       val setAsLambdaExpr = setterOptionAsLambdaExpr[T](getterExpr)
       thisTypeAsClass
         .map(typeExpr =>

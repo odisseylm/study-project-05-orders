@@ -115,8 +115,24 @@ class TesPropsClass extends BaseClass:
 
   //val propWithOwnerAsSuperTypeInDerivedBaseOptionJavaSomeStdClass = _pv( baseOptionJavaSomeStdClass)
 
-  @scala.unchecked val rPropNewString = _rp(this, newString)
-  @scala.unchecked val wPropNewString = _wp(this, newString)
+  //@scala.unchecked
+  val rPropNewString = _rp(this, newString)
+  //@scala.unchecked
+  val wPropNewString = _wp(this, newString)
+  //@scala.unchecked
+  val rPropNewOptionSomeClass = _rp(this, newOptionSomeClass)
+  //@scala.unchecked val wPropNewOptionSomeClass = _wp(this, newOptionSomeClass)
 
+  def method333(s: String) = {}
+  def method334(s: String|Null) = {}
 
 // TODO: write unit test with reflection
+
+
+
+@main
+def test589475847(): Unit = {
+  val obj = TesPropsClass()
+  println(s"rPropNewString.value: ${obj.rPropNewString.value}")
+  println(s"rPropNewString.asOption: ${obj.rPropNewString.asOption}")
+}
