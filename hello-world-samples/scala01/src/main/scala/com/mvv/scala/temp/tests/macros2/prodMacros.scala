@@ -181,7 +181,7 @@ private def setterAsLambdaExpr[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
 
   //val t = TermRef(qual: TypeRepr, name: String)     type TermRef <: NamedType
 
-  testFunc[T,O](getterExpr, thisExpr)
+  if (true) { return testFunc[T,O](getterExpr, thisExpr).asInstanceOf[Expr[(T|Null)=>Unit]] }
 
 //  val symbolParamName: Symbol = Names.simpleName("v")
 //  val typeName: TypeName = Names.TypeName(String)
@@ -419,7 +419,7 @@ private def dumpTermImpl[T](expr: Expr[T])(using Quotes)(using Type[T]): Expr[T]
   expr
 
 private def testFunc[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
-                         (using t: Type[T])(using o: Type[O])(using Quotes): Unit = {
+                         (using t: Type[T])(using o: Type[O])(using Quotes): Expr[T=>Unit] = {
 
   import quotes.reflect.*
   //val symbolParamName: Symbol = Names.simpleName("v")
@@ -496,7 +496,7 @@ private def testFunc[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
 //    args: List[Term]
 //  )
 
-  val getterFullMethodName = getterExpr.show
+  val getterFullMethodName = extractPropName(getterExpr)
   val setterFullMethodName = s"${getterFullMethodName}_="
 
   val setterMethodSymbol = Symbol.newMethod(
@@ -544,7 +544,8 @@ private def testFunc[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
               //vvv.asExprOf[T].asTerm
               //vvv.asInstanceOf[Term]
               //vvv.tpe
-              vvv.asInstanceOf[Term] // TODO: temporary
+              //vvv.asInstanceOf[Term]  it does NOT work
+              vvv
               //Term()
             }), // we need args: List[Term]
         )
@@ -568,6 +569,17 @@ private def testFunc[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
     rhsFn
   )
   println(s"anonfunLamnda: $anonfunLamnda")
+
+  val inlined = Inlined(
+    //call: Option[Tree],
+    //bindings: List[Definition],
+    //expansion: Term,
+    None,
+    Nil,
+    anonfunLamnda,
+  )
+
+  inlined.asExprOf[T=>Unit]
 
   //val defDef = DefDef(symbol: Symbol, rhsFn: List[List[Tree]] => Option[Term])
   //val defDef = DefDef()

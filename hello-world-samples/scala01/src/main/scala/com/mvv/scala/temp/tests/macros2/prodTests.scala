@@ -137,11 +137,13 @@ class TesPropsClass extends BaseClass:
   def aa():Unit = {
 
     val wPropNewString = _wp(this, tempStrPropVar1)
+    // ((v44: java.lang.String.java.lang.String.type) => TesPropsClass.this.TesPropsClass.this.tempStrPropVar1_=(v44))
+    ((v44: java.lang.String) => TesPropsClass.this.tempStrPropVar1_=(v44))
 
     println(s"BEFORE tempStrPropVar1: $tempStrPropVar1")
 
-    val orig = wPropNewString.value
-    wPropNewString.set(s"$orig    CHANGED")
+    //val orig = wPropNewString.value
+    //wPropNewString.set(s"$orig    CHANGED")
 
     println(s"AFTER  tempStrPropVar1: $tempStrPropVar1")
 
