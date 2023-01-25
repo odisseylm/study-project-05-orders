@@ -97,14 +97,16 @@ def asBeanValue2Impl(expr: Expr[Any])(using q: Quotes): Expr[Any] = {
   val ddInt = TypeRepr.of[Int].typeSymbol
   println(s"ddInt: $ddInt")
 
+  /*
   val bbbbbTypeRepr = TypeRepr.of[Bbbbbb]
   printFields("\n\n---------------------------\nBbbbb type", bbbbbTypeRepr)
   printFields("\n\n---------------------------\nBbbbb type", bbbbbTypeRepr.typeSymbol)
   //printFields("\n\n---------------------------\nBbbbb type", bbbbbTypeRepr.tpe)
   //printFields("\n\n---------------------------\nBbbbb type", bbbbbTypeRepr.underlying)
+  */
 
-  println(s"ddBbb: $bbbbbTypeRepr ${ allMethods(TypeRepr.of[Bbbbbb]) }")
-  printFields("\n\n---------------------------\nBbbbb type", bbbbbTypeRepr)
+  //println(s"ddBbb: $bbbbbTypeRepr ${ allMethods(TypeRepr.of[Bbbbbb]) }")
+  //printFields("\n\n---------------------------\nBbbbb type", bbbbbTypeRepr)
 
   //val package1 = PackageClause(bbbbbTypeRepr, tree)
   //printFields("\n\n---------------------------\npackage1", bpackage1)

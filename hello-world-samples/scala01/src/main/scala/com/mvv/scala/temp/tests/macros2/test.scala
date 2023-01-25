@@ -1,9 +1,9 @@
 //noinspection ScalaUnusedSymbol ScalaWeakerAccess
 package com.mvv.scala.temp.tests.macros2
 
-import com.mvv.scala.macros.asPropValue
-import com.mvv.scala.macros.asPropValue as _pv
-import com.mvv.scala.macros.PropValue
+//import com.mvv.scala.macros.asPropValue
+//import com.mvv.scala.macros.asPropValue as _pv
+//import com.mvv.scala.macros.PropValue
 
 import java.time.ZonedDateTime
 
@@ -12,6 +12,7 @@ def aa(): Unit = {}
 
 case class Rfvtgb (v: String)
 
+/*
 def localVal: String = "gjhgjhgjh3333"
 def localFunction1: String = "gjhgjhgjh"
 def localFunction2(): String = "gjhgjhgjh"
@@ -110,4 +111,4 @@ class Bbbbbb :
   val ddd7 = asPropValue(this, optionProp)
 
 
-
+*/

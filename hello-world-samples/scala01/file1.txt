@@ -1,16 +1,31 @@
+
+ValDef(x, ??? TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String)],EmptyTree)
+
  Inlined(
-   EmptyTree,
-   List(),
-   Block(
+   EmptyTree, // call =>
+   List(),    // bindings =>
+   Block(     // expansion =>
      List(
-       DefDef(
-         $anonfun,
-         List(
+       DefDef(      // ?stats?
+         $anonfun,  // SimpleName => $anonfun   =>
+         List(      // params  =>
            List(
              ValDef(
-               v,
-               Ident(String),
-               EmptyTree
+               v,             // Names.SimpleName
+               Ident(String), // tpt = Ident
+                              // {
+                              //   name = Names.TypeName(String)
+                              //
+                              // }
+                              // myTpe = TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class scala)),object Predef),type String)
+                              // myTpe
+                              //   myDesignator = {Symbols$Symbol} type String
+                              //     lastDenot = {SymDenotations$SymDenotation} type String
+                              //       name = {Names$TypeName} String
+                              //       myPrivateWithin = {Symbols$NoSymbol} val <none>
+                              //       myTargetName = {Names$TypeName} String
+                              //       toTermName = {Names$SimpleName} String
+                EmptyTree
              )
            )
          ),
@@ -45,3 +60,7 @@
      )
    )
  )
+
+
+???
+expansion

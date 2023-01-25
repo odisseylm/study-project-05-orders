@@ -68,6 +68,34 @@
       <artifactId>scala-xml_3</artifactId>
       <version>2.1.0</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala3-compiler_3</artifactId>
+      <version>${scala.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-sbt</groupId>
+      <artifactId>compiler-interface</artifactId>
+      <version>${scala-sbt.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-sbt</groupId>
+      <artifactId>zinc_3</artifactId>
+      <version>${scala-sbt.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <!-- Maven does not allow to exclude dependency, for that reason we use our non-existent version. -->
+    <dependency>
+      <groupId>org.scala-sbt</groupId>
+      <artifactId>zinc_2.13</artifactId>
+      <version>666</version>
+      <optional>true</optional>
+    </dependency>
+
+
     <!--<dependency>-->
     <!--  <groupId>org.portable-scala</groupId>-->
     <!--  <artifactId>portable-scala-reflect_2.13</artifactId>-->
@@ -443,12 +471,23 @@
               <goal>testCompile</goal>
             </goals>
             <configuration>
+              <!--<addJavacArgs></addJavacArgs>-->
+              <!--<addScalacArgs></addScalacArgs>-->
+              <!--<additionalDependencies></additionalDependencies>-->
+              <fork>false</fork>
+              <!--<javacArgs></javacArgs>-->
+              <jvmArgs>
+                <!--<arg>-Xdebug</arg><arg>-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8003</arg>-->
+              </jvmArgs>
               <args>
                 <arg>-Yexplicit-nulls</arg>
                 <arg>-Ysafe-init</arg>
                 <arg>-source</arg><arg>future</arg>
                 <arg>-feature</arg>
                 <arg>-deprecation</arg>
+
+                <!--<arg>-Xdebug</arg>-->
+                <!--<arg>-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8003</arg>-->
 
                 <!-- Seems ignored/unsupported :-( -->
                 <!--<arg>-Yjava-null</arg>-->

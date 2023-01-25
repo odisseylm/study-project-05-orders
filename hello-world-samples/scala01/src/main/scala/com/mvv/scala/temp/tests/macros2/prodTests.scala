@@ -4,8 +4,8 @@ package com.mvv.scala.temp.tests.macros2
 import java.time.ZonedDateTime
 //
 import com.mvv.scala.macros.dumpTerm
-import com.mvv.scala.macros.asPropValue as _pv
-import com.mvv.scala.macros.asReadonlyProp as _rp
+//import com.mvv.scala.macros.asPropValue as _pv
+//import com.mvv.scala.macros.asReadonlyProp as _rp
 import com.mvv.scala.macros.asWritableProp as _wp
 import com.mvv.scala.macros.PropValue
 
@@ -28,6 +28,7 @@ class BaseClass :
   val baseOptionJavaInt: Option[java.lang.Integer] = Option(951)
   val baseOptionJavaSomeStdClass: Option[ZonedDateTime] = Option(ZonedDateTime.now().nn)
 
+  /*
   val propBaseString = _pv(baseString)
   val propBaseInt = _pv(baseInt)
   val propBaseSomeClass = _pv(baseSomeClass)
@@ -59,6 +60,7 @@ class BaseClass :
   val propWithOwnerTypeBaseOptionJavaString = _pv(this, baseOptionJavaString)
   val propWithOwnerTypeBaseOptionJavaInt = _pv(this, baseOptionJavaInt)
   val propWithOwnerTypeBaseOptionJavaSomeStdClass = _pv(this, baseOptionJavaSomeStdClass)
+  */
 
 
 
@@ -71,6 +73,7 @@ class TesPropsClass extends BaseClass:
   val newOptionSomeClass: Option[Rfvtgb] = Option(Rfvtgb("s_baseOptionSomeClass"))
   val newJavaSomeStdClass: ZonedDateTime = ZonedDateTime.now().nn
 
+  /*
   val propNewString = _pv(newString)
   val propNewSomeClass = _pv(newSomeClass)
   val propNewOptionSomeClass = _pv(newOptionSomeClass)
@@ -123,14 +126,29 @@ class TesPropsClass extends BaseClass:
   //@scala.unchecked
   val rPropNewOptionSomeClass = _rp(this, newOptionSomeClass)
   //@scala.unchecked val wPropNewOptionSomeClass = _wp(this, newOptionSomeClass)
+  */
 
   def method333(s: Any|Null) = {}
   def method334(s: String|Null) = {}
 
   var tempStrPropVar1 = "gfgf"
+  var tempStrPropVar2 = "gfgf"
 
   def aa():Unit = {
-    dumpTerm((v: String) => tempStrPropVar1 = v )
+
+    val wPropNewString = _wp(this, tempStrPropVar1)
+
+    println(s"BEFORE tempStrPropVar1: $tempStrPropVar1")
+
+    val orig = wPropNewString.value
+    wPropNewString.set(s"$orig    CHANGED")
+
+    println(s"AFTER  tempStrPropVar1: $tempStrPropVar1")
+
+
+    //TesPropsClass.this.tempStrPropVar1_=("hfjgfhjkg")
+
+    dumpTerm((v: String) => tempStrPropVar2 = v )
     // Inlined(
     //   EmptyTree,
     //   List(),
@@ -228,15 +246,25 @@ class TesPropsClass extends BaseClass:
     //     )
     //   )
     // )
+
+    dumpTerm((v: String) => tempStrPropVar1_=(v) )
   }
 
 // TODO: write unit test with reflection
 
 
-
+/*
 @main
 def test589475847(): Unit = {
   val obj = TesPropsClass()
   println(s"rPropNewString.value: ${obj.rPropNewString.value}")
   println(s"rPropNewString.asOption: ${obj.rPropNewString.asOption}")
 }
+*/
+
+@main
+def test333(): Unit = {
+  val obj = TesPropsClass()
+  obj.aa()
+}
+

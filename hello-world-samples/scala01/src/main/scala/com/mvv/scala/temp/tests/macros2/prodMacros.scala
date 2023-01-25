@@ -3,6 +3,8 @@ package com.mvv.scala.macros
 
 import com.sun.tools.javac.code.TypeTag
 
+import runtime.stdLibPatches.Predef.nn
+
 import scala.Option
 import scala.annotation.unused
 import scala.compiletime.error
@@ -153,6 +155,75 @@ private def setterAsLambdaExpr[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
   //expr44.changeOwner(Symbol.spliceOwner)
 
   //getterExpr.
+
+  //  val valDef = ValDef(
+  //    Symbol("v"),
+  //    Ident(String),
+  //    EmptyTree
+  //  )
+
+  println("qwerty 01")
+
+  /*
+  // def newVal(parent: Symbol, name: String, tpe: TypeRepr, flags: Flags, privateWithin: Symbol): Symbol
+  val sym = Symbol.newVal(
+    Symbol.noSymbol, // Symbol.spliceOwner,
+    "v",
+    //TypeRepr.of[Int],
+    TypeRepr.of[String],
+    Flags.Param,
+    //Flags.EmptyFlags,
+    Symbol.noSymbol,
+  )*/
+
+  // need   ValDef(v,Ident(String),EmptyTree))
+  // have   ValDef(v,TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),object lang),String)],EmptyTree)
+
+  //val t = TermRef(qual: TypeRepr, name: String)     type TermRef <: NamedType
+
+  testFunc[T,O](getterExpr, thisExpr)
+
+//  val symbolParamName: Symbol = Names.simpleName("v")
+//  val typeName: TypeName = Names.TypeName(String)
+//  val ident: Ident = Ident(symbol)
+//  val valDef: ValDef = ValDef(symbolParamName, ident)
+
+  /*
+  println("qwerty 02")
+  val ggg = TypeRepr.of[String]
+  println("qwerty 03")
+  //val t = TermRef(ggg, "String")
+  val
+  println("qwerty 04")
+  //val termRef: TermRef = TermRef(TypeRepr.of[String], "java.lang.String")
+  val termRef: TermRef = TermRef(TypeRepr.of[T], "TTT")
+  println("qwerty 05")
+  val valDef = ValDef(
+    sym,
+    //Expr()
+    //None // ??? ValDef(v,TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Int)],EmptyTree)
+    Option(Ident(termRef)), //tmref: TermRef =>
+    //Option(Ident(TypeRepr.of[String]).asTerm), //tmref: TermRef =>
+    //Option(Ident(Symbol.noSymbol).asTerm), //tmref: TermRef =>
+    //Tree()
+  )
+  println(s"qwerty 06 $valDef")
+  */
+
+  // Inlined(EmptyTree,List(),Block(List(DefDef($anonfun,List(List(ValDef(v,Ident(String),EmptyTree))),TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Unit)],Apply(Select(This(Ident(TesPropsClass)),tempStrPropVar1_=),List(Ident(v))))),Closure(List(),Ident($anonfun),EmptyTree)))
+
+  /*
+  val valDef = ValDef(
+    sym,
+    //Expr()
+    Ident("String"),  tmref: TermRef =>
+    //Tree()
+  )
+  */
+
+  //val block = Block()
+  //val inlined = Inlined(None, List(), )
+
 
   //
   // TODO: implement !!!
@@ -341,8 +412,203 @@ inline def dumpTerm[T](inline expr: T): T =
 
 private def dumpTermImpl[T](expr: Expr[T])(using Quotes)(using Type[T]): Expr[T] =
   import quotes.reflect.*
-  println(s"++++++ $expr ${expr.asTerm}")
+  val asTerm = expr.asTerm
+  println(s"++++++ $expr $asTerm")
+  //val yyy = '{  }
+  //println(yyy)
   expr
+
+private def testFunc[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
+                         (using t: Type[T])(using o: Type[O])(using Quotes): Unit = {
+
+  import quotes.reflect.*
+  //val symbolParamName: Symbol = Names.simpleName("v")
+  //val typeName: TypeName = Names.TypeName(String)
+  //val ident: Ident = Ident(symbol)
+  //val valDef: ValDef = ValDef(symbolParamName, ident)
+
+  // def newVal(parent: Symbol, name: String, tpe: TypeRepr, flags: Flags, privateWithin: Symbol): Symbol
+//  val sym = Symbol.newVal(
+//    Symbol.noSymbol, // Symbol.spliceOwner,
+//    "v",
+//    //TypeRepr.of[Int],
+//    TypeRepr.of[String],
+//    //Flags.Param,
+//    //Flags.EmptyFlags,
+//    Symbol.noSymbol,
+//
+//  )
+  val symbolParamName = Symbol.newVal(
+    Symbol.spliceOwner,
+    "v55",
+    //TypeRepr.of[String],
+    TypeRepr.of[T],
+    //Flags.EmptyFlags,
+    Flags.Param,
+    //Flags.Given,
+    //Flags.JavaStatic,
+    Symbol.noSymbol,
+  )
+  println(symbolParamName)
+
+  val typeRepr_0 = TypeRepr.of[T]
+  //val typeRepr_0 = TypeRepr.of[Int]
+  val typeRepr = typeRepr_0 // .widenTermRefByName
+  //val typeName: TypeName = Names.TypeName(String)
+  //val termRef: TermRef = TermRef(typeRepr, TypeRepr.of[T].show)
+  //val valDef: ValDef = ValDef(symbolParamName, Option(ident))
+  val valDef: ValDef = ValDef(symbolParamName, None)
+  //val valDef = ValDef(symbolParamName, None)
+  println(valDef)
+
+  val symbolParamName2 = Symbol.newVal(
+    //Symbol.noSymbol,
+    Symbol.spliceOwner,
+    "v66",
+    //TypeRepr.of[String],
+    TypeRepr.of[T],
+    //Flags.EmptyFlags,
+    Flags.Param,
+    //Flags.Given,
+    //Flags.JavaStatic,
+    Symbol.noSymbol,
+  )
+  println(symbolParamName)
+  val termRef2: TermRef = TermRef(typeRepr, "v77")//TypeRepr.of[T].show)
+  //val ident2: Term = Ident(termRef2)
+  val valDef2: ValDef = ValDef(symbolParamName2, None) //, Option(ident2))
+  println(valDef2)
+
+  val anonfun_444 = Symbol.newMethod(
+    Symbol.spliceOwner,
+    "$anonfun",
+    //TypeRepr.of[String],
+    //TypeRepr.of[Unit]
+    MethodType(
+      List("v")) ( // parameter list - here a single parameter
+      _ => List(termRef2), // type of the parameter - here dynamic, given as a TypeRepr
+      _ => TypeRepr.of[Unit])
+  )
+  println(anonfun_444)
+
+//  val aa = Apply(
+//    fun: Term,
+//    args: List[Term]
+//  )
+
+  val getterFullMethodName = getterExpr.show
+  val setterFullMethodName = s"${getterFullMethodName}_="
+
+  val setterMethodSymbol = Symbol.newMethod(
+    //thisExpr.symbol,
+    //Symbol.noSymbol,
+    Symbol.spliceOwner,
+    setterFullMethodName,
+    MethodType(
+      List("v88"))( // parameter list - here a single parameter
+      _ => List(TermRef(typeRepr, TypeRepr.of[T].show)),
+      _ => TypeRepr.of[Unit]
+    ))
+
+  println(s"T: ${TypeRepr.of[T].show}")
+
+  println(s"setterMethodSymbol: $setterMethodSymbol")
+  printFields("setterMethodSymbol", setterMethodSymbol)
+
+  val rhsFn: (Symbol, List[Tree]) => Tree = ( (s: Symbol, paramsAsTrees: List[Tree] ) => {
+
+    println(s"rhsFn s: $s")
+    println(s"rhsFn s: $paramsAsTrees")
+
+    val select = Select(
+      //qualifier: Term,
+      //symbol: Symbol,
+      thisExpr.asTerm,
+      setterMethodSymbol,
+    )
+
+    //val apply: Apply = Apply(
+    //      fun: Term,
+    //      paransAsTrees, //args: List[Term]
+    //    )
+    val apply: Apply = Apply(
+          select,
+          paramsAsTrees
+            .map( (vvv: Tree) => {
+
+              println(s"vvv.class: ${vvv.getClass.getName}")
+              println(s"vvv: $vvv")
+              //println(s"vvv: ${vvv.asTerm}")
+              printFields("vvv", vvv)
+
+              //vvv.asExprOf[T].asTerm
+              //vvv.asInstanceOf[Term]
+              //vvv.tpe
+              vvv.asInstanceOf[Term] // TODO: temporary
+              //Term()
+            }), // we need args: List[Term]
+        )
+    println(s"apply: $apply")
+
+    apply
+  })
+
+  println("Before Lambda anonfunLamnda")
+
+  val anonfunLamnda = Lambda(
+    Symbol.spliceOwner,
+    MethodType(
+      List("v44")) ( // parameter list - here a single parameter
+      //List("java.lang.String")) ( // parameter list - here a single parameter
+      //_ => List(termRef2), // type of the parameter - here dynamic, given as a TypeRepr
+      //temp567 => List(TermRef(typeRepr, TypeRepr.of[T].show)), // type of the parameter - here dynamic, given as a TypeRepr
+      temp567 => List(TermRef(typeRepr, typeRepr.show)), // type of the parameter - here dynamic, given as a TypeRepr
+      _ => TypeRepr.of[Unit]
+    ),
+    rhsFn
+  )
+  println(s"anonfunLamnda: $anonfunLamnda")
+
+  //val defDef = DefDef(symbol: Symbol, rhsFn: List[List[Tree]] => Option[Term])
+  //val defDef = DefDef()
+
+
+
+//  val ident: Ident = Ident()
+//
+//  val valDef = ValDef(symbolParamName, Option(ident))
+//  println(valDef)
+  //val valDefExpr = valDef.asExpr
+  //println(valDef.asExpr)
+  //val valDefTerm = valDef.asTerm
+  //println(valDefTerm)
+
+  //val symExpr = sym.asExpr
+  //println(symExpr)
+
+
+  /*
+  println("qwerty 02")
+  val ggg = TypeRepr.of[String]
+  println("qwerty 03")
+  //val t = TermRef(ggg, "String")
+  val
+  println("qwerty 04")
+  //val termRef: TermRef = TermRef(TypeRepr.of[String], "java.lang.String")
+  val termRef: TermRef = TermRef(TypeRepr.of[T], "TTT")
+  println("qwerty 05")
+  val valDef = ValDef(
+    sym,
+    //Expr()
+    //None // ??? ValDef(v,TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Int)],EmptyTree)
+    Option(Ident(termRef)), //tmref: TermRef =>
+    //Option(Ident(TypeRepr.of[String]).asTerm), //tmref: TermRef =>
+    //Option(Ident(Symbol.noSymbol).asTerm), //tmref: TermRef =>
+    //Tree()
+  )
+  println(s"qwerty 06 $valDef")
+  */
+}
 
 
 
