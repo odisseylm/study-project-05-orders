@@ -113,7 +113,7 @@ private class WritablePropImpl[PropertyType, OwnerType] (
 
 object Property :
   // Readonly property
-  def property[T, O](isNullable: Boolean, propName: String, getter: () => T,
+  def property[T, O](isNullable: Boolean, propName: String, getter: () => T|Null,
     propOwner: O|Null, propOwnerType: Class[O]|Null): ReadonlyProp[T,O] =
     new ReadonlyPropImpl(isNullable, propName, getter, toOption(propOwner), toOption(propOwnerType))
   @targetName("propertyForOption")
@@ -122,16 +122,16 @@ object Property :
     new ReadonlyPropImpl(isNullable, propName, () => getter().orNull, toOption(propOwner), toOption(propOwnerType))
 
   // Used in macros. Macros cannot return current compiling class as Class, only as ClassTag
-  def property[T, O](isNullable: Boolean, propName: String, getter: () => T,
+  def property[T, O](isNullable: Boolean, propName: String, getter: () => T|Null,
     propOwner: O|Null, propOwnerType: ClassTag[O]|Null): ReadonlyProp[T,O] =
     new ReadonlyPropImpl(isNullable, propName, getter, toOption(propOwner), classTagToClass(propOwnerType))
-  @targetName("propertyForOption")
+  @targetName("propertyForOption2")
   def property[T, O](isNullable: Boolean, propName: String, getter: () => Option[T],
     propOwner: O|Null, propOwnerType: ClassTag[O]|Null): ReadonlyProp[T,O] =
     new ReadonlyPropImpl(isNullable, propName, () => getter().orNull, toOption(propOwner), classTagToClass(propOwnerType))
 
   // Writable property
-  def property[T, O](isNullable: Boolean, propName: String, getter: () => T, setter: (T|Null)=>Unit,
+  def property[T, O](isNullable: Boolean, propName: String, getter: () => T|Null, setter: (T|Null)=>Unit,
     propOwner: O|Null, propOwnerType: Class[O]|Null): WritableProp[T,O] =
     new WritablePropImpl(isNullable, propName, getter, setter, toOption(propOwner), toOption(propOwnerType))
   @targetName("propertyForOption")
@@ -141,7 +141,7 @@ object Property :
       toOption(propOwner), toOption(propOwnerType))
 
   // Used in macros. Macros cannot return current compiling class as Class, only as ClassTag
-  def property[T, O](isNullable: Boolean, propName: String, getter: () => T, setter: (T|Null)=>Unit,
+  def property[T, O](isNullable: Boolean, propName: String, getter: () => T|Null, setter: (T|Null)=>Unit,
     propOwner: O|Null, propOwnerType: ClassTag[O]|Null): WritableProp[T,O] =
     new WritablePropImpl(isNullable, propName, getter, setter, toOption(propOwner), classTagToClass(propOwnerType))
   @targetName("propertyForOption")
@@ -149,7 +149,6 @@ object Property :
     propOwner: O|Null, propOwnerType: ClassTag[O]|Null): WritableProp[T,O] =
     new WritablePropImpl(isNullable, propName, () => getter().orNull, (v: T|Null) => setter(Option(v.castToNonNullable)),
       toOption(propOwner), classTagToClass(propOwnerType))
-
 
 
 // utils, move to somewhere

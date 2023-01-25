@@ -25,6 +25,16 @@ inline def asPropValue[T, O](inline ownerExpr: O, inline expr: Option[T]): PropV
   ${ asPropOptionValueImpl[T, O]('ownerExpr, 'expr) }
 
 
+inline def asReadonlyProp[T, O](inline thisExpr: O, inline getExpr: T): ReadonlyProp[T, O] =
+  ${ asRPropImpl[T, O]('thisExpr, 'getExpr) }
+inline def asReadonlyProp[T, O](inline thisExpr: O, inline getExpr: Option[T]): ReadonlyProp[T, O] =
+  ${ asRPropOptionImpl[T, O]('thisExpr, 'getExpr) }
+inline def asWritableProp[T, O](inline thisExpr: O, inline getExpr: T): WritableProp[T, O] =
+  ${ asWPropImpl[T, O]('thisExpr, 'getExpr) }
+inline def asWritableProp[T, O](inline thisExpr: O, inline getExpr: Option[T]): WritableProp[T, O] =
+  ${ asWPropOptionImpl[T, O]('thisExpr, 'getExpr) }
+
+
 private def asPropValueImpl[T, O](ownerExpr: Expr[O], expr: Expr[T])
                                          (using t: Type[T])(using o: Type[O])
                                          (using Quotes): Expr[PropValue[T, O]] = {
@@ -58,6 +68,133 @@ private def asPropOptionValueImpl[T, O](ownerExpr: Expr[O], expr: Expr[Option[T]
       '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, ${ getClassTagExpr[O] }) }  )
 
   log.debug(s"asPropOptionValue => resulting expr: [${propValueExpr.show}]")
+  propValueExpr
+}
+
+
+private def asRPropImpl[T, O](ownerExpr: Expr[O], expr: Expr[T])
+                            (using t: Type[T])(using o: Type[O])
+                            (using Quotes): Expr[ReadonlyProp[T, O]] =
+  asPropImpl[T, O](ownerExpr, expr, false).asInstanceOf[Expr[ReadonlyProp[T, O]]]
+private def asWPropImpl[T, O](ownerExpr: Expr[O], expr: Expr[T])
+                            (using t: Type[T])(using o: Type[O])
+                            (using Quotes): Expr[WritableProp[T, O]] =
+  asPropImpl[T, O](ownerExpr, expr, true).asInstanceOf[Expr[WritableProp[T, O]]]
+
+
+private def asPropImpl[T, O](thisExpr: Expr[O], getterExpr: Expr[T], isWritable: Boolean)
+                            (using t: Type[T])(using o: Type[O])
+                            (using Quotes): Expr[WritableProp[T, O]]|Expr[ReadonlyProp[T, O]] = {
+  log.debug(s"asPropValue => expr: [${thisExpr.show}], [${getterExpr.show}]")
+  log.debug(s"${ getCompilationSource(getterExpr) }")
+
+  val propNameExpr = Expr(extractPropName(getterExpr))
+  val isNullableProp = false // TODO: try to add isNullable as default parameter
+  val isNullablePropExpr = Expr(isNullableProp)
+  val getAsLambdaExpr = getterAsLambdaExpr[T](getterExpr) // '{ () => $getterFullName }
+  val thisTypeAsClass = findClassExpr[O]
+
+  val toPassThis = false // T O D O: make it as argument with default value 'false'
+  val thisExprToPass = if toPassThis then
+      // Passing this causes warning [Cannot prove the method argument is hot. Only hot values are safe to leak]
+      // if PropertyObject is assigned to field (of this object)
+      thisExpr
+    else
+      '{ null.asInstanceOf[O] }
+
+  val propValueExpr: Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] =
+    if !isWritable then
+      val setAsLambdaExpr = setterAsLambdaExpr[T](getterExpr)
+      thisTypeAsClass
+        .map(typeExpr =>
+          '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $setAsLambdaExpr, $thisExprToPass, $typeExpr) })
+        .getOrElse(
+          '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $setAsLambdaExpr, $thisExprToPass, ${ getClassTagExpr[O] }) })
+    else
+      thisTypeAsClass
+        .map(typeExpr =>
+          '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $thisExprToPass, $typeExpr) })
+        .getOrElse(
+          '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $thisExprToPass, ${ getClassTagExpr[O] }) })
+
+  log.debug(s"asPropValue => resulting expr: [${propValueExpr.show}]")
+  propValueExpr
+}
+
+
+private def getterAsLambdaExpr[T](getterExpr: Expr[T])(using t: Type[T])(using Quotes): Expr[()=>T|Null] =
+  val getterFullMethodName = getterExpr.show
+  //??? //'{ () => getterFullMethodName }
+  '{ () => $getterExpr }
+
+private def getterOptionAsLambdaExpr[T](getterExpr: Expr[Option[T]])(using t: Type[T])(using Quotes): Expr[()=>Option[T]] =
+  val getterFullMethodName = getterExpr.show
+  //??? //'{ () => getterFullMethodName }
+  '{ () => $getterExpr }
+
+private def setterAsLambdaExpr[T](getterExpr: Expr[T])(using t: Type[T])(using Quotes): Expr[(T|Null)=>Unit] =
+  //???
+  val getterFullMethodName = getterExpr.show
+  val setterFullMethodName = s"${getterFullMethodName}_="
+  //'{ v => setterFullMethodName(v)  }
+  // TODO: implement !!!
+  '{ v => { } }
+
+private def setterOptionAsLambdaExpr[T](getterExpr: Expr[Option[T]])(using t: Type[T])(using Quotes): Expr[Option[T]=>Unit] =
+  //???
+  val getterFullMethodName = getterExpr.show
+  val setterFullMethodName = s"${getterFullMethodName}_="
+  //'{ v => setterFullMethodName(v)  }
+  // TODO: implement !!!
+  '{ v => { } }
+
+
+private def asRPropOptionImpl[T, O](ownerExpr: Expr[O], expr: Expr[Option[T]])
+                                  (using t: Type[T])(using o: Type[O])
+                                  (using Quotes): Expr[ReadonlyProp[T, O]] =
+  asPropOptionImpl[T, O](ownerExpr, expr, false).asInstanceOf[Expr[ReadonlyProp[T, O]]]
+private def asWPropOptionImpl[T, O](ownerExpr: Expr[O], expr: Expr[Option[T]])
+                                  (using t: Type[T])(using o: Type[O])
+                                  (using Quotes): Expr[WritableProp[T, O]] =
+  asPropOptionImpl[T, O](ownerExpr, expr, true).asInstanceOf[Expr[WritableProp[T, O]]]
+
+private def asPropOptionImpl[T, O](thisExpr: Expr[O], getterExpr: Expr[Option[T]], isWritable: Boolean)
+                                  (using t: Type[T])(using o: Type[O])
+                                  (using Quotes): Expr[WritableProp[T, O]]|Expr[ReadonlyProp[T, O]] = {
+
+  log.debug(s"asPropOption => expr: [${thisExpr.show}], [${getterExpr.show}]")
+  log.debug(s"${getCompilationSource(getterExpr)}")
+
+  val propNameExpr = Expr(extractPropName(getterExpr))
+  val isNullableProp = false // TODO: try to add isNullable as default parameter
+  val isNullablePropExpr = Expr(isNullableProp)
+  val getAsLambdaExpr = getterOptionAsLambdaExpr[T](getterExpr) // '{ () => $getterFullName }
+  val thisTypeAsClass = findClassExpr[O]
+
+  val toPassThis = false // T O D O: make it as argument with default value 'false'
+  val thisExprToPass = if toPassThis then
+    // Passing this causes warning [Cannot prove the method argument is hot. Only hot values are safe to leak]
+    // if PropertyObject is assigned to field (of this object)
+    thisExpr
+  else
+    '{ null.asInstanceOf[O] }
+
+  val propValueExpr: Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] =
+    if !isWritable then
+      val setAsLambdaExpr = setterOptionAsLambdaExpr[T](getterExpr)
+      thisTypeAsClass
+        .map(typeExpr =>
+          '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $setAsLambdaExpr, $thisExprToPass, $typeExpr) })
+        .getOrElse(
+          '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $setAsLambdaExpr, $thisExprToPass, ${ getClassTagExpr[O] }) })
+    else
+      thisTypeAsClass
+        .map(typeExpr =>
+          '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $thisExprToPass, $typeExpr) })
+        .getOrElse(
+          '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $thisExprToPass, ${ getClassTagExpr[O] }) })
+
+  log.debug(s"asPropOption => resulting expr: [${propValueExpr.show}]")
   propValueExpr
 }
 
@@ -554,5 +691,28 @@ private def extractOwnerType_NonWorking[T](expr: Expr[T])(using t: Type[T])(usin
   //thisTref.asInstanceOf[TypeRef].isType
 
   println("\n\n")
+
+  // TODO: to test
+  //x.asTerm.show(using Printer.TreeStructure)
+
   None
 end extractOwnerType_NonWorking
+
+
+/*
+ TODO: what is it???
+ Spatial Data and Grids
+
+abstract class NeighborVisitor[A <% Int => Double](val dim:Int) {
+  def visitAllNeighbors(tDist:Double, visit:(A,A) => Unit)
+  def visitNeighbors(i:Int, tDist:Double, visit:(A,A) => Unit)
+  var distCalcs = 0
+  def dist[A <% Int => Double](p1:A, p2:A):Double = {
+    distCalcs += 1
+    math.sqrt((0 until dim).foldLeft(0.0)((d,i) => {
+      val di = p1(i)-p2(i)
+      d+di*di
+    }))
+  }
+}
+*/

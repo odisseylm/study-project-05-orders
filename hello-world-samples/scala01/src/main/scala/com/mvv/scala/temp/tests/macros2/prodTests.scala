@@ -4,6 +4,8 @@ package com.mvv.scala.temp.tests.macros2
 import java.time.ZonedDateTime
 //
 import com.mvv.scala.macros.asPropValue as _pv
+import com.mvv.scala.macros.asReadonlyProp as _rp
+import com.mvv.scala.macros.asWritableProp as _wp
 import com.mvv.scala.macros.PropValue
 
 
@@ -112,6 +114,9 @@ class TesPropsClass extends BaseClass:
   val propWithOwnerTypeInDerivedBaseOptionJavaSomeStdClass = _pv(this, baseOptionJavaSomeStdClass)
 
   //val propWithOwnerAsSuperTypeInDerivedBaseOptionJavaSomeStdClass = _pv( baseOptionJavaSomeStdClass)
+
+  @scala.unchecked val rPropNewString = _rp(this, newString)
+  @scala.unchecked val wPropNewString = _wp(this, newString)
 
 
 // TODO: write unit test with reflection
