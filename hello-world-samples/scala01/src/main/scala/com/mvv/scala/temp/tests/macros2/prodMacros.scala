@@ -134,6 +134,9 @@ private def getterOptionAsLambdaExpr[T](getterExpr: Expr[Option[T]])(using t: Ty
 
 private def setterAsLambdaExpr[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
                                    (using t: Type[T])(using o: Type[O])(using Quotes): Expr[(T|Null)=>Unit] =
+
+  import scala.quoted
+  import quotes.reflect.*
   //???
   val getterFullMethodName = getterExpr.show
   val setterFullMethodName = s"${getterFullMethodName}_="
@@ -143,7 +146,14 @@ private def setterAsLambdaExpr[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
   // Error: value method333 is not a member of object com.mvv.scala.macros.prodMacros$package
   //'{ (v: T|Null) => this.method333(v.asInstanceOf[T]) }
   //
-  //'{ (v: T|Null) => ($thisExpr).method333(v.asInstanceOf[T]) }
+  //'{ (v: T|Null) => ($thisExpr).method333(v.asInstanceOf[T]) }.changeOwner(Symbol.spliceOwner)
+
+  //val expr44 = '{ (v: T|Null) => method333(v.asInstanceOf[T]) }
+  //println("############## 456")
+  //expr44.changeOwner(Symbol.spliceOwner)
+
+  //getterExpr.
+
   //
   // TODO: implement !!!
   '{ v => { } }
@@ -154,6 +164,14 @@ private def temp567[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
   import scala.quoted
   import quotes.reflect.*
 
+  val mt = MethodType(
+    List())( // parameter list - here a single parameter
+    _ => List(), // type of the parameter - here dynamic, given as a TypeRepr
+    _ => TypeRepr.of[Int])
+
+  //Lambda(Symbol.spliceOwner, mt, )
+
+
   val myMethodSymbol = Symbol.newMethod(
     Symbol.spliceOwner,
     "myMethod",
@@ -162,6 +180,7 @@ private def temp567[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
       _ => List(), // type of the parameter - here dynamic, given as a TypeRepr
       _ => TypeRepr.of[Int]) // return type - here static, always Int
   )
+
 
   /*
   // tree representing: def myMethod(param) = ...
@@ -315,6 +334,15 @@ private def getCompilationSource(expr: Expr[Any])(using Quotes): String =
   //pos.sourceCode.foreach(v => log.error(s"     $v"))
 
 
+
+inline def dumpTerm[T](inline expr: T): T =
+  ${ dumpTermImpl('expr) }
+  //${ 'expr }
+
+private def dumpTermImpl[T](expr: Expr[T])(using Quotes)(using Type[T]): Expr[T] =
+  import quotes.reflect.*
+  println(s"++++++ $expr ${expr.asTerm}")
+  expr
 
 
 

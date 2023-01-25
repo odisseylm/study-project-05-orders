@@ -1,0 +1,47 @@
+ Inlined(
+   EmptyTree,
+   List(),
+   Block(
+     List(
+       DefDef(
+         $anonfun,
+         List(
+           List(
+             ValDef(
+               v,
+               Ident(String),
+               EmptyTree
+             )
+           )
+         ),
+         TypeTree[
+           TypeRef(
+             ThisType(
+               TypeRef(
+                 NoPrefix,
+                 module class scala
+               )
+             ),
+             class Unit
+           )
+         ],
+         Apply(
+           Select(
+             This(
+               Ident(
+                 TesPropsClass
+               )
+             ),
+             tempStrPropVar1_=
+           ),
+           List( Ident(v) )
+         )
+       )
+     ),
+     Closure(
+       List(),
+       Ident($anonfun),
+       EmptyTree
+     )
+   )
+ )

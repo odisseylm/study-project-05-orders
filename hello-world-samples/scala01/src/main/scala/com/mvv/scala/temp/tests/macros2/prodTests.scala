@@ -3,6 +3,7 @@ package com.mvv.scala.temp.tests.macros2
 
 import java.time.ZonedDateTime
 //
+import com.mvv.scala.macros.dumpTerm
 import com.mvv.scala.macros.asPropValue as _pv
 import com.mvv.scala.macros.asReadonlyProp as _rp
 import com.mvv.scala.macros.asWritableProp as _wp
@@ -123,8 +124,111 @@ class TesPropsClass extends BaseClass:
   val rPropNewOptionSomeClass = _rp(this, newOptionSomeClass)
   //@scala.unchecked val wPropNewOptionSomeClass = _wp(this, newOptionSomeClass)
 
-  def method333(s: String) = {}
+  def method333(s: Any|Null) = {}
   def method334(s: String|Null) = {}
+
+  var tempStrPropVar1 = "gfgf"
+
+  def aa():Unit = {
+    dumpTerm((v: String) => tempStrPropVar1 = v )
+    // Inlined(
+    //   EmptyTree,
+    //   List(),
+    //   Block(
+    //     List(
+    //       DefDef(
+    //         $anonfun,
+    //         List(
+    //           List(
+    //             ValDef(
+    //               v,
+    //               Ident(String),
+    //               EmptyTree)
+    //             )
+    //           ),
+    //           TypeTree[
+    //             TypeRef(
+    //               ThisType(
+    //                 TypeRef(
+    //                   NoPrefix,
+    //                   module class scala
+    //                 )
+    //               ),
+    //               class Unit
+    //             )
+    //           ],
+    //           Assign(
+    //             Select(
+    //               This(
+    //                 Ident(
+    //                   TesPropsClass
+    //                 )
+    //               ),
+    //               tempStrPropVar1
+    //             ),
+    //             Ident(v)
+    //           )
+    //         )
+    //       ),
+    //       Closure(
+    //         List(),
+    //         Ident($anonfun),
+    //         EmptyTree)
+    //       )
+    //     )
+
+
+    dumpTerm((v: String) => tempStrPropVar1_=(v) )
+    // Inlined(
+    //   EmptyTree,
+    //   List(),
+    //   Block(
+    //     List(
+    //       DefDef(
+    //         $anonfun,
+    //         List(
+    //           List(
+    //             ValDef(
+    //               v,
+    //               Ident(String),
+    //               EmptyTree
+    //             )
+    //           )
+    //         ),
+    //         TypeTree[
+    //           TypeRef(
+    //             ThisType(
+    //               TypeRef(
+    //                 NoPrefix,
+    //                 module class scala
+    //               )
+    //             ),
+    //             class Unit
+    //           )
+    //         ],
+    //         Apply(
+    //           Select(
+    //             This(
+    //               Ident(
+    //                 TesPropsClass
+    //               )
+    //             ),
+    //             tempStrPropVar1_=
+    //           ),
+    //           List(
+    //             Ident(v)
+    //           )
+    //         )
+    //       )
+    //     ),
+    //     Closure(
+    //       List(),
+    //       Ident($anonfun),
+    //       EmptyTree
+    //     )
+    //   )
+    // )
+  }
 
 // TODO: write unit test with reflection
 
