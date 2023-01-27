@@ -1,0 +1,198 @@
+
+Inlined(
+  EmptyTree,
+  List(),
+  Block(
+    List(
+      DefDef(
+        $anonfun,
+        List(
+          List(
+            ValDef(
+              v,
+              AppliedTypeTree(
+                Ident(|),
+                List(
+                  Ident(String),
+                  Ident(Null)
+                )
+              ),
+              EmptyTree
+            )
+          )
+        ),
+        TypeTree[
+          TypeRef(
+            ThisType(
+              TypeRef(
+                NoPrefix,
+                module class scala
+              )
+            ),
+            class Unit
+          )
+        ],
+        Apply(
+          Select(
+            This(
+              Ident(TesPropsClass)
+            ),
+            tempStrPropVar1_=
+          ),
+          List(
+            TypeApply(
+              Select(
+                Ident(v),
+                asInstanceOf
+              ),
+              List(
+                Ident(String)
+              )
+            )
+          )
+        )
+      )
+    ),
+    Closure(
+      List(),
+      Ident($anonfun),
+      EmptyTree
+    )
+  )
+)
+
+
+Inlined(
+  EmptyTree,
+  List(),
+  Block(
+    List(
+      DefDef(
+        $anonfun,
+        List(
+          List(
+            ValDef(
+              v,
+              Ident(String),
+              EmptyTree
+            )
+          )
+        ),
+        TypeTree[
+          TypeRef(
+            ThisType(
+              TypeRef(
+                NoPrefix,
+                module class scala
+              )
+            ),
+            class Unit
+          )
+        ],
+        Block(
+          List(
+            ValDef(
+              obj,
+              Ident(Any),
+              Literal(Constant()
+            )
+          ),
+          ValDef(
+            s,
+            Ident(String),
+            TypeApply(
+              Select(
+                Ident(obj),
+                asInstanceOf
+              ),
+            List(Ident(String)
+          )
+        )
+      ),
+      Apply(
+        Select(
+          This(
+            Ident(TesPropsClass)
+          ),
+          tempStrPropVar1_=
+        ),
+        List(Ident(s)
+      )
+    )
+  ),
+  Apply(
+    Select(
+      This(
+        Ident(TesPropsClass)
+      ),
+      tempStrPropVar1_=
+    ),
+    List(
+      Ident(v)
+    )
+  )
+)
+)
+),
+Closure(List(),Ident($anonfun),EmptyTree)
+)
+)
+
+
+
+Inlined(
+  EmptyTree,
+  List(),
+  Block(
+    List(
+      DefDef(
+        $anonfun,
+          List(
+            List(
+              ValDef(
+                v,
+                Ident(String),
+                EmptyTree
+              )
+            )
+          ),
+          TypeTree[
+            TypeRef(
+              ThisType(
+                TypeRef(
+                  NoPrefix,
+                  module class scala
+                )
+              ),
+              class Unit
+            )
+          ],
+          Block(
+            List(
+              ValDef(
+                obj,
+                Ident(Any),
+                Literal(Constant())
+              )
+            ),
+            Apply(
+              Select(
+                This(
+                  Ident(TesPropsClass)
+                ),
+                tempStrPropVar1_=
+              ),
+              List(
+                TypeApply( Select( Ident(obj), asInstanceOf), List( Ident(String) ) )
+              )
+          )
+        )
+      )
+    ),
+    Closure(
+      List(),
+      Ident($anonfun),
+      EmptyTree
+    )
+  )
+)

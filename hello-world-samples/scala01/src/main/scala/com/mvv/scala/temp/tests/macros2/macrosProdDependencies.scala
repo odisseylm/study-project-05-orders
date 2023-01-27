@@ -154,7 +154,7 @@ object Property :
 // utils, move to somewhere
 extension [T](v: T|Null)
   //noinspection ScalaUnusedSymbol
-  private def castToNonNullable: T = v.asInstanceOf[T]
+  def castToNonNullable: T = v.asInstanceOf[T]
 
 private def checkNotNull[T](v: T|Null, msg: =>String): T =
   if (v == null) throw IllegalStateException(msg)

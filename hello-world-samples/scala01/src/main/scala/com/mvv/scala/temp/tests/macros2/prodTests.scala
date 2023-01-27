@@ -135,21 +135,27 @@ class TesPropsClass extends BaseClass:
   var tempStrPropVar2 = "gfgf"
 
   def aa():Unit = {
+    com.mvv.scala.macros.Property.property[java.lang.String, com.mvv.scala.temp.tests.macros2.TesPropsClass](
+      false, "tempStrPropVar1",
+      (() => TesPropsClass.this.tempStrPropVar1),
+      ((v44: java.lang.String | scala.Null) => TesPropsClass.this.tempStrPropVar1_=(v44.asInstanceOf[java.lang.String])),
+      null.asInstanceOf[com.mvv.scala.temp.tests.macros2.TesPropsClass],
+      scala.reflect.ClassTag.apply[com.mvv.scala.temp.tests.macros2.TesPropsClass](classOf[com.mvv.scala.temp.tests.macros2.TesPropsClass]))
+
+    println(s"BEFORE tempStrPropVar1: $tempStrPropVar1")
 
     val wPropNewString = _wp(this, tempStrPropVar1)
     // ((v44: java.lang.String.java.lang.String.type) => TesPropsClass.this.TesPropsClass.this.tempStrPropVar1_=(v44))
     ((v44: java.lang.String) => TesPropsClass.this.tempStrPropVar1_=(v44))
 
-    println(s"BEFORE tempStrPropVar1: $tempStrPropVar1")
-
     //val orig = wPropNewString.value
     //wPropNewString.set(s"$orig    CHANGED")
-
-    println(s"AFTER  tempStrPropVar1: $tempStrPropVar1")
+    //println(s"AFTER  tempStrPropVar1: $tempStrPropVar1")
 
 
     //TesPropsClass.this.tempStrPropVar1_=("hfjgfhjkg")
 
+    /*
     dumpTerm((v: String) => tempStrPropVar2 = v )
     // Inlined(
     //   EmptyTree,
@@ -199,6 +205,7 @@ class TesPropsClass extends BaseClass:
 
 
     dumpTerm((v: String) => tempStrPropVar1_=(v) )
+    dumpTerm((v: String) => { val obj: Any = ""; val s: String = obj.asInstanceOf[String]; tempStrPropVar1_=(s); tempStrPropVar1_=(v) } )
     // Inlined(
     //   EmptyTree,
     //   List(),
@@ -250,6 +257,12 @@ class TesPropsClass extends BaseClass:
     // )
 
     dumpTerm((v: String) => tempStrPropVar1_=(v) )
+
+    dumpTerm((v: String|Null) => tempStrPropVar1_=(v.asInstanceOf[String]) )
+    */
+
+    dumpTerm((v: String) => { val obj: Any = ""; tempStrPropVar1_=(obj.asInstanceOf[String]) } )
+
   }
 
 // TODO: write unit test with reflection
