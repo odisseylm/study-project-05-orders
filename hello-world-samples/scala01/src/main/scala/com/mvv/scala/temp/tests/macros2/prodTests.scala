@@ -135,7 +135,10 @@ class TesPropsClass extends BaseClass:
   var tempStrPropVar2 = "gfgf"
 
   def aa():Unit = {
-    com.mvv.scala.macros.Property.property[java.lang.String, com.mvv.scala.temp.tests.macros2.TesPropsClass](
+
+    val ddd = com.mvv.scala.macros.Property.property[java.lang.String, com.mvv.scala.temp.tests.macros2.TesPropsClass](false, "tempStrPropVar1", (() => TesPropsClass.this.tempStrPropVar1), ((v44: java.lang.String | scala.Null) => TesPropsClass.this.tempStrPropVar1_=(v44.asInstanceOf[java.lang.String])), null.asInstanceOf[com.mvv.scala.temp.tests.macros2.TesPropsClass], scala.reflect.ClassTag.apply[com.mvv.scala.temp.tests.macros2.TesPropsClass](classOf[com.mvv.scala.temp.tests.macros2.TesPropsClass]))
+
+    val wPropNewString00 = com.mvv.scala.macros.Property.property[java.lang.String, com.mvv.scala.temp.tests.macros2.TesPropsClass](
       false, "tempStrPropVar1",
       (() => TesPropsClass.this.tempStrPropVar1),
       ((v44: java.lang.String | scala.Null) => TesPropsClass.this.tempStrPropVar1_=(v44.asInstanceOf[java.lang.String])),
