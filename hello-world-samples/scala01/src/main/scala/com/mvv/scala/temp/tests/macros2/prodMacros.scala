@@ -37,93 +37,89 @@ inline def asWritableProp[T, O](inline thisExpr: O, inline getExpr: Option[T]): 
 
 
 private def asPropValueImpl[T, O](ownerExpr: Expr[O], expr: Expr[T])
-                                         (using t: Type[T])(using o: Type[O])
-                                         (using Quotes): Expr[PropValue[T, O]] = {
-  log.debug(s"asPropValue => expr: [${ownerExpr.show}], [${expr.show}]")
-  log.debug(s"${ getCompilationSource(expr) }")
-
-  val propNameExpr: Expr[String] = Expr(extractPropName(expr))
-
-  val propValueExpr: Expr[PropValue[T, O]] = findClassExpr[O]
-    .map(typeExpr =>
-      '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, $typeExpr) })
-    .getOrElse(
-      '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, ${ getClassTagExpr[O] }) })
-
-  log.debug(s"asPropValue => resulting expr: [${propValueExpr.show}]")
-  propValueExpr
-}
-
+                                 (using Quotes, Type[T], Type[O]): Expr[PropValue[T, O]] =
+  PropsMacro[T, O]().asPropValue(ownerExpr, expr)
 
 private def asPropOptionValueImpl[T, O](ownerExpr: Expr[O], expr: Expr[Option[T]])
-                                               (using t: Type[T])(using o: Type[O])
-                                               (using Quotes): Expr[PropValue[T, O]] = {
-  log.debug(s"asPropOptionValue => expr: [${expr.show}]")
-
-  val propNameExpr: Expr[String] = Expr(extractPropName(expr))
-
-  val propValueExpr: Expr[PropValue[T, O]] = findClassExpr[O]
-    .map( typeExpr =>
-      '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, $typeExpr) }  )
-    .getOrElse (
-      '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, ${ getClassTagExpr[O] }) }  )
-
-  log.debug(s"asPropOptionValue => resulting expr: [${propValueExpr.show}]")
-  propValueExpr
-}
+                                 (using Quotes, Type[T], Type[O]): Expr[PropValue[T, O]] =
+  PropsMacro[T, O]().asPropOptionValue(ownerExpr, expr)
 
 
 private def asRPropImpl[T, O](ownerExpr: Expr[O], expr: Expr[T])
-                            (using t: Type[T])(using o: Type[O])
-                            (using Quotes): Expr[ReadonlyProp[T, O]] =
-  asPropImpl[T, O](ownerExpr, expr, false).asInstanceOf[Expr[ReadonlyProp[T, O]]]
+                             (using Quotes, Type[T], Type[O]): Expr[ReadonlyProp[T, O]] =
+  PropsMacro[T, O]().asProp(ownerExpr, expr, false).asInstanceOf[Expr[ReadonlyProp[T, O]]]
 private def asWPropImpl[T, O](ownerExpr: Expr[O], expr: Expr[T])
-                            (using t: Type[T])(using o: Type[O])
-                            (using Quotes): Expr[WritableProp[T, O]] =
-  asPropImpl[T, O](ownerExpr, expr, true).asInstanceOf[Expr[WritableProp[T, O]]]
+                             (using Quotes, Type[T], Type[O]): Expr[WritableProp[T, O]] =
+  PropsMacro[T, O]().asProp(ownerExpr, expr, true).asInstanceOf[Expr[WritableProp[T, O]]]
 
-def asPropImpl[T, O](thisExpr: Expr[O], getterExpr: Expr[T], isWritable: Boolean)
-                    (using t: Type[T])(using o: Type[O])
-                    (using Quotes): Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] =
-  new PropsMacro().asPropImpl[T, O](
-    thisExpr: Expr[O], getterExpr: Expr[T], isWritable: Boolean)(using t: Type[T])(using o: Type[O])
 
 def asRPropOptionImpl[T, O](ownerExpr: Expr[O], expr: Expr[Option[T]])
-                           (using t: Type[T])(using o: Type[O])
-                           (using Quotes): Expr[ReadonlyProp[T, O]] =
-  new PropsMacro().asPropOptionImpl[T, O](ownerExpr, expr, false).asInstanceOf[Expr[ReadonlyProp[T, O]]]
+                           (using Quotes, Type[T], Type[O]): Expr[ReadonlyProp[T, O]] =
+  PropsMacro[T, O]().asPropOption(ownerExpr, expr, false).asInstanceOf[Expr[ReadonlyProp[T, O]]]
 
 def asWPropOptionImpl[T, O](ownerExpr: Expr[O], expr: Expr[Option[T]])
-                           (using t: Type[T])(using o: Type[O])
-                           (using Quotes): Expr[WritableProp[T, O]] =
-  new PropsMacro().asPropOptionImpl[T, O](ownerExpr, expr, true).asInstanceOf[Expr[WritableProp[T, O]]]
+                           (using Quotes, Type[T], Type[O]): Expr[WritableProp[T, O]] =
+  PropsMacro[T, O]().asPropOption(ownerExpr, expr, true).asInstanceOf[Expr[WritableProp[T, O]]]
 
 
-class PropsMacro(using quotes: Quotes) extends QuotesUtils(using quotes) {
 
-  def asPropImpl[T, O](thisExpr: Expr[O], getterExpr: Expr[T], isWritable: Boolean)
-                      (using t: Type[T])(using o: Type[O])
-                      (using Quotes): Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] = {
+sealed class PropsMacro[T, O](using quotes: Quotes)(using t: Type[T])(using o: Type[O]) extends QuotesUtils(using quotes) {
+
+  def asPropValue(ownerExpr: Expr[O], expr: Expr[T]): Expr[PropValue[T, O]] =
+    log.debug(s"asPropValue => expr: [${ownerExpr.show}], [${expr.show}]")
+    log.debug(s"${ getCompilationSource(expr) }")
+
+    val propNameExpr: Expr[String] = Expr(extractPropName(expr))
+
+    val propValueExpr: Expr[PropValue[T, O]] = findClassExpr[O]
+      .map(typeExpr =>
+        '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, $typeExpr) })
+      .getOrElse(
+        '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, ${ getClassTagExpr[O] }) })
+
+    log.debug(s"asPropValue => resulting expr: [${propValueExpr.show}]")
+    propValueExpr
+  end asPropValue
+
+
+  def asPropOptionValue(ownerExpr: Expr[O], expr: Expr[Option[T]]): Expr[PropValue[T, O]] =
+    log.debug(s"asPropOptionValue => expr: [${expr.show}]")
+
+    val propNameExpr: Expr[String] = Expr(extractPropName(expr))
+
+    val propValueExpr: Expr[PropValue[T, O]] = findClassExpr[O]
+      .map( typeExpr =>
+        '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, $typeExpr) }  )
+      .getOrElse (
+        '{ com.mvv.scala.macros.PropValue[T, O]($propNameExpr, $expr, ${ getClassTagExpr[O] }) }  )
+
+    log.debug(s"asPropOptionValue => resulting expr: [${propValueExpr.show}]")
+    propValueExpr
+  end asPropOptionValue
+
+
+  def asProp(thisExpr: Expr[O], getterExpr: Expr[T], isWritable: Boolean)
+                      : Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] = {
     log.debug(s"asProp => expr: [${thisExpr.show}], [${getterExpr.show}]")
     log.debug(s"${getCompilationSource(getterExpr)}")
 
     val propNameExpr = Expr(extractPropName(getterExpr))
     val isNullableProp = false // TODO: try to add isNullable as default parameter
     val isNullablePropExpr = Expr(isNullableProp)
-    val getAsLambdaExpr = getterAsLambdaExpr[T](getterExpr) // '{ () => $getterFullName }
+    val getAsLambdaExpr = getterAsLambdaExpr(getterExpr) // '{ () => $getterFullName }
     val thisTypeAsClass = findClassExpr[O]
 
     val toPassThis = false // T O D O: make it as argument with default value 'false'
     val thisExprToPass = if toPassThis then
-    // Passing this causes warning [Cannot prove the method argument is hot. Only hot values are safe to leak]
-    // if PropertyObject is assigned to field (of this object)
+      // Passing this causes warning [Cannot prove the method argument is hot. Only hot values are safe to leak]
+      // if PropertyObject is assigned to field (of this object)
       thisExpr
     else
       '{ null.asInstanceOf[O] }
 
     val propValueExpr: Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] =
       if isWritable then
-        val setAsLambdaExpr = setterAsLambdaExpr[T, O](getterExpr, thisExpr)
+        val setAsLambdaExpr = setterAsLambdaExpr(getterExpr, thisExpr)
         thisTypeAsClass
           .map(typeExpr =>
             '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $setAsLambdaExpr, $thisExprToPass, $typeExpr) })
@@ -141,180 +137,8 @@ class PropsMacro(using quotes: Quotes) extends QuotesUtils(using quotes) {
   }
 
 
-  private def getterAsLambdaExpr[T](getterExpr: Expr[T])(using t: Type[T])(using Quotes): Expr[() => T | Null] =
-    val getterFullMethodName = getterExpr.show
-    //??? //'{ () => getterFullMethodName }
-    '{ () => $getterExpr }
-
-  private def getterOptionAsLambdaExpr[T](getterExpr: Expr[Option[T]])(using t: Type[T])(using Quotes): Expr[() => Option[T]] =
-    val getterFullMethodName = getterExpr.show
-    //??? //'{ () => getterFullMethodName }
-    '{ () => $getterExpr }
-
-  private def setterAsLambdaExpr[T, O](getterExpr: Expr[T], thisExpr: Expr[O])
-                                      (using t: Type[T])(using o: Type[O])(using Quotes): Expr[(T | Null) => Unit] =
-
-    import scala.quoted
-    import quotes.reflect.*
-    //???
-    val getterFullMethodName = getterExpr.show
-    val setterFullMethodName = s"${getterFullMethodName}_="
-    //'{ v => setterFullMethodName(v)  }
-    //'{ (v: T|Null) => com.mvv.scala.temp.tests.macros2.TesPropsClass.this.method333(v.asInstanceOf[T]) }
-    //
-    // Error: value method333 is not a member of object com.mvv.scala.macros.prodMacros$package
-    //'{ (v: T|Null) => this.method333(v.asInstanceOf[T]) }
-    //
-    //'{ (v: T|Null) => ($thisExpr).method333(v.asInstanceOf[T]) }.changeOwner(Symbol.spliceOwner)
-
-    //val expr44 = '{ (v: T|Null) => method333(v.asInstanceOf[T]) }
-    //println("############## 456")
-    //expr44.changeOwner(Symbol.spliceOwner)
-
-    //getterExpr.
-
-    //  val valDef = ValDef(
-    //    Symbol("v"),
-    //    Ident(String),
-    //    EmptyTree
-    //  )
-
-    println("qwerty 01")
-
-    /*
-    // def newVal(parent: Symbol, name: String, tpe: TypeRepr, flags: Flags, privateWithin: Symbol): Symbol
-    val sym = Symbol.newVal(
-      Symbol.noSymbol, // Symbol.spliceOwner,
-      "v",
-      //TypeRepr.of[Int],
-      TypeRepr.of[String],
-      Flags.Param,
-      //Flags.EmptyFlags,
-      Symbol.noSymbol,
-    )*/
-
-    // need   ValDef(v,Ident(String),EmptyTree))
-    // have   ValDef(v,TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),object lang),String)],EmptyTree)
-
-    //val t = TermRef(qual: TypeRepr, name: String)     type TermRef <: NamedType
-
-    if (true) {
-      println("setterAsLambdaExpr 01")
-      val value = testFunc[T, O](getterExpr, thisExpr)
-      println("setterAsLambdaExpr 02")
-      return value
-    }
-
-    //val symbolParamName: Symbol = Names.simpleName("v")
-    //val typeName: TypeName = Names.TypeName(String)
-    //val ident: Ident = Ident(symbol)
-    //val valDef: ValDef = ValDef(symbolParamName, ident)
-
-    /*
-    println("qwerty 02")
-    val ggg = TypeRepr.of[String]
-    println("qwerty 03")
-    //val t = TermRef(ggg, "String")
-    val
-    println("qwerty 04")
-    //val termRef: TermRef = TermRef(TypeRepr.of[String], "java.lang.String")
-    val termRef: TermRef = TermRef(TypeRepr.of[T], "TTT")
-    println("qwerty 05")
-    val valDef = ValDef(
-      sym,
-      //Expr()
-      //None // ??? ValDef(v,TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Int)],EmptyTree)
-      Option(Ident(termRef)), //tmref: TermRef =>
-      //Option(Ident(TypeRepr.of[String]).asTerm), //tmref: TermRef =>
-      //Option(Ident(Symbol.noSymbol).asTerm), //tmref: TermRef =>
-      //Tree()
-    )
-    println(s"qwerty 06 $valDef")
-    */
-
-    // Inlined(EmptyTree,List(),Block(List(DefDef($anonfun,List(List(ValDef(v,Ident(String),EmptyTree))),TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Unit)],Apply(Select(This(Ident(TesPropsClass)),tempStrPropVar1_=),List(Ident(v))))),Closure(List(),Ident($anonfun),EmptyTree)))
-
-    /*
-    val valDef = ValDef(
-      sym,
-      //Expr()
-      Ident("String"),  tmref: TermRef =>
-      //Tree()
-    )
-    */
-
-    //val block = Block()
-    //val inlined = Inlined(None, List(), )
-
-
-    //
-    // TODO: implement !!!
-    '{ (v: T | Null) => {} }
-
-
-  private def temp567[T, O](getterExpr: Expr[T], thisExpr: Expr[O])
-                           (using t: Type[T])(using o: Type[O])(using Quotes): Unit = {
-    import scala.quoted
-    import quotes.reflect.*
-
-    val mt = MethodType(
-      List())( // parameter list - here a single parameter
-      _ => List(), // type of the parameter - here dynamic, given as a TypeRepr
-      _ => TypeRepr.of[Int])
-
-    //Lambda(Symbol.spliceOwner, mt, )
-
-
-    val myMethodSymbol = Symbol.newMethod(
-      Symbol.spliceOwner,
-      "myMethod",
-      MethodType(
-        List())( // parameter list - here a single parameter
-        _ => List(), // type of the parameter - here dynamic, given as a TypeRepr
-        _ => TypeRepr.of[Int]) // return type - here static, always Int
-    )
-
-
-    /*
-    // tree representing: def myMethod(param) = ...
-    val myMethodDef = DefDef(
-      myMethodSymbol, {
-        case List(List(paramTerm: Term)) => Some(myMethodBody(paramTerm).changeOwner(myMethodSymbol))
-      }
-    )
-    */
-
-    /*
-    val myMethodSymbol = Symbol.newMethod(
-      Symbol.spliceOwner,
-      "myMethod",
-      MethodType(
-        List("param"))( // parameter list - here a single parameter
-        _ => List(typeReprOfParam), // type of the parameter - here dynamic, given as a TypeRepr
-        _ => TypeRepr.of[Int])) // return type - here static, always Int
-
-    // tree representing: def myMethod(param) = ...
-    val myMethodDef = DefDef(
-      myMethodSymbol, {
-        case List(List(paramTerm: Term)) => Some(myMethodBody(paramTerm).changeOwner(myMethodSymbol))
-      }
-    )
-    */
-  }
-
-
-  private def setterOptionAsLambdaExpr[T](getterExpr: Expr[Option[T]])(using t: Type[T])(using Quotes): Expr[Option[T] => Unit] =
-    //???
-    val getterFullMethodName = getterExpr.show
-    val setterFullMethodName = s"${getterFullMethodName}_="
-    //'{ v => setterFullMethodName(v)  }
-    // TODO: implement !!!
-    '{ v => {} }
-
-
-  def asPropOptionImpl[T, O](thisExpr: Expr[O], getterExpr: Expr[Option[T]], isWritable: Boolean)
-                                    (using t: Type[T])(using o: Type[O])
-                                    (using Quotes): Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] = {
+  def asPropOption(thisExpr: Expr[O], getterExpr: Expr[Option[T]], isWritable: Boolean)
+                                    : Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] = {
 
     log.debug(s"asPropOption => expr: [${thisExpr.show}], [${getterExpr.show}]")
     log.debug(s"${getCompilationSource(getterExpr)}")
@@ -322,20 +146,20 @@ class PropsMacro(using quotes: Quotes) extends QuotesUtils(using quotes) {
     val propNameExpr = Expr(extractPropName(getterExpr))
     val isNullableProp = false // TODO: try to add isNullable as default parameter
     val isNullablePropExpr = Expr(isNullableProp)
-    val getAsLambdaExpr = getterOptionAsLambdaExpr[T](getterExpr) // '{ () => $getterFullName }
+    val getAsLambdaExpr = getterOptionAsLambdaExpr(getterExpr) // '{ () => $getterFullName }
     val thisTypeAsClass = findClassExpr[O]
 
     val toPassThis = false // T O D O: make it as argument with default value 'false'
     val thisExprToPass = if toPassThis then
-    // Passing this causes warning [Cannot prove the method argument is hot. Only hot values are safe to leak]
-    // if PropertyObject is assigned to field (of this object)
+      // Passing this causes warning [Cannot prove the method argument is hot. Only hot values are safe to leak]
+      // if PropertyObject is assigned to field (of this object)
       thisExpr
     else
       '{ null.asInstanceOf[O] }
 
     val propValueExpr: Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] =
       if isWritable then
-        val setAsLambdaExpr = setterOptionAsLambdaExpr[T](getterExpr)
+        val setAsLambdaExpr = setterOptionAsLambdaExpr(getterExpr)
         thisTypeAsClass
           .map(typeExpr =>
             '{ com.mvv.scala.macros.Property.property[T, O]($isNullablePropExpr, $propNameExpr, $getAsLambdaExpr, $setAsLambdaExpr, $thisExprToPass, $typeExpr) })
@@ -353,13 +177,19 @@ class PropsMacro(using quotes: Quotes) extends QuotesUtils(using quotes) {
   }
 
 
-  //def internalCastToNonNullable[T](v: T|Null): T = v.asInstanceOf[T]
+  private def getterAsLambdaExpr(getterExpr: Expr[T]): Expr[() => T | Null] =
+    val getterFullMethodName = getterExpr.show
+    //??? //'{ () => getterFullMethodName }
+    '{ () => $getterExpr }
 
-  private def testFunc[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
-                           (using t: Type[T])(using o: Type[O])(using Quotes): Expr[T|Null=>Unit] = {
+
+  private def getterOptionAsLambdaExpr(getterExpr: Expr[Option[T]]): Expr[() => Option[T]] =
+    val getterFullMethodName = getterExpr.show
+    '{ () => $getterExpr }
+
+
+  private def setterAsLambdaExpr(getterExpr: Expr[T], thisExpr: Expr[O]): Expr[(T | Null) => Unit] =
     import quotes.reflect.*
-
-    println("testFunc 01")
 
     val getterFullMethodName = extractPropName(getterExpr)
     val setterFullMethodName = s"${getterFullMethodName}_="
@@ -397,7 +227,6 @@ class PropsMacro(using quotes: Quotes) extends QuotesUtils(using quotes) {
           typeApply
         })
 
-
       val apply: Apply = Apply(setterMethodSymbolAsSelect, applyParams)
       println(s"apply: ${apply.show}.")
       apply
@@ -409,7 +238,7 @@ class PropsMacro(using quotes: Quotes) extends QuotesUtils(using quotes) {
       Symbol.spliceOwner,
       MethodType(
         List("v44"))( // parameter names
-        _ => List(TypeRepr.of[T|Null]),
+        _ => List(TypeRepr.of[T | Null]),
         _ => TypeRepr.of[Unit]
       ),
       rhsFn
@@ -419,8 +248,18 @@ class PropsMacro(using quotes: Quotes) extends QuotesUtils(using quotes) {
     val inlined = Inlined(None, Nil, anonFunLambda)
 
     println(s"testFunc resulting: ${inlined.asExpr.show}")
-    inlined.asExprOf[T|Null=>Unit]
-  }
+    inlined.asExprOf[T | Null => Unit]
+  end setterAsLambdaExpr
+
+
+  private def setterOptionAsLambdaExpr(getterExpr: Expr[Option[T]]): Expr[Option[T] => Unit] =
+    val getterFullMethodName = getterExpr.show
+    val setterFullMethodName = s"${getterFullMethodName}_="
+    //'{ v => setterFullMethodName(v)  }
+    // TODO: implement !!!
+    '{ v => {} }
+
+  //def internalCastToNonNullable[T](v: T|Null): T = v.asInstanceOf[T]
 
 }
 
@@ -430,7 +269,7 @@ extension (s: String)
 
 
 //noinspection ScalaUnusedSymbol
-private def reportedFailedExprAsText(expr: Expr[Any])(using Quotes): String =
+def reportedFailedExprAsText(expr: Expr[Any])(using Quotes): String =
   import quotes.reflect.Position
   Position.ofMacroExpansion.sourceCode
     .map(sourceCode => s"${expr.show} used in $sourceCode")
@@ -438,7 +277,7 @@ private def reportedFailedExprAsText(expr: Expr[Any])(using Quotes): String =
 
 
 //noinspection ScalaUnusedSymbol
-private def logCompilationError(errorMessage: String, expr: Expr[Any])(using Quotes) =
+def logCompilationError(errorMessage: String, expr: Expr[Any])(using Quotes) =
   import quotes.reflect.Position
   val pos = Position.ofMacroExpansion
   //log.error(s"Seems expression [$exprText] is not property..")
@@ -520,9 +359,7 @@ inline def dumpTerm[T](inline expr: T): T =
 private def dumpTermImpl[T](expr: Expr[T])(using Quotes)(using Type[T]): Expr[T] =
   import quotes.reflect.*
   val asTerm = expr.asTerm
-  println(s"++++++ $expr $asTerm")
-  //val yyy = '{  }
-  //println(yyy)
+  log.debug(s"dumpTerm => expr [$expr], [${expr.show}], as term [$asTerm].")
   expr
 
 
