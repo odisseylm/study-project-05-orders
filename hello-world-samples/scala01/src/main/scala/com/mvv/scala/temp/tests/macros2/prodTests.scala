@@ -133,9 +133,13 @@ class TesPropsClass extends BaseClass:
 
   var tempStrPropVar1 = "gfgf"
   var tempStrPropVar2 = "gfgf"
+  var tempSomeClass: Rfvtgb = Rfvtgb("s_baseSomeClass")
+
+  def someMethod1(v: String): Unit = { println("someMethod1") }
 
   def aa():Unit = {
 
+    /*
     val ddd = com.mvv.scala.macros.Property.property[java.lang.String, com.mvv.scala.temp.tests.macros2.TesPropsClass](false, "tempStrPropVar1", (() => TesPropsClass.this.tempStrPropVar1), ((v44: java.lang.String | scala.Null) => TesPropsClass.this.tempStrPropVar1_=(v44.asInstanceOf[java.lang.String])), null.asInstanceOf[com.mvv.scala.temp.tests.macros2.TesPropsClass], scala.reflect.ClassTag.apply[com.mvv.scala.temp.tests.macros2.TesPropsClass](classOf[com.mvv.scala.temp.tests.macros2.TesPropsClass]))
 
     val wPropNewString00 = com.mvv.scala.macros.Property.property[java.lang.String, com.mvv.scala.temp.tests.macros2.TesPropsClass](
@@ -144,16 +148,18 @@ class TesPropsClass extends BaseClass:
       ((v44: java.lang.String | scala.Null) => TesPropsClass.this.tempStrPropVar1_=(v44.asInstanceOf[java.lang.String])),
       null.asInstanceOf[com.mvv.scala.temp.tests.macros2.TesPropsClass],
       scala.reflect.ClassTag.apply[com.mvv.scala.temp.tests.macros2.TesPropsClass](classOf[com.mvv.scala.temp.tests.macros2.TesPropsClass]))
+   */
 
     println(s"BEFORE tempStrPropVar1: $tempStrPropVar1")
 
     val wPropNewString = _wp(this, tempStrPropVar1)
+    //val wPropTempSomeClass = _wp(this, tempSomeClass)
     // ((v44: java.lang.String.java.lang.String.type) => TesPropsClass.this.TesPropsClass.this.tempStrPropVar1_=(v44))
-    ((v44: java.lang.String) => TesPropsClass.this.tempStrPropVar1_=(v44))
+    //((v44: java.lang.String) => TesPropsClass.this.tempStrPropVar1_=(v44))
 
-    //val orig = wPropNewString.value
-    //wPropNewString.set(s"$orig    CHANGED")
-    //println(s"AFTER  tempStrPropVar1: $tempStrPropVar1")
+    val orig = wPropNewString.value
+    wPropNewString.set(s"$orig    CHANGED")
+    println(s"tempStrPropVar1 => BEFORE [$orig] AFTER [$tempStrPropVar1]")
 
 
     //TesPropsClass.this.tempStrPropVar1_=("hfjgfhjkg")

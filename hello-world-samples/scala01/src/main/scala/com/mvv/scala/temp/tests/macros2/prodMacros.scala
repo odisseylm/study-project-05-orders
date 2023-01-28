@@ -436,488 +436,67 @@ private def testFunc[T,O](getterExpr: Expr[T], thisExpr: Expr[O])
                          (using t: Type[T])(using o: Type[O])(using Quotes): Expr[T|Null=>Unit] = {
 
   import quotes.reflect.*
-  //val symbolParamName: Symbol = Names.simpleName("v")
-  //val typeName: TypeName = Names.TypeName(String)
-  //val ident: Ident = Ident(symbol)
-  //val valDef: ValDef = ValDef(symbolParamName, ident)
-
-  /*
-  def castExprToNonNullable(v: Term)(using t: Type[T])(using Quotes): Term = {
-
-    val internalCastToNonNullableMethodSymbol = Symbol.newMethod(
-      Symbol.requiredClass("com.mvv.scala.macros.Fuck456"),
-      "internalCastToNonNullable",
-      MethodType(
-        List("v"))( // parameter list - here a single parameter
-        _ => List(TermRef(TypeRepr.of[T | Null], "v")), // or Any|Null ???
-        _ => TypeRepr.of[T]
-      ))
-
-    println(s"internalCastToNonNullableMethodSymbol does exist?  ${internalCastToNonNullableMethodSymbol.exists}")
-
-    val castToNonNullableAsSelect: Select = Select(
-        //Symbol.requiredClass("com.mvv.scala.macros.Fuck456").termRef.term,
-        //Singleton("com.mvv.scala.macros.Fuck456").term,
-        //Singleton(Literal(StringConstant("com.mvv.scala.macros.Fuck456"))).term,
-        Literal(StringConstant("com.mvv.scala.macros.Fuck456")),
-        //Symbol.noSymbol.tree.asTerm,
-        //Symbol.noSymbol.tree.asTerm,
-        //Symbol.noSymbol.termRef.asExpr.asTerm,
-        internalCastToNonNullableMethodSymbol,
-    )
-
-
-    val nonNullableVal: Term = Apply(
-      castToNonNullableAsSelect,
-      List(v),
-    )
-    println(s"castExprToNonNullable: $nonNullableVal")
-    println(s"castExprToNonNullable: ${nonNullableVal.asExpr}")
-
-    nonNullableVal
-  }
-  */
-
-
-  // def newVal(parent: Symbol, name: String, tpe: TypeRepr, flags: Flags, privateWithin: Symbol): Symbol
-//  val sym = Symbol.newVal(
-//    Symbol.noSymbol, // Symbol.spliceOwner,
-//    "v",
-//    //TypeRepr.of[Int],
-//    TypeRepr.of[String],
-//    //Flags.Param,
-//    //Flags.EmptyFlags,
-//    Symbol.noSymbol,
-//
-//  )
-  /*
-  val symbolParamName = Symbol.newVal(
-    Symbol.spliceOwner,
-    "v55",
-    //TypeRepr.of[String],
-    TypeRepr.of[T],
-    //Flags.EmptyFlags,
-    Flags.Param,
-    //Flags.Given,
-    //Flags.JavaStatic,
-    Symbol.noSymbol,
-  )
-  println(symbolParamName)
-
-  val typeReprTOrNull = TypeRepr.of[T|Null]
-  val typeReprT = TypeRepr.of[T]
-  //val typeRepr_00 = TypeRepr.of[T|Null]
-  //val typeRepr_01 = TypeRepr.of[Null]
-  //val typeRepr_0 = AndOrType.
-
-  //val typeRepr_0 = TypeRepr.of[Int]
-  //val typeRepr = typeRepr_0 // .widenTermRefByName
-  //val typeName: TypeName = Names.TypeName(String)
-  //val termRef: TermRef = TermRef(typeRepr, TypeRepr.of[T].show)
-  //val valDef: ValDef = ValDef(symbolParamName, Option(ident))
-  val valDef: ValDef = ValDef(symbolParamName, None)
-  //val valDef = ValDef(symbolParamName, None)
-  println(valDef)
-  */
 
   println("testFunc 01")
-
-  /*
-  val symbolParamName2 = Symbol.newVal(
-    //Symbol.noSymbol,
-    Symbol.spliceOwner,
-    "v66",
-    //TypeRepr.of[String],
-    TypeRepr.of[T],
-    //Flags.EmptyFlags,
-    Flags.Param,
-    //Flags.Given,
-    //Flags.JavaStatic,
-    Symbol.noSymbol,
-  )
-  */
-  /*
-  println(symbolParamName)
-  val termRef2: TermRef = TermRef(typeRepr, "v77")//TypeRepr.of[T].show)
-  //val ident2: Term = Ident(termRef2)
-  val valDef2: ValDef = ValDef(symbolParamName2, None) //, Option(ident2))
-  println(valDef2)
-
-  println("testFunc 02")
-
-  val anonfun_444 = Symbol.newMethod(
-    Symbol.spliceOwner,
-    "$anonfun",
-    //TypeRepr.of[String],
-    //TypeRepr.of[Unit]
-    MethodType(
-      List("v")) ( // parameter list - here a single parameter
-      _ => List(termRef2), // type of the parameter - here dynamic, given as a TypeRepr
-      _ => TypeRepr.of[Unit])
-  )
-  println(anonfun_444)
-  */
-
-  //val aa = Apply(
-  //  fun: Term,
-  //  args: List[Term]
-  //)
 
   val getterFullMethodName = extractPropName(getterExpr)
   val setterFullMethodName = s"${getterFullMethodName}_="
   println("testFunc 03")
 
+  // TODO: use proper type!!!! Not String as this!!!
+  val this_ = This(TypeRepr.of[T].classSymbol.get)
+
   val setterMethodSymbol = Symbol.newMethod(
-    //thisExpr.symbol,
-    //Symbol.noSymbol,
-    Symbol.spliceOwner,
+    this_.symbol, // TODO: use util function
     setterFullMethodName,
     MethodType(
       List("v88"))( // parameter list - here a single parameter
-      //_ => List(TermRef(typeReprT, TypeRepr.of[T].show)),
-      _ => List(TermRef(TypeRepr.of[T], "")),
-      //_ => List(TypeRepr.of[T]),
+      _ => List(Symbol.requiredClass(TypeRepr.of[T].show).typeRef),
       _ => TypeRepr.of[Unit]
     ))
-  println("testFunc 04")
 
-  println(s"T: ${TypeRepr.of[T].show}")
-
-  println(s"setterMethodSymbol: $setterMethodSymbol")
+  println(s"testFunc 04  T: ${TypeRepr.of[T].show}")
   printFields("setterMethodSymbol", setterMethodSymbol)
 
-  //val v44Param = TermRef(TypeRepr.of[T|Null], "v44") // typeRepr.show)
-  //def example(a: Double) = s" $a and $v44Param "
-  //println("testFunc 05")
+  val rhsFn: (Symbol, List[Tree]) => Tree = (s: Symbol, paramsAsTrees: List[Tree]) => {
+    println("testFunc 06  rhsFn s: $s: $paramsAsTrees")
+
+    val setterMethodSymbolAsSelect = Select(thisExpr.asTerm, setterMethodSymbol)
+
+    val applyParams: List[Term] = paramsAsTrees
+      .map((vvv: Tree) => {
+        printFields("testFunc 07   vvv", vvv)
+
+        val asInstanceOfMethod = Symbol.newMethod(Symbol.noSymbol, "asInstanceOf", TypeRepr.of[T])
+        val fun = Select(vvv.asInstanceOf[Term], asInstanceOfMethod)
+        println(s"fun666777: $fun")
+
+        val typeApply = TypeApply(fun, List(TypeTree.of[T]))
+        typeApply
+      })
 
 
-  val rhsFn: (Symbol, List[Tree]) => Tree = ( (s: Symbol, paramsAsTrees: List[Tree] ) => {
-    println("testFunc 06")
-
-    println(s"rhsFn s: $s")
-    println(s"rhsFn s: $paramsAsTrees")
-
-    val setterMethodSymbolAsSelect = Select(
-      //qualifier: Term,
-      //symbol: Symbol,
-      thisExpr.asTerm,
-      setterMethodSymbol,
-    )
-
-    //val apply: Apply = Apply(
-    //      fun: Term,
-    //      paransAsTrees, //args: List[Term]
-    //    )
-    val apply: Apply = Apply(
-          setterMethodSymbolAsSelect,
-          paramsAsTrees
-            .map( (vvv: Tree) => {
-              println("testFunc 07")
-
-              // vvv is dotty.tools.dotc.ast.Trees$Ident,
-              //   name: v44, qualifier: EmptyTree, isTerm: true, toList: List(Ident(v44))
-              //   tpe: TermRef(NoPrefix,val v44), typeOpt: TermRef(NoPrefix,val v44), myTpe: TermRef(NoPrefix,val v44)
-              //
-
-              println(s"vvv.class: ${vvv.getClass.getName}")
-              println(s"vvv: $vvv")
-              //println(s"vvv: ${vvv.asTerm}")
-              printFields("vvv", vvv)
-
-              //vvv.asExprOf[T].asTerm
-              //vvv.asInstanceOf[Term]
-              //vvv.tpe
-              //vvv.asInstanceOf[Term] // it does NOT work!!!
-              //vvv.asExpr.asTerm
-              //vvv.expr
-              // Ref.term(tp: TermRef): Ref
-              // Ref.apply(tp: TermRef): Ref
-              // Ident.apply(tmref: TermRef): Term
-              // Ident.copy(original: Tree)(name: String): Ident
-              // Ident.unapply(tree: Ident): Some[String]
-              // IdentMethods.name
-              //
-              // ???
-              // type TermParamClause <: ParamClause
-              // TypeParamClauseModule.apply(params: List[TypeDef]): TypeParamClause
-              //
-              // type TermRef <: NamedType
-              // TermRef.apply(qual: TypeRepr, name: String): TermRef
-              //
-              // type TypeRef <: NamedType
-              //
-              // type AppliedType <: TypeRepr
-              // apply(tycon: TypeRepr, args: List[TypeRepr]): AppliedType
-              //
-              // type AndOrType <: TypeRepr
-              //
-              // type AndOrType <: TypeRepr
-              //   left: TypeRepr
-              //   right: TypeRepr
-              //
-              // type OrType <: AndOrType
-              //   apply(lhs: TypeRepr, rhs: TypeRepr): OrType
-              //
-              // type ByNameType <: TypeRepr
-              //
-              // type ParamRef <: TypeRepr
-              //
-              // ??? type TypeLambda <: LambdaType
-              //
-              // ??? type NoPrefix <: TypeRepr
-              // Symbol
-              //   owner maybeOwner flags privateWithin protectedWithin name fullName info:TypeRepr
-              //   pos docstring hasAnnotation/getAnnotation/annotations
-              //   isDefinedInCurrentRun isLocalDummy isRefinementClass isAliasType isAnonymousClass
-              //   isAnonymousFunction isAbstractType isClassConstructor isType isTerm
-              //   isPackageDef isClassDef isTypeDef isValDef isDefDef
-              //   isBind isNoSymbol exists
-              //   declaredField/declaredFields memberField fieldMember/fieldMembers
-              //   declaredMethod/declaredMethods methodMember/methodMembers
-              //   declaredType/declaredTypes typeMember/typeMembers
-              //   declarations children
-              //   paramSymss allOverriddenSymbols/overridingSymbol primaryConstructor
-              //   caseFields isTypeParam signature
-              //   moduleClass companionClass companionModule
-              //   asQuotes typeRef termRef
-              //   tree typeRef termRef
-              //   ? isType isTerm exists paramSymss asQuotes
-              //
-              //   defn
-              //     symbols
-              //     RootPackage RootClass EmptyPackageClass ScalaPackage ScalaPackageClass
-              //     AnyClass MatchableClass AnyValClass ObjectClass AnyRefClass NullClass
-              //     NothingClass UnitClass ByteClass..DoubleClass StringClass ClassClass ArrayClass
-              //     OptionClass ProductClass FunctionClass TupleClass
-              //     PredefModule Predef_classOf JavaLangPackage ArrayModule NoneModule SomeModule
-              //     Array_apply Array_clone Array_length Array_update
-              //     RepeatedParamClass RepeatedAnnot
-              //     isTupleClass ScalaPrimitiveValueClasses ScalaNumericValueClasses
-              //
-              //     TreeTraverser
-              //       traverseTree foldTree
-              //     TreeMap
-              //       transformTree transformStatement transformTerm transformTypeTree ...
-              //     Term
-              //       tpe:TypeRepr underlying ? select appliedTo...
-              //     Tree
-              //       symbol show isExpr/asExpr/asExprOf changeOwner
-
-              //vvv.asExpr.asTerm
-
-              //Ref.apply(vvv)
-              //TypeRepr.of[T].termSymbol.expr
-              //Term()
-
-              //'{ v88 }.toTerm
-              //'{ v44 }.toTerm
-
-              // required Term
-              //Ident("v44").asTerm
-              //TermRef(TypeRepr.of[T], "v44")
-              //Ident(TermRef(TypeRepr.of[T], "v44")).asExpr.asTerm
-              //Symbol.apply("v44").asExpr.asTerm
-              //Symbol.newVal(Symbol.noSymbol, "v44", TypeRepr.of[T], Flags., privateWithin: Symbol)
-              //Symbol.newBind(Symbol.noSymbol, "v44", Flags, TypeRepr.of[T])
-
-              //ParamRef("v44")
-
-              //NamedType()
-              //TypedRef("fddf")
-
-              //printFields("v44Param", v44Param)
-
-              // ((v44: java.lang.String.java.lang.String.type) => TesPropsClass.this.tempStrPropVar1_=(v44))
-              println("testFunc 07")
-              vvv.asExpr.asTerm // TODO: try to use v44Param
-
-              printFields("vvv", vvv)
-
-              //val vvvAsTerm = if vvv.isInstanceOf[Statement] then vvv.asInstanceOf[Statement].term else ???
-
-
-              //TypeApply(Select(Ident(obj),asInstanceOf),List(Ident(String)))
-              //val fun = Select( Ident(obj), asInstanceOf )
-              //Select(Ident(obj), asInstanceOf)
-
-              val asInstanceOfMethod = Symbol.newMethod(Symbol.noSymbol, "asInstanceOf", TypeRepr.of[T])
-              //val asInstanceOfMethod = Symbol.requiredMethod("asInstanceOf")
-
-              // Select(Ident(v44),asInstanceOf)
-              //val fun = Select(vvv.asExpr.asTerm, asInstanceOfMethod)
-
-              // error "Found: ("v88" : String) Required: x$5.reflect.TermRef"
-              // apply(fun: Term, args: List[Term]): Apply
-              //val fun = Select(Ident(TermRef(TypeRepr.of[T|Null], "v44")), asInstanceOfMethod)
-              //val fun = Select(Ident(TermRef(TypeRepr.of[T|Null], "v88")), asInstanceOfMethod)
-              //val fun = Select(Ident(TermRef(TypeRepr.of[T], "v88")), asInstanceOfMethod)
-              //val fun = Select(vvv.asExpr.asTerm, asInstanceOfMethod)
-              //val fun = Select(vvv.tpe, asInstanceOfMethod)
-              val fun = Select(vvv.asInstanceOf[Term], asInstanceOfMethod)
-              //val fun = Select(Symbol.newBind(Symbol.noSymbol, "val44", Flags.EmtyFlags, TypeRepr.of[T|Null].termRef), asInstanceOfMethod)
-              //val fun = Select(Literal(StringConstant("val44_668768")), asInstanceOfMethod)
-
-              //val fun = Select(TermRef(TypeRepr.of[T|Null], "v88"), asInstanceOfMethod)
-              //val fun = Select(Symbol(TypeRepr.of[T|Null], "v88"), asInstanceOfMethod)
-              println(s"fun666777: $fun")
-
-              // def apply(fun: Term, args: List[TypeTree]): TypeApply
-              //val typeApply = TypeApply(fun, List(TypeTree(typeReprT)))
-              val typeApply = TypeApply(fun, List(TypeTree.of[T]))
-              typeApply
-
-
-              // Found: String  Required: String#java.lang.String.type
-              //val castedExpr = '{ (${vvv.asExprOf[T|Null]}).asInstanceOf[T] }
-              //val castedExpr = '{ (${vvv.asExprOf[T|Null]}).asInstanceOf[T] }
-              //println(s"castedExpr: ${castedExpr.show}")
-
-              //??? Apply()
-
-
-              // !!! TypeApply( Select(Ident(obj), asInstanceOf), List( Ident(String) )
-              //TypeApply(fun: Term, args: List[TypeTree])
-              //TypeApply(fun: Term, args: List[TypeTree])
-              //TypeApply(fun, List(vvv, typeReprT))
-              //TypeApply(Select(Ident(equalsParam.name), TermName("asInstanceOf"))
-              //TypeApply(Select(Ident(equalsParam.name), TermName("asInstanceOf"))
-              //TypeApply(Select(vvv.asExpr.asTerm, TermName("asInstanceOf")), List(ourPolyType))
-
-              //TypeApply(fun, List[TypeTree])
-              //TypeApply(fun, List(typeReprT.asType))
-
-              // TypeApply(Select(Ident(v44),asInstanceOf),List(TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String)]))
-              //val ta = TypeApply(fun, List(TypeTree.of[T]))
-
-              //val ta = TypeApply(fun, List(TypeTree.ref(Ident(typeReprT))))
-              //val ta = TypeApply(fun, List(Inferred(typeReprT)))
-              //println(s"ta65656: $ta")
-
-              //println(s"fdfdgdfgdg: ${ Symbol.requiredClass("scala/AnyUnknown") }")
-              //println(s"ta54545: ${ Symbol.requiredMethod("scala/AnyUnknown/asInstanceOf") }")
-              //val ta2 = TypeApply.copy(vvv)(Symbol.requiredMethod("scala/Any/asInstanceOf").expr.asTerm, List(TypeTree.of[T]))
-              //println(s"ta2: $ta2")
-
-              //val fff = vvv.asExpr.asTerm.appliedToType(typeReprT)
-              //println(s"ta65657: $fff")
-              //val dd: Any =
-
-              //ta
-              //fff
-
-              //vvv.asExprOf[T].asTerm
-              //castExprToNonNullable(vvv.asExpr.asTerm)
-              //castExprToNonNullable(vvv)
-              //castExprToNonNullable(vvv.asExpr.asTerm)
-
-              //castedExpr.asTerm
-
-            }), // we need args: List[Term]
-    )
-    println(s"apply: $apply")
+    val apply: Apply = Apply(setterMethodSymbolAsSelect, applyParams)
     println(s"apply: ${apply.show}.")
-
     apply
-    //Tree
-    //'{ }.asTerm
-  })
+  }
 
-  /*
-  val requiredResultType =
-    secInput match {
-      case Some(secInput) =>
-        val errorsOrOut = typeApply(TypeRepr.of[Either[_, _]], typeApply(TypeRepr.of[Either[_, _]], requiredErrTpe, secInput.errorTpe), requiredOutTpe)
-        typeApply(TypeRepr.of[F], errorsOrOut)
-      case None =>
-        typeApply(TypeRepr.of[F], requiredEitherTpe)
-    }
+  println(s"testFunc 08  Before Lambda anonfunLamnda")
 
-  def ttree(repr: TypeRepr): TypeTree = TypeTree.of(using repr.asType)
-  */
-
-  println("testFunc 08")
-  println("Before Lambda anonfunLamnda")
-
-  val anonfunLamnda = Lambda(
+  val anonFunLambda = Lambda(
     Symbol.spliceOwner,
     MethodType(
-      List("v44")) ( // parameter list - here a single parameter
-      //List("java.lang.String")) ( // parameter list - here a single parameter
-      //_ => List(termRef2), // type of the parameter - here dynamic, given as a TypeRepr
-      //temp567 => List(TermRef(typeRepr, TypeRepr.of[T].show)), // type of the parameter - here dynamic, given as a TypeRepr
-      //temp567 => List(v44Param), // List(TermRef(typeRepr, typeRepr.show)), // type of the parameter - here dynamic, given as a TypeRepr
-      //temp567 => List(TypeRepr.of[T|Null]), // List(TermRef(typeRepr, typeRepr.show)), // type of the parameter - here dynamic, given as a TypeRepr
-      temp567 => List(TypeRepr.of[T|Null]), // List(TermRef(typeRepr, typeRepr.show)), // type of the parameter - here dynamic, given as a TypeRepr
+      List("v44"))( // parameter names
+      _ => List(TypeRepr.of[T|Null]),
       _ => TypeRepr.of[Unit]
     ),
     rhsFn
   )
-  println("testFunc 09")
-  println(s"anonfunLamnda: $anonfunLamnda")
 
-  val inlined = Inlined(
-    //call: Option[Tree],
-    //bindings: List[Definition],
-    //expansion: Term,
-    None,
-    Nil,
-    anonfunLamnda,
-  )
+  println(s"testFunc 09  anonfunLamnda: $anonFunLambda")
+  val inlined = Inlined(None, Nil, anonFunLambda)
+
   println(s"testFunc resulting: ${inlined.asExpr.show}")
-
-  inlined.asExprOf[T|Null=>Unit]
-
-  //val defDef = DefDef(symbol: Symbol, rhsFn: List[List[Tree]] => Option[Term])
-  //val defDef = DefDef()
-
-
-
-//  val ident: Ident = Ident()
-//
-//  val valDef = ValDef(symbolParamName, Option(ident))
-//  println(valDef)
-  //val valDefExpr = valDef.asExpr
-  //println(valDef.asExpr)
-  //val valDefTerm = valDef.asTerm
-  //println(valDefTerm)
-
-  //val symExpr = sym.asExpr
-  //println(symExpr)
-
-
-  /*
-  println("qwerty 02")
-  val ggg = TypeRepr.of[String]
-  println("qwerty 03")
-  //val t = TermRef(ggg, "String")
-  val
-  println("qwerty 04")
-  //val termRef: TermRef = TermRef(TypeRepr.of[String], "java.lang.String")
-  val termRef: TermRef = TermRef(TypeRepr.of[T], "TTT")
-  println("qwerty 05")
-  val valDef = ValDef(
-    sym,
-    //Expr()
-    //None // ??? ValDef(v,TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Int)],EmptyTree)
-    Option(Ident(termRef)), //tmref: TermRef =>
-    //Option(Ident(TypeRepr.of[String]).asTerm), //tmref: TermRef =>
-    //Option(Ident(Symbol.noSymbol).asTerm), //tmref: TermRef =>
-    //Tree()
-  )
-  println(s"qwerty 06 $valDef")
-  */
-
-  /*
-  def typeApply22(tcc: TypeRepr, tpes: TypeRepr*): TypeRepr = {
-    val tc = tcc match {
-      case AppliedType(tc, _) => tc
-      case tc => tc
-    }
-
-    tc.appliedTo(tpes.toList)
-  }
-  */
-
   inlined.asExprOf[T|Null=>Unit]
 }
 
