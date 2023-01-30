@@ -118,7 +118,7 @@ sealed class PropsMacro[T, O](using quotes: Quotes)(using t: Type[T])(using o: T
       '{ null.asInstanceOf[O] }
 
     val propValueExpr: Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] =
-      if isWritable then
+      if isWritable then // TODO: use universal signature and remove this big 'if'
         val setAsLambdaExpr = setterAsLambdaExpr(getterExpr, thisExpr)
         thisTypeAsClass
           .map(typeExpr =>
@@ -158,7 +158,7 @@ sealed class PropsMacro[T, O](using quotes: Quotes)(using t: Type[T])(using o: T
       '{ null.asInstanceOf[O] }
 
     val propValueExpr: Expr[WritableProp[T, O]] | Expr[ReadonlyProp[T, O]] =
-      if isWritable then
+      if isWritable then // TODO: use universal signature and remove this big 'if'
         val setAsLambdaExpr = setterOptionAsLambdaExpr(getterExpr)
         thisTypeAsClass
           .map(typeExpr =>
@@ -371,7 +371,12 @@ private def dumpTermImpl[T](expr: Expr[T])(using Quotes)(using Type[T]): Expr[T]
 def printFields(label: String, obj: Any): Unit =
   println(s"\n\n$label   $obj")
   import scala.language.unsafeNulls
-  allMethods(obj).foreach( printField(obj.getClass.getSimpleName, obj, _) )
+  //noinspection TypeCheckCanBeMatch // scala3 warns about non matchable type
+  if obj .isInstanceOf [List[?]] then
+    obj.asInstanceOf[List[Any]].zipWithIndex
+      .foreach { case (el, i) => printFields(s"$label $i:", _) }
+  else
+    allMethods(obj).foreach( printField(obj.getClass.getSimpleName, obj, _) )
 
 def printField(label: String, obj: Any, prop: String): Unit =
   try { println(s"$label.$prop: ${ getProp(obj, prop) }") } catch { case _: Exception => }

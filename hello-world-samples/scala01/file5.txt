@@ -1,0 +1,502 @@
+
+
+PackageDef(
+  Ident(tasty),
+  List(
+    TypeDef(
+      CaseScalaClassSample,
+        Template(
+          DefDef(
+            <init>,
+            List(
+              List(
+                ValDef(
+                  stringScalaValProp,
+                  Ident(String),
+                  EmptyTree
+                ),
+                ValDef(
+                  optionalStringScalaValProp,
+                  AppliedTypeTree(
+                    Ident(Option),
+                    List(Ident(String))
+                  ),
+                  EmptyTree)
+                )
+              ),
+              TypeTree[
+                TypeRef(
+                  TermRef(
+                    ThisType(TypeRef(NoPrefix, module class <root>)),
+                    object scala
+                  ),
+                  Unit
+                )
+              ],
+              EmptyTree
+            ),
+            List(
+              Apply(
+                Select(
+                  New(
+                    TypeTree[
+                      TypeRef(
+                        TermRef(
+                          ThisType(TypeRef(NoPrefix, module class java)),
+                          object lang
+                        ),
+                        Object
+                      )
+                    ]
+                  ),
+                  <init>
+                ),
+                List()
+              ),
+              Select(
+                Select(
+                  Ident(_root_),
+                  scala
+                ),
+                Product
+              ),
+              Select(
+                Select(
+                  Ident(_root_),
+                  scala
+                ),
+                Serializable
+              )
+            ),
+            ValDef(
+              _,
+              EmptyTree,
+              EmptyTree
+            ),
+            List(
+              ValDef(
+                stringScalaValProp,
+                TypeTree[
+                  TypeRef(
+                    TermRef(
+                      TermRef(
+                        ThisType(TypeRef(NoPrefix, module class <root>)),
+                        object scala
+                      ),
+                      Predef
+                    ),
+                    String
+                  )
+                ],EmptyTree
+              ),
+              ValDef(
+                optionalStringScalaValProp,
+                TypeTree[
+                  AppliedType(
+                    TypeRef(
+                      TermRef(
+                        ThisType(TypeRef(NoPrefix,module class <root>)),
+                        object scala
+                      ),
+                      Option
+                    ),
+                    List(
+                      TypeRef(
+                        TermRef(
+                          TermRef(
+                            ThisType(TypeRef(NoPrefix,module class <root>)),
+                            object scala
+                          ),
+                          Predef
+                        ),
+                        String
+                      )
+                    )
+                  )
+                ],
+                EmptyTree
+              ),
+              DefDef(
+                hashCode,
+                List(
+                  List()
+                ),
+                TypeTree[
+                  TypeRef(
+                    TermRef(
+                      ThisType(TypeRef(NoPrefix,module class <root>)),
+                      object scala
+                    ),
+                    Int
+                  )
+                ],
+                Apply(
+                  Ident(_hashCode),
+                  List(
+                    This(
+                      Ident(CaseScalaClassSample)
+                    )
+                  )
+                )
+              ),
+              DefDef(
+                equals,
+                List(
+                  List(
+                    ValDef(
+                      x$0,
+                      TypeTree[
+                        TypeRef(
+                          TermRef(
+                            ThisType(TypeRef(NoPrefix,module class <root>)),
+                            object scala
+                          ),
+                          Any
+                        )
+                      ],
+                      EmptyTree
+                    )
+                  )
+                ),
+                TypeTree[
+                  TypeRef(
+                    TermRef(
+                      ThisType(TypeRef(NoPrefix,module class <root>)),
+                      object scala
+                    ),
+                    Boolean
+                  )
+                ],
+                Apply(
+                  Select(
+                    Apply(
+                      Select(
+                        This(Ident(CaseScalaClassSample)
+                      ),
+                    eq),
+                  List(
+                    TypeApply(
+                      Select(
+                        Ident(x$0),
+                        $asInstanceOf$
+                      ),
+                      List(
+                        TypeTree[
+                          TypeRef(
+                            TermRef(
+                              ThisType(TypeRef(NoPrefix,module class java)),
+                              object lang
+                            ),
+                            Object
+                          )
+                        ]
+                      )
+                    )
+                  )
+                ),
+                ||
+              ),
+              List(
+                Match(
+                  Ident(x$0),
+                  List(
+                    CaseDef(
+                      Bind(
+                        x$0,
+                        Typed(
+                          Ident(_),
+                          TypeTree[
+                            AnnotatedType(
+                              TypeRef(
+                                TermRef(
+                                  ThisType(TypeRef(NoPrefix,module class tests)),
+                                  object tasty
+                                ),
+                                class CaseScalaClassSample
+                              ),
+                              ConcreteAnnotation(
+                                Apply(
+                                  Select(
+                                    New(
+                                      TypeTree[
+                                        TypeRef(
+                                          TermRef(
+                                            ThisType(TypeRef(NoPrefix,module class <root>)),
+                                            object scala
+                                          ),
+                                          unchecked
+                                        )
+                                      ]
+                                    ),
+                                    <init>
+                                  ),
+                                  List()
+                                )
+                              )
+                            )
+                          ]
+                        )
+                      ),
+                      EmptyTree,
+                      Apply(
+                        Select(
+                          Apply(
+                            Select(
+                              Apply(
+                                Select(
+                                  Select(
+                                    This(
+                                      Ident(CaseScalaClassSample)
+                                    ),
+                                    stringScalaValProp
+                                  ),
+                                  ==
+                                ),
+                                List(
+                                  Select(
+                                    Ident(x$0),
+                                    stringScalaValProp
+                                  )
+                                )
+                              ),
+                              &&
+                            ),
+                            List(
+                              Apply(
+                                Select(
+                                  Select(
+                                    This(
+                                      Ident(
+                                        CaseScalaClassSample
+                                      )
+                                    ),
+                                    optionalStringScalaValProp
+                                  ),
+                                  ==
+                                ),
+                                List(
+                                  Select(
+                                    Ident(x$0),
+                                    optionalStringScalaValProp
+                                  )
+                                )
+                              )
+                            )
+                          ),
+                          &&
+                        ),
+                        List(
+                          Apply(
+                            Select(
+                              Ident(x$0),
+                              canEqual
+                            ),
+                          List(
+                            This(
+                              Ident(CaseScalaClassSample)
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ),
+                  CaseDef(
+                    Ident(_),
+                    EmptyTree,
+                    Literal(
+                      Constant(false)
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ),
+
+        DefDef(
+          toString,
+          List(List()),
+          TypeTree[
+            TypeRef(
+              TermRef(
+                ThisType(TypeRef(NoPrefix,module class java)),
+                object lang
+              ),
+              String
+            )
+          ],
+          Apply(
+            Ident(_toString),
+            List(
+              This(
+                Ident(CaseScalaClassSample)
+              )
+            )
+          )
+        ),
+        DefDef(
+          canEqual,
+          List(
+            List(
+              ValDef(
+                that,
+                TypeTree[
+                  TypeRef(
+                    TermRef(
+                      ThisType(TypeRef(NoPrefix,module class <root>)),
+                      object scala
+                    ),
+                    Any
+                  )
+                ],
+                EmptyTree
+              )
+            )
+          ),
+          TypeTree[
+            TypeRef(
+              TermRef(
+                ThisType(TypeRef(NoPrefix,module class <root>)),
+                object scala
+              ),
+              Boolean
+            )
+          ],
+          TypeApply(
+            Select(
+              Ident(that),
+              isInstanceOf
+            ),
+            List(
+              TypeTree[
+                AnnotatedType(
+                  TypeRef(
+                    TermRef(
+                      ThisType(TypeRef(NoPrefix,module class tests)),
+                      object tasty
+                    ),
+                    class CaseScalaClassSample
+                  ),
+                  ConcreteAnnotation(
+                    Apply(
+                      Select(
+                        New(
+                          TypeTree[
+                            TypeRef(
+                              TermRef(
+                                ThisType(TypeRef(NoPrefix,module class <root>)),
+                                object scala
+                              ),
+                              unchecked
+                            )
+                          ]
+                        ),
+                        <init>
+                      ),
+                      List()
+                    )
+                  )
+                )
+              ]
+            )
+          )
+        ),
+        DefDef(
+          productArity,
+          List(),
+          TypeTree[
+            TypeRef(
+              TermRef(
+                ThisType(TypeRef(NoPrefix,module class <root>)),
+                object scala
+              ),
+              Int
+            )
+          ],
+          Literal(Constant(2))
+        ),
+        DefDef(
+          productPrefix,
+          List(),
+          TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],Literal(Constant(CaseScalaClassSample))),
+        DefDef(
+          productElement,
+          List(List(ValDef(n,TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Int)],EmptyTree))),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Any)],Match(Ident(n),List(CaseDef(Literal(Constant(0)),EmptyTree,Select(This(Ident(CaseScalaClassSample)),_1)), CaseDef(Literal(Constant(1)),EmptyTree,Select(This(Ident(CaseScalaClassSample)),_2)), CaseDef(Ident(_),EmptyTree,Apply(Ident(throw),List(Apply(Select(New(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),object lang),IndexOutOfBoundsException)]),<init>),List(Apply(Select(Ident(n),toString),List()))))))))),
+        DefDef(
+          productElementName,
+          List(List(ValDef(n,TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Int)],EmptyTree))),TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],Match(Ident(n),List(CaseDef(Literal(Constant(0)),EmptyTree,Literal(Constant(stringScalaValProp))), CaseDef(Literal(Constant(1)),EmptyTree,Literal(Constant(optionalStringScalaValProp))), CaseDef(Ident(_),EmptyTree,Apply(Ident(throw),List(Apply(Select(New(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),object lang),IndexOutOfBoundsException)]),<init>),List(Apply(Select(Ident(n),toString),List()))))))))),
+        ValDef(
+          stringScalaVal,
+          Ident(String),
+          Literal(Constant(VALUE_stringScalaVal))
+        ),
+        ValDef(
+          stringScalaVar,
+          Ident(String),
+          Literal(Constant(VALUE_stringScalaVar))),
+        DefDef(
+          stringScalaVar_=,
+          List(List(
+            ValDef(
+              x$1,
+              TypeTree[
+                TypeRef(
+                  TermRef(
+                    TermRef(
+                      ThisType(TypeRef(NoPrefix,module class <root>)),object scala),
+                    Predef
+                  ),
+                  String
+                )
+              ],
+              EmptyTree
+            )
+            )),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Unit)],Literal(Constant(()))),
+        ValDef(
+          _customStringScalaValProp,Ident(String),Literal(Constant(VALUE_customStringScalaValProp))),
+        DefDef(
+          customStringScalaValProp,
+          List(),Ident(String),Select(This(Ident(CaseScalaClassSample)),_customStringScalaValProp)),
+        ValDef(
+          _customStringScalaVarProp,
+          Ident(String),
+          Literal(Constant(VALUE_customStringScalaValProp))),
+        DefDef(
+          customStringScalaVarProp,
+          List(),
+          Ident(String),
+          Select(This(Ident(CaseScalaClassSample)),_customStringScalaVarProp)),
+        DefDef(
+          customStringScalaVarProp_=,
+          List(List(ValDef(v,Ident(String),EmptyTree))),Ident(Unit),Assign(Select(This(Ident(CaseScalaClassSample)),_customStringScalaVarProp),Ident(v))),
+        DefDef(
+          copy,
+          List(List(ValDef(stringScalaValProp,TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],EmptyTree), ValDef(optionalStringScalaValProp,TypeTree[AppliedType(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Option),List(TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)))],EmptyTree))),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),class CaseScalaClassSample)],Apply(Select(New(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),class CaseScalaClassSample)]),<init>),List(Ident(stringScalaValProp), Ident(optionalStringScalaValProp)))),
+        DefDef(
+          copy$default$1,
+          List(),TypeTree[AnnotatedType(TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String),ConcreteAnnotation(Apply(Select(New(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class annotation)),object unchecked),uncheckedVariance)]),<init>),List())))],Ident(stringScalaValProp)),
+        DefDef(
+          copy$default$2,
+          List(),TypeTree[AnnotatedType(AppliedType(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Option),List(TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String))),ConcreteAnnotation(Apply(Select(New(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class annotation)),object unchecked),uncheckedVariance)]),<init>),List())))],Ident(optionalStringScalaValProp)),
+        DefDef(
+          _1,
+          List(),TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],Select(This(Ident()),stringScalaValProp)),
+        DefDef(
+          _2,
+          List(),TypeTree[AppliedType(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Option),List(TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)))],Select(This(Ident()),optionalStringScalaValProp))
+        )
+      )
+    ),
+
+    ValDef(
+      CaseScalaClassSample,
+      Ident(CaseScalaClassSample$),
+      Apply(Select(New(Ident(CaseScalaClassSample$)),<init>),List())
+    ),
+
+    TypeDef(
+      CaseScalaClassSample$,
+      Template(DefDef(<init>,List(List()),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Unit)],EmptyTree),List(Apply(Select(New(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),AnyRef)]),<init>),List()), TypeTree[TypeRef(ThisType(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class scala)),object deriving),Mirror$)),Product)]),ValDef(_,SingletonTypeTree(Ident(CaseScalaClassSample)),EmptyTree),List(DefDef(writeReplace,List(List()),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),AnyRef)],Apply(Select(New(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class scala)),object runtime),ModuleSerializationProxy)]),<init>),List(Literal(Constant(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),object CaseScalaClassSample)))))), DefDef(apply,List(List(ValDef(stringScalaValProp,TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],EmptyTree), ValDef(optionalStringScalaValProp,TypeTree[AppliedType(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Option),List(TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)))],EmptyTree))),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),class CaseScalaClassSample)],Apply(Select(New(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),class CaseScalaClassSample)]),<init>),List(Ident(stringScalaValProp), Ident(optionalStringScalaValProp)))), DefDef(unapply,List(List(ValDef(x$1,TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),class CaseScalaClassSample)],EmptyTree))),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),class CaseScalaClassSample)],Ident(x$1)), DefDef(toString,List(),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),object lang),String)],Literal(Constant(CaseScalaClassSample))), TypeDef(MirroredMonoType,TypeTree[TypeBounds(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),class CaseScalaClassSample),TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),class CaseScalaClassSample))]), DefDef(fromProduct,List(List(ValDef(x$0,TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Product)],EmptyTree))),TypeTree[TypeRef(ThisType(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),module class CaseScalaClassSample$)),type MirroredMonoType)],Apply(Select(New(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tests)),object tasty),class CaseScalaClassSample)]),<init>),List(TypeApply(Select(Apply(Select(Ident(x$0),productElement),List(Literal(Constant(0)))),$asInstanceOf$),List(TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)])), TypeApply(Select(Apply(Select(Ident(x$0),productElement),List(Literal(Constant(1)))),$asInstanceOf$),List(TypeTree[AppliedType(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Option),List(TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)))])))))))
+    )
+  )
+)

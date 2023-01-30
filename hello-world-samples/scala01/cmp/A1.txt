@@ -1,0 +1,43 @@
+PackageDef(
+  Ident(tasty),
+  List(
+    TypeDef(
+      A2,
+      Template(
+        DefDef(
+          <init>,
+          List(
+            List()
+          ),
+          TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Unit)],
+          EmptyTree
+        ),
+        List(
+          Apply(
+            Select(
+              New(
+                TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),object lang),Object)]
+              ),
+              <init>
+            ),
+            List()
+          )
+        ),
+        ValDef(
+          _,
+          EmptyTree,
+          EmptyTree
+        ),
+        List(
+          DefDef(
+            method12345,
+            List(
+            ),
+            Ident(String),
+            Literal(Constant())
+          )
+        )
+      )
+    )
+  )
+)

@@ -75,6 +75,12 @@
 
     <dependency>
       <groupId>org.scala-lang</groupId>
+      <artifactId>scala3-tasty-inspector_3</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scala-lang</groupId>
       <artifactId>scala3-compiler_3</artifactId>
       <version>${scala.version}</version>
       <optional>true</optional>
