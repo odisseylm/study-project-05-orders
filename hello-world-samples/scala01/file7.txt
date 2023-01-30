@@ -1,0 +1,26 @@
+PackageDef(
+  Ident(tasty),
+  List(
+    TypeDef(
+      InheritedClass1,
+        Template(
+          DefDef(
+            <init>,
+            List(
+              List()
+            ),
+            TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Unit)],
+            EmptyTree
+          ),
+          List(
+            Apply(
+              Select(New(Ident(BaseClass1)),<init>),
+              List()
+            ),
+            Ident(Trait1),
+            Ident(Trait2)
+          ),
+          ValDef(_,EmptyTree,EmptyTree),
+          List(ValDef(privateValField1,Ident(String),Literal(Constant())), ValDef(protectedValField1,Ident(String),Literal(Constant())), ValDef(publicValField1,Ident(String),Literal(Constant())), ValDef(privateVarField1,Ident(String),Literal(Constant())), DefDef(privateMethod1,List(),Ident(String),Literal(Constant())), DefDef(protectedMethod1,List(),Ident(String),Literal(Constant())), DefDef(publicMethod1,List(),Ident(String),Literal(Constant())), ValDef(privateValField2,Ident(String),Literal(Constant())), ValDef(protectedValField2,Ident(String),Literal(Constant())), ValDef(publicValField2,Ident(String),Literal(Constant())), ValDef(privateVarField2,Ident(String),Literal(Constant())), ValDef(protectedVarField2,Ident(String),Literal(Constant())), DefDef(protectedVarField2_=,List(List(ValDef(x$1,TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],EmptyTree))),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Unit)],Literal(Constant(()))), ValDef(publicVarField2,Ident(String),Literal(Constant())), DefDef(publicVarField2_=,List(List(ValDef(x$1,TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],EmptyTree))),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Unit)],Literal(Constant(()))), DefDef(privateMethod2,List(),Ident(String),Literal(Constant())), DefDef(protectedMethod2,List(),Ident(String),Literal(Constant())), DefDef(publicMethod2,List(),Ident(String),Literal(Constant())))))))
+
+
