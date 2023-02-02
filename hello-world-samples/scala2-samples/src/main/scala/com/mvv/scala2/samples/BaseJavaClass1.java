@@ -1,6 +1,7 @@
-package com.mvv.scala.temp.tests.tasty;
+package com.mvv.scala2.samples;
 
-abstract public class BaseJavaClass1 implements JavaInterface1 {
+
+public class BaseJavaClass1 implements JavaInterface1 {
     private String privateField1;
     String packageField1;
     protected String protectedField1;

@@ -5,11 +5,6 @@ import scala.compiletime.uninitialized
 import scala.collection.*
 
 
-class _Package (val name: String) : // TODO: replace with List or Map
-  val classes: mutable.Map[String, _Class] = mutable.HashMap()
-  override def toString: String = s"package $name \n${ classes.values.mkString("\n") }"
-
-
 case class _Class (_package: String, simpleName: String) :
   def fullName: String = _Class.fullName(_package, simpleName)
   val parents: mutable.ArrayBuffer[_Class] = mutable.ArrayBuffer()
@@ -78,12 +73,14 @@ extension (m: _Method)
   def toKey: _MethodKey = _MethodKey(m)
 
 
-def mergeAllDeclaredMembers(_class: _Class) =
-  println("mergeAllDeclaredMembers")
-  _class.parents.foreach(p /*: _Class*/ =>
+def mergeAllDeclaredMembers(_class: _Class): Unit =
+  val aa = _class.parents.map(_.fullName)
+  println(s"merge $aa")
+  _class.parents.reverse.foreach(p /*: _Class*/ =>
     _class.fields.addAll(p.declaredFields)
     _class.methods.addAll(p.declaredMethods)
   )
   _class.fields.addAll(_class.declaredFields)
   _class.methods.addAll(_class.declaredMethods)
+  println(_class.declaredMethods)
 

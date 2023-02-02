@@ -1,19 +1,45 @@
 package com.mvv.scala.temp.tests.tasty
 
 //
-import com.mvv.scala.macros.printFields
-
 import scala.annotation.{nowarn, tailrec}
 import scala.compiletime.uninitialized
-import scala.collection.*
+import scala.collection.mutable
 import scala.quoted.*
 import scala.tasty.inspector.*
 //
 import java.nio.file.Path
 import java.nio.file.Files
-//
+import java.lang.reflect.Modifier
+import java.lang.reflect.Method as JavaMethod
 import java.awt.Image
 import java.beans.{BeanDescriptor, BeanInfo, EventSetDescriptor, MethodDescriptor, PropertyDescriptor}
+//
+import com.mvv.scala.macros.printFields
+
+
+private inline def isNull(v: AnyRef|Null): Boolean =
+  import scala.language.unsafeNulls
+  val asRaw = v.asInstanceOf[AnyRef]
+  asRaw == null
+
+private inline def isNotNull(v: AnyRef|Null): Boolean =
+  import scala.language.unsafeNulls
+  val asRaw = v.asInstanceOf[AnyRef]
+  asRaw != null
+
+extension (s: String)
+  def replaceSuffix(oldSuffix: String, newSuffix: String): String =
+    if s.endsWith(oldSuffix) then s.stripSuffix(oldSuffix) + newSuffix else s
+
+// utils, move to somewhere
+extension [T](v: T|Null)
+  //noinspection ScalaUnusedSymbol
+  inline def castToNonNullable: T = v.asInstanceOf[T]
+
+
+private class _Package (val name: String) : // TODO: replace with List or Map
+  val classes: mutable.Map[String, _Class] = mutable.HashMap()
+  override def toString: String = s"package $name \n${ classes.values.mkString("\n") }"
 
 
 private def isListEmpty(list: List[?]) =
@@ -24,13 +50,21 @@ private val _templateArgs = List("constr", "preParentsOrDerived", "self", "preBo
 
 private inline def fileExists(f: String) = Files.exists(Path.of(f))
 
-private def urlToString(url: String): String =
+class TastyFileNotFoundException protected (message: String, cause: Option[Throwable])
+  extends RuntimeException(message, cause.orNull) :
+  def this(message: String, cause: Throwable) = this(message, Option(cause))
+  def this(message: String) = this(message, None)
+
+
+private def urlToPath(url: String): Option[String] =
   if !url.startsWith("file:") then throw IllegalArgumentException(s"Now only [file:] protocol is supported ($url).")
   val asFile = url.stripPrefix("file:")
-  if fileExists(asFile) then { return asFile }
-  { val asFileN = asFile.stripPrefix("/");  if fileExists(asFileN) then return asFileN }
-  { val asFileN = asFile.stripPrefix("//"); if fileExists(asFileN) then return asFileN }
-  throw IllegalArgumentException(s"$asFile is not found.")
+  // TODO: improve code by using loop
+  { if fileExists(asFile) then return Option(asFile) }
+  { val asFileN = asFile.stripPrefix("/");  if fileExists(asFileN) then return Option(asFileN) }
+  { val asFileN = asFile.stripPrefix("//"); if fileExists(asFileN) then return Option(asFileN) }
+  //throw TastyFileNotFoundException(s"$asFile is not found.")
+  None
 
 extension [T](v: T|Null|Option[T])
   @nowarn @unchecked //noinspection IsInstanceOf
@@ -142,12 +176,26 @@ extension (using Quotes)(el: quotes.reflect.Tree)
     require(el.isDefDef)
     val m = el.asInstanceOf[DefDef]
 
+    if (m.name == "protectedMethod2") {
+      println(m)
+    }
+
+    def isListDeeplyEmpty(paramsOfParams: List[ParamClause]) =
+      paramsOfParams.flatMap(_.params).isEmpty
+
+    val paramss: List[ParamClause] = m.paramss
+    val leadingTypeParams: List[TypeDef] = m.leadingTypeParams
+    val trailingParamss: List[ParamClause] = m.trailingParamss
+    val termParamss: List[TermParamClause] = m.termParamss
+
+    val hasParams = !isListDeeplyEmpty(m.paramss) || !isListEmpty(m.leadingTypeParams)
+      || !isListDeeplyEmpty(m.trailingParamss) || !isListDeeplyEmpty(m.termParamss)
+
     _Method(m.name,
       visibility(m),
       methodModifiers(m),
       extractJavaClass(m.returnTpt),
-      !isListEmpty(m.paramss) || !isListEmpty(m.leadingTypeParams)
-      || !isListEmpty(m.trailingParamss) || !isListEmpty(m.termParamss))
+      hasParams)
       (m)
 
 end extension
@@ -198,38 +246,74 @@ def extractName(using Quotes)(el: quotes.reflect.Tree): String =
   //  case id: Ident => id.name // T O D O: is it safe to use normal pattern matching
   //  case _ => throw IllegalArgumentException(s"Unexpected $el tree element in identifier. ")
 
+enum PropertyOwnerKindType :
+  case Java, Scala
 
+
+/**
+ * It probably has to much info, but it is to implement easily both MapStruct extension and java bean descriptor.
+ */
+case class Property (
+  name: String,
+  propertyType: Class[?],
+  ownerKind: PropertyOwnerKindType,
+  ownerClass: Class[?],
+  javaGetMethods: List[JavaMethod],
+  javaSetMethods: List[JavaMethod],
+  owner: _Class,
+)
+
+extension (_class: _Class)
+  def toBeanProperties: Map[String, Property] = {
+    //val classChain = _class.parents.re
+    ???
+  }
 
 class ScalaBeansInspector extends Inspector :
 
-  private val context = InspectingContext()
+  private val javaBeansInspector = JavaBeansInspector()
+
   // it contains ONLY 'normal' classes from input tasty file
-  val classesByFullName:  mutable.Map[String, _Class] = mutable.HashMap()
-  private val processedTastyFiles: mutable.ArrayBuffer[String] = mutable.ArrayBuffer()
+  private val classesByFullName:  mutable.Map[String, _Class] = mutable.HashMap()
+  private val processedTastyFiles: mutable.Map[String, List[_Class]] = mutable.Map()
 
-  //val tastyPath: String = classFullnameToTastyFile(p)
-  //inspect(tastyPath)
-  private def inspectByClassName(fullClassName: String): Unit =
+  //def classesDescr: Map[String, _Class] = Map.from(classesByFullName)
+  def classesDescr: Map[String, _Class] =
+    // TODO: is it good approach?? A bit expensive...
+    val b = Map.newBuilder[String, _Class]
+    b ++= classesByFullName
+    b ++= javaBeansInspector.classesDescr
+    b.result()
+  def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
+
+  private def inspectByClassName(fullClassName: String): _Class =
     // TODO: try to use different kind of class-loaders
-    val classPath: String = findClassPathUrl(fullClassName)
-    val tastyPath = classPath.stripSuffix(".class") + ".tasty"
-    inspectTastyFile(urlToString(tastyPath))
+    val classPath: Option[String] = findClassPathUrl(fullClassName)
+    classPath
+      //.map ( path => urlToString (path.stripSuffix(".class") + ".tasty") )
+      //.map ( (path: String) => urlToString (path.stripSuffix(".class") + ".tasty") )
+      .flatMap ( url => urlToPath (url.stripSuffix(".class") + ".tasty") )
+      //.flatMap ( inspectTastyFile )
+      .map { (path: String) => inspectTastyFile(path).ensuring(_.nonEmpty, s"Result of tasty is empty [$path].") .head }
+      .getOrElse ( javaBeansInspector.inspect(fullClassName) )
 
-  private def findClassPathUrl(fullClassName: String): String =
+  private def findClassPathUrl(fullClassName: String): Option[String] =
     val cls = Class.forName(fullClassName)
     val asResource = s"${cls.nn.getSimpleName}.class"
     val thisClassUrl = cls.nn.getResource(asResource)
-    require(thisClassUrl != null, s"$asResource is not found.")
+    //require(thisClassUrl != null, s"$asResource is not found.")
     //val tastyUrl = thisClassUrl.nn.toString.nn.stripSuffix(".class").nn.concat(".tasty").nn
     //tastyUrl
-    thisClassUrl.nn.toString
+    if thisClassUrl == null then None else Option(thisClassUrl.nn.toString)
 
     //val packageSubPath = cls.getPackageName.replace('.', '/')
     //val dirUrl = thisClassUrl.toString.stripSuffix(s"$packageSubPath/$fullClassName.class")
 
 
-  def inspectTastyFile(tastyFile: String): Unit =
+  def inspectTastyFile(tastyFile: String): List[_Class] =
     TastyInspector.inspectTastyFiles(List(tastyFile))(this)
+    this.processedTastyFiles.get(tastyFile)
+      .map(_.toList) .getOrElse(List())
 
   override def inspect(using Quotes)(beanType: List[Tasty[quotes.type]]): Unit =
     import quotes.reflect.*
@@ -240,20 +324,22 @@ class ScalaBeansInspector extends Inspector :
       println(s"tree: $tree")
 
       if !processedTastyFiles.contains(tasty.path) then
-        val _classes = visitTree(tree)
+        val packageTag = visitTree(tree)
 
-        _classes.foreach { _.classes.foreach { (_, cl) => classesByFullName.put(cl.fullName, cl) } }
-        //_classes.foreach { _.classes.foreach { cl => classesByFullName.put(cl._1, cl._2) } }
-        //_classes.foreach { _.classes.foreach { cl => classesByFullName(cl) } }
+        packageTag.foreach { _.classes.foreach { (_, cl) => classesByFullName.put(cl.fullName, cl) } }
 
-        println(s"packages: $_classes")
-        processedTastyFiles.addOne(tasty.path)
+        println(s"packages: $packageTag")
+        val processedClasses = packageTag.map(_.classes.values.toList) .getOrElse(List[_Class]())
+        processedTastyFiles.put( tasty.path, processedClasses )
+        processedTastyFiles.put( tasty.path.replaceSuffix(".class", ".tasty"), processedClasses )
+        processedTastyFiles.put( tasty.path.replaceSuffix(".tasty", ".class"), processedClasses )
 
 
     def visitTree(el: Tree): Option[_Package] =
       el match
         case p if p.isPackageDef => Option(visitPackageTag(p.asInstanceOf[PackageClause]))
         case _ => None
+
 
     def visitPackageTag(packageClause: PackageClause): _Package =
       val PackageClause(_, children) = packageClause
@@ -264,10 +350,12 @@ class ScalaBeansInspector extends Inspector :
           .foreach(cls => _package.classes.put(cls.simpleName, cls) ))
       _package
 
+
     def visitPackageEl(_package: _Package, el: Tree): Option[_Class] = el match
       // usual pattern matching does not work for path-dependent types (starting from scala 2.12)
       case td if td.isTypeDef => Some(visitTypeDef(_package, td.asInstanceOf[TypeDef]))
       case _ => None // currently we need only classes
+
 
     def visitTypeDef(_package: _Package, typeDef: TypeDef): _Class =
 
@@ -281,6 +369,7 @@ class ScalaBeansInspector extends Inspector :
       visitTypeDefEl(_class, rhs)
       mergeAllDeclaredMembers(_class)
       _class
+
 
     def visitParentTypeDefs(_class: _Class, rhs: Tree): Unit = rhs match
       case cd if cd.isClassDef || cd.isTemplate =>
@@ -297,6 +386,7 @@ class ScalaBeansInspector extends Inspector :
               inspectByClassName(parentClassFullName)
 
             val processedParent: Option[_Class] = classesByFullName.get(parentClassFullName)
+              .orElse( javaBeansInspector.classDescr(parentClassFullName) )
             processedParent
               .orElse(throw IllegalStateException(s"Class [$parentClassFullName] is not found/processed."))
               .foreach(_class.parents.addOne)
@@ -304,33 +394,30 @@ class ScalaBeansInspector extends Inspector :
 
       case _ =>
 
+
     def visitTypeDefEl(_class: _Class, rhs: Tree): Unit = rhs match
       case cd if cd.isClassDef || cd.isTemplate => visitClassEls(_class, getClassMembers(cd))
       case _ =>
 
+
     def visitClassEls(_class: _Class, classEls: List[Tree]): Unit =
-      classEls.foreach { el =>
-        el match
-          case m if m.isDefDef =>
-            val mm = el.toMethod
-            _class.declaredMethods.put(mm.toKey, mm)
-          case m if m.isValDef =>
-            val ff = el.toField
-            _class.declaredFields.addOne(ff.name, ff)
-      }
+      classEls.foreach (
+        _ match
+          case el if el.isDefDef =>
+            val m = el.toMethod; _class.declaredMethods.put(m.toKey, m)
+          case el if el.isValDef =>
+            val f = el.toField;  _class.declaredFields.addOne(f.name, f)
+      )
+
   end inspect
 end ScalaBeansInspector
 
 
-class InspectingContext :
-  val packages: mutable.Map[String, _Package] = mutable.HashMap()
+private class _BeanProps (val beanType: Any /* TypeRepr[Any] or Type[] ??? */ ) :
+  val map: scala.collection.mutable.Map[String, _Prop] = scala.collection.mutable.HashMap()
 
 
-private class _ScalaBeanProps (val beanType: Any /* TypeRepr[Any] or Type[] ??? */ ) :
-  val map: scala.collection.mutable.Map[String, _ScalaProp] = scala.collection.mutable.HashMap()
-
-
-private class _ScalaProp (val name: String) :
+private class _Prop (val name: String) :
   var propType: Any = uninitialized // TypeRepr[Any] or Type[] ???
   var getter: Option[Any] = None
   var setter: Option[Any] = None
@@ -353,3 +440,109 @@ class ScalaBeanProps (val asJavaClass: Class[Any]) extends java.beans.BeanInfo :
 
   override def getIcon(iconKind: Int): Image|Null = null
 end ScalaBeanProps
+
+
+class JavaBeansInspector :
+  private val classesByFullName: mutable.Map[String, _Class] = mutable.HashMap()
+
+  def classesDescr: Map[String, _Class] = classesByFullName.toMap
+  def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
+
+  def inspect(klass: Class[?]): _Class = inspect(klass.getName.nn)
+
+  def inspect(fullClassName: String): _Class =
+
+    val alreadyProcessedClass = classesByFullName.get(fullClassName)
+    if alreadyProcessedClass.isDefined then return alreadyProcessedClass.get
+
+    val _cls = Class.forName(fullClassName).nn
+    val _class = _Class(_cls.getPackageName.nn, _cls.getSimpleName.nn)
+
+    val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
+    //classChain.reverse.foreach { c =>
+    classChain.foreach { c =>
+      _class.parents.addOne(inspect(c.getName.nn))
+    }
+
+    _cls.getDeclaredFields.nn.foreach { f =>
+      val _f = toField(f.nn); _class.declaredFields.put(_f.name, _f) }
+    _cls.getDeclaredMethods.nn.foreach { m =>
+      val _m = toMethod(m.nn); _class.declaredMethods.put(_m.toKey, _m) }
+
+    mergeAllDeclaredMembers(_class)
+    classesByFullName.put(_class.fullName, _class)
+
+    _class
+  end inspect
+
+end JavaBeansInspector
+
+
+private def visibilityFromModifiers(modifiers: Int): _Visibility =
+  import java.lang.reflect.Modifier
+  modifiers match
+    case mod if Modifier.isPublic(mod) => _Visibility.Public
+    //case mod if Modifier.isPrivate(mod)   => _Visibility.Other
+    //case mod if Modifier.isProtected(mod) => _Visibility.Other
+    case _ => _Visibility.Other
+
+def visibilityOf(f: java.lang.reflect.Field): _Visibility = visibilityFromModifiers(f.getModifiers)
+def visibilityOf(m: JavaMethod): _Visibility = visibilityFromModifiers(m.getModifiers)
+
+
+private def getClassesAndInterfacesImpl(
+    cls: Class[?], interfaces: Array[Class[?]]): List[Class[?]] =
+  val all = mutable.ArrayBuffer[Class[?]]()
+  import scala.language.unsafeNulls
+  var c: Class[?]|Null = cls
+  while c != null && c != classOf[Object] && c != classOf[Any] && c != classOf[AnyRef] do
+    all.addOne(cls)
+    c = cls.getSuperclass.nn
+
+  interfaces.nn.foreach { i => all.addOne(i.nn) }
+  all.distinct.toList
+
+def getAllSubClassesAndInterfaces(cls: Class[?]): List[Class[?]] =
+  import scala.language.unsafeNulls
+  getClassesAndInterfacesImpl(cls.getSuperclass, cls.getInterfaces): List[Class[?]]
+
+
+extension (m: JavaMethod)
+  def toMethod: _Method =
+    _Method(m.getName.nn, visibilityOf(m), methodModifiers(m), m.getReturnType.nn.getName.nn, m.getParameterCount != 0)(m)
+extension (f: java.lang.reflect.Field)
+  def toField: _Field =
+    _Field(f.getName.nn, visibilityOf(f), fieldModifiers(f), f.getType.nn.getName.nn)(f)
+
+
+def generalModifiers(member: java.lang.reflect.Member): Set[_Modifier] =
+  import java.lang.reflect.Modifier
+  member.getModifiers match
+    case m if Modifier.isStatic(m) => Set(_Modifier.Static)
+    case _ => Set()
+
+def fieldModifiers(field: java.lang.reflect.Field): Set[_Modifier] =
+  generalModifiers(field)
+
+def methodModifiers(m: JavaMethod): Set[_Modifier] =
+  //val mod: MutableSet[_Modifier] = scala.collection.mutable.Set.from(generalModifiers(m))
+  val mod: mutable.Set[_Modifier] = mutable.Set.from(generalModifiers(m))
+  val mName = m.getName.nn
+  val paramCount = m.getParameterCount
+  val returnType = m.getReturnType
+
+  val isGetAccessor = mName.startsWith("get") && mName.length > 3
+                   && paramCount == 0
+                   && returnType != Void.TYPE && returnType != classOf[Unit]
+
+  val isIsAccessor = mName.startsWith("is") && mName.length > 2 && paramCount == 0
+                   && (returnType == Boolean || returnType == classOf[Boolean]
+                      || returnType == java.lang.Boolean.TYPE || returnType == classOf[java.lang.Boolean])
+  val isSetAccessor = mName.startsWith("set") && mName.length> 3 && paramCount == 1
+                   && (returnType == Void.TYPE && returnType == classOf[Unit])
+
+  if isGetAccessor || isIsAccessor || isSetAccessor then mod.add(_Modifier.FieldAccessor)
+
+  mod.toSet
+end methodModifiers
+
