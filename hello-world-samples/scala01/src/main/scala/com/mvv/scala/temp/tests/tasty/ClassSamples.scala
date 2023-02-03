@@ -109,6 +109,25 @@ class BaseClass1 :
   def publicMethod1(): String = ""
 
 
+// TODO: move to tests
+class StandardScalaModifiersTesClass :
+  private val privateValField1: String = ""
+  protected val protectedValField1: String = ""
+  val publicValField1: String = ""
+
+  private var privateVarField1: String = ""
+  protected var protectedVarField1: String = ""
+  var publicVarField1: String = ""
+
+  private def privateValMethod1: String = ""
+  protected def protectedValMethod1: String = ""
+  def publicValMethod1: String = ""
+
+  private def privateMethod1(): String = ""
+  protected def protectedMethod1(): String = ""
+  def publicMethod1(): String = ""
+
+
 class InheritedClass1 extends BaseClass1, Trait1, Trait2 :
   private val privateValField1: String = ""
   protected override val protectedValField1: String = ""
@@ -160,9 +179,6 @@ class InheritedFromJavaClass2 extends BaseJavaClass1, Trait1, Trait2, JavaInterf
   protected def protectedMethod2(): String = ""
   def publicMethod2(): String = ""
 
-  private var interfaceValue11 = ""
-  override def getInterfaceValue11: String = interfaceValue11
-  override def setInterfaceValue11(v: String): Unit = interfaceValue11 = v
-
-
-
+  private var javaInterfaceValue11Var = ""
+  override def getInterfaceValue11: String = javaInterfaceValue11Var
+  override def setInterfaceValue11(v: String): Unit = { javaInterfaceValue11Var = v }

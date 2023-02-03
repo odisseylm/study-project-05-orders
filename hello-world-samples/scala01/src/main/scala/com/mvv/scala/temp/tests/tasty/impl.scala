@@ -83,21 +83,6 @@ private def extractJavaClass(using Quotes)(t: quotes.reflect.Tree): String =
   cls // return for debug
 
 
-@nowarn("msg=method Static in trait FlagsModule is deprecated")
-private def generalModifiers(using Quotes)(symbol: quotes.reflect.Symbol): mutable.Set[_Modifier] =
-  import quotes.reflect.*
-  val m = mutable.Set[_Modifier]()
-  val flags: Flags = symbol.flags
-
-  if flags.is(Flags.FieldAccessor)   then m.addOne(_Modifier.FieldAccessor)
-  if flags.is(Flags.ParamAccessor)   then m.addOne(_Modifier.ParamAccessor)
-  if flags.is(Flags.ExtensionMethod) then m.addOne(_Modifier.ExtensionMethod)
-  if flags.is(Flags.Transparent)     then m.addOne(_Modifier.Transparent)
-  if flags.is(Flags.Macro)           then m.addOne(_Modifier.Macro)
-  if flags.is(Flags.JavaStatic) || flags.is(Flags.Static)
-                                     then m.addOne(_Modifier.Static)
-  m
-
 def visibility(using Quotes)(el: quotes.reflect.Tree): _Visibility =
   import quotes.reflect.*
   val flags: Flags = el.toSymbol.get.flags
@@ -162,11 +147,10 @@ extension (using Quotes)(el: quotes.reflect.Tree)
     require(el.isValDef)
     val v = el.asInstanceOf[ValDef]
     val valName = v.name // separate var for debugging
-    _Field(valName,
-      visibility(v),
-      generalModifiers(v.toSymbol.get),
-      extractJavaClass(v.tpt),
-    )(v)
+    val asSymbol: Symbol = v.toSymbol.get
+    val mod: Set[_Modifier] = generalModifiers(asSymbol)
+    val fieldType = extractJavaClass(v.tpt)
+    _Field(valName, visibility(v), mod, fieldType)(v)
 
 
   def toMethod(using quotes.reflect.Printer[quotes.reflect.Tree]): _Method =
@@ -187,17 +171,19 @@ extension (using Quotes)(el: quotes.reflect.Tree)
     }
 
     def paramssToString(paramss: List[ParamClause]) =
-      paramss.map(_.params.map(paramToString).mkString("|")).map(v => new _Type(v))
+      if paramss.size == 1 && paramss.head.params.size == 0 then Nil // case with non field-accessor but without params
+        else paramss.map(_.params.map(paramToString).mkString("|")).map(v => new _Type(v))
 
     val methodName: String = m.name
     println(s"method: $methodName")
-    if (methodName.startsWith("privateMethod1")) {
+    if (methodName == "privateMethod1" || methodName == "privateValMethod1") {
       println(s"method: $methodName")
     }
 
     val returnType = _Type(extractJavaClass(m.returnTpt))
 
-    val paramTypes: List[_Type] = paramssToString(m.paramss)
+    val paramss = m.paramss // separate var for debug
+    val paramTypes: List[_Type] = paramssToString(paramss)
     val trailingParamTypes: List[_Type] = paramssToString(m.trailingParamss)
     val termParamsTypes: List[_Type] = paramssToString(m.termParamss)
 
@@ -206,11 +192,11 @@ extension (using Quotes)(el: quotes.reflect.Tree)
       || (!isListDeeplyEmpty(m.termParamss) && termParamsTypes != paramTypes)
       || m.leadingTypeParams.nonEmpty
 
-    val modifiers = generalModifiers(m.toSymbol.get)
+    var modifiers: Set[_Modifier] = generalModifiers(m.toSymbol.get)
     if !modifiers.contains(_Modifier.FieldAccessor) && !hasExtraParams then
-      if (paramTypes.size == 1 && (methodName.endsWith("_=") && methodName.endsWith("_$eq"))) // scala setter
-        || (isListDeeplyEmpty(m.paramss) && returnType != _Type.UnitType) // scala getter
-        then  modifiers.add(_Modifier.CustomFieldAccessor)
+      val isCustomGetter = paramss.isEmpty && returnType != _Type.UnitType
+      val isCustomSetter = paramTypes.size == 1 && (methodName.endsWith("_=") && methodName.endsWith("_$eq"))
+      if isCustomGetter || isCustomSetter then modifiers += _Modifier.CustomFieldAccessor
 
     _Method(methodName, visibility(m), Set.from(modifiers), returnType, paramTypes, hasExtraParams)(m)
 
@@ -537,6 +523,23 @@ private def generalModifiers(member: java.lang.reflect.Member): Set[_Modifier] =
   member.getModifiers match
     case m if Modifier.isStatic(m) => Set(_Modifier.Static)
     case _ => Set()
+
+
+@nowarn("msg=method Static in trait FlagsModule is deprecated")
+private def generalModifiers(using Quotes)(symbol: quotes.reflect.Symbol): Set[_Modifier] =
+  import quotes.reflect.*
+  val m = mutable.Set[_Modifier]()
+  val flags: Flags = symbol.flags
+
+  if flags.is(Flags.FieldAccessor)   then m.addOne(_Modifier.FieldAccessor)
+  if flags.is(Flags.ParamAccessor)   then m.addOne(_Modifier.ParamAccessor)
+  if flags.is(Flags.ExtensionMethod) then m.addOne(_Modifier.ExtensionMethod)
+  if flags.is(Flags.Transparent)     then m.addOne(_Modifier.Transparent)
+  if flags.is(Flags.Macro)           then m.addOne(_Modifier.Macro)
+  if flags.is(Flags.JavaStatic) || flags.is(Flags.Static)
+  then m.addOne(_Modifier.Static)
+  Set.from(m)
+
 
 def fieldModifiers(field: java.lang.reflect.Field): Set[_Modifier] =
   generalModifiers(field)

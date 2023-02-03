@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 
 
-
 class InheritedFromJavaClass2Test {
   private val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/classes"
 

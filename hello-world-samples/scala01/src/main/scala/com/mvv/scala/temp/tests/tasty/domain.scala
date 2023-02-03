@@ -4,7 +4,7 @@ import com.mvv.scala.temp.tests.tasty._Type.toPortableType
 
 import scala.annotation.{nowarn, tailrec}
 import scala.compiletime.uninitialized
-import scala.collection.*
+import scala.collection.mutable
 
 
 case class _Class (_package: String, simpleName: String) :
@@ -29,12 +29,12 @@ private enum _Visibility :
   case Private, Package, Protected, Public, Other
 
 
-private trait _ClassMember :
+trait _ClassMember :
   val name: String
   val visibility: _Visibility
   val modifiers: Set[_Modifier]
 
-private case class _Field(
+case class _Field(
   override val name: String,
   override val visibility: _Visibility,
   override val modifiers: Set[_Modifier],
@@ -55,7 +55,7 @@ private class _Param (
 */
 
 
-private case class _Method (
+case class _Method (
   override val name: String,
   override val visibility: _Visibility,
   override val modifiers: Set[_Modifier],
@@ -142,17 +142,33 @@ def mergeAllDeclaredMembers(_class: _Class): Unit =
   val aa = _class.parents.map(_.fullName)
   println(s"merge $aa")
   _class.parents.reverse.foreach(p /*: _Class*/ =>
-    _class.fields.addWithKeyReplacement(p.declaredFields)
-    _class.methods.addWithKeyReplacement(p.declaredMethods)
+    mergeFields(_class.fields, p.declaredFields)
+    mergeMethods(_class.methods, p.declaredMethods)
   )
-  _class.fields.addWithKeyReplacement(_class.declaredFields)
-  _class.methods.addWithKeyReplacement(_class.declaredMethods)
-  println(_class.declaredMethods)
+  mergeFields(_class.fields, _class.declaredFields)
+  mergeMethods(_class.methods, _class.declaredMethods)
 
 
-// replacing key is needed for having proper optional key metadata
-// (it is optional but helps debugging)
-extension [K,V](map: mutable.Map[K,V])
-  private def addWithKeyReplacement(toBeReplacedOrAdded: mutable.Map[K,V]): Unit =
-    toBeReplacedOrAdded.keys.foreach(k => map.remove(k))
-    map.addAll(toBeReplacedOrAdded)
+private def mergeFields[K](targetFields: mutable.Map[K,_Field], toAddOrUpdate: mutable.Map[K,_Field]): Unit =
+  mergeMembers(targetFields, toAddOrUpdate, mergeMember)
+private def mergeMethods[K](targetMethods: mutable.Map[K,_Method], toAddOrUpdate: mutable.Map[K,_Method]): Unit =
+  mergeMembers(targetMethods, toAddOrUpdate, mergeMember)
+private def mergeMembers[K,M](targetMembers: mutable.Map[K,M], toAddOrUpdate: mutable.Map[K,M], mergeMemberFunc: (M,M)=>M): Unit =
+  toAddOrUpdate.foreach { (k, v) =>
+    // replacing key is needed for having proper optional key metadata (it is optional but helps debugging & testing)
+    val removed: Option[M] = targetMembers.remove(k)
+    val newMember = removed.map(parentMember => mergeMemberFunc(parentMember, v)) .getOrElse(v)
+    targetMembers.put(k, newMember)
+  }
+
+// TODO: try to use them as givens
+private def mergeMember(parentDeclaredMember: _Field, thisDeclaredMember: _Field): _Field =
+  if parentDeclaredMember.modifiers.contains(_Modifier.JavaPropertyAccessor)
+    then thisDeclaredMember.copy(modifiers = thisDeclaredMember.modifiers + _Modifier.JavaPropertyAccessor)
+                                (thisDeclaredMember.internalValue)
+    else thisDeclaredMember
+private def mergeMember(parentDeclaredMember: _Method, thisDeclaredMember: _Method): _Method =
+  if parentDeclaredMember.modifiers.contains(_Modifier.JavaPropertyAccessor)
+    then thisDeclaredMember.copy(modifiers = thisDeclaredMember.modifiers + _Modifier.JavaPropertyAccessor)
+                                (thisDeclaredMember.internalValue)
+    else thisDeclaredMember
