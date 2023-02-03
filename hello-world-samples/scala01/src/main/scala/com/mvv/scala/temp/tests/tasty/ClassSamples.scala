@@ -2,6 +2,11 @@
 package com.mvv.scala.temp.tests.tasty
 
 
+// Do NOT move it to test sources!
+class ClassSampleInProductionSources :
+  var var123: String = ""
+
+
 case class CaseScalaClassSample (
     stringScalaValProp: String,
     optionalStringScalaValProp: Option[String],

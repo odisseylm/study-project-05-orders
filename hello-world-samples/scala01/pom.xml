@@ -208,6 +208,12 @@
     <!--                                 Test                                      -->
     <!-- ************************************************************************* -->
     <dependency>
+      <groupId>com.mvv.scala.test</groupId>
+      <artifactId>scala3-samples</artifactId>
+      <version>${version}</version>
+    </dependency>
+
+    <dependency>
       <!-- Used by scalatest library. -->
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

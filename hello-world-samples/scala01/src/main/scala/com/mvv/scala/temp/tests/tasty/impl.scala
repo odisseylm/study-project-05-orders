@@ -288,9 +288,14 @@ class ScalaBeansInspector extends Inspector :
     b.result()
   def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
 
-  private def inspectByClassName(fullClassName: String): _Class =
+  def inspectClass(_class: Class[?]): _Class =
+    inspectClass(_class.getName.nn, _class.getClassLoader.nn)
+
+  def inspectClass(fullClassName: String): _Class = inspectClass(fullClassName, Nil*)
+
+  def inspectClass(fullClassName: String, classLoaders: ClassLoader*): _Class =
     // TODO: try to use different kind of class-loaders
-    val classPath: Option[String] = findClassPathUrl(fullClassName)
+    val classPath: Option[String] = findClassPathUrl(fullClassName, classLoaders*)
     classPath
       //.map ( path => urlToString (path.stripSuffix(".class") + ".tasty") )
       //.map ( (path: String) => urlToString (path.stripSuffix(".class") + ".tasty") )
@@ -299,8 +304,27 @@ class ScalaBeansInspector extends Inspector :
       .map { (path: String) => inspectTastyFile(path).ensuring(_.nonEmpty, s"Result of tasty is empty [$path].") .head }
       .getOrElse ( javaBeansInspector.inspect(fullClassName) )
 
-  private def findClassPathUrl(fullClassName: String): Option[String] =
-    val cls = Class.forName(fullClassName)
+  private def tryDo[T](expr: =>T): Option[T] =
+    try Option[T](expr).nn catch case _: Exception => None
+
+  private def loadClass(fullClassName: String, classLoaders: ClassLoader*): Class[?] =
+    val cls: Class[?] = classLoaders.view
+      .flatMap(cl => tryDo( Class.forName(fullClassName, false, cl).nn) )
+      .headOption
+      .getOrElse( Class.forName(fullClassName).nn )
+    cls
+
+  /*
+  // The simplest imperative approach which are not compiled in scala3 anymore ((
+  def loadClass(fullClassName: String, classLoaders: ClassLoader*): Class[?] =
+    for cl <- classLoaders do
+      try return Class.forName(fullClassName, false, cl).nn
+      catch case _: Exception => { }
+    Class.forName(fullClassName).nn
+  */
+
+  private def findClassPathUrl(fullClassName: String, classLoaders: ClassLoader*): Option[String] =
+    val cls = loadClass(fullClassName, classLoaders*)
     val asResource = s"${cls.nn.getSimpleName}.class"
     val thisClassUrl = cls.nn.getResource(asResource)
     //require(thisClassUrl != null, s"$asResource is not found.")
@@ -385,7 +409,7 @@ class ScalaBeansInspector extends Inspector :
             println(parentClassFullName)
 
             if (!classesByFullName.contains(parentClassFullName))
-              inspectByClassName(parentClassFullName)
+              inspectClass(parentClassFullName)
 
             val processedParent: Option[_Class] = classesByFullName.get(parentClassFullName)
               .orElse( javaBeansInspector.classDescr(parentClassFullName) )
