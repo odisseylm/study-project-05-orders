@@ -77,18 +77,14 @@ val classesToIgnore: Set[String] = Set("java.lang.Object", "java.lang.Comparable
 //private def extractJavaClass(using Quotes)(t: quotes.reflect.TypeTree): String = t.tpe.widen.dealias.show
 private def extractJavaClass(using Quotes)(t: quotes.reflect.Tree): String =
   val symbol = t.toSymbol.get
-  if symbol.isType
+  val cls = if symbol.isType
     then symbol.typeRef.dealias.widen.dealias.show // we also can use symbol.fullName
     else symbol.fullName.stripSuffix(".<init>")
-
-def fieldModifiers(using Quotes)(field: quotes.reflect.ValDef): Set[_Modifier] =
-  field.toSymbol .map(generalModifiers(_)) .getOrElse(Set[_Modifier]())
-def methodModifiers(using Quotes)(method: quotes.reflect.DefDef): Set[_Modifier] =
-  method.toSymbol .map(generalModifiers(_)) .getOrElse(Set())
+  cls // return for debug
 
 
 @nowarn("msg=method Static in trait FlagsModule is deprecated")
-def generalModifiers(using Quotes)(symbol: quotes.reflect.Symbol): Set[_Modifier] =
+private def generalModifiers(using Quotes)(symbol: quotes.reflect.Symbol): mutable.Set[_Modifier] =
   import quotes.reflect.*
   val m = mutable.Set[_Modifier]()
   val flags: Flags = symbol.flags
@@ -100,7 +96,7 @@ def generalModifiers(using Quotes)(symbol: quotes.reflect.Symbol): Set[_Modifier
   if flags.is(Flags.Macro)           then m.addOne(_Modifier.Macro)
   if flags.is(Flags.JavaStatic) || flags.is(Flags.Static)
                                      then m.addOne(_Modifier.Static)
-  Set.from(m)
+  m
 
 def visibility(using Quotes)(el: quotes.reflect.Tree): _Visibility =
   import quotes.reflect.*
@@ -165,7 +161,7 @@ extension (using Quotes)(el: quotes.reflect.Tree)
     val v = el.asInstanceOf[ValDef]
     _Field(v.name,
       visibility(v),
-      fieldModifiers(v),
+      generalModifiers(v.toSymbol.get),
       extractJavaClass(v.tpt),
     )(v)
 
@@ -176,27 +172,44 @@ extension (using Quotes)(el: quotes.reflect.Tree)
     require(el.isDefDef)
     val m = el.asInstanceOf[DefDef]
 
-    if (m.name == "protectedMethod2") {
-      println(m)
-    }
-
     def isListDeeplyEmpty(paramsOfParams: List[ParamClause]) =
       paramsOfParams.flatMap(_.params).isEmpty
 
-    val paramss: List[ParamClause] = m.paramss
-    val leadingTypeParams: List[TypeDef] = m.leadingTypeParams
-    val trailingParamss: List[ParamClause] = m.trailingParamss
-    val termParamss: List[TermParamClause] = m.termParamss
+    def paramToString(p: ValDef|TypeDef): String = {
+      if p.toSymbol.get.isValDef then
+        val asValDef = p.asInstanceOf[ValDef]
+        extractJavaClass(asValDef.tpt)
+      else
+        ""
+    }
 
-    val hasParams = !isListDeeplyEmpty(m.paramss) || !isListEmpty(m.leadingTypeParams)
-      || !isListDeeplyEmpty(m.trailingParamss) || !isListDeeplyEmpty(m.termParamss)
+    def paramssToString(paramss: List[ParamClause]) =
+      paramss.map(_.params.map(paramToString).mkString("|")).map(v => new _Type(v))
 
-    _Method(m.name,
-      visibility(m),
-      methodModifiers(m),
-      extractJavaClass(m.returnTpt),
-      hasParams)
-      (m)
+    val methodName: String = m.name
+    println(s"method: $methodName")
+    if (methodName.startsWith("privateMethod1")) {
+      println(s"method: $methodName")
+    }
+
+    val returnType = _Type(extractJavaClass(m.returnTpt))
+
+    val paramTypes: List[_Type] = paramssToString(m.paramss)
+    val trailingParamTypes: List[_Type] = paramssToString(m.trailingParamss)
+    val termParamsTypes: List[_Type] = paramssToString(m.termParamss)
+
+    val hasExtraParams =
+         (!isListDeeplyEmpty(m.trailingParamss) && trailingParamTypes != paramTypes)
+      || (!isListDeeplyEmpty(m.termParamss) && termParamsTypes != paramTypes)
+      || m.leadingTypeParams.nonEmpty
+
+    val modifiers = generalModifiers(m.toSymbol.get)
+    if !modifiers.contains(_Modifier.FieldAccessor) && !hasExtraParams then
+      if (paramTypes.size == 1 && (methodName.endsWith("_=") && methodName.endsWith("_$eq"))) // scala setter
+        || (isListDeeplyEmpty(m.paramss) && returnType != _Type.UnitType) // scala getter
+        then  modifiers.add(_Modifier.CustomFieldAccessor)
+
+    _Method(methodName, visibility(m), Set.from(modifiers), returnType, paramTypes, hasExtraParams)(m)
 
 end extension
 
@@ -509,13 +522,14 @@ def getAllSubClassesAndInterfaces(cls: Class[?]): List[Class[?]] =
 
 extension (m: JavaMethod)
   def toMethod: _Method =
-    _Method(m.getName.nn, visibilityOf(m), methodModifiers(m), m.getReturnType.nn.getName.nn, m.getParameterCount != 0)(m)
+    val paramTypes = m.getParameterTypes.nn.map(_.nn.getName.nn).map(_Type(_)).toList
+    _Method(m.getName.nn, visibilityOf(m), methodModifiers(m), _Type(m.getReturnType.nn.getName.nn), paramTypes, false)(m)
 extension (f: java.lang.reflect.Field)
   def toField: _Field =
     _Field(f.getName.nn, visibilityOf(f), fieldModifiers(f), f.getType.nn.getName.nn)(f)
 
 
-def generalModifiers(member: java.lang.reflect.Member): Set[_Modifier] =
+private def generalModifiers(member: java.lang.reflect.Member): Set[_Modifier] =
   import java.lang.reflect.Modifier
   member.getModifiers match
     case m if Modifier.isStatic(m) => Set(_Modifier.Static)
@@ -541,7 +555,7 @@ def methodModifiers(m: JavaMethod): Set[_Modifier] =
   val isSetAccessor = mName.startsWith("set") && mName.length> 3 && paramCount == 1
                    && (returnType == Void.TYPE && returnType == classOf[Unit])
 
-  if isGetAccessor || isIsAccessor || isSetAccessor then mod.add(_Modifier.FieldAccessor)
+  if isGetAccessor || isIsAccessor || isSetAccessor then mod.add(_Modifier.JavaPropertyAccessor)
 
   mod.toSet
 end methodModifiers

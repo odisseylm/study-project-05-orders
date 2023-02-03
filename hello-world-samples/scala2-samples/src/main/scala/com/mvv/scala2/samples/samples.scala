@@ -4,14 +4,16 @@ package com.mvv.scala2.samples
 trait Trait1 {
   val trait1Val: String = ""
   var trait1Var: String = ""
-  def trait1Method: String = ""
+  def trait1ValMethod: String = ""
+  def trait1Method(): String = ""
 }
 
 
 trait Trait2 {
   val trait2Val: String = ""
   var trait2Var: String = ""
-  def trait2Method: String = ""
+  def trait2ValMethod: String = ""
+  def trait2Method(): String = ""
 }
 
 

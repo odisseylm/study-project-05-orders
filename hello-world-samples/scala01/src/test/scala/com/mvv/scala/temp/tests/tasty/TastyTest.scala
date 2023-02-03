@@ -75,7 +75,7 @@ class TastyTest :
       "privateVarField2", "protectedVarField2", "publicVarField2",
     )
 
-    a.assertThat(_class.methods.keys.map(_.signature).asJava).containsExactlyInAnyOrder(
+    a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "trait1Method:java.lang.String:false",
       "trait2Method:java.lang.String:false",
       //
@@ -143,7 +143,7 @@ class TastyTest :
       "privateVarField2", "protectedVarField2", "publicVarField2",
     )
 
-    a.assertThat(_class.methods.keys.map(_.signature).asJava).containsExactlyInAnyOrder(
+    a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "trait1Method:java.lang.String:false",
       "trait2Method:java.lang.String:false",
       //

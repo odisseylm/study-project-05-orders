@@ -37,11 +37,12 @@ class InheritedFromJavaClass2Test {
         "trait1Val",
         "trait1Var",
       )
-      a.assertThat(_class.methods.keys.map(_.signature).asJava).containsExactlyInAnyOrder(
-        //"trait1Val:java.lang.String:false", // it will be in fields
-        //"trait1Var:java.lang.String:false", // it will be in fields
-        "trait1Var_=:scala.Unit:true",
-        "trait1Method:java.lang.String:false",
+      a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        //"trait1Val: java.lang.String", // it will be in fields
+        //"trait1Var: java.lang.String", // it will be in fields
+        "trait1Var_=(java.lang.String)",
+        "trait1ValMethod: java.lang.String",
+        "trait1Method(): java.lang.String",
       )
     }
 
@@ -80,9 +81,10 @@ class InheritedFromJavaClass2Test {
         "trait1Val",
         "trait1Var",
       )
-      a.assertThat(_class.methods.keys.map(_.signature).asJava).containsExactlyInAnyOrder(
-        "trait1Var_=:scala.Unit:true",
-        "trait1Method:java.lang.String:false",
+      a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        "trait1Var_=(java.lang.String)",
+        "trait1ValMethod: java.lang.String",
+        "trait1Method(): java.lang.String",
       ) }
 
     val trait2ClassFullName = "com.mvv.scala.temp.tests.tasty.Trait2"
@@ -92,27 +94,28 @@ class InheritedFromJavaClass2Test {
         "trait2Val",
         "trait2Var",
       )
-      a.assertThat(_class.methods.keys.map(_.signature).asJava).containsExactlyInAnyOrder(
-        "trait2Var_=:scala.Unit:true",
-        "trait2Method:java.lang.String:false",
+      a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        "trait2Var_=(java.lang.String)",
+        "trait2ValMethod: java.lang.String",
+        "trait2Method(): java.lang.String",
       ) }
 
     val javaInterface1ClassFullName = "com.mvv.scala.temp.tests.tasty.JavaInterface1"
     a.assertThat(r.asJava).containsKey(javaInterface1ClassFullName)
     r.get(javaInterface1ClassFullName).foreach { _class =>
-      a.assertThat(_class.methods.keys.map(_.signature).asJava).containsExactlyInAnyOrder(
-        "getInterfaceValue1:java.lang.String:false",
-        "methodInterface1:java.lang.String:false",
-        "getInterfaceValue11:java.lang.String:false",
-        "setInterfaceValue11:void:true",
+      a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        "getInterfaceValue1(): java.lang.String",
+        "methodInterface1(): java.lang.String",
+        "getInterfaceValue11(): java.lang.String",
+        "setInterfaceValue11(java.lang.String)",
       ) }
 
     val javaInterface2ClassFullName = "com.mvv.scala.temp.tests.tasty.JavaInterface2"
     a.assertThat(r.asJava).containsKey(javaInterface2ClassFullName)
     r.get(javaInterface2ClassFullName).foreach { _class =>
-      a.assertThat(_class.methods.keys.map(_.signature).asJava).containsExactlyInAnyOrder(
-        "getInterfaceValue2:java.lang.String:false",
-        "methodInterface2:java.lang.String:false",
+      a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        "getInterfaceValue2(): java.lang.String",
+        "methodInterface2(): java.lang.String",
       ) }
 
     val baseJavaClass1ClassFullName = "com.mvv.scala.temp.tests.tasty.BaseJavaClass1"
@@ -124,20 +127,20 @@ class InheritedFromJavaClass2Test {
         "protectedField1",
         "publicField1",
       )
-      a.assertThat(_class.declaredMethods.keys.map(_.signature).asJava).containsExactlyInAnyOrder(
-        "privateMethod1:java.lang.String:false",
-        "packageMethod1:java.lang.String:false",
-        "protectedMethod1:java.lang.String:false",
-        "publicMethod1:java.lang.String:false",
+      a.assertThat(_class.declaredMethods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        "privateMethod1(): java.lang.String",
+        "packageMethod1(): java.lang.String",
+        "protectedMethod1(): java.lang.String",
+        "publicMethod1(): java.lang.String",
         //
-        "getPrivateProp1:java.lang.String:false",
-        "setPrivateProp1:void:true",
-        "getPackageProp1:java.lang.String:false",
-        "setPackageProp1:void:true",
-        "getProtectedProp1:java.lang.String:false",
-        "setProtectedProp1:void:true",
-        "getPublicProp1:java.lang.String:false",
-        "setPublicProp1:void:true",
+        "getPrivateProp1(): java.lang.String",
+        "setPrivateProp1(java.lang.String)",
+        "getPackageProp1(): java.lang.String",
+        "setPackageProp1(java.lang.String)",
+        "getProtectedProp1(): java.lang.String",
+        "setProtectedProp1(java.lang.String)",
+        "getPublicProp1(): java.lang.String",
+        "setPublicProp1(java.lang.String)",
       )
     }
 
@@ -155,18 +158,18 @@ class InheritedFromJavaClass2Test {
         //"protectedValMethod2",
         //"publicValMethod2",
       )
-      a.assertThat(_class.declaredMethods.keys.map(_.signature).asJava).containsExactlyInAnyOrder(
+      a.assertThat(_class.declaredMethods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
         // value methods (without '()')
-        "privateValMethod2:java.lang.String:false",
-        "protectedValMethod2:java.lang.String:false",
-        "publicValMethod2:java.lang.String:false",
+        "privateValMethod2: java.lang.String",
+        "protectedValMethod2: java.lang.String",
+        "publicValMethod2: java.lang.String",
         // usual methods
-        "privateMethod2:java.lang.String:false",
-        "protectedMethod2:java.lang.String:false",
-        "publicMethod2:java.lang.String:false",
+        "privateMethod2(): java.lang.String",
+        "protectedMethod2(): java.lang.String",
+        "publicMethod2(): java.lang.String",
         // overriding java getters/setters
-        "getInterfaceValue11:java.lang.String:false",
-        "setInterfaceValue11:scala.Unit:true",
+        "getInterfaceValue11: java.lang.String",
+        "setInterfaceValue11(java.lang.String)",
       ) }
 
     r.get(inheritedClass2FullName).foreach { _class =>
@@ -190,48 +193,50 @@ class InheritedFromJavaClass2Test {
         "publicValField1",
         "interfaceValue11",
       )
-      a.assertThat(_class.methods.keys.map(_.signature).asJava).containsExactlyInAnyOrder(
+      a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
         // Trait1
-        "trait1Var_=:scala.Unit:true",
-        "trait1Method:java.lang.String:false",
+        "trait1Var_=(java.lang.String)",
+        "trait1ValMethod: java.lang.String",
+        "trait1Method(): java.lang.String",
         // Trait2
-        "trait2Var_=:scala.Unit:true",
-        "trait2Method:java.lang.String:false",
+        "trait2Var_=(java.lang.String)",
+        "trait2ValMethod: java.lang.String",
+        "trait2Method(): java.lang.String",
         // JavaInterface1
-        "getInterfaceValue1:java.lang.String:false",
-        "methodInterface1:java.lang.String:false",
+        "getInterfaceValue1(): java.lang.String",
+        "methodInterface1(): java.lang.String",
         // these 2 are overridden
-        //"getInterfaceValue11:java.lang.String:false",
+        //"getInterfaceValue11:java.lang.String",
         //"setInterfaceValue11:void:true",
         // JavaInterface2
-        "getInterfaceValue2:java.lang.String:false",
-        "methodInterface2:java.lang.String:false",
+        "getInterfaceValue2(): java.lang.String",
+        "methodInterface2(): java.lang.String",
         // BaseJavaClass1
-        "privateMethod1:java.lang.String:false",
-        "packageMethod1:java.lang.String:false",
-        "protectedMethod1:java.lang.String:false",
-        "publicMethod1:java.lang.String:false",
+        "privateMethod1(): java.lang.String",
+        "packageMethod1(): java.lang.String",
+        "protectedMethod1(): java.lang.String",
+        "publicMethod1(): java.lang.String",
         // java props
-        "getPrivateProp1:java.lang.String:false",
-        "setPrivateProp1:void:true",
-        "getPackageProp1:java.lang.String:false",
-        "setPackageProp1:void:true",
-        "getProtectedProp1:java.lang.String:false",
-        "setProtectedProp1:void:true",
-        "getPublicProp1:java.lang.String:false",
-        "setPublicProp1:void:true",
+        "getPrivateProp1(): java.lang.String",
+        "setPrivateProp1(java.lang.String)",
+        "getPackageProp1(): java.lang.String",
+        "setPackageProp1(java.lang.String)",
+        "getProtectedProp1(): java.lang.String",
+        "setProtectedProp1(java.lang.String)",
+        "getPublicProp1(): java.lang.String",
+        "setPublicProp1(java.lang.String)",
         // in InheritedFromJavaClass2
         // value methods (without '()')
-        "privateValMethod2:java.lang.String:false",
-        "protectedValMethod2:java.lang.String:false",
-        "publicValMethod2:java.lang.String:false",
+        "privateValMethod2: java.lang.String",
+        "protectedValMethod2: java.lang.String",
+        "publicValMethod2: java.lang.String",
         // usual methods
-        "privateMethod2:java.lang.String:false",
-        "protectedMethod2:java.lang.String:false",
-        "publicMethod2:java.lang.String:false",
+        "privateMethod2(): java.lang.String",
+        "protectedMethod2(): java.lang.String",
+        "publicMethod2(): java.lang.String",
         // overriding java getters/setters
-        "getInterfaceValue11:java.lang.String:false",
-        "setInterfaceValue11:scala.Unit:true",
+        "getInterfaceValue11: java.lang.String",
+        "setInterfaceValue11(java.lang.String)",
       ) }
 
     a.assertAll()
