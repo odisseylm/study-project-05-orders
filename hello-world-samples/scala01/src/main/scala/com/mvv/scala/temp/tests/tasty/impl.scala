@@ -101,10 +101,12 @@ private def generalModifiers(using Quotes)(symbol: quotes.reflect.Symbol): mutab
 def visibility(using Quotes)(el: quotes.reflect.Tree): _Visibility =
   import quotes.reflect.*
   val flags: Flags = el.toSymbol.get.flags
-  if flags.is(Flags.Private) || flags.is(Flags.PrivateLocal)
-    || flags.is(Flags.Local) || flags.is(Flags.Protected)
-    then _Visibility.Public
-    else _Visibility.Other
+  flags match
+    case _ if flags.is(Flags.Private) => _Visibility.Private
+    case _ if flags.is(Flags.PrivateLocal) => _Visibility.Private
+    case _ if flags.is(Flags.Local) => _Visibility.Other
+    case _ if flags.is(Flags.Protected) => _Visibility.Protected
+    case _ => _Visibility.Public
 
 extension (using Quotes)(el: quotes.reflect.Tree)
 
@@ -159,7 +161,8 @@ extension (using Quotes)(el: quotes.reflect.Tree)
     import quotes.reflect.*
     require(el.isValDef)
     val v = el.asInstanceOf[ValDef]
-    _Field(v.name,
+    val valName = v.name // separate var for debugging
+    _Field(valName,
       visibility(v),
       generalModifiers(v.toSymbol.get),
       extractJavaClass(v.tpt),
@@ -495,9 +498,9 @@ private def visibilityFromModifiers(modifiers: Int): _Visibility =
   import java.lang.reflect.Modifier
   modifiers match
     case mod if Modifier.isPublic(mod) => _Visibility.Public
-    //case mod if Modifier.isPrivate(mod)   => _Visibility.Other
-    //case mod if Modifier.isProtected(mod) => _Visibility.Other
-    case _ => _Visibility.Other
+    case mod if Modifier.isPrivate(mod)   => _Visibility.Private
+    case mod if Modifier.isProtected(mod) => _Visibility.Protected
+    case _ => _Visibility.Package
 
 def visibilityOf(f: java.lang.reflect.Field): _Visibility = visibilityFromModifiers(f.getModifiers)
 def visibilityOf(m: JavaMethod): _Visibility = visibilityFromModifiers(m.getModifiers)

@@ -26,7 +26,7 @@ enum _Modifier :
 
 
 private enum _Visibility :
-  case Public, Other
+  case Private, Package, Protected, Public, Other
 
 
 private trait _ClassMember :
@@ -34,23 +34,25 @@ private trait _ClassMember :
   val visibility: _Visibility
   val modifiers: Set[_Modifier]
 
-private case class _Field (
+private case class _Field(
   override val name: String,
   override val visibility: _Visibility,
   override val modifiers: Set[_Modifier],
   _type: String,
   )(
-  // for debugging only
+  // noinspection ScalaUnusedSymbol , for debugging only
   val internalValue: Any
   ) extends _ClassMember :
   override def toString: String = s"Field '$name' : $_type (modifiers: $modifiers)"
 
 
+/*
 // it is not used right now
 private class _Param (
   val name: String,
   val _type: String,
 )
+*/
 
 
 private case class _Method (
@@ -62,17 +64,13 @@ private case class _Method (
   // scala has to much different kinds of params, for that reason we do not collect all them
   hasExtraScalaParams: Boolean,
   )(
-  // for debugging only
+  // noinspection ScalaUnusedSymbol , for debugging only
   val internalValue: Any
   ) extends _ClassMember :
 
-  //println(name)
-  if (name.startsWith("getInterfaceValue11")) {
-    println(name)
-  }
-
   val isScalaPropertyAccessor: Boolean = modifiers.contains(_Modifier.FieldAccessor)
     || modifiers.contains(_Modifier.CustomFieldAccessor)
+  //noinspection ScalaWeakerAccess
   val isPropertyAccessor: Boolean = isScalaPropertyAccessor || modifiers.contains(_Modifier.JavaPropertyAccessor)
 
   if isPropertyAccessor then
@@ -80,16 +78,12 @@ private case class _Method (
     require(mainParams.size <= 1, s"Property accessor cannot have ${mainParams.size} params.")
 
   override def toString: String =
-    //if (name.startsWith("getInterfaceValue11")) {
-    //  println(name)
-    //}
     val extraSuffix = if hasExtraScalaParams then ", hasExParams" else ""
     s"Method { $name (${mainParams.mkString(",")}) $extraSuffix }"
 
 
 @nowarn("msg=cannot be checked at runtime")
 private inline def equalImpl[T <: Equals](thisV: T, other: Any|Null)(inline comparing: (T, T)=>Boolean): Boolean =
-  //import com.mvv.nullables.AnyCanEqualGivens.given
   import scala.language.unsafeNulls
   if other == null || !other.isInstanceOf[T] then false
   else comparing(thisV, other.asInstanceOf[T])
@@ -123,19 +117,23 @@ object _Type :
     def isVoid: Boolean = { t == VoidType || t == UnitType }
 
 
-case class _MethodKey private (methodName: String, params: List[_Type], hasExtraScalaParams: Boolean)(method: _Method) :
+case class _MethodKey (methodName: String, params: List[_Type], hasExtraScalaParams: Boolean)(method: Option[_Method] = None) :
   override def toString: String =
-    if (methodName.startsWith("getInterfaceValue11")) {
-      println(methodName)
-    }
+    //noinspection MapGetOrElseBoolean
+    val isScalaPropertyAccessor = method .map(_.isScalaPropertyAccessor) .getOrElse(false)
+    val resultType = method .map(_.resultType) .getOrElse(_Type.UnitType)
+
     val extraSuffix = if hasExtraScalaParams then " ( hasExParams )" else ""
-    val paramsStr = if method.isScalaPropertyAccessor && params.isEmpty then "" else s"(${params.mkString(",")})"
-    val resultTypeStr = if method.resultType.isVoid then "" else s": ${method.resultType.toString}"
+    val paramsStr = if isScalaPropertyAccessor && params.isEmpty then "" else s"(${params.mkString(",")})"
+    val resultTypeStr = if resultType.isVoid then "" else s": ${resultType.toString}"
     s"$methodName$paramsStr$resultTypeStr$extraSuffix"
 
 object _MethodKey :
   def apply(method: _Method): _MethodKey =
-    new _MethodKey(method.name, method.mainParams, method.hasExtraScalaParams)(method)
+    new _MethodKey(method.name, method.mainParams, method.hasExtraScalaParams)(Option(method))
+  // seems default param value does not work as I expect
+  def apply(methodName: String, params: List[_Type], hasExtraScalaParams: Boolean): _MethodKey =
+    new _MethodKey(methodName, params, hasExtraScalaParams)(None)
 extension (m: _Method)
   def toKey: _MethodKey = _MethodKey(m)
 
