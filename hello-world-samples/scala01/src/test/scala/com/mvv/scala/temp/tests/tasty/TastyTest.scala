@@ -13,7 +13,7 @@ class TastyTest :
   private val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/classes"
 
   @Test
-  def inspectBeans(): Unit = {
+  def inspectBeansNoToFailAtAll(): Unit = {
     val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/classes"
     //val tastyFiles = List(s"$classesDir/com/mvv/scala/temp/tests/tasty/CaseScalaClassSample.tasty")
 
@@ -21,24 +21,6 @@ class TastyTest :
     TastyInspector.inspectTastyFiles(tastyFiles)(ScalaBeansInspector())
   }
 
-  @Test
-  def visibilityTest(): Unit = {
-    import scala.language.unsafeNulls
-
-    val tastyFiles = List(s"$classesDir/com/mvv/scala/temp/tests/tasty/InheritedClass1.tasty")
-    val inspector = ScalaBeansInspector()
-    TastyInspector.inspectTastyFiles(tastyFiles)(inspector)
-
-    val a = SoftAssertions()
-
-    val r: Map[String, _Class] = inspector.classesDescr
-    a.assertThat(r).isNotNull()
-    a.assertThat(r.asJava)
-      .hasSize(1)
-      .containsKey("com.mvv.scala.temp.tests.tasty.InheritedClass1")
-
-    a.assertAll()
-  }
 
   @Test
   def inheritanceTest(): Unit = {

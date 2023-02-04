@@ -49,18 +49,17 @@ class ScalaBeansInspector extends Inspector :
       case ClassKind.Scala3 =>
         val classLocation = getClassLocationUrl(cls)
         classLocation.getProtocol match
-          //case "jar" => inspectJar(fileUrlToPath())
+          case "file" => inspectTastyFile(fileUrlToPath(classLocation.toExternalForm.nn).toString).head
           case "jar" => inspectJar(jarUrlToJarPath(classLocation).toString)
             classesByFullName(cls.getName.nn)
-          case "file" => inspectTastyFile(fileUrlToPath(classLocation.toExternalForm.nn).toString).head
           case _ => throw IllegalStateException(s"Unsupported class location [$classLocation].")
 
 
-  def inspectTastyFile(tastyFile: String): List[_Class] =
-    if tastyFile.endsWith(".jar")
-      then TastyInspector.inspectTastyFilesInJar(tastyFile)(this)
-      else TastyInspector.inspectTastyFiles(List(tastyFile))(this)
-
+  def inspectTastyFile(tastyOrClassFile: String): List[_Class] =
+    val tastyFile = if tastyOrClassFile.endsWith(".tasty")
+      then tastyOrClassFile
+      else tastyOrClassFile.replaceSuffix(".class", ".tasty")
+    TastyInspector.inspectTastyFiles(List(tastyFile))(this)
     this.processedTastyFiles.get(tastyFile)
       .map(_.toList) .getOrElse(List())
 
