@@ -5,6 +5,7 @@ import scala.collection.mutable
 import scala.quoted.*
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 
+import ClassKind.classKind
 
 // TODO: in any case add support of processing pure java classes if no tasty file.
 val classesToIgnore: Set[String] = Set("java.lang.Object", "java.lang.Comparable")
@@ -13,7 +14,7 @@ val classesToIgnore: Set[String] = Set("java.lang.Object", "java.lang.Comparable
 class ScalaBeansInspector extends Inspector :
   import QuotesHelper.*
 
-  private val javaBeansInspector = JavaBeansInspector()
+  private val javaBeansInspector = JavaBeansInspectorInternal()
 
   // it contains ONLY 'normal' classes from input tasty file
   private val classesByFullName:  mutable.Map[String, _Class] = mutable.HashMap()
@@ -24,30 +25,51 @@ class ScalaBeansInspector extends Inspector :
     // TODO: is it good approach?? A bit expensive...
     val b = Map.newBuilder[String, _Class]
     b ++= classesByFullName
-    b ++= javaBeansInspector.classesDescr
+    //b ++= javaBeansInspector.classesDescr
     b.result()
   def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
-
-  def inspectClass(_class: Class[?]): _Class =
-    inspectClass(_class.getName.nn, _class.getClassLoader.nn)
 
   def inspectClass(fullClassName: String): _Class = inspectClass(fullClassName, Nil*)
 
   def inspectClass(fullClassName: String, classLoaders: ClassLoader*): _Class =
-    val classPath: Option[String] = findClassPathUrl(fullClassName, classLoaders*).map(_.toString)
-    classPath
-      .flatMap ( url => urlToPath (url.stripSuffix(".class") + ".tasty") )
-      .map { path => inspectTastyFile(path.toString).ensuring(_.nonEmpty, s"Result of tasty is empty [$path].") .head }
-      .getOrElse ( javaBeansInspector.inspect(fullClassName) )
+    inspectClass(loadClass(fullClassName, classLoaders*))
+
+  def inspectClass(cls: Class[?]): _Class =
+    cls.classKind match
+      case ClassKind.Java =>
+        val res: _Class = javaBeansInspector.inspectJavaClass(cls, this)
+        classesByFullName.put(cls.getName.nn, res)
+        res
+      case ClassKind.Scala2 =>
+        // TODO: use logger or stdErr
+        println(s"WARN: scala2 class ${cls.getName} is processed as java class (sine scala2 format is not supported yet).")
+        val res: _Class = javaBeansInspector.inspectJavaClass(cls, this)
+        classesByFullName.put(cls.getName.nn, res)
+        res
+      case ClassKind.Scala3 =>
+        val classLocation = getClassLocationUrl(cls)
+        classLocation.getProtocol match
+          //case "jar" => inspectJar(fileUrlToPath())
+          case "jar" => inspectJar(jarUrlToJarPath(classLocation).toString)
+            classesByFullName(cls.getName.nn)
+          case "file" => inspectTastyFile(fileUrlToPath(classLocation.toExternalForm.nn).toString).head
+          case _ => throw IllegalStateException(s"Unsupported class location [$classLocation].")
 
 
   def inspectTastyFile(tastyFile: String): List[_Class] =
     if tastyFile.endsWith(".jar")
-    then TastyInspector.inspectTastyFilesInJar(tastyFile)(this)
-    else TastyInspector.inspectTastyFiles(List(tastyFile))(this)
+      then TastyInspector.inspectTastyFilesInJar(tastyFile)(this)
+      else TastyInspector.inspectTastyFiles(List(tastyFile))(this)
 
     this.processedTastyFiles.get(tastyFile)
       .map(_.toList) .getOrElse(List())
+
+  def inspectJar(jarPath: String): List[_Class] =
+    TastyInspector.inspectTastyFilesInJar(jarPath)(this)
+    //this.processedTastyFiles.get(tastyFile)
+    //  .map(_.toList) .getOrElse(List())
+    // TODO: return new dded _Class-es
+    Nil
 
   override def inspect(using Quotes)(beanType: List[Tasty[quotes.type]]): Unit =
     import quotes.reflect.*
@@ -100,11 +122,11 @@ class ScalaBeansInspector extends Inspector :
       val _class = _Class(
         // TODO: impl
         ClassKind.Scala3, TempStubClassSource(),
-        _package.name, typeName)
+        _package.name, typeName)(this)
 
       visitParentTypeDefs(_class, rhs)
       visitTypeDefEl(_class, rhs)
-      mergeAllDeclaredMembers(_class)
+      //mergeAllDeclaredMembers(_class)
       _class
 
 
@@ -113,20 +135,17 @@ class ScalaBeansInspector extends Inspector :
         val parents = getClassDefParents(cd).asInstanceOf[List[Tree]]
         //println(s"parents: $parents")
 
-        parents
+        val parentFullClassNames = parents
           .map(extractJavaClass(_))
           .filterNot( classesToIgnore.contains(_) )
+
+        parentFullClassNames
           .foreach { parentClassFullName =>
-            //println(parentClassFullName)
+            val parentClass = loadClass(parentClassFullName)
+            val toInspectParent: Boolean = toInspectParentClass(parentClass)
 
-            if (!classesByFullName.contains(parentClassFullName))
-              inspectClass(parentClassFullName)
-
-            val processedParent: Option[_Class] = classesByFullName.get(parentClassFullName)
-              .orElse( javaBeansInspector.classDescr(parentClassFullName) )
-            processedParent
-              .orElse(throw IllegalStateException(s"Class [$parentClassFullName] is not found/processed."))
-              .foreach(_class.parents.addOne)
+            if (!classesByFullName.contains(parentClassFullName) && toInspectParent)
+              inspectClass(parentClass)
           }
 
       case _ =>

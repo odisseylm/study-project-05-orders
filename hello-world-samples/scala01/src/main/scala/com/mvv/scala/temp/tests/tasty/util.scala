@@ -40,3 +40,11 @@ extension (s: String)
 
 inline def fileExists(f: String) = Files.exists(Path.of(f))
 
+
+inline def checkNotNull[T](v: T|Null, msg: =>String): T =
+  if (v == null) throw IllegalStateException(msg)
+  v.asInstanceOf[T]
+
+inline def requireNotNull[T](v: T|Null, msg: =>String): T =
+  require(v != null, msg)
+  v.asInstanceOf[T]

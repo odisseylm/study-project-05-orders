@@ -6,32 +6,45 @@ import scala.collection.mutable
 import java.lang.reflect.Field
 import java.lang.reflect.Member
 import java.lang.reflect.Method
+//
+import ClassKind.classKind
+
+/*
+trait BeanInspector :
+  def classesDescr: Map[String, _Class]
+  def classDescr(classFullName: String): Option[_Class]
+  def inspect(klass: Class[?]): _Class
+  def inspect(fullClassName: String): _Class
+*/
 
 
-class JavaBeansInspector :
-  private val classesByFullName: mutable.Map[String, _Class] = mutable.HashMap()
+class JavaBeansInspectorInternal :
+  //private val classesByFullName: mutable.Map[String, _Class] = mutable.HashMap()
 
-  def classesDescr: Map[String, _Class] = classesByFullName.toMap
-  def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
+  //def classesDescr: Map[String, _Class] = classesByFullName.toMap
+  //def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
 
-  def inspect(klass: Class[?]): _Class = inspect(klass.getName.nn)
+  //def inspect(klass: Class[?]): _Class = inspect(klass.getName.nn)
 
-  def inspect(fullClassName: String): _Class =
+  def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
     import ReflectionHelper.*
 
-    val alreadyProcessedClass = classesByFullName.get(fullClassName)
-    if alreadyProcessedClass.isDefined then return alreadyProcessedClass.get
+    //val alreadyProcessedClass = classesByFullName.get(fullClassName)
+    //if alreadyProcessedClass.isDefined then return alreadyProcessedClass.get
 
-    val _cls: Class[?] = Class.forName(fullClassName).nn
-    val _class = _Class(
+    //val _cls: Class[?] = Class.forName(fullClassName).nn
+    val _class: _Class = _Class(
       // TODO: temp
-      ClassKind.Scala3, TempStubClassSource(),
-      _cls.getPackageName.nn, _cls.getSimpleName.nn)
+      ClassKind.Java, TempStubClassSource(),
+      _cls.getPackageName.nn, _cls.getSimpleName.nn)(scalaBeansInspector)
 
     val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
+
     //classChain.reverse.foreach { c =>
     classChain.foreach { c =>
-      _class.parents.addOne(inspect(c.getName.nn))
+      _class.parentClassFullNames.addOne(c.getName.nn)
+      if toInspectParentClass(c) then
+        _class.parents.addOne(scalaBeansInspector.inspectClass(c))
     }
 
     _cls.getDeclaredFields.nn.foreach { f =>
@@ -39,13 +52,13 @@ class JavaBeansInspector :
     _cls.getDeclaredMethods.nn.foreach { m =>
       val _m = toMethod(m.nn); _class.declaredMethods.put(_m.toKey, _m) }
 
-    mergeAllDeclaredMembers(_class)
-    classesByFullName.put(_class.fullName, _class)
+    //mergeAllDeclaredMembers(_class)
+    //classesByFullName.put(_class.fullName, _class)
 
     _class
-  end inspect
+  end inspectJavaClass
 
-end JavaBeansInspector
+end JavaBeansInspectorInternal
 
 
 private def visibilityFromModifiers(modifiers: Int): _Visibility =
@@ -124,3 +137,11 @@ private def generalModifiers(member: java.lang.reflect.Member): Set[_Modifier] =
   member.getModifiers match
     case m if Modifier.isStatic(m) => Set(_Modifier.Static)
     case _ => Set()
+
+
+def toInspectParentClass(_class: Class[?]): Boolean =
+  _class.classKind match
+    case ClassKind.Java => true
+    case ClassKind.Scala2 => true
+    case ClassKind.Scala3 => getClassLocationUrl(_class).getProtocol != "jar"
+
