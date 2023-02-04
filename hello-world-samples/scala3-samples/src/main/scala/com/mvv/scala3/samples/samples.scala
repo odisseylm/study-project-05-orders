@@ -75,9 +75,7 @@ class InheritedClass1 extends BaseClass1 with Trait1 with Trait2 {
   var publicVarField2: String = ""
 
   private def privateMethod2: String = ""
-
   protected def protectedMethod2: String = ""
-
   def publicMethod2: String = ""
 }
 
@@ -102,7 +100,11 @@ class InheritedFromJavaClass2 extends BaseJavaClass1 with Trait1 with Trait2 wit
   protected var protectedVarField1: String = ""
   var publicVarField1: String = ""
 
-  private def privateMethod2: String = ""
-  protected def protectedMethod2: String = ""
-  def publicMethod2: String = ""
+  private def privateValMethod2: String = ""
+  protected def protectedValMethod2: String = ""
+  def publicValMethod2: String = ""
+
+  private def privateMethod2(): String = ""
+  protected def protectedMethod2(): String = ""
+  def publicMethod2(): String = ""
 }
