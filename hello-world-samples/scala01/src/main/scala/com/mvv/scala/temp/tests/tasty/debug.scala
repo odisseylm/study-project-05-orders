@@ -14,18 +14,22 @@ def printFields(label: String, obj: Any): Unit =
   else
     allMethods(obj).foreach( printField(obj.getClass.getSimpleName, obj, _) )
 
+
 def printField(label: String, obj: Any, prop: String): Unit =
   try { println(s"$label.$prop: ${ getProp(obj, prop) }") } catch { case _: Exception => }
+
 
 //noinspection ScalaUnusedSymbol
 def allMethods(obj: Any): List[String] =
   import scala.language.unsafeNulls
   obj.getClass.getMethods .map(_.getName) .toList
 
+
 //noinspection ScalaUnusedSymbol
 def allMethodsDetail(obj: Any): String =
   import scala.language.unsafeNulls
   obj.getClass.getMethods /*.map(_.getName)*/ .toList .mkString("\n")
+
 
 def getProp(obj: Any, method: String): Any = {
   import scala.language.unsafeNulls

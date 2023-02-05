@@ -8,14 +8,8 @@ import java.lang.reflect.Member
 import java.lang.reflect.Method
 //
 import ClassKind.classKind
-
-/*
-trait BeanInspector :
-  def classesDescr: Map[String, _Class]
-  def classDescr(classFullName: String): Option[_Class]
-  def inspect(klass: Class[?]): _Class
-  def inspect(fullClassName: String): _Class
-*/
+//import _FieldOps.*
+//import _MethodOps.*
 
 
 class JavaBeansInspectorInternal :
@@ -37,7 +31,7 @@ class JavaBeansInspectorInternal :
     val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
 
     val parentClassFullNames = classChain.map(_.getName.nn)
-    _class.parentClassFullNames = parentClassFullNames
+    _class.parentTypeNames = parentClassFullNames.map(_Type(_))
 
     classChain.foreach { c =>
       if toInspectParentClass(c) then
@@ -107,7 +101,7 @@ object ReflectionHelper :
   extension (f: Field)
     @targetName("toFieldFromReflection")
     def toField: _Field =
-      _Field(f.getName.nn, visibilityOf(f), fieldModifiers(f), f.getType.nn.getName.nn)(f)
+      _Field(f.getName.nn, visibilityOf(f), fieldModifiers(f), _Type(f.getType.nn.getName.nn))(f)
 
 
 private def getClassesAndInterfacesImpl(

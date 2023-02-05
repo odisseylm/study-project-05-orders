@@ -6,9 +6,12 @@ import scala.quoted.*
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 
 import ClassKind.classKind
+//import _FieldOps.*
+//import _MethodOps.*
 
 // TODO: in any case add support of processing pure java classes if no tasty file.
-val classesToIgnore: Set[String] = Set("java.lang.Object", "java.lang.Comparable")
+//val classesToIgnore: Set[String] = Set("java.lang.Object", "java.lang.Comparable")
+val classesToIgnore: Set[_Type] = Set(_Type("java.lang.Object"), _Type("java.lang.Comparable"))
 
 
 class ScalaBeansInspector extends Inspector :
@@ -137,14 +140,14 @@ class ScalaBeansInspector extends Inspector :
         val parentFullClassNames = parents
           .map(extractJavaClass(_))
           .filterNot( classesToIgnore.contains(_) )
-        _class.parentClassFullNames = parentFullClassNames
+        _class.parentTypeNames = parentFullClassNames
 
         parentFullClassNames
           .foreach { parentClassFullName =>
-            val parentClass = loadClass(parentClassFullName)
+            val parentClass = loadClass(parentClassFullName.className)
             val toInspectParent: Boolean = toInspectParentClass(parentClass)
 
-            if (!classesByFullName.contains(parentClassFullName) && toInspectParent)
+            if (!classesByFullName.contains(parentClassFullName.className) && toInspectParent)
               inspectClass(parentClass)
           }
 
@@ -198,12 +201,12 @@ object QuotesHelper :
     //  case _ => throw IllegalArgumentException(s"Unexpected $el tree element in identifier. ")
 
 
-  def extractJavaClass(using Quotes)(t: quotes.reflect.Tree): String =
+  def extractJavaClass(using Quotes)(t: quotes.reflect.Tree): _Type =
     val symbol = t.toSymbol.get
-    val cls = if symbol.isType
+    val clsStr = if symbol.isType
     then symbol.typeRef.dealias.widen.dealias.show // we also can use symbol.fullName
     else symbol.fullName.stripSuffix(".<init>")
-    cls // return for debug
+    _Type(clsStr) // return for debug
 
 
   def visibility(using Quotes)(el: quotes.reflect.Tree): _Visibility =
@@ -302,26 +305,30 @@ object QuotesHelper :
       def isListDeeplyEmpty(paramsOfParams: List[ParamClause]) =
         paramsOfParams.flatMap(_.params).isEmpty
 
-      def paramToString(p: ValDef|TypeDef): String = {
-        if p.toSymbol.get.isValDef then
-          val asValDef = p.asInstanceOf[ValDef]
-          extractJavaClass(asValDef.tpt)
-        else
-          ""
-      }
+      def paramToType(p: ValDef|TypeDef): _Type =
+        val symbol = p.toSymbol.get
+        symbol match
+          case v if v.isValDef =>
+            val asValDef = p.asInstanceOf[ValDef]
+            extractJavaClass(asValDef.tpt)
+          case t if t.isTypeDef =>
+            // T O D O: probably it is not tested
+            val asTypeDef = p.asInstanceOf[TypeDef]
+            extractJavaClass(asTypeDef)
+          case _ => throw IllegalStateException(s"Unexpected param definition [$p].")
 
-      def paramssToString(paramss: List[ParamClause]) =
+      def paramssToTypes(paramss: List[ParamClause]): List[_Type] =
         if paramss.size == 1 && paramss.head.params.size == 0 then Nil // case with non field-accessor but without params
-        else paramss.map(_.params.map(paramToString).mkString("|")).map(v => new _Type(v))
+        else paramss.map(_.params.map(paramToType).mkString("|")).map(v => _Type(v))
 
       val methodName: String = m.name
 
-      val returnType = _Type(extractJavaClass(m.returnTpt))
+      val returnType = extractJavaClass(m.returnTpt)
 
       val paramss = m.paramss // separate var for debug
-      val paramTypes: List[_Type] = paramssToString(paramss)
-      val trailingParamTypes: List[_Type] = paramssToString(m.trailingParamss)
-      val termParamsTypes: List[_Type] = paramssToString(m.termParamss)
+      val paramTypes: List[_Type] = paramssToTypes(paramss)
+      val trailingParamTypes: List[_Type] = paramssToTypes(m.trailingParamss)
+      val termParamsTypes: List[_Type] = paramssToTypes(m.termParamss)
 
       val hasExtraParams =
         (!isListDeeplyEmpty(m.trailingParamss) && trailingParamTypes != paramTypes)

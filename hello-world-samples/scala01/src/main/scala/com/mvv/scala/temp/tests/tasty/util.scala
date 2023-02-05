@@ -48,3 +48,22 @@ inline def checkNotNull[T](v: T|Null, msg: =>String): T =
 inline def requireNotNull[T](v: T|Null, msg: =>String): T =
   require(v != null, msg)
   v.asInstanceOf[T]
+
+
+@nowarn("msg=cannot be checked at runtime")
+inline def equalImpl[T <: Equals](thisV: T, other: Any|Null)(inline comparing: (T, T)=>Boolean): Boolean =
+  import scala.language.unsafeNulls
+  if other == null || !other.isInstanceOf[T] then false
+    else comparing(thisV, other.asInstanceOf[T])
+
+
+object CollectionsOps :
+  extension [T](collection: scala.collection.Set[T])
+    def containsOneOf(v: T, values: T*): Boolean =
+      if collection.contains(v) then return true
+      values.exists(vv => collection.contains(vv))
+
+  extension [A, CC[_], C](collection: scala.collection.SeqOps[A,CC,C])
+    def contains[A1 >: A](v: A1, values: A1*): Boolean =
+      if collection.contains(v) then return true
+      values.exists(vv => collection.contains(vv))

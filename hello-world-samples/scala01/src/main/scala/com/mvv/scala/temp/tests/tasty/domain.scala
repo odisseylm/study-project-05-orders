@@ -1,10 +1,12 @@
 package com.mvv.scala.temp.tests.tasty
 
-import com.mvv.scala.temp.tests.tasty._Type.toPortableType
 
 import scala.annotation.{nowarn, tailrec}
 import scala.compiletime.uninitialized
 import scala.collection.mutable
+//
+import com.mvv.scala.temp.tests.tasty._Type.toPortableType
+import CollectionsOps.containsOneOf
 
 
 enum ClassKind :
@@ -31,15 +33,17 @@ object ClassKind :
 class _Class (val classKind: ClassKind, val classSource: ClassSource, val _package: String, val simpleName: String)
              (inspector: ScalaBeansInspector) :
   def fullName: String = _Class.fullName(_package, simpleName)
-  var parentClassFullNames: List[String] = Nil
+  // with current impl it possibly can have duplicates
+  var parentTypeNames: List[_Type] = Nil
+  // with current impl it possibly can have duplicates
   var parents: List[_Class] = Nil
   var declaredFields: Map[String, _Field] = Map()
   var declaredMethods: Map[_MethodKey, _Method] = Map()
   lazy val fields: Map[String, _Field] = { fillParentsClasses(); mergeAllFields(this.declaredFields, parents) }
   lazy val methods: Map[_MethodKey, _Method] = { fillParentsClasses(); mergeAllMethods(this.declaredMethods, parents) }
   private def fillParentsClasses(): Unit =
-    if parents.size != parentClassFullNames.size then
-      parents = parentClassFullNames.map(className => inspector.classDescr(className).get)
+    if parents.size != parentTypeNames.size then
+      parents = parentTypeNames.map(_type => inspector.classDescr(_type.className).get)
 
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
                                   s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
@@ -56,16 +60,53 @@ private enum _Visibility :
   case Private, Package, Protected, Public, Other
 
 
+
+
+
+class _Type (val typeName: String) extends Equals derives CanEqual :
+  // if typeName contains (in the future generics/type parameters) we need to extract only class name
+  def className: String = typeName
+  override def toString: String = typeName
+  override def hashCode: Int = this.toPortableType.typeName.hashCode
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[_Type]
+  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
+  //override def equals(other: Any): Boolean = other match
+  //  case that: _Type => that.canEqual(this) && toPortableType(this.typeName) == toPortableType(that.typeName)
+  //  case _ => false
+  override def equals(other: Any): Boolean =
+  // it is inlined and have resulting byte code similar to code with 'match'
+    equalImpl(this, other) { (v1, v2) => v1.toPortableType.typeName == v2.toPortableType.typeName }
+
+
+object _Type :
+  private val VoidTypeName = "void"
+  private val UnitTypeName = "scala.Unit"
+
+  //noinspection ScalaWeakerAccess
+  val VoidType: _Type = _Type(VoidTypeName)
+  val UnitType: _Type = _Type(UnitTypeName)
+  val StringType: _Type = _Type("java.lang.String")
+
+  extension (t: _Type)
+    def toPortableType: _Type = t.typeName match
+      case VoidTypeName => UnitType
+      case _ => t
+
+    def isVoid: Boolean = { t == VoidType || t == UnitType }
+
+
+
 trait _ClassMember :
   val name: String
   val visibility: _Visibility
   val modifiers: Set[_Modifier]
 
+
 case class _Field(
   override val name: String,
   override val visibility: _Visibility,
   override val modifiers: Set[_Modifier],
-  _type: String,
+  _type: _Type,
   )(
   // noinspection ScalaUnusedSymbol , for debugging only
   val internalValue: Any
@@ -73,13 +114,22 @@ case class _Field(
   override def toString: String = s"Field '$name' : $_type (modifiers: $modifiers)"
 
 
-/*
-// it is not used right now
-private class _Param (
-  val name: String,
-  val _type: String,
-)
-*/
+case class _FieldKey(fieldName: String)(field: Option[_Field] = None) :
+  override def toString: String =
+    val resultTypeStr = field.map(f => s": ${f._type}").getOrElse("")
+    s"$fieldName$resultTypeStr"
+
+
+object _FieldKey :
+  def apply(field: _Field): _FieldKey =
+    new _FieldKey(field.name)(Option(field))
+  def apply(fieldName: String): _FieldKey =
+    new _FieldKey(fieldName)(None)
+
+//object _FieldOps :
+extension (f: _Field)
+  def toKey: _FieldKey = _FieldKey(f)
+
 
 
 case class _Method (
@@ -95,53 +145,20 @@ case class _Method (
   val internalValue: Any
   ) extends _ClassMember :
 
-  val isScalaPropertyAccessor: Boolean = modifiers.contains(_Modifier.FieldAccessor)
-    || modifiers.contains(_Modifier.CustomFieldAccessor)
+  val isScalaPropertyAccessor: Boolean = modifiers.containsOneOf(_Modifier.FieldAccessor, _Modifier.CustomFieldAccessor)
   //noinspection ScalaWeakerAccess
   val isPropertyAccessor: Boolean = isScalaPropertyAccessor || modifiers.contains(_Modifier.JavaPropertyAccessor)
 
-  if isPropertyAccessor then
-    require(!hasExtraScalaParams, "Property accessor cannot have additional params.")
-    require(mainParams.size <= 1, s"Property accessor cannot have ${mainParams.size} params.")
+  validate()
+
+  private def validate(): Unit =
+    if isPropertyAccessor then
+      require(!hasExtraScalaParams, "Property accessor cannot have additional params.")
+      require(mainParams.size <= 1, s"Property accessor cannot have ${mainParams.size} params.")
 
   override def toString: String =
     val extraSuffix = if hasExtraScalaParams then ", hasExParams" else ""
     s"Method { $name (${mainParams.mkString(",")}) $extraSuffix }"
-
-
-@nowarn("msg=cannot be checked at runtime")
-private inline def equalImpl[T <: Equals](thisV: T, other: Any|Null)(inline comparing: (T, T)=>Boolean): Boolean =
-  import scala.language.unsafeNulls
-  if other == null || !other.isInstanceOf[T] then false
-  else comparing(thisV, other.asInstanceOf[T])
-
-
-class _Type (val typeName: String) extends Equals derives CanEqual :
-  override def toString: String = typeName
-  override def hashCode: Int = this.toPortableType.typeName.hashCode
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[_Type]
-  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
-  //override def equals(other: Any): Boolean = other match
-  //  case that: _Type => that.canEqual(this) && toPortableType(this.typeName) == toPortableType(that.typeName)
-  //  case _ => false
-  override def equals(other: Any): Boolean =
-    // it is inlined and have resulting byte code similar to code with 'match'
-    equalImpl(this, other) { (v1, v2) => v1.toPortableType.typeName == v2.toPortableType.typeName }
-
-
-object _Type :
-  private val VoidTypeName = "void"
-  private val UnitTypeName = "scala.Unit"
-
-  private val VoidType: _Type = _Type(VoidTypeName)
-  val UnitType: _Type = _Type(UnitTypeName)
-
-  extension (t: _Type)
-    def toPortableType: _Type = t.typeName match
-      case VoidTypeName => UnitType
-      case _ => t
-
-    def isVoid: Boolean = { t == VoidType || t == UnitType }
 
 
 case class _MethodKey (methodName: String, params: List[_Type], hasExtraScalaParams: Boolean)(method: Option[_Method] = None) :
@@ -161,30 +178,21 @@ object _MethodKey :
   // seems default param value does not work as I expect
   def apply(methodName: String, params: List[_Type], hasExtraScalaParams: Boolean): _MethodKey =
     new _MethodKey(methodName, params, hasExtraScalaParams)(None)
+
+//object _MethodOps :
 extension (m: _Method)
   def toKey: _MethodKey = _MethodKey(m)
 
-/*
-def mergeAllDeclaredMembers(_class: _Class): Unit =
-  val aa = _class.parents.map(_.fullName)
-  //println(s"merge $aa")
-  _class.parents.reverse.foreach(p /*: _Class*/ =>
-    mergeFields(_class.fields, p.declaredFields)
-    mergeMethods(_class.methods, p.declaredMethods)
-  )
-  mergeFields(_class.fields, _class.declaredFields)
-  mergeMethods(_class.methods, _class.declaredMethods)
-*/
 
 def mergeAllFields(thisDeclaredFields: scala.collection.Map[String,_Field], parents: List[_Class]): Map[String,_Field] =
   val merged = mutable.Map[String,_Field]()
-  parents.reverse.foreach( p => mergeFields(merged, p.fields) )
+  parents.distinct.reverse.foreach( p => mergeFields(merged, p.fields) )
   mergeFields(merged, thisDeclaredFields)
   Map.from(merged)
 
 def mergeAllMethods(thisDeclaredMethods: scala.collection.Map[_MethodKey,_Method], parents: List[_Class]): Map[_MethodKey,_Method] =
   val merged = mutable.Map[_MethodKey,_Method]()
-  parents.reverse.foreach( p => mergeMethods(merged, p.methods) )
+  parents.distinct.reverse.foreach( p => mergeMethods(merged, p.methods) )
   mergeMethods(merged, thisDeclaredMethods)
   Map.from(merged)
 
