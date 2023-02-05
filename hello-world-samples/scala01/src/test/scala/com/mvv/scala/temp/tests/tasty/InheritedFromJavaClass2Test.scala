@@ -42,6 +42,11 @@ class InheritedFromJavaClass2Test {
         "trait1ValMethod: java.lang.String",
         "trait1Method(): java.lang.String",
       )
+
+      a.assertThat(_class.methods.asJava)
+        .containsKey( _MethodKey.setter[String]("trait1Var") )
+      a.assertThat(_class.methods.asJava)
+        .containsKey( _MethodKey.getter("trait1ValMethod") )
     }
 
     a.assertAll()

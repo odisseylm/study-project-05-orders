@@ -18,11 +18,8 @@ class ModifierTest {
     import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
 
-    val tastyFile = s"$classesDir/com/mvv/scala/temp/tests/tasty/StandardScalaModifiersTesClass.tasty"
-    val tastyClassFullName = "com.mvv.scala.temp.tests.tasty.StandardScalaModifiersTesClass"
-
     val inspector = ScalaBeansInspector()
-    given _class: _Class = inspector.inspectTastyFile(tastyFile).head
+    given _class: _Class = inspector.inspectClass(classOf[StandardScalaModifiersTesClass])
 
     val a = SoftAssertions()
 
@@ -34,18 +31,31 @@ class ModifierTest {
     a.assertThat(getValOrField("protectedVarField1").modifiers.asJava).isEmpty()
     a.assertThat(getValOrField("publicVarField1").modifiers.asJava).isEmpty()
 
-    a.assertThat(getMethod("privateValMethod1").modifiers.asJava).contains(_Modifier.CustomFieldAccessor)
-    a.assertThat(getMethod("protectedValMethod1").modifiers.asJava).contains(_Modifier.CustomFieldAccessor)
-    a.assertThat(getMethod("publicValMethod1").modifiers.asJava).contains(_Modifier.CustomFieldAccessor)
+    a.assertThat(getMethod("privateValMethod1").modifiers.asJava).contains(_Modifier.ScalaCustomFieldAccessor)
+    a.assertThat(getMethod("protectedValMethod1").modifiers.asJava).contains(_Modifier.ScalaCustomFieldAccessor)
+    a.assertThat(getMethod("publicValMethod1").modifiers.asJava).contains(_Modifier.ScalaCustomFieldAccessor)
 
     a.assertThat(getMethod("privateMethod1").modifiers.asJava).isEmpty()
     a.assertThat(getMethod("protectedMethod1").modifiers.asJava).isEmpty()
     a.assertThat(getMethod("publicMethod1").modifiers.asJava).isEmpty()
 
     //a.assertThat(getMethod("getInterfaceValue11").modifiers.asJava)
-    //  .contains(_Modifier.CustomFieldAccessor)
+    //  .contains(_Modifier.ScalaCustomFieldAccessor)
     //a.assertThat(getMethod("setInterfaceValue11").modifiers.asJava)
-    //  .doesNotContain(_Modifier.CustomFieldAccessor)
+    //  .doesNotContain(_Modifier.ScalaCustomFieldAccessor)
+
+    //a.assertThat(_class.methods(_MethodKey("privateVarField1_=", List(_Type.StringType), false)).modifiers.asJava)
+    //  .contains(_Modifier.ScalaStandardFieldAccessor)
+
+    //a.assertThat(_class.methods(_MethodKey("protectedVarField1", Nil, false)).modifiers.asJava)
+    //  .contains(_Modifier.ScalaStandardFieldAccessor)
+    a.assertThat(_class.methods(_MethodKey("protectedVarField1_=", List(_Type.StringType), false)).modifiers.asJava)
+      .contains(_Modifier.ScalaStandardFieldAccessor)
+
+    //a.assertThat(_class.methods(_MethodKey("publicVarField1", Nil, false)).modifiers.asJava)
+    //  .contains(_Modifier.ScalaStandardFieldAccessor)
+    a.assertThat(_class.methods(_MethodKey("publicVarField1_=", List(_Type.StringType), false)).modifiers.asJava)
+      .contains(_Modifier.ScalaStandardFieldAccessor)
 
     a.assertAll()
   }
@@ -65,10 +75,10 @@ class ModifierTest {
     val a = SoftAssertions()
 
     a.assertThat(overriddenJavaGetMethod.modifiers.asJava)
-      .contains(_Modifier.JavaPropertyAccessor, _Modifier.CustomFieldAccessor)
+      .contains(_Modifier.JavaPropertyAccessor, _Modifier.ScalaCustomFieldAccessor)
     a.assertThat(overriddenJavaSetMethod.modifiers.asJava)
       .contains(_Modifier.JavaPropertyAccessor)
-      .doesNotContain(_Modifier.CustomFieldAccessor)
+      .doesNotContain(_Modifier.ScalaCustomFieldAccessor)
 
     a.assertAll()
   }

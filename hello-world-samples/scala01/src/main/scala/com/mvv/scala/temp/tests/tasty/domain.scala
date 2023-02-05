@@ -53,7 +53,9 @@ object _Class
 
 
 enum _Modifier :
-  case FieldAccessor, CustomFieldAccessor, JavaPropertyAccessor, ParamAccessor, ExtensionMethod, Transparent, Macro, Static
+  case ScalaStandardFieldAccessor, ScalaCustomFieldAccessor, JavaPropertyAccessor,
+  // not really used now
+  ParamAccessor, ExtensionMethod, Transparent, Macro, Static
 
 
 private enum _Visibility :
@@ -143,7 +145,7 @@ case class _Method (
   val internalValue: Any
   ) extends _ClassMember :
 
-  val isScalaPropertyAccessor: Boolean = modifiers.containsOneOf(_Modifier.FieldAccessor, _Modifier.CustomFieldAccessor)
+  val isScalaPropertyAccessor: Boolean = modifiers.containsOneOf(_Modifier.ScalaStandardFieldAccessor, _Modifier.ScalaCustomFieldAccessor)
   //noinspection ScalaWeakerAccess
   val isPropertyAccessor: Boolean = isScalaPropertyAccessor || modifiers.contains(_Modifier.JavaPropertyAccessor)
 

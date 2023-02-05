@@ -224,7 +224,7 @@ object QuotesHelper :
     val m = mutable.Set[_Modifier]()
     val flags: Flags = symbol.flags
 
-    if flags.is(Flags.FieldAccessor) then m.addOne(_Modifier.FieldAccessor)
+    if flags.is(Flags.FieldAccessor) then m.addOne(_Modifier.ScalaStandardFieldAccessor)
     if flags.is(Flags.ParamAccessor) then m.addOne(_Modifier.ParamAccessor)
     if flags.is(Flags.ExtensionMethod) then m.addOne(_Modifier.ExtensionMethod)
     if flags.is(Flags.Transparent) then m.addOne(_Modifier.Transparent)
@@ -334,10 +334,10 @@ object QuotesHelper :
           || m.leadingTypeParams.nonEmpty
 
       var modifiers: Set[_Modifier] = generalModifiers(m.toSymbol.get)
-      if !modifiers.contains(_Modifier.FieldAccessor) && !hasExtraParams then
+      if !modifiers.contains(_Modifier.ScalaStandardFieldAccessor) && !hasExtraParams then
         val isCustomGetter = paramss.isEmpty && returnType != _Type.UnitType
         val isCustomSetter = paramTypes.size == 1 && (methodName.endsWith("_=") && methodName.endsWith("_$eq"))
-        if isCustomGetter || isCustomSetter then modifiers += _Modifier.CustomFieldAccessor
+        if isCustomGetter || isCustomSetter then modifiers += _Modifier.ScalaCustomFieldAccessor
 
       _Method(methodName, visibility(m), Set.from(modifiers), returnType, paramTypes, hasExtraParams)(m)
 

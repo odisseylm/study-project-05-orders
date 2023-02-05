@@ -93,14 +93,13 @@ class InspectingByClassOrClassNameTest {
       .contains("publicVarField1_=(java.lang.String)")
 
     val scalaSetterMethod = _class.methods(_MethodKey("publicVarField1_=", List(_Type("java.lang.String")), false))
-    assertThat(scalaSetterMethod.modifiers.asJava).contains(_Modifier.FieldAccessor)
+    assertThat(scalaSetterMethod.modifiers.asJava).contains(_Modifier.ScalaStandardFieldAccessor)
 
-    // TODO: add Getter/Setter to _MethodKey
     val scalaGetterMethod = _class.methods(_MethodKey("privateValMethod2", Nil, false))
-    assertThat(scalaGetterMethod.modifiers.asJava).contains(_Modifier.CustomFieldAccessor)
+    assertThat(scalaGetterMethod.modifiers.asJava).contains(_Modifier.ScalaCustomFieldAccessor)
 
     // the same using _MethodKey.getter
     assertThat(_class.methods(_MethodKey.getter("privateValMethod2")).modifiers.asJava)
-      .contains(_Modifier.CustomFieldAccessor)
+      .contains(_Modifier.ScalaCustomFieldAccessor)
 
 }
