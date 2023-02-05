@@ -40,7 +40,7 @@ class JavaBeansInspectorInternal :
 
     _class.declaredFields = _cls.getDeclaredFields.nn.map { f =>
       val _f = toField(f.nn)
-      (_f.name, _f) }.toMap
+      (_f.toKey, _f) }.toMap
     _class.declaredMethods = _cls.getDeclaredMethods.nn.map { m =>
       val _m = toMethod(m.nn)
       (_m.toKey, _m) }.toMap

@@ -3,6 +3,9 @@ package com.mvv.scala.temp.tests.tasty
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
+//
+import com.mvv.scala.temp.tests.tasty._FieldKey as fk
+import com.mvv.scala.temp.tests.tasty._MethodKey as mk
 
 class VisibilityTest {
   private val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/classes"
@@ -22,13 +25,13 @@ class VisibilityTest {
 
     val a = SoftAssertions()
 
-    a.assertThat(_class.fields("privateVal").visibility).isEqualTo(_Visibility.Private)
-    a.assertThat(_class.fields("protectedVal").visibility).isEqualTo(_Visibility.Protected)
-    a.assertThat(_class.fields("publicVal").visibility).isEqualTo(_Visibility.Public)
+    a.assertThat(_class.fields(fk("privateVal")).visibility).isEqualTo(_Visibility.Private)
+    a.assertThat(_class.fields(fk("protectedVal")).visibility).isEqualTo(_Visibility.Protected)
+    a.assertThat(_class.fields(fk("publicVal")).visibility).isEqualTo(_Visibility.Public)
 
-    a.assertThat(_class.methods(_MethodKey("privateMethod", List[_Type](), false)).visibility).isEqualTo(_Visibility.Private)
-    a.assertThat(_class.methods(_MethodKey("protectedMethod", List[_Type](), false)).visibility).isEqualTo(_Visibility.Protected)
-    a.assertThat(_class.methods(_MethodKey("publicMethod", List[_Type](), false)).visibility).isEqualTo(_Visibility.Public)
+    a.assertThat(_class.methods(mk("privateMethod", List[_Type](), false)).visibility).isEqualTo(_Visibility.Private)
+    a.assertThat(_class.methods(mk("protectedMethod", List[_Type](), false)).visibility).isEqualTo(_Visibility.Protected)
+    a.assertThat(_class.methods(mk("publicMethod", List[_Type](), false)).visibility).isEqualTo(_Visibility.Public)
 
     a.assertAll()
   }
@@ -49,16 +52,16 @@ class VisibilityTest {
     val a = SoftAssertions()
 
     // fields from BaseJavaClass1
-    a.assertThat(_class.fields("privateField1").visibility).isEqualTo(_Visibility.Private)
-    a.assertThat(_class.fields("packageField1").visibility).isEqualTo(_Visibility.Package)
-    a.assertThat(_class.fields("protectedField1").visibility).isEqualTo(_Visibility.Protected)
-    a.assertThat(_class.fields("publicField1").visibility).isEqualTo(_Visibility.Public)
+    a.assertThat(_class.fields(fk("privateField1")).visibility).isEqualTo(_Visibility.Private)
+    a.assertThat(_class.fields(fk("packageField1")).visibility).isEqualTo(_Visibility.Package)
+    a.assertThat(_class.fields(fk("protectedField1")).visibility).isEqualTo(_Visibility.Protected)
+    a.assertThat(_class.fields(fk("publicField1")).visibility).isEqualTo(_Visibility.Public)
 
     // methods from BaseJavaClass1
-    a.assertThat(_class.methods(_MethodKey("privateMethod1", List[_Type](), false)).visibility).isEqualTo(_Visibility.Private)
-    a.assertThat(_class.methods(_MethodKey("packageMethod1", List[_Type](), false)).visibility).isEqualTo(_Visibility.Package)
-    a.assertThat(_class.methods(_MethodKey("protectedMethod1", List[_Type](), false)).visibility).isEqualTo(_Visibility.Protected)
-    a.assertThat(_class.methods(_MethodKey("publicMethod1", List[_Type](), false)).visibility).isEqualTo(_Visibility.Public)
+    a.assertThat(_class.methods(mk("privateMethod1", List[_Type](), false)).visibility).isEqualTo(_Visibility.Private)
+    a.assertThat(_class.methods(mk("packageMethod1", List[_Type](), false)).visibility).isEqualTo(_Visibility.Package)
+    a.assertThat(_class.methods(mk("protectedMethod1", List[_Type](), false)).visibility).isEqualTo(_Visibility.Protected)
+    a.assertThat(_class.methods(mk("publicMethod1", List[_Type](), false)).visibility).isEqualTo(_Visibility.Public)
 
     a.assertAll()
   }

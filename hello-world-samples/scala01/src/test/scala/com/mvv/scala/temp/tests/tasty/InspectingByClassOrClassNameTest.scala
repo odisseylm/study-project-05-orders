@@ -87,8 +87,8 @@ class InspectingByClassOrClassNameTest {
     assertThat(_class).isNotNull
     assertThat(_class.fields.asJava).isNotEmpty
 
-    assertThat(_class.fields.keys.asJava)
-      .contains("publicVarField1")
+    assertThat(_class.fields.keys.map(_.toString).asJava)
+      .contains("publicVarField1: java.lang.String")
     assertThat(_class.methods.keys.map(_.toString).asJava)
       .contains("publicVarField1_=(java.lang.String)")
 

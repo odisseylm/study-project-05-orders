@@ -32,9 +32,9 @@ class InheritedFromJavaClass2Test {
       .containsOnlyKeys(tastyClassFullName)
 
     r.get(tastyClassFullName).foreach { _class =>
-      a.assertThat(_class.fields.keys.asJava).containsExactlyInAnyOrder(
-        "trait1Val",
-        "trait1Var",
+      a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        "trait1Val: java.lang.String",
+        "trait1Var: java.lang.String",
       )
       a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
         //"trait1Val: java.lang.String", // it will be in fields
@@ -76,9 +76,9 @@ class InheritedFromJavaClass2Test {
     val trait1ClassFullName = "com.mvv.scala.temp.tests.tasty.Trait1"
     a.assertThat(r.asJava).containsKey(trait1ClassFullName)
     r.get(trait1ClassFullName).foreach { _class =>
-      a.assertThat(_class.fields.keys.asJava).containsExactlyInAnyOrder(
-        "trait1Val",
-        "trait1Var",
+      a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        "trait1Val: java.lang.String",
+        "trait1Var: java.lang.String",
       )
       a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
         "trait1Var_=(java.lang.String)",
@@ -89,9 +89,9 @@ class InheritedFromJavaClass2Test {
     val trait2ClassFullName = "com.mvv.scala.temp.tests.tasty.Trait2"
     a.assertThat(r.asJava).containsKey(trait2ClassFullName)
     r.get(trait2ClassFullName).foreach { _class =>
-      a.assertThat(_class.fields.keys.asJava).containsExactlyInAnyOrder(
-        "trait2Val",
-        "trait2Var",
+      a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        "trait2Val: java.lang.String",
+        "trait2Var: java.lang.String",
       )
       a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
         "trait2Var_=(java.lang.String)",
@@ -120,11 +120,11 @@ class InheritedFromJavaClass2Test {
     val baseJavaClass1ClassFullName = "com.mvv.scala.temp.tests.tasty.BaseJavaClass1"
     a.assertThat(r.asJava).containsKey(baseJavaClass1ClassFullName)
     r.get(baseJavaClass1ClassFullName).foreach { _class =>
-      a.assertThat(_class.declaredFields.keys.asJava).containsExactlyInAnyOrder(
-        "privateField1",
-        "packageField1",
-        "protectedField1",
-        "publicField1",
+      a.assertThat(_class.declaredFields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        "privateField1: java.lang.String",
+        "packageField1: java.lang.String",
+        "protectedField1: java.lang.String",
+        "publicField1: java.lang.String",
       )
       a.assertThat(_class.declaredMethods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
         "privateMethod1(): java.lang.String",
@@ -147,15 +147,15 @@ class InheritedFromJavaClass2Test {
     a.assertThat(r.asJava).containsKey(inheritedClass2FullName)
 
     r.get(inheritedClass2FullName).foreach { _class =>
-      a.assertThat(_class.declaredFields.keys.asJava).containsExactlyInAnyOrder(
-        "privateValField1",
-        "protectedValField1",
-        "publicValField1",
-        "javaInterfaceValue11Var",
+      a.assertThat(_class.declaredFields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+        "privateValField1: java.lang.String",
+        "protectedValField1: java.lang.String",
+        "publicValField1: java.lang.String",
+        "javaInterfaceValue11Var: java.lang.String",
         // seems they are present in methods section
-        //"privateValMethod2",
-        //"protectedValMethod2",
-        //"publicValMethod2",
+        //"privateValMethod2: java.lang.String",
+        //"protectedValMethod2: java.lang.String",
+        //"publicValMethod2: java.lang.String",
       )
       a.assertThat(_class.declaredMethods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
         // value methods (without '()')
@@ -172,25 +172,25 @@ class InheritedFromJavaClass2Test {
       ) }
 
     r.get(inheritedClass2FullName).foreach { _class =>
-      a.assertThat(_class.fields.keys.asJava).containsExactlyInAnyOrder(
+      a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
         // Trait
-        "trait1Val",
-        "trait1Var",
+        "trait1Val: java.lang.String",
+        "trait1Var: java.lang.String",
         // Trait2
-        "trait2Val",
-        "trait2Var",
+        "trait2Val: java.lang.String",
+        "trait2Var: java.lang.String",
         // JavaInterface1
         // JavaInterface2
         // BaseJavaClass1
-        "privateField1",
-        "packageField1",
-        "protectedField1",
-        "publicField1",
+        "privateField1: java.lang.String",
+        "packageField1: java.lang.String",
+        "protectedField1: java.lang.String",
+        "publicField1: java.lang.String",
         // InheritedFromJavaClass2
-        "privateValField1",
-        "protectedValField1",
-        "publicValField1",
-        "javaInterfaceValue11Var",
+        "privateValField1: java.lang.String",
+        "protectedValField1: java.lang.String",
+        "publicValField1: java.lang.String",
+        "javaInterfaceValue11Var: java.lang.String",
       )
       a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
         // Trait1

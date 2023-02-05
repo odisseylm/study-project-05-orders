@@ -46,15 +46,15 @@ class TastyTest :
 
     val _class = r("com.mvv.scala.temp.tests.tasty.InheritedClass1")
 
-    a.assertThat(_class.fields.keys.asJava).containsExactlyInAnyOrder(
-      "trait1Val", "trait2Val",
-      "trait1Var", "trait2Var",
-      "privateValField0", "protectedValField0", "publicValField0",
-      "privateVarField0", "protectedVarField0", "publicVarField0",
-      "privateValField1", "protectedValField1", "publicValField1",
-      "privateVarField1", "protectedVarField1", "publicVarField1",
-      "privateValField2", "protectedValField2", "publicValField2",
-      "privateVarField2", "protectedVarField2", "publicVarField2",
+    a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+      "trait1Val: java.lang.String", "trait2Val: java.lang.String",
+      "trait1Var: java.lang.String", "trait2Var: java.lang.String",
+      "privateValField0: java.lang.String", "protectedValField0: java.lang.String", "publicValField0: java.lang.String",
+      "privateVarField0: java.lang.String", "protectedVarField0: java.lang.String", "publicVarField0: java.lang.String",
+      "privateValField1: java.lang.String", "protectedValField1: java.lang.String", "publicValField1: java.lang.String",
+      "privateVarField1: java.lang.String", "protectedVarField1: java.lang.String", "publicVarField1: java.lang.String",
+      "privateValField2: java.lang.String", "protectedValField2: java.lang.String", "publicValField2: java.lang.String",
+      "privateVarField2: java.lang.String", "protectedVarField2: java.lang.String", "publicVarField2: java.lang.String",
     )
 
     a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
@@ -118,17 +118,18 @@ class TastyTest :
 
     val _class = r("com.mvv.scala.temp.tests.tasty.InheritedFromJavaClass1")
 
-    a.assertThat(_class.fields.keys.asJava).containsExactlyInAnyOrder(
-      "trait1Val", "trait2Val",
-      "trait1Var", "trait2Var",
+    a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+      "trait1Val: java.lang.String", "trait2Val: java.lang.String",
+      "trait1Var: java.lang.String", "trait2Var: java.lang.String",
       // BaseJavaClass1
-      "privateField1", "packageField1", "protectedField1", "publicField1",
+      "privateField1: java.lang.String", "packageField1: java.lang.String",
+      "protectedField1: java.lang.String", "publicField1: java.lang.String",
       // BaseJavaClass2
       //  no fields
       // InheritedFromJavaClass1
-      "privateValField1", "protectedValField1", "publicValField1",
-      "publicVarField1",
-      "interfaceValue11",
+      "privateValField1: java.lang.String", "protectedValField1: java.lang.String", "publicValField1: java.lang.String",
+      "publicVarField1: java.lang.String",
+      "interfaceValue11: java.lang.String",
     )
 
     a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(

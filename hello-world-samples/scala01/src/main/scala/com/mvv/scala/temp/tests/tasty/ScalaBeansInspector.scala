@@ -118,7 +118,7 @@ class ScalaBeansInspector extends Inspector :
     def visitTypeDef(_package: _Package, typeDef: TypeDef): _Class =
 
       val TypeDef(typeName, rhs) = typeDef
-      val alreadyProcessed = classesByFullName.get(_Class.fullName(_package.name, typeName))
+      val alreadyProcessed = classesByFullName.get(s"${_package.name}.$typeName")
       if alreadyProcessed.isDefined then return alreadyProcessed.get
 
       val _class = _Class(
@@ -160,14 +160,12 @@ class ScalaBeansInspector extends Inspector :
 
 
     def visitClassEls(_class: _Class, classEls: List[Tree]): Unit =
-      val declaredFields = mutable.Map[String, _Field]()
+      val declaredFields = mutable.Map[_FieldKey, _Field]()
       val declaredMethods = mutable.Map[_MethodKey, _Method]()
       classEls.foreach (
         _ match
-          case el if el.isDefDef =>
-            val m = el.toMethod; declaredMethods.put(m.toKey, m)
-          case el if el.isValDef =>
-            val f = el.toField;  declaredFields.addOne(f.name, f)
+          case el if el.isDefDef => val m = el.toMethod; declaredMethods.put(m.toKey, m)
+          case el if el.isValDef => val f = el.toField;  declaredFields.addOne(f.toKey, f)
       )
       _class.declaredFields = Map.from(declaredFields)
       _class.declaredMethods = Map.from(declaredMethods)

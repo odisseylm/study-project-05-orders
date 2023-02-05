@@ -32,14 +32,14 @@ object ClassKind :
 
 class _Class (val classKind: ClassKind, val classSource: ClassSource, val _package: String, val simpleName: String)
              (inspector: ScalaBeansInspector) :
-  def fullName: String = _Class.fullName(_package, simpleName)
+  def fullName: String = s"$_package.$simpleName"
   // with current impl it possibly can have duplicates
   var parentTypeNames: List[_Type] = Nil
   // with current impl it possibly can have duplicates
   var parents: List[_Class] = Nil
-  var declaredFields: Map[String, _Field] = Map()
+  var declaredFields: Map[_FieldKey, _Field] = Map()
   var declaredMethods: Map[_MethodKey, _Method] = Map()
-  lazy val fields: Map[String, _Field] = { fillParentsClasses(); mergeAllFields(this.declaredFields, parents) }
+  lazy val fields: Map[_FieldKey, _Field] = { fillParentsClasses(); mergeAllFields(this.declaredFields, parents) }
   lazy val methods: Map[_MethodKey, _Method] = { fillParentsClasses(); mergeAllMethods(this.declaredMethods, parents) }
   private def fillParentsClasses(): Unit =
     if parents.size != parentTypeNames.size then
@@ -48,8 +48,7 @@ class _Class (val classKind: ClassKind, val classSource: ClassSource, val _packa
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
                                   s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
 
-object _Class :
-  def fullName(_package: String, simpleClassName: String): String = s"$_package.$simpleClassName"
+object _Class
 
 
 enum _Modifier :
@@ -58,8 +57,6 @@ enum _Modifier :
 
 private enum _Visibility :
   case Private, Package, Protected, Public, Other
-
-
 
 
 
@@ -184,8 +181,8 @@ extension (m: _Method)
   def toKey: _MethodKey = _MethodKey(m)
 
 
-def mergeAllFields(thisDeclaredFields: scala.collection.Map[String,_Field], parents: List[_Class]): Map[String,_Field] =
-  val merged = mutable.Map[String,_Field]()
+def mergeAllFields(thisDeclaredFields: scala.collection.Map[_FieldKey,_Field], parents: List[_Class]): Map[_FieldKey,_Field] =
+  val merged = mutable.Map[_FieldKey,_Field]()
   parents.distinct.reverse.foreach( p => mergeFields(merged, p.fields) )
   mergeFields(merged, thisDeclaredFields)
   Map.from(merged)
