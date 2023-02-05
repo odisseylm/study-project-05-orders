@@ -1,13 +1,17 @@
 package com.mvv.scala.temp.tests.tasty
 
+import scala.language.unsafeNulls
+import scala.jdk.CollectionConverters.*
+//
 import com.mvv.scala.temp.tests.tasty.testclasses.GenericClass2
 import com.mvv.scala.temp.tests.tasty.testclasses.JGenericClass2
+import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 
 class GenericsTest {
 
   @Test
-  def smokeTest(): Unit = {
+  def test(): Unit = {
 
     val inspector = ScalaBeansInspector()
     val _class =  inspector.inspectClass(classOf[GenericClass2])
@@ -16,6 +20,31 @@ class GenericsTest {
     println(_class.parentTypeNames.dump("Parent type names"))
     println(_class.fields.keys.dump("Fields"))
     println(_class.methods.keys.dump("Methods"))
+
+    val a = SoftAssertions()
+
+    a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+      "baseClass1Var1: java.lang.Object",
+      "class2Var: java.lang.String",
+      "bVal: java.time.LocalTime",
+      "aVar: java.lang.Object",
+      "cVal: java.lang.String",
+    )
+
+    a.assertThat(_class.declaredFields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+      //"baseClass1Var1: java.lang.Object",
+      //"aVar: java.lang.Object",
+      "class2Var: java.lang.String",
+      "bVal: java.time.LocalTime",
+      "cVal: java.lang.String",
+    )
+
+    a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+      "baseClass1Var1_=(java.lang.Object)",
+      "aVar_=(java.lang.Object)",
+    )
+
+    a.assertAll()
   }
 
   @Test

@@ -66,7 +66,7 @@ private enum _Visibility :
 case class _TypeParam (name: String) :
   override def toString: String = name
 
-class _Type (val typeName: String, typeParams: List[_TypeParam] = Nil) extends Equals derives CanEqual :
+class _Type (val typeName: String /*, typeParams: List[_TypeParam] = Nil*/) extends Equals derives CanEqual :
   // if typeName contains (in the future generics/type parameters) we need to extract only class name
   def className: String = typeName
   override def toString: String = typeName
@@ -140,7 +140,7 @@ case class _Method (
   override val name: String,
   override val visibility: _Visibility,
   override val modifiers: Set[_Modifier],
-  resultType: _Type, // TODO: rename to 'return'
+  returnType: _Type,
   mainParams: List[_Type],
   // scala has to much different kinds of params, for that reason we do not collect all them
   hasExtraScalaParams: Boolean,
@@ -170,11 +170,11 @@ case class _MethodKey (methodName: String, params: List[_Type], hasExtraScalaPar
   override def toString: String =
     //noinspection MapGetOrElseBoolean
     val isScalaPropertyAccessor = method .map(_.isScalaPropertyAccessor) .getOrElse(false)
-    val resultType = method .map(_.resultType) .getOrElse(_Type.UnitType)
+    val returnType = method .map(_.returnType) .getOrElse(_Type.UnitType)
 
     val extraSuffix = if hasExtraScalaParams then " ( hasExParams )" else ""
     val paramsStr = if isScalaPropertyAccessor && params.isEmpty then "" else s"(${params.mkString(",")})"
-    val resultTypeStr = if resultType.isVoid then "" else s": ${resultType.toString}"
+    val resultTypeStr = if returnType.isVoid then "" else s": ${returnType.toString}"
     s"$methodName$paramsStr$resultTypeStr$extraSuffix"
 
 object _MethodKey :
@@ -261,22 +261,22 @@ private def fixMethodType(cls: Class[?], method: _Method): _Method =
   //if typeExists(method._type) then return method
   // no sense to process private fields in scope of 'java beans' (at least now)
   if method.visibility == _Visibility.Private
-     || method.mainParams.isEmpty && method.resultType == _Type.VoidType
+     || method.mainParams.isEmpty && method.returnType == _Type.VoidType
     then return method
 
-  if method.mainParams.isEmpty && !method.resultType.isVoid && !method.hasExtraScalaParams then
+  if method.mainParams.isEmpty && !method.returnType.isVoid && !method.hasExtraScalaParams then
     val m = findJavaMethod(cls, method.name)
     if m.isDefined then return changeReturnType(method, m.get)
 
   if method.mainParams.size == 1 && !method.hasExtraScalaParams then
-    val m = findJavaMethod(cls, method.name, 1)
+    val m = findJavaMethodWithOneParam(cls, method.name)
     if m.isDefined then return changeFirstParamType(method, m.get)
 
-  if !method.modifiers.containsOneOf(_Modifier.ScalaStandardFieldAccessor,
-    _Modifier.ScalaCustomFieldAccessor,
-    _Modifier.JavaPropertyAccessor)
-    // we need to have fixed only bean properties (since it is enough complicated in general)
-    then return method
+  //if !method.modifiers.containsOneOf(_Modifier.ScalaStandardFieldAccessor,
+  //  _Modifier.ScalaCustomFieldAccessor,
+  //  _Modifier.JavaPropertyAccessor)
+  //  // we need to have fixed only bean properties (since it is enough complicated in general)
+  //  then return method
 
   method
 
@@ -297,8 +297,8 @@ private def changeType(field: _Field, jm: java.lang.reflect.Method): _Field =
 
 private def changeReturnType(method: _Method, jm: java.lang.reflect.Method): _Method =
   method.copy(
-    resultType = _Type(jm.getReturnType.nn.getName.nn),
-    returnGenericType = method.resultType.toString,
+    returnType = _Type(jm.getReturnType.nn.getName.nn),
+    returnGenericType = method.returnType.toString,
     //resultGenericType = jm.getGenericReturnType.toString,
   )(method.internalValue)
 
@@ -306,7 +306,8 @@ private def changeFirstParamType(method: _Method, jm: java.lang.reflect.Method):
   require(method.mainParams.size == 1)
   require(jm.getParameterCount == 1)
   //method.copy(mainParams = List(_Type(jm.getParameterTypes.nnArray.apply(0).getName.nn)))(method.internalValue)
-  method.copy(mainParams = List(_Type(jm.getParameterTypes.nnArray(0).getName.nn)))(method.internalValue)
+  val paramTypes = jm.getParameterTypes.nnArray
+  method.copy(mainParams = List(_Type(paramTypes(0).getName.nn)))(method.internalValue)
 
 
 val StandardTypes = Set(
@@ -324,7 +325,7 @@ private def typeExists(_type: _Type): Boolean =
   catch case _: Exception => false
 
 def findJavaField(cls: Class[?], name: String): Option[java.lang.reflect.Field] =
-  try return Option(cls.getField(name).nn) catch case _: Exception => None
+  try return Option(cls.getField(name).nn) catch case _: Exception => { }
 
   var f: Option[java.lang.reflect.Field] = None
   var c: Class[?]|Null = cls
@@ -334,30 +335,34 @@ def findJavaField(cls: Class[?], name: String): Option[java.lang.reflect.Field] 
   f
 
 
-def findJavaMethod(cls: Class[?], _name: String): Option[java.lang.reflect.Method] =
-  val name = scalaMethodNameToJava(_name)
-  try return Option(cls.getMethod(name).nn) catch case _: Exception => { }
+def findJavaMethod(cls: Class[?], name: String): Option[java.lang.reflect.Method] =
+  val jMethodName = scalaMethodNameToJava(name)
+  try return Option(cls.getMethod(jMethodName).nn) catch case _: Exception => { }
 
   var m: Option[java.lang.reflect.Method] = None
   var c: Class[?]|Null = cls
   while m.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
-    m = try Option(c.nn.getDeclaredMethod(name).nn) catch case _: Exception => None
+    m = try Option(c.nn.getDeclaredMethod(jMethodName).nn) catch case _: Exception => None
     c = c.nn.getSuperclass
   m
 
 
-def findJavaMethod(cls: Class[?], name: String, paramCount: Int): Option[java.lang.reflect.Method] =
-  var m = findMethodWithOneParam(cls.getMethods)
-  if m.isDefined then m.get
+def findJavaMethodWithOneParam(cls: Class[?], name: String): Option[java.lang.reflect.Method] =
+  val jMethodName = scalaMethodNameToJava(name)
+  var m = findMethodWithOneParam(cls.getMethods, jMethodName)
+  if m.isDefined then return m
 
   var c: Class[?] | Null = cls
   while m.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
-    m = findMethodWithOneParam(cls.getDeclaredMethods)
+    m = findMethodWithOneParam(cls.getDeclaredMethods, jMethodName)
     c = c.nn.getSuperclass
   m
 
-private def findMethodWithOneParam(methods: Array[java.lang.reflect.Method|Null]|Null): Option[java.lang.reflect.Method] =
-  val methodsWithOneParam = methods.nnArray.iterator.filter(m => m.getParameterCount == 1).toList
+private def findMethodWithOneParam(methods: Array[java.lang.reflect.Method|Null]|Null, methodName: String): Option[java.lang.reflect.Method] =
+  val methodsWithOneParam = methods.nnArray.iterator
+    .filter(m => m.getParameterCount == 1)
+    .filter(_.getName == methodName)
+    .toList
   if methodsWithOneParam.length == 1
     then Option(methodsWithOneParam.head)
     // Now I don't know how to choose one of several methods
@@ -365,4 +370,4 @@ private def findMethodWithOneParam(methods: Array[java.lang.reflect.Method|Null]
 
 
 private def scalaMethodNameToJava(methodName: String): String =
-  methodName.replace("_=", "$eq").nn
+  methodName.replace("_=", "_$eq").nn
