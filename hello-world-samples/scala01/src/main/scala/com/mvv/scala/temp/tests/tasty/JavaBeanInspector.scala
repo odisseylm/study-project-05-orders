@@ -24,6 +24,7 @@ class JavaBeansInspectorInternal :
     import ReflectionHelper.*
 
     val _class: _Class = _Class(
+      _cls,
       // TODO: temp
       ClassKind.Java, TempStubClassSource(),
       _cls.getPackageName.nn, _cls.getSimpleName.nn)(scalaBeansInspector)

@@ -120,6 +120,7 @@ class ScalaBeansInspector extends Inspector :
       if alreadyProcessed.isDefined then return alreadyProcessed.get
 
       val _class = _Class(
+        loadClass(s"${_package.name}.$typeName"),
         // TODO: impl
         ClassKind.Scala3, TempStubClassSource(),
         _package.name, typeName)(this)
@@ -159,11 +160,15 @@ class ScalaBeansInspector extends Inspector :
     def visitClassEls(_class: _Class, classEls: List[Tree]): Unit =
       val declaredFields = mutable.Map[_FieldKey, _Field]()
       val declaredMethods = mutable.Map[_MethodKey, _Method]()
+      val declaredTypeParams = mutable.ArrayBuffer[_TypeParam]()
       classEls.foreach (
         _ match
           case el if el.isDefDef => val m = el.toMethod; declaredMethods.put(m.toKey, m)
           case el if el.isValDef => val f = el.toField;  declaredFields.addOne(f.toKey, f)
+          case el if el.isTypeDef => val typeParamName = extractName(el);  declaredTypeParams.addOne(_TypeParam(typeParamName))
+          case el => throw IllegalStateException(s"Unexpected class element: [$el].")
       )
+      _class.declaredTypeParams = List.from(declaredTypeParams)
       _class.declaredFields = Map.from(declaredFields)
       _class.declaredMethods = Map.from(declaredMethods)
 

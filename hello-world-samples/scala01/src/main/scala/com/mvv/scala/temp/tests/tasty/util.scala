@@ -1,7 +1,7 @@
 package com.mvv.scala.temp.tests.tasty
 
 import java.nio.file.{Files, Path}
-import scala.annotation.nowarn
+import scala.annotation.{nowarn, targetName}
 
 
 extension [T](v: T|Null|Option[T])
@@ -31,6 +31,11 @@ extension (v: AnyRef|Null)
 extension [T](v: T|Null)
   //noinspection ScalaUnusedSymbol
   inline def castToNonNullable: T = v.asInstanceOf[T]
+
+extension [T](v: Array[T|Null]|Null)
+  @targetName("castArrayToNonNullable")
+  //noinspection ScalaUnusedSymbol
+  inline def nnArray: Array[T] = v.asInstanceOf[Array[T]]
 
 
 extension (s: String)

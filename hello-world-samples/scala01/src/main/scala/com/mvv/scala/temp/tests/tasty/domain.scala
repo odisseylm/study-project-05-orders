@@ -31,17 +31,18 @@ object ClassKind :
       case _ => ClassKind.Java
 
 
-class _Class (val classKind: ClassKind, val classSource: ClassSource, val _package: String, val simpleName: String)
+class _Class (val runtimeClass: Class[?], val classKind: ClassKind, val classSource: ClassSource, val _package: String, val simpleName: String)
              (inspector: ScalaBeansInspector) :
   def fullName: String = s"$_package.$simpleName"
   // with current impl it possibly can have duplicates
   var parentTypeNames: List[_Type] = Nil
   // with current impl it possibly can have duplicates
   var parents: List[_Class] = Nil
+  var declaredTypeParams: List[_TypeParam] = Nil
   var declaredFields: Map[_FieldKey, _Field] = Map()
   var declaredMethods: Map[_MethodKey, _Method] = Map()
-  lazy val fields: Map[_FieldKey, _Field] = { fillParentsClasses(); mergeAllFields(this.declaredFields, parents) }
-  lazy val methods: Map[_MethodKey, _Method] = { fillParentsClasses(); mergeAllMethods(this.declaredMethods, parents) }
+  lazy val fields: Map[_FieldKey, _Field] = { fillParentsClasses(); mergeAllFields(runtimeClass, this.declaredFields, parents) }
+  lazy val methods: Map[_MethodKey, _Method] = { fillParentsClasses(); mergeAllMethods(runtimeClass, this.declaredMethods, parents) }
   private def fillParentsClasses(): Unit =
     if parents.size != parentTypeNames.size then
       parents = parentTypeNames.map(_type => inspector.classDescr(_type.className).get)
@@ -62,8 +63,10 @@ private enum _Visibility :
   case Private, Package, Protected, Public, Other
 
 
+case class _TypeParam (name: String) :
+  override def toString: String = name
 
-class _Type (val typeName: String) extends Equals derives CanEqual :
+class _Type (val typeName: String, typeParams: List[_TypeParam] = Nil) extends Equals derives CanEqual :
   // if typeName contains (in the future generics/type parameters) we need to extract only class name
   def className: String = typeName
   override def toString: String = typeName
@@ -107,6 +110,7 @@ case class _Field(
   override val visibility: _Visibility,
   override val modifiers: Set[_Modifier],
   _type: _Type,
+  genericType: String = "",
   )(
   // noinspection ScalaUnusedSymbol , for debugging only
   val internalValue: Any
@@ -136,10 +140,11 @@ case class _Method (
   override val name: String,
   override val visibility: _Visibility,
   override val modifiers: Set[_Modifier],
-  resultType: _Type,
+  resultType: _Type, // TODO: rename to 'return'
   mainParams: List[_Type],
   // scala has to much different kinds of params, for that reason we do not collect all them
   hasExtraScalaParams: Boolean,
+  returnGenericType: String = "",
   )(
   // noinspection ScalaUnusedSymbol , for debugging only
   val internalValue: Any
@@ -187,29 +192,41 @@ extension (m: _Method)
   def toKey: _MethodKey = _MethodKey(m)
 
 
-def mergeAllFields(thisDeclaredFields: scala.collection.Map[_FieldKey,_Field], parents: List[_Class]): Map[_FieldKey,_Field] =
+def mergeAllFields(thisClass: Class[?], thisDeclaredFields: scala.collection.Map[_FieldKey,_Field], parents: List[_Class]): Map[_FieldKey,_Field] =
   val merged = mutable.Map[_FieldKey,_Field]()
-  parents.distinct.reverse.foreach( p => mergeFields(merged, p.fields) )
-  mergeFields(merged, thisDeclaredFields)
+  parents.distinct.reverse.foreach( p => mergeFields(thisClass, merged, p.fields) )
+  mergeFields(thisClass, merged, thisDeclaredFields)
   Map.from(merged)
 
-def mergeAllMethods(thisDeclaredMethods: scala.collection.Map[_MethodKey,_Method], parents: List[_Class]): Map[_MethodKey,_Method] =
+def mergeAllMethods(thisClass: Class[?], thisDeclaredMethods: scala.collection.Map[_MethodKey,_Method], parents: List[_Class]): Map[_MethodKey,_Method] =
   val merged = mutable.Map[_MethodKey,_Method]()
-  parents.distinct.reverse.foreach( p => mergeMethods(merged, p.methods) )
-  mergeMethods(merged, thisDeclaredMethods)
+  parents.distinct.reverse.foreach( p => mergeMethods(thisClass, merged, p.methods) )
+  mergeMethods(thisClass, merged, thisDeclaredMethods)
   Map.from(merged)
 
 
-private def mergeFields[K](targetFields: mutable.Map[K,_Field], toAddOrUpdate: scala.collection.Map[K,_Field]): Unit =
-  mergeMembers(targetFields, toAddOrUpdate, mergeMember)
-private def mergeMethods[K](targetMethods: mutable.Map[K,_Method], toAddOrUpdate: scala.collection.Map[K,_Method]): Unit =
-  mergeMembers(targetMethods, toAddOrUpdate, mergeMember)
-private def mergeMembers[K,M](targetMembers: mutable.Map[K,M], toAddOrUpdate: scala.collection.Map[K,M], mergeMemberFunc: (M,M)=>M): Unit =
+private def mergeFields(thisClass: Class[?],
+                        targetFields: mutable.Map[_FieldKey,_Field],
+                        toAddOrUpdate: scala.collection.Map[_FieldKey,_Field]): Unit =
+  mergeMembers(thisClass, targetFields, toAddOrUpdate, mergeMember, f => f.toKey, fixFieldType)
+private def mergeMethods(thisClass: Class[?],
+                         targetMethods: mutable.Map[_MethodKey,_Method],
+                         toAddOrUpdate: scala.collection.Map[_MethodKey,_Method]): Unit =
+  mergeMembers(thisClass, targetMethods, toAddOrUpdate, mergeMember, m => m.toKey, fixMethodType)
+
+private def mergeMembers[K,M](
+            thisClass: Class[?],
+            targetMembers: mutable.Map[K,M], toAddOrUpdate: scala.collection.Map[K,M],
+            mergeMemberFunc: (M,M)=>M,
+            keyFunc: M=>K,
+            fixTypesFunc: (Class[?],M)=>M,
+            ): Unit =
   toAddOrUpdate.foreach { (k, v) =>
     // replacing key is needed for having proper optional key metadata (it is optional but really helps debugging & testing)
     val removed: Option[M] = targetMembers.remove(k)
     val newMember = removed.map(parentMember => mergeMemberFunc(parentMember, v)) .getOrElse(v)
-    targetMembers.put(k, newMember)
+    val fixed = fixTypesFunc(thisClass, newMember)
+    targetMembers.put(keyFunc(fixed), fixed)
   }
 
 // TODO: try to use them as givens
@@ -223,3 +240,129 @@ private def mergeMember(parentDeclaredMember: _Method, thisDeclaredMember: _Meth
     then thisDeclaredMember.copy(modifiers = thisDeclaredMember.modifiers + _Modifier.JavaPropertyAccessor)
                                 (thisDeclaredMember.internalValue)
     else thisDeclaredMember
+
+
+private def fixFieldType(cls: Class[?], field: _Field): _Field =
+  if typeExists(field._type) then return field
+  // no sense to process private fields in scope of 'java beans' (at least now)
+  //if field.visibility == _Visibility.Private then field
+
+  val foundJavaMethod: Option[java.lang.reflect.Method] = findJavaMethod(cls, field.name)
+  if foundJavaMethod.isDefined /*&& foundJavaMethod.get.getReturnType != classOf[Object]*/ then
+    return foundJavaMethod.map(javaMethod => changeType(field, javaMethod)).get
+
+  val foundJavaField: Option[java.lang.reflect.Field] = findJavaField(cls, field.name)
+  if foundJavaField.isDefined /*&& foundJavaField.get.getType != classOf[Object]*/ then
+    return foundJavaField.map(javaField => changeType(field, javaField)).get
+
+  field
+
+private def fixMethodType(cls: Class[?], method: _Method): _Method =
+  //if typeExists(method._type) then return method
+  // no sense to process private fields in scope of 'java beans' (at least now)
+  if method.visibility == _Visibility.Private
+     || method.mainParams.isEmpty && method.resultType == _Type.VoidType
+    then return method
+
+  if method.mainParams.isEmpty && !method.resultType.isVoid && !method.hasExtraScalaParams then
+    val m = findJavaMethod(cls, method.name)
+    if m.isDefined then return changeReturnType(method, m.get)
+
+  if method.mainParams.size == 1 && !method.hasExtraScalaParams then
+    val m = findJavaMethod(cls, method.name, 1)
+    if m.isDefined then return changeFirstParamType(method, m.get)
+
+  if !method.modifiers.containsOneOf(_Modifier.ScalaStandardFieldAccessor,
+    _Modifier.ScalaCustomFieldAccessor,
+    _Modifier.JavaPropertyAccessor)
+    // we need to have fixed only bean properties (since it is enough complicated in general)
+    then return method
+
+  method
+
+
+private def changeType(field: _Field, jf: java.lang.reflect.Field): _Field =
+  field.copy(
+    _type = _Type(jf.getType.nn.getName.nn),
+    genericType = field._type.toString,
+    //genericType = jf.getGenericType.toString,
+  )(field.internalValue)
+
+private def changeType(field: _Field, jm: java.lang.reflect.Method): _Field =
+  field.copy(
+    _type = _Type(jm.getReturnType.nn.getName.nn),
+    genericType = field._type.toString,
+    //genericType = jm.getGenericReturnType.toString,
+  )(field.internalValue)
+
+private def changeReturnType(method: _Method, jm: java.lang.reflect.Method): _Method =
+  method.copy(
+    resultType = _Type(jm.getReturnType.nn.getName.nn),
+    returnGenericType = method.resultType.toString,
+    //resultGenericType = jm.getGenericReturnType.toString,
+  )(method.internalValue)
+
+private def changeFirstParamType(method: _Method, jm: java.lang.reflect.Method): _Method =
+  require(method.mainParams.size == 1)
+  require(jm.getParameterCount == 1)
+  //method.copy(mainParams = List(_Type(jm.getParameterTypes.nnArray.apply(0).getName.nn)))(method.internalValue)
+  method.copy(mainParams = List(_Type(jm.getParameterTypes.nnArray(0).getName.nn)))(method.internalValue)
+
+
+val StandardTypes = Set(
+  "byte", "Byte", "java.lang.Byte",
+  "char", "Character", "java.lang.Character",
+  "short", "Short", "java.lang.Short",
+  "int", "Integer", "java.lang.Integer",
+  "long", "Long", "java.lang.Long",
+  "String", "java.lang.String",
+)
+
+private def typeExists(_type: _Type): Boolean =
+  if StandardTypes.contains(_type.className) then return true
+  try { Class.forName(_type.className); true }
+  catch case _: Exception => false
+
+def findJavaField(cls: Class[?], name: String): Option[java.lang.reflect.Field] =
+  try return Option(cls.getField(name).nn) catch case _: Exception => None
+
+  var f: Option[java.lang.reflect.Field] = None
+  var c: Class[?]|Null = cls
+  while f.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
+    f = try Option(c.nn.getDeclaredField(name).nn) catch case _: Exception => None
+    c = c.nn.getSuperclass
+  f
+
+
+def findJavaMethod(cls: Class[?], _name: String): Option[java.lang.reflect.Method] =
+  val name = scalaMethodNameToJava(_name)
+  try return Option(cls.getMethod(name).nn) catch case _: Exception => { }
+
+  var m: Option[java.lang.reflect.Method] = None
+  var c: Class[?]|Null = cls
+  while m.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
+    m = try Option(c.nn.getDeclaredMethod(name).nn) catch case _: Exception => None
+    c = c.nn.getSuperclass
+  m
+
+
+def findJavaMethod(cls: Class[?], name: String, paramCount: Int): Option[java.lang.reflect.Method] =
+  var m = findMethodWithOneParam(cls.getMethods)
+  if m.isDefined then m.get
+
+  var c: Class[?] | Null = cls
+  while m.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
+    m = findMethodWithOneParam(cls.getDeclaredMethods)
+    c = c.nn.getSuperclass
+  m
+
+private def findMethodWithOneParam(methods: Array[java.lang.reflect.Method|Null]|Null): Option[java.lang.reflect.Method] =
+  val methodsWithOneParam = methods.nnArray.iterator.filter(m => m.getParameterCount == 1).toList
+  if methodsWithOneParam.length == 1
+    then Option(methodsWithOneParam.head)
+    // Now I don't know how to choose one of several methods
+    else None
+
+
+private def scalaMethodNameToJava(methodName: String): String =
+  methodName.replace("_=", "$eq").nn
