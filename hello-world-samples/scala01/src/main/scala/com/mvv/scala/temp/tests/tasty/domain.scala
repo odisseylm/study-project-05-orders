@@ -4,6 +4,7 @@ package com.mvv.scala.temp.tests.tasty
 import scala.annotation.{nowarn, tailrec}
 import scala.compiletime.uninitialized
 import scala.collection.mutable
+import scala.reflect.ClassTag
 //
 import com.mvv.scala.temp.tests.tasty._Type.toPortableType
 import CollectionsOps.containsOneOf
@@ -175,6 +176,9 @@ object _MethodKey :
   // seems default param value does not work as I expect
   def apply(methodName: String, params: List[_Type], hasExtraScalaParams: Boolean): _MethodKey =
     new _MethodKey(methodName, params, hasExtraScalaParams)(None)
+  //def getter[T](name: String)(implicit ct: ClassTag[T]): _MethodKey = apply(name, List(_Type(ct.runtimeClass.toString)), false)
+  def getter(propName: String): _MethodKey = apply(propName, Nil, false)
+  def setter[T](propName: String)(implicit ct: ClassTag[T]): _MethodKey = apply(s"${propName}_=", List(_Type(ct.toString)), false)
 
 //object _MethodOps :
 extension (m: _Method)

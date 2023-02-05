@@ -10,24 +10,23 @@ import org.assertj.core.api.SoftAssertions
 
 
 class InheritedFromJavaClass2Test {
-  private val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/classes"
-
 
   @Test
   def testTrait1(): Unit = {
     import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
 
-    val tastyFile = s"$classesDir/com/mvv/scala/temp/tests/tasty/Trait1.tasty"
-    val tastyClassFullName = "com.mvv.scala.temp.tests.tasty.Trait1"
+
+    val cls = classOf[Trait1]
 
     val inspector = ScalaBeansInspector()
-    inspector.inspectTastyFile(tastyFile)
+    inspector.inspectClass(cls)
 
     val r: Map[String, _Class] = inspector.classesDescr
 
     val a = SoftAssertions()
     a.assertThat(r).isNotNull()
+    val tastyClassFullName = cls.getName
     a.assertThat(r.asJava)
       .containsOnlyKeys(tastyClassFullName)
 
@@ -53,11 +52,11 @@ class InheritedFromJavaClass2Test {
     import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
 
-    val tastyFile = s"$classesDir/com/mvv/scala/temp/tests/tasty/InheritedFromJavaClass2.tasty"
-    val tastyClassFullName = "com.mvv.scala.temp.tests.tasty.InheritedFromJavaClass2"
+    val cls = classOf[InheritedFromJavaClass2]
+    val tastyClassFullName = cls.getName
 
     val inspector = ScalaBeansInspector()
-    inspector.inspectTastyFile(tastyFile)
+    inspector.inspectClass(cls)
 
     val a = SoftAssertions()
 

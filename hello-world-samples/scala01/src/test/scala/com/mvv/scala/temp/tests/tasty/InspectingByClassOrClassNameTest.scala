@@ -99,4 +99,8 @@ class InspectingByClassOrClassNameTest {
     val scalaGetterMethod = _class.methods(_MethodKey("privateValMethod2", Nil, false))
     assertThat(scalaGetterMethod.modifiers.asJava).contains(_Modifier.CustomFieldAccessor)
 
+    // the same using _MethodKey.getter
+    assertThat(_class.methods(_MethodKey.getter("privateValMethod2")).modifiers.asJava)
+      .contains(_Modifier.CustomFieldAccessor)
+
 }

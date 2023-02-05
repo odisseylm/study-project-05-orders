@@ -10,13 +10,10 @@ import org.assertj.core.api.SoftAssertions
 
 
 class TastyTest :
-  private val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/classes"
 
   @Test
   def inspectBeansNoToFailAtAll(): Unit = {
     val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/classes"
-    //val tastyFiles = List(s"$classesDir/com/mvv/scala/temp/tests/tasty/CaseScalaClassSample.tasty")
-
     val tastyFiles = List(s"$classesDir/com/mvv/scala/temp/tests/tasty/A3.tasty")
     TastyInspector.inspectTastyFiles(tastyFiles)(ScalaBeansInspector())
   }
@@ -27,9 +24,8 @@ class TastyTest :
     import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
 
-    val tastyFiles = List(s"$classesDir/com/mvv/scala/temp/tests/tasty/InheritedClass1.tasty")
     val inspector = ScalaBeansInspector()
-    TastyInspector.inspectTastyFiles(tastyFiles)(inspector)
+    inspector.inspectClass(classOf[InheritedClass1])
 
     val a = SoftAssertions()
 
@@ -192,7 +188,5 @@ class TastyTest :
 
     a.assertAll()
   }
-
-
 
 end TastyTest
