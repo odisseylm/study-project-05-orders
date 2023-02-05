@@ -29,10 +29,6 @@ class JavaBeansInspectorInternal :
   def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
     import ReflectionHelper.*
 
-    //val alreadyProcessedClass = classesByFullName.get(fullClassName)
-    //if alreadyProcessedClass.isDefined then return alreadyProcessedClass.get
-
-    //val _cls: Class[?] = Class.forName(fullClassName).nn
     val _class: _Class = _Class(
       // TODO: temp
       ClassKind.Java, TempStubClassSource(),
@@ -40,19 +36,20 @@ class JavaBeansInspectorInternal :
 
     val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
 
+    val parentClassFullNames = classChain.map(_.getName.nn)
+    _class.parentClassFullNames = parentClassFullNames
+
     classChain.foreach { c =>
-      _class.parentClassFullNames.addOne(c.getName.nn)
       if toInspectParentClass(c) then
         _class.parents :+= scalaBeansInspector.inspectClass(c)
     }
 
-    _cls.getDeclaredFields.nn.foreach { f =>
-      val _f = toField(f.nn); _class.declaredFields.put(_f.name, _f) }
-    _cls.getDeclaredMethods.nn.foreach { m =>
-      val _m = toMethod(m.nn); _class.declaredMethods.put(_m.toKey, _m) }
-
-    //mergeAllDeclaredMembers(_class)
-    //classesByFullName.put(_class.fullName, _class)
+    _class.declaredFields = _cls.getDeclaredFields.nn.map { f =>
+      val _f = toField(f.nn)
+      (_f.name, _f) }.toMap
+    _class.declaredMethods = _cls.getDeclaredMethods.nn.map { m =>
+      val _m = toMethod(m.nn)
+      (_m.toKey, _m) }.toMap
 
     _class
   end inspectJavaClass

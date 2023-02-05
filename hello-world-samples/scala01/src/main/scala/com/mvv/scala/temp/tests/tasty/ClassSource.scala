@@ -2,6 +2,7 @@ package com.mvv.scala.temp.tests.tasty
 
 import java.net.URL
 import java.nio.file.Path
+import scala.annotation.tailrec
 
 sealed class ClassSource
 
@@ -38,15 +39,17 @@ class TempStubClassSource extends ClassSource
 //  case _ => None
 
 
+//noinspection NoTailRecursionAnnotation (there is no recursion)
 private def jarUrlToJarPath(url: URL): Path = jarUrlToJarPath(url.toExternalForm.nn)
 private def jarUrlToJarPath(url: String): Path =
   val str = url.stripPrefix("jar:file:")
   val jarPathStr = if str.endsWith(".jar")
     then str
-    else
-      val i = str.indexOf(".jar!")
-      require(i > 0, s"Incorrect jar url [$url].")
-      str.substring(0, i + 4).nn
+  else
+    // TODO: add String.substringAfterLast and use it
+    val i = str.indexOf(".jar!")
+    require(i > 0, s"Incorrect jar url [$url].")
+    str.substring(0, i + 4).nn
   Path.of(jarPathStr).nn
 
 
@@ -70,13 +73,6 @@ private def getClassLocationUrl(cls: Class[?]): URL =
   checkNotNull(thisClassUrl, s"Location of class [${cls.getName}] is not found.")
 
 
-def tastyFileExists(cls: Class[?]): Boolean =
-  cls.getResource(cls.getSimpleName.nn + ".tasty").isNotNull
-def tastyFileExists(fullClassName: String, classLoaders: ClassLoader*): Boolean =
-  val cls = loadClass(fullClassName, classLoaders*)
-  tastyFileExists(cls)
-
-
 // TODO: move to some util file
 private def tryDo[T](expr: => T): Option[T] =
   try Option[T](expr).nn catch case _: Exception => None
@@ -88,3 +84,22 @@ private def loadClass(fullClassName: String, classLoaders: ClassLoader*): Class[
     .headOption
     .getOrElse(Class.forName(fullClassName).nn)
   cls
+
+
+
+
+def tastyFileExists(cls: Class[?]): Boolean =
+  cls.getResource(cls.getSimpleName.nn + ".tasty").isNotNull
+def tastyFileExists(fullClassName: String, classLoaders: ClassLoader*): Boolean =
+  val cls = loadClass(fullClassName, classLoaders*)
+  tastyFileExists(cls)
+
+
+def isScala3Class(cls: Class[?]): Boolean = tastyFileExists(cls)
+
+def isScala2Class(cls: Class[?]): Boolean =
+  try
+    val scala2MetaDataAnnotation = Class.forName("scala.reflect.ScalaSignature")
+      .asInstanceOf[Class[? <: java.lang.annotation.Annotation]]
+    cls.getAnnotation(scala2MetaDataAnnotation) .isNotNull
+  catch case _: Exception => false

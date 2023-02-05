@@ -137,7 +137,7 @@ class ScalaBeansInspector extends Inspector :
         val parentFullClassNames = parents
           .map(extractJavaClass(_))
           .filterNot( classesToIgnore.contains(_) )
-        _class.parentClassFullNames.addAll(parentFullClassNames)
+        _class.parentClassFullNames = parentFullClassNames
 
         parentFullClassNames
           .foreach { parentClassFullName =>
@@ -157,13 +157,17 @@ class ScalaBeansInspector extends Inspector :
 
 
     def visitClassEls(_class: _Class, classEls: List[Tree]): Unit =
+      val declaredFields = mutable.Map[String, _Field]()
+      val declaredMethods = mutable.Map[_MethodKey, _Method]()
       classEls.foreach (
         _ match
           case el if el.isDefDef =>
-            val m = el.toMethod; _class.declaredMethods.put(m.toKey, m)
+            val m = el.toMethod; declaredMethods.put(m.toKey, m)
           case el if el.isValDef =>
-            val f = el.toField;  _class.declaredFields.addOne(f.name, f)
+            val f = el.toField;  declaredFields.addOne(f.name, f)
       )
+      _class.declaredFields = Map.from(declaredFields)
+      _class.declaredMethods = Map.from(declaredMethods)
 
   end inspect
 end ScalaBeansInspector

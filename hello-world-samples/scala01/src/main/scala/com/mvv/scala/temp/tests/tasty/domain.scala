@@ -19,53 +19,32 @@ enum ClassKind :
       /** Now are not supported, But can be analyzed by scala scala-reflect API. */
     , Scala2
 
+
 object ClassKind :
   extension (cls: Class[?])
     def classKind: ClassKind = cls match
-      case scala3Class if tastyFileExists(scala3Class) => ClassKind.Scala3
       case scala2Class if isScala2Class(scala2Class) => ClassKind.Scala2
+      case scala3Class if isScala3Class(scala3Class) => ClassKind.Scala3
       case _ => ClassKind.Java
 
-// TODO: rename to _ClassInternal
+
 class _Class (val classKind: ClassKind, val classSource: ClassSource, val _package: String, val simpleName: String)
              (inspector: ScalaBeansInspector) :
   def fullName: String = _Class.fullName(_package, simpleName)
-  val parentClassFullNames: mutable.ArrayBuffer[String] = mutable.ArrayBuffer()
-  var parents: List[_Class] = List() // Nil
-  val declaredFields: mutable.Map[String, _Field] = mutable.Map()
-  val declaredMethods: mutable.Map[_MethodKey, _Method] = mutable.Map()
+  var parentClassFullNames: List[String] = Nil
+  var parents: List[_Class] = Nil
+  var declaredFields: Map[String, _Field] = Map()
+  var declaredMethods: Map[_MethodKey, _Method] = Map()
   lazy val fields: Map[String, _Field] = { fillParentsClasses(); mergeAllFields(this.declaredFields, parents) }
   lazy val methods: Map[_MethodKey, _Method] = { fillParentsClasses(); mergeAllMethods(this.declaredMethods, parents) }
   private def fillParentsClasses(): Unit =
     if parents.size != parentClassFullNames.size then
-      parents = parentClassFullNames.map(className => inspector.classDescr(className).get).toList
+      parents = parentClassFullNames.map(className => inspector.classDescr(className).get)
 
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
                                   s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
 
 object _Class :
-  def fullName(_package: String, simpleClassName: String): String = s"$_package.$simpleClassName"
-
-
-// TODO: rename to _Class
-class _ClassAPI (
-  val classKind: ClassKind,
-  val classSource: ClassSource,
-  val _package: String,
-  val simpleName: String,
-  val parentClasses: List[Class[?]],
-  val parents: List[_Class],
-  val declaredFields: Map[String, _Field],
-  val declaredMethods: Map[_MethodKey, _Method],
-  val fields: Map[String, _Field],
-  val methods: Map[_MethodKey, _Method],
-  ) :
-  def fullName: String = s"$_package.$simpleName"
-
-  override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
-                                  s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
-
-object _ClassAPI :
   def fullName(_package: String, simpleClassName: String): String = s"$_package.$simpleClassName"
 
 
@@ -197,20 +176,16 @@ def mergeAllDeclaredMembers(_class: _Class): Unit =
   mergeMethods(_class.methods, _class.declaredMethods)
 */
 
-def mergeAllFields(thisDeclaredFields: scala.collection.Map[String,_Field], parents: IterableOnce[_Class]): Map[String,_Field] =
+def mergeAllFields(thisDeclaredFields: scala.collection.Map[String,_Field], parents: List[_Class]): Map[String,_Field] =
   val merged = mutable.Map[String,_Field]()
-  val parentsCopy = List.from(parents)
-  parentsCopy.reverse.foreach( p => mergeFields(merged, p.fields) )
+  parents.reverse.foreach( p => mergeFields(merged, p.fields) )
   mergeFields(merged, thisDeclaredFields)
-  println("!!!!!!!!!!!!!!!!!!!! mergeAllDeclaredFields")
   Map.from(merged)
 
-def mergeAllMethods(thisDeclaredMethods: scala.collection.Map[_MethodKey,_Method], parents: IterableOnce[_Class]): Map[_MethodKey,_Method] =
+def mergeAllMethods(thisDeclaredMethods: scala.collection.Map[_MethodKey,_Method], parents: List[_Class]): Map[_MethodKey,_Method] =
   val merged = mutable.Map[_MethodKey,_Method]()
-  val parentsCopy = List.from(parents)
-  parentsCopy.reverse.foreach( p => mergeMethods(merged, p.methods) )
+  parents.reverse.foreach( p => mergeMethods(merged, p.methods) )
   mergeMethods(merged, thisDeclaredMethods)
-  println("!!!!!!!!!!!!!!!!!!!! mergeAllDeclaredMethods")
   Map.from(merged)
 
 
@@ -220,7 +195,7 @@ private def mergeMethods[K](targetMethods: mutable.Map[K,_Method], toAddOrUpdate
   mergeMembers(targetMethods, toAddOrUpdate, mergeMember)
 private def mergeMembers[K,M](targetMembers: mutable.Map[K,M], toAddOrUpdate: scala.collection.Map[K,M], mergeMemberFunc: (M,M)=>M): Unit =
   toAddOrUpdate.foreach { (k, v) =>
-    // replacing key is needed for having proper optional key metadata (it is optional but helps debugging & testing)
+    // replacing key is needed for having proper optional key metadata (it is optional but really helps debugging & testing)
     val removed: Option[M] = targetMembers.remove(k)
     val newMember = removed.map(parentMember => mergeMemberFunc(parentMember, v)) .getOrElse(v)
     targetMembers.put(k, newMember)
@@ -237,10 +212,3 @@ private def mergeMember(parentDeclaredMember: _Method, thisDeclaredMember: _Meth
     then thisDeclaredMember.copy(modifiers = thisDeclaredMember.modifiers + _Modifier.JavaPropertyAccessor)
                                 (thisDeclaredMember.internalValue)
     else thisDeclaredMember
-
-private def isScala2Class(cls: Class[?]): Boolean =
-  try
-    val scala2MetaDataAnnotation = Class.forName("scala.reflect.ScalaSignature")
-      .asInstanceOf[Class[? <: java.lang.annotation.Annotation]]
-    cls.getAnnotation(scala2MetaDataAnnotation) .isNotNull
-  catch case _: Exception => false
