@@ -144,7 +144,7 @@ class InheritedClass1 extends BaseClass1, Trait1, Trait2 :
   // /*override*/ def publicVarField1: String = ""
   // /*override*/ def publicVarField1_= (v: String): Unit = ""
 
-  private def privateMethod1: String = ""
+  private def privateMethod1(): String = ""
   protected override def protectedMethod1(): String = ""
   override def publicMethod1(): String = ""
 
@@ -166,9 +166,14 @@ abstract class InheritedFromJavaClass1 extends BaseJavaClass2, Trait1, Trait2 :
   protected val protectedValField1: String = ""
   val publicValField1: String = ""
 
-  private def privateMethod2: String = ""
-  protected def protectedMethod2: String = ""
-  def publicMethod2: String = ""
+  var publicVarField1: String = ""
+
+  private def privateValMethod2: String = ""
+  private def privateMethod2(): String = ""
+  protected def protectedValMethod2: String = ""
+  protected def protectedMethod2(): String = ""
+  def publicValMethod2: String = ""
+  def publicMethod2(): String = ""
 
 
 class InheritedFromJavaClass2 extends BaseJavaClass1, Trait1, Trait2, JavaInterface2, JavaInterface1 :

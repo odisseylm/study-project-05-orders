@@ -58,32 +58,34 @@ class TastyTest :
     )
 
     a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
-      "trait1Method:java.lang.String:false",
-      "trait2Method:java.lang.String:false",
+      "trait1ValMethod: java.lang.String",
+      "trait1Method(): java.lang.String",
+      "trait2ValMethod: java.lang.String",
+      "trait2Method(): java.lang.String",
       //
-      "privateMethod0:java.lang.String:false",
-      "protectedMethod0:java.lang.String:false",
-      "publicMethod0:java.lang.String:false",
+      "privateValMethod0: java.lang.String",
+      "protectedValMethod0: java.lang.String",
+      "publicValMethod0: java.lang.String",
       //
-      "privateMethod1:java.lang.String:false",
-      "protectedMethod1:java.lang.String:false",
-      "publicMethod1:java.lang.String:false",
+      "privateMethod1(): java.lang.String",
+      "protectedMethod1(): java.lang.String",
+      "publicMethod1(): java.lang.String",
       //
-      "privateMethod2:java.lang.String:false",
-      "protectedMethod2:java.lang.String:false",
-      "publicMethod2:java.lang.String:false",
+      "privateMethod2(): java.lang.String",
+      "protectedMethod2(): java.lang.String",
+      "publicMethod2(): java.lang.String",
       // for vars
-      "trait1Var_=:scala.Unit:true",
-      "trait2Var_=:scala.Unit:true",
+      "trait1Var_=(java.lang.String)",
+      "trait2Var_=(java.lang.String)",
 
-      "protectedVarField0_=:scala.Unit:true",
-      "publicVarField0_=:scala.Unit:true",
+      "protectedVarField0_=(java.lang.String)",
+      "publicVarField0_=(java.lang.String)",
 
-      "protectedVarField1_=:scala.Unit:true",
-      "publicVarField1_=:scala.Unit:true",
+      "protectedVarField1_=(java.lang.String)",
+      "publicVarField1_=(java.lang.String)",
 
-      "protectedVarField2_=:scala.Unit:true",
-      "publicVarField2_=:scala.Unit:true"
+      "protectedVarField2_=(java.lang.String)",
+      "publicVarField2_=(java.lang.String)"
     )
 
     a.assertAll()
@@ -95,9 +97,8 @@ class TastyTest :
     import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
 
-    val tastyFiles = List(s"$classesDir/com/mvv/scala/temp/tests/tasty/InheritedClass1.tasty")
     val inspector = ScalaBeansInspector()
-    TastyInspector.inspectTastyFiles(tastyFiles)(inspector)
+    inspector.inspectClass(classOf[InheritedFromJavaClass1])
 
     val a = SoftAssertions()
 
@@ -108,50 +109,84 @@ class TastyTest :
       .containsOnlyKeys(
         "com.mvv.scala.temp.tests.tasty.Trait1",
         "com.mvv.scala.temp.tests.tasty.Trait2",
-        "com.mvv.scala.temp.tests.tasty.BaseClass1",
-        "com.mvv.scala.temp.tests.tasty.InheritedClass1",
+        "com.mvv.scala.temp.tests.tasty.JavaInterface1",
+        "com.mvv.scala.temp.tests.tasty.JavaInterface2",
+        "com.mvv.scala.temp.tests.tasty.BaseJavaClass1",
+        "com.mvv.scala.temp.tests.tasty.BaseJavaClass2",
+        "com.mvv.scala.temp.tests.tasty.InheritedFromJavaClass1",
       )
 
-    val _class = r("com.mvv.scala.temp.tests.tasty.InheritedClass1")
+    val _class = r("com.mvv.scala.temp.tests.tasty.InheritedFromJavaClass1")
 
     a.assertThat(_class.fields.keys.asJava).containsExactlyInAnyOrder(
       "trait1Val", "trait2Val",
       "trait1Var", "trait2Var",
-      "privateValField0", "protectedValField0", "publicValField0",
-      "privateVarField0", "protectedVarField0", "publicVarField0",
+      // BaseJavaClass1
+      "privateField1", "packageField1", "protectedField1", "publicField1",
+      // BaseJavaClass2
+      //  no fields
+      // InheritedFromJavaClass1
       "privateValField1", "protectedValField1", "publicValField1",
-      "privateVarField1", "protectedVarField1", "publicVarField1",
-      "privateValField2", "protectedValField2", "publicValField2",
-      "privateVarField2", "protectedVarField2", "publicVarField2",
+      "publicVarField1",
+      "interfaceValue11",
     )
 
     a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
-      "trait1Method:java.lang.String:false",
-      "trait2Method:java.lang.String:false",
+      "trait1ValMethod: java.lang.String",
+      "trait1Method(): java.lang.String",
+      "trait2ValMethod: java.lang.String",
+      "trait2Method(): java.lang.String",
+      // JavaInterface1
+      "getInterfaceValue1(): java.lang.String",
+      "methodInterface1(): java.lang.String",
+      // they are overridden in BaseJavaClass2
+      //"getInterfaceValue11(): java.lang.String",
+      //"setInterfaceValue11(java.lang.String)",
+      // JavaInterface2
+      "getInterfaceValue2(): java.lang.String",
+      "methodInterface2(): java.lang.String",
+      // BaseJavaClass1
+      "privateMethod1(): java.lang.String",
+      "packageMethod1(): java.lang.String",
+      "protectedMethod1(): java.lang.String",
+      "publicMethod1(): java.lang.String",
       //
-      "privateMethod0:java.lang.String:false",
-      "protectedMethod0:java.lang.String:false",
-      "publicMethod0:java.lang.String:false",
-      //
-      "privateMethod1:java.lang.String:false",
-      "protectedMethod1:java.lang.String:false",
-      "publicMethod1:java.lang.String:false",
-      //
-      "privateMethod2:java.lang.String:false",
-      "protectedMethod2:java.lang.String:false",
-      "publicMethod2:java.lang.String:false",
+      "getPrivateProp1(): java.lang.String",
+      "setPrivateProp1(java.lang.String)",
+      "getProtectedProp1(): java.lang.String",
+      "setProtectedProp1(java.lang.String)",
+      "getPackageProp1(): java.lang.String",
+      "setPackageProp1(java.lang.String)",
+      "getPublicProp1(): java.lang.String",
+      "setPublicProp1(java.lang.String)",
+      // BaseJavaClass2
+      "getPublicProp11(): java.lang.String",
+      "setPublicProp11(java.lang.String)",
+      "getInterfaceValue11(): java.lang.String",
+      "setInterfaceValue11(java.lang.String)",
+      // InheritedFromJavaClass1
+      "privateValMethod2: java.lang.String",
+      "privateMethod2(): java.lang.String",
+      "protectedValMethod2: java.lang.String",
+      "protectedMethod2(): java.lang.String",
+      "publicValMethod2: java.lang.String",
+      "publicMethod2(): java.lang.String",
+
       // for vars
-      "trait1Var_=:scala.Unit:true",
-      "trait2Var_=:scala.Unit:true",
+      "publicVarField1_=(java.lang.String)",
+      "trait1Var_=(java.lang.String)",
+      "trait2Var_=(java.lang.String)",
 
-      "protectedVarField0_=:scala.Unit:true",
-      "publicVarField0_=:scala.Unit:true",
+      /*
+      "protectedVarField0_=(java.lang.String)",
+      "publicVarField0_=(java.lang.String)",
 
-      "protectedVarField1_=:scala.Unit:true",
-      "publicVarField1_=:scala.Unit:true",
+      "protectedVarField1_=(java.lang.String)",
+      "publicVarField1_=(java.lang.String)",
 
-      "protectedVarField2_=:scala.Unit:true",
-      "publicVarField2_=:scala.Unit:true"
+      "protectedVarField2_=(java.lang.String)",
+      "publicVarField2_=(java.lang.String)",
+      */
     )
 
     a.assertAll()

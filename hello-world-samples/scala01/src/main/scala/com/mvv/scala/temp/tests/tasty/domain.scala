@@ -35,15 +35,18 @@ class _Class (val classKind: ClassKind, val classSource: ClassSource, val _packa
   val parents: mutable.ArrayBuffer[_Class] = mutable.ArrayBuffer()
   val declaredFields: mutable.Map[String, _Field] = mutable.Map()
   val declaredMethods: mutable.Map[_MethodKey, _Method] = mutable.Map()
-  lazy val fields: Map[String, _Field] =
+  lazy val fields222: Map[String, _Field] =
     if parents.size != parentClassFullNames.size then
-      parents.addAll(parentClassFullNames.map( className => inspector.classDescr(fullName).get ))
-    mergeAllDeclaredFields(this.declaredFields, parents)
+      parents.addAll(parentClassFullNames.map(className => inspector.classDescr(className).get))
+    mergeAllFields(this.declaredFields, parents)
+  def fields: Map[String, _Field] =
+    if parents.size != parentClassFullNames.size then
+      parents.addAll(parentClassFullNames.map(className => inspector.classDescr(className).get))
+    mergeAllFields(this.declaredFields, parents)
   lazy val methods: Map[_MethodKey, _Method] =
     if parents.size != parentClassFullNames.size then
-      parents.addAll(parentClassFullNames.map( className => inspector.classDescr(fullName).get ))
-    mergeAllDeclaredMethods(this.declaredMethods, parents)
-
+      parents.addAll(parentClassFullNames.map(className => inspector.classDescr(className).get))
+    mergeAllMethods(this.declaredMethods, parents)
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
                                   s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
 
@@ -201,18 +204,20 @@ def mergeAllDeclaredMembers(_class: _Class): Unit =
   mergeMethods(_class.methods, _class.declaredMethods)
 */
 
-def mergeAllDeclaredFields(thisDeclaredFields: scala.collection.Map[String,_Field], parents: IterableOnce[_Class]): Map[String,_Field] =
+def mergeAllFields(thisDeclaredFields: scala.collection.Map[String,_Field], parents: IterableOnce[_Class]): Map[String,_Field] =
   val merged = mutable.Map[String,_Field]()
   val parentsCopy = List.from(parents)
-  parentsCopy.reverse.foreach( p => mergeFields(merged, p.declaredFields) )
+  parentsCopy.reverse.foreach( p => mergeFields(merged, p.fields) )
   mergeFields(merged, thisDeclaredFields)
+  println("!!!!!!!!!!!!!!!!!!!! mergeAllDeclaredFields")
   Map.from(merged)
 
-def mergeAllDeclaredMethods(thisDeclaredMethods: scala.collection.Map[_MethodKey,_Method], parents: IterableOnce[_Class]): Map[_MethodKey,_Method] =
+def mergeAllMethods(thisDeclaredMethods: scala.collection.Map[_MethodKey,_Method], parents: IterableOnce[_Class]): Map[_MethodKey,_Method] =
   val merged = mutable.Map[_MethodKey,_Method]()
   val parentsCopy = List.from(parents)
-  parentsCopy.reverse.foreach( p => mergeMethods(merged, p.declaredMethods) )
+  parentsCopy.reverse.foreach( p => mergeMethods(merged, p.methods) )
   mergeMethods(merged, thisDeclaredMethods)
+  println("!!!!!!!!!!!!!!!!!!!! mergeAllDeclaredMethods")
   Map.from(merged)
 
 

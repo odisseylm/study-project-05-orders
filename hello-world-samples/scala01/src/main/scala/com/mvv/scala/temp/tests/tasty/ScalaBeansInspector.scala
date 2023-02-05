@@ -137,6 +137,7 @@ class ScalaBeansInspector extends Inspector :
         val parentFullClassNames = parents
           .map(extractJavaClass(_))
           .filterNot( classesToIgnore.contains(_) )
+        _class.parentClassFullNames.addAll(parentFullClassNames)
 
         parentFullClassNames
           .foreach { parentClassFullName =>

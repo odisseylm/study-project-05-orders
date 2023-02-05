@@ -151,7 +151,7 @@ class InheritedFromJavaClass2Test {
         "privateValField1",
         "protectedValField1",
         "publicValField1",
-        "interfaceValue11",
+        "javaInterfaceValue11Var",
         // seems they are present in methods section
         //"privateValMethod2",
         //"protectedValMethod2",
@@ -190,7 +190,7 @@ class InheritedFromJavaClass2Test {
         "privateValField1",
         "protectedValField1",
         "publicValField1",
-        "interfaceValue11",
+        "javaInterfaceValue11Var",
       )
       a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
         // Trait1
