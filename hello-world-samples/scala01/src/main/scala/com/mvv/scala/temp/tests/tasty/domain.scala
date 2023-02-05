@@ -30,23 +30,16 @@ object ClassKind :
 class _Class (val classKind: ClassKind, val classSource: ClassSource, val _package: String, val simpleName: String)
              (inspector: ScalaBeansInspector) :
   def fullName: String = _Class.fullName(_package, simpleName)
-  //val parentClasses: mutable.ArrayBuffer[Class[?]] = mutable.ArrayBuffer()
   val parentClassFullNames: mutable.ArrayBuffer[String] = mutable.ArrayBuffer()
-  val parents: mutable.ArrayBuffer[_Class] = mutable.ArrayBuffer()
+  var parents: List[_Class] = List() // Nil
   val declaredFields: mutable.Map[String, _Field] = mutable.Map()
   val declaredMethods: mutable.Map[_MethodKey, _Method] = mutable.Map()
-  lazy val fields222: Map[String, _Field] =
+  lazy val fields: Map[String, _Field] = { fillParentsClasses(); mergeAllFields(this.declaredFields, parents) }
+  lazy val methods: Map[_MethodKey, _Method] = { fillParentsClasses(); mergeAllMethods(this.declaredMethods, parents) }
+  private def fillParentsClasses(): Unit =
     if parents.size != parentClassFullNames.size then
-      parents.addAll(parentClassFullNames.map(className => inspector.classDescr(className).get))
-    mergeAllFields(this.declaredFields, parents)
-  def fields: Map[String, _Field] =
-    if parents.size != parentClassFullNames.size then
-      parents.addAll(parentClassFullNames.map(className => inspector.classDescr(className).get))
-    mergeAllFields(this.declaredFields, parents)
-  lazy val methods: Map[_MethodKey, _Method] =
-    if parents.size != parentClassFullNames.size then
-      parents.addAll(parentClassFullNames.map(className => inspector.classDescr(className).get))
-    mergeAllMethods(this.declaredMethods, parents)
+      parents = parentClassFullNames.map(className => inspector.classDescr(className).get).toList
+
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
                                   s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
 

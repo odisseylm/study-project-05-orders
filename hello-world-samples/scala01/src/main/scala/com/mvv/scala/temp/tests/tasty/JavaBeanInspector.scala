@@ -40,11 +40,10 @@ class JavaBeansInspectorInternal :
 
     val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
 
-    //classChain.reverse.foreach { c =>
     classChain.foreach { c =>
       _class.parentClassFullNames.addOne(c.getName.nn)
       if toInspectParentClass(c) then
-        _class.parents.addOne(scalaBeansInspector.inspectClass(c))
+        _class.parents :+= scalaBeansInspector.inspectClass(c)
     }
 
     _cls.getDeclaredFields.nn.foreach { f =>
