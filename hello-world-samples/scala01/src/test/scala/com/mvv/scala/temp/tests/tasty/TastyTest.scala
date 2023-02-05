@@ -1,5 +1,7 @@
 package com.mvv.scala.temp.tests.tasty
 
+import com.mvv.scala.temp.tests.tasty.testclasses.{InheritedClass1, InheritedFromJavaClass1}
+
 import scala.tasty.inspector.Tasty
 import scala.tasty.inspector.TastyInspector
 import scala.collection.immutable.Map
@@ -13,8 +15,8 @@ class TastyTest :
 
   @Test
   def inspectBeansNoToFailAtAll(): Unit = {
-    val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/classes"
-    val tastyFiles = List(s"$classesDir/com/mvv/scala/temp/tests/tasty/A3.tasty")
+    val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/test-classes"
+    val tastyFiles = List(s"$classesDir/com/mvv/scala/temp/tests/tasty/testclasses/A3.tasty")
     TastyInspector.inspectTastyFiles(tastyFiles)(ScalaBeansInspector())
   }
 
@@ -34,13 +36,13 @@ class TastyTest :
     a.assertThat(r.asJava)
       //.hasSize(4)
       .containsOnlyKeys(
-        "com.mvv.scala.temp.tests.tasty.Trait1",
-        "com.mvv.scala.temp.tests.tasty.Trait2",
-        "com.mvv.scala.temp.tests.tasty.BaseClass1",
-        "com.mvv.scala.temp.tests.tasty.InheritedClass1",
+        "com.mvv.scala.temp.tests.tasty.testclasses.Trait1",
+        "com.mvv.scala.temp.tests.tasty.testclasses.Trait2",
+        "com.mvv.scala.temp.tests.tasty.testclasses.BaseClass1",
+        "com.mvv.scala.temp.tests.tasty.testclasses.InheritedClass1",
       )
 
-    val _class = r("com.mvv.scala.temp.tests.tasty.InheritedClass1")
+    val _class = r("com.mvv.scala.temp.tests.tasty.testclasses.InheritedClass1")
 
     a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "trait1Val: java.lang.String", "trait2Val: java.lang.String",
@@ -103,16 +105,16 @@ class TastyTest :
     a.assertThat(r.asJava)
       //.hasSize(4)
       .containsOnlyKeys(
-        "com.mvv.scala.temp.tests.tasty.Trait1",
-        "com.mvv.scala.temp.tests.tasty.Trait2",
-        "com.mvv.scala.temp.tests.tasty.JavaInterface1",
-        "com.mvv.scala.temp.tests.tasty.JavaInterface2",
-        "com.mvv.scala.temp.tests.tasty.BaseJavaClass1",
-        "com.mvv.scala.temp.tests.tasty.BaseJavaClass2",
-        "com.mvv.scala.temp.tests.tasty.InheritedFromJavaClass1",
+        "com.mvv.scala.temp.tests.tasty.testclasses.Trait1",
+        "com.mvv.scala.temp.tests.tasty.testclasses.Trait2",
+        "com.mvv.scala.temp.tests.tasty.testclasses.JavaInterface1",
+        "com.mvv.scala.temp.tests.tasty.testclasses.JavaInterface2",
+        "com.mvv.scala.temp.tests.tasty.testclasses.BaseJavaClass1",
+        "com.mvv.scala.temp.tests.tasty.testclasses.BaseJavaClass2",
+        "com.mvv.scala.temp.tests.tasty.testclasses.InheritedFromJavaClass1",
       )
 
-    val _class = r("com.mvv.scala.temp.tests.tasty.InheritedFromJavaClass1")
+    val _class = r("com.mvv.scala.temp.tests.tasty.testclasses.InheritedFromJavaClass1")
 
     a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "trait1Val: java.lang.String", "trait2Val: java.lang.String",

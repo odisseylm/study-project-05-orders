@@ -1,5 +1,7 @@
 package com.mvv.scala.temp.tests.tasty
 
+import com.mvv.scala.temp.tests.tasty.testclasses.StandardScalaModifiersTesClass
+
 import scala.tasty.inspector.Tasty
 import scala.tasty.inspector.TastyInspector
 import scala.collection.immutable.Map
@@ -10,8 +12,6 @@ import org.assertj.core.api.SoftAssertions
 
 
 class ModifierTest {
-  private val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/classes"
-
 
   @Test
   def testStandardFieldAccessors(): Unit = {
@@ -65,8 +65,10 @@ class ModifierTest {
     import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
 
-    val tastyFile = s"$classesDir/com/mvv/scala/temp/tests/tasty/InheritedFromJavaClass2.tasty"
-    val tastyClassFullName = "com.mvv.scala.temp.tests.tasty.InheritedFromJavaClass2"
+    val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/test-classes"
+    val tastyFile = s"$classesDir/com/mvv/scala/temp/tests/tasty/testclasses/InheritedFromJavaClass2.tasty"
+    //val tastyClassFullName = "com.mvv.scala.temp.tests.tasty.testclasses.InheritedFromJavaClass2"
+
     val _class = ScalaBeansInspector().inspectTastyFile(tastyFile).head
 
     val overriddenJavaGetMethod = _class.methods(_MethodKey("getInterfaceValue11", Nil, false))

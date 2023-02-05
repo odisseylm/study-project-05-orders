@@ -1,5 +1,6 @@
-package com.mvv.scala.temp.tests.tasty;
+package com.mvv.scala.temp.tests.tasty.testclasses;
 
+@SuppressWarnings("unused")
 public interface JavaInterface1 {
     default String getInterfaceValue1() { return ""; }
     default String methodInterface1() { return ""; }

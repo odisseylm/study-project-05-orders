@@ -1,5 +1,6 @@
 package com.mvv.scala.temp.tests.tasty
 
+import com.mvv.scala.temp.tests.tasty.testclasses.ClassSampleInProductionSources
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat
 

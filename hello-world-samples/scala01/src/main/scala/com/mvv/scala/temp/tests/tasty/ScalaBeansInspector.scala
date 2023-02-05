@@ -79,14 +79,12 @@ class ScalaBeansInspector extends Inspector :
     for tasty <- beanType do
       println(s"tasty.path: ${tasty.path} | ${Thread.currentThread().nn.getName}")
       val tree: Tree = tasty.ast
-      //println(s"tree: $tree")
 
       if !processedTastyFiles.contains(tasty.path) then
         val packageTag = visitTree(tree)
 
         packageTag.foreach { _.classes.foreach { (_, cl) => classesByFullName.put(cl.fullName, cl) } }
 
-        //println(s"packages: $packageTag")
         val processedClasses = packageTag.map(_.classes.values.toList) .getOrElse(List[_Class]())
         processedTastyFiles.put( tasty.path, processedClasses )
         processedTastyFiles.put( tasty.path.replaceSuffix(".class", ".tasty"), processedClasses )
@@ -135,7 +133,6 @@ class ScalaBeansInspector extends Inspector :
     def visitParentTypeDefs(_class: _Class, rhs: Tree): Unit = rhs match
       case cd if cd.isClassDef || cd.isTemplate =>
         val parents = getClassDefParents(cd).asInstanceOf[List[Tree]]
-        //println(s"parents: $parents")
 
         val parentFullClassNames = parents
           .map(extractJavaClass(_))

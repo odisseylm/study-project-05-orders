@@ -1,5 +1,7 @@
 package com.mvv.scala.temp.tests.tasty
 
+import com.mvv.scala.temp.tests.tasty.testclasses.{InheritedFromJavaClass2, Trait1}
+
 import scala.tasty.inspector.Tasty
 import scala.tasty.inspector.TastyInspector
 import scala.collection.immutable.Map
@@ -69,15 +71,15 @@ class InheritedFromJavaClass2Test {
     a.assertThat(r).isNotNull()
     a.assertThat(r.asJava)
       .containsOnlyKeys(
-        "com.mvv.scala.temp.tests.tasty.JavaInterface1",
-        "com.mvv.scala.temp.tests.tasty.JavaInterface2",
-        "com.mvv.scala.temp.tests.tasty.Trait1",
-        "com.mvv.scala.temp.tests.tasty.Trait2",
-        "com.mvv.scala.temp.tests.tasty.BaseJavaClass1",
+        "com.mvv.scala.temp.tests.tasty.testclasses.JavaInterface1",
+        "com.mvv.scala.temp.tests.tasty.testclasses.JavaInterface2",
+        "com.mvv.scala.temp.tests.tasty.testclasses.Trait1",
+        "com.mvv.scala.temp.tests.tasty.testclasses.Trait2",
+        "com.mvv.scala.temp.tests.tasty.testclasses.BaseJavaClass1",
         tastyClassFullName,
       )
 
-    val trait1ClassFullName = "com.mvv.scala.temp.tests.tasty.Trait1"
+    val trait1ClassFullName = "com.mvv.scala.temp.tests.tasty.testclasses.Trait1"
     a.assertThat(r.asJava).containsKey(trait1ClassFullName)
     r.get(trait1ClassFullName).foreach { _class =>
       a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
@@ -90,7 +92,7 @@ class InheritedFromJavaClass2Test {
         "trait1Method(): java.lang.String",
       ) }
 
-    val trait2ClassFullName = "com.mvv.scala.temp.tests.tasty.Trait2"
+    val trait2ClassFullName = "com.mvv.scala.temp.tests.tasty.testclasses.Trait2"
     a.assertThat(r.asJava).containsKey(trait2ClassFullName)
     r.get(trait2ClassFullName).foreach { _class =>
       a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
@@ -103,7 +105,7 @@ class InheritedFromJavaClass2Test {
         "trait2Method(): java.lang.String",
       ) }
 
-    val javaInterface1ClassFullName = "com.mvv.scala.temp.tests.tasty.JavaInterface1"
+    val javaInterface1ClassFullName = "com.mvv.scala.temp.tests.tasty.testclasses.JavaInterface1"
     a.assertThat(r.asJava).containsKey(javaInterface1ClassFullName)
     r.get(javaInterface1ClassFullName).foreach { _class =>
       a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
@@ -113,7 +115,7 @@ class InheritedFromJavaClass2Test {
         "setInterfaceValue11(java.lang.String)",
       ) }
 
-    val javaInterface2ClassFullName = "com.mvv.scala.temp.tests.tasty.JavaInterface2"
+    val javaInterface2ClassFullName = "com.mvv.scala.temp.tests.tasty.testclasses.JavaInterface2"
     a.assertThat(r.asJava).containsKey(javaInterface2ClassFullName)
     r.get(javaInterface2ClassFullName).foreach { _class =>
       a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
@@ -121,7 +123,7 @@ class InheritedFromJavaClass2Test {
         "methodInterface2(): java.lang.String",
       ) }
 
-    val baseJavaClass1ClassFullName = "com.mvv.scala.temp.tests.tasty.BaseJavaClass1"
+    val baseJavaClass1ClassFullName = "com.mvv.scala.temp.tests.tasty.testclasses.BaseJavaClass1"
     a.assertThat(r.asJava).containsKey(baseJavaClass1ClassFullName)
     r.get(baseJavaClass1ClassFullName).foreach { _class =>
       a.assertThat(_class.declaredFields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
@@ -147,7 +149,7 @@ class InheritedFromJavaClass2Test {
       )
     }
 
-    val inheritedClass2FullName = "com.mvv.scala.temp.tests.tasty.InheritedFromJavaClass2"
+    val inheritedClass2FullName = "com.mvv.scala.temp.tests.tasty.testclasses.InheritedFromJavaClass2"
     a.assertThat(r.asJava).containsKey(inheritedClass2FullName)
 
     r.get(inheritedClass2FullName).foreach { _class =>

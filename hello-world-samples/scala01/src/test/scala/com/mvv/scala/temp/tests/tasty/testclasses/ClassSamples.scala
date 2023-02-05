@@ -1,6 +1,7 @@
 //noinspection ScalaUnusedSymbol ,  VarCouldBeVal
-package com.mvv.scala.temp.tests.tasty
+package com.mvv.scala.temp.tests.tasty.testclasses
 
+import com.mvv.scala.temp.tests.tasty.*
 
 // Do NOT move it to test sources!
 class ClassSampleInProductionSources :

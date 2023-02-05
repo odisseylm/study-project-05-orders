@@ -1,4 +1,4 @@
-package com.mvv.scala.temp.tests.tasty;
+package com.mvv.scala.temp.tests.tasty
 
 import scala.jdk.CollectionConverters.*
 //
@@ -21,8 +21,8 @@ class JavaBeansInspectorTest {
 
     a.assertThat(inspector.classesDescr.asJava)
       .containsOnlyKeys(
-        "com.mvv.scala.temp.tests.tasty.com.mvv.scala.temp.tests.tasty.BaseJavaClass1",
-        "com.mvv.scala.temp.tests.tasty.com.mvv.scala.temp.tests.tasty.BaseJavaClass2",
+        "com.mvv.scala.temp.tests.tasty.com.mvv.scala.temp.tests.tasty.testclasses.BaseJavaClass1",
+        "com.mvv.scala.temp.tests.tasty.com.mvv.scala.temp.tests.tasty.testclasses.BaseJavaClass2",
         "com.mvv.scala.temp.tests.tasty.com.mvv.scala.temp.tests.tasty.Interface2",
         "com.mvv.scala.temp.tests.tasty.com.mvv.scala.temp.tests.tasty.Interface1",
       )

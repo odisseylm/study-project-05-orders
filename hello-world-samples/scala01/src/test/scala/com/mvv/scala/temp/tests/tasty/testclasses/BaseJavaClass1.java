@@ -1,5 +1,6 @@
-package com.mvv.scala.temp.tests.tasty;
+package com.mvv.scala.temp.tests.tasty.testclasses;
 
+@SuppressWarnings("unused")
 abstract public class BaseJavaClass1 implements JavaInterface1 {
     private String privateField1;
     String packageField1;

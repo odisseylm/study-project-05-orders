@@ -6,22 +6,19 @@ import org.junit.jupiter.api.Test
 //
 import com.mvv.scala.temp.tests.tasty._FieldKey as fk
 import com.mvv.scala.temp.tests.tasty._MethodKey as mk
+//
+import com.mvv.scala.temp.tests.tasty.testclasses.InheritedFromJavaClass2
+import com.mvv.scala.temp.tests.tasty.testclasses.AccessVisibilityTestClass
 
 class VisibilityTest {
-  private val classesDir = "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala01/target/classes"
-
 
   @Test
   def testScala(): Unit = {
     import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
 
-    // TODO: use class for test instead of path
-    val tastyFile = s"$classesDir/com/mvv/scala/temp/tests/tasty/AccessVisibilityTestClass.tasty"
-    //val tastyClassFullName = "com.mvv.scala.temp.tests.tasty.AccessVisibilityTestClass"
-
     val inspector = ScalaBeansInspector()
-    val _class: _Class = inspector.inspectTastyFile(tastyFile).head
+    val _class: _Class = inspector.inspectClass(classOf[AccessVisibilityTestClass])
 
     val a = SoftAssertions()
 
@@ -42,12 +39,8 @@ class VisibilityTest {
     import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
 
-    // TODO: use class for test instead of path
-    val tastyFile = s"$classesDir/com/mvv/scala/temp/tests/tasty/InheritedFromJavaClass2.tasty"
-    //val tastyClassFullName = "com.mvv.scala.temp.tests.tasty.InheritedFromJavaClass2"
-
     val inspector = ScalaBeansInspector()
-    val _class: _Class = inspector.inspectTastyFile(tastyFile).head
+    val _class: _Class = inspector.inspectClass(classOf[InheritedFromJavaClass2])
 
     val a = SoftAssertions()
 
