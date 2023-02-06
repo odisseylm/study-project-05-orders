@@ -66,19 +66,33 @@ private enum _Visibility :
 case class _TypeParam (name: String) :
   override def toString: String = name
 
-class _Type (val typeName: String /*, typeParams: List[_TypeParam] = Nil*/) extends Equals derives CanEqual :
+class _Type (
+  val declaredTypeName: String,
+  val runtimeTypeName: Option[String] = None,
+  ) extends Equals derives CanEqual :
   // if typeName contains (in the future generics/type parameters) we need to extract only class name
-  def className: String = typeName
-  override def toString: String = typeName
-  override def hashCode: Int = this.toPortableType.typeName.hashCode
+  def className: String = runtimeTypeName.getOrElse(declaredTypeName)
+  def withRuntimeType(newRuntimeTypeName: String): _Type = _Type(this.declaredTypeName, Option(newRuntimeTypeName))
+  def withRuntimeType(newRuntimeType: Class[?]): _Type = withRuntimeType(newRuntimeType.getName.nn)
+  override def toString: String =
+    runtimeTypeName
+      .filter(_ != declaredTypeName)
+      .map(declaredTypeName + "/" + _)
+      .getOrElse(declaredTypeName)
+  override def hashCode: Int =
+    val portable = this.toPortableType
+    31 * portable.declaredTypeName.hashCode + portable.runtimeTypeName.hashCode
   override def canEqual(other: Any): Boolean = other.isInstanceOf[_Type]
   // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
   //override def equals(other: Any): Boolean = other match
   //  case that: _Type => that.canEqual(this) && toPortableType(this.typeName) == toPortableType(that.typeName)
   //  case _ => false
   override def equals(other: Any): Boolean =
-  // it is inlined and have resulting byte code similar to code with 'match'
-    equalImpl(this, other) { (v1, v2) => v1.toPortableType.typeName == v2.toPortableType.typeName }
+    // 'equalImpl' is inlined and have resulting byte code similar to code with 'match'
+    equalImpl(this, other) { (v1, v2) =>
+      v1.toPortableType.declaredTypeName == v2.toPortableType.declaredTypeName &&
+      v1.toPortableType.runtimeTypeName == v2.toPortableType.runtimeTypeName
+    }
 
 
 object _Type :
@@ -92,7 +106,7 @@ object _Type :
   val StringType: _Type = _Type("java.lang.String")
 
   extension (t: _Type)
-    def toPortableType: _Type = t.typeName match
+    def toPortableType: _Type = t.declaredTypeName match
       case VoidTypeName => UnitType
       case _ => t
 
@@ -116,7 +130,6 @@ case class _Field (
   override val visibility: _Visibility,
   override val modifiers: Set[_Modifier],
   _type: _Type,
-  genericType: String = "",
   )(
   // noinspection ScalaUnusedSymbol , for debugging only
   val internalValue: Any
@@ -141,7 +154,6 @@ object _FieldKey :
     new _FieldKey(fieldName)(None)
 
 
-
 case class _Method (
   override val name: String,
   override val visibility: _Visibility,
@@ -150,7 +162,6 @@ case class _Method (
   mainParams: List[_Type],
   // scala has to much different kinds of params, for that reason we do not collect all them
   hasExtraScalaParams: Boolean,
-  returnGenericType: String = "",
   )(
   // noinspection ScalaUnusedSymbol , for debugging only
   val internalValue: Any
@@ -272,25 +283,16 @@ private def fixMethodType(cls: Class[?], method: _Method): _Method =
 
 
 private def changeFieldType(field: _Field, jf: java.lang.reflect.Field): _Field =
-  field.copy(
-    _type = _Type(jf.getType.nn.getName.nn),
-    genericType = field._type.toString, // jf.getGenericType.toString,
-  )(field.internalValue)
+  field.copy(_type = field._type.withRuntimeType(jf.getType.nn))(field.internalValue)
 
 private def changeFieldType(field: _Field, jm: java.lang.reflect.Method): _Field =
-  field.copy(
-    _type = _Type(jm.getReturnType.nn.getName.nn),
-    genericType = field._type.toString, // jm.getGenericReturnType.toString,
-  )(field.internalValue)
+  field.copy(_type = field._type.withRuntimeType(jm.getReturnType.nn))(field.internalValue)
 
 private def changeReturnType(method: _Method, jm: java.lang.reflect.Method): _Method =
-  method.copy(
-    returnType = _Type(jm.getReturnType.nn.getName.nn),
-    returnGenericType = method.returnType.toString, // jm.getGenericReturnType.toString,
-  )(method.internalValue)
+  method.copy(returnType = method.returnType.withRuntimeType(jm.getReturnType.nn))(method.internalValue)
 
 private def changeFirstParamType(method: _Method, jm: java.lang.reflect.Method): _Method =
   require(method.mainParams.size == 1 && jm.getParameterCount == 1)
   val paramTypes = jm.getParameterTypes.nnArray
-  method.copy(mainParams = List(_Type(paramTypes(0).getName.nn)))(method.internalValue)
+  method.copy(mainParams = List(method.mainParams.head.withRuntimeType(paramTypes(0))))(method.internalValue)
 
