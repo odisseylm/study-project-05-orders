@@ -77,6 +77,7 @@ class InspectingByClassOrClassNameTest {
     val _class: _Class = ScalaBeansInspector()
       .inspectClass(classOf[com.mvv.scala3.samples.InheritedFromJavaClass2])
     assertThat(_class).isNotNull
+    assertThat(_class.classSource).isInstanceOf(classOf[JarClassSource])
     assertThat(_class.fields.asJava).isNotEmpty
 
 

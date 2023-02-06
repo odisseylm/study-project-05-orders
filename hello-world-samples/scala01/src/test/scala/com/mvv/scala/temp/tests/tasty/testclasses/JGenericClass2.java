@@ -23,6 +23,11 @@ abstract class JGenericBaseClass1<C> implements JGenericTrait2<C> {
 }
 
 @SuppressWarnings("unused")
+interface JInterface3<V> {
+    V getV();
+}
+
+@SuppressWarnings("unused")
 public class JGenericClass2 extends JGenericBaseClass1<String> implements JGenericTrait1<Long, LocalTime> {
     private String _class2Var;
 

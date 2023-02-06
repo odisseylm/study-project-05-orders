@@ -88,6 +88,7 @@ object _Type :
   //noinspection ScalaWeakerAccess
   val VoidType: _Type = _Type(VoidTypeName)
   val UnitType: _Type = _Type(UnitTypeName)
+  val ObjectType: _Type = _Type("java.lang.Object")
   val StringType: _Type = _Type("java.lang.String")
 
   extension (t: _Type)

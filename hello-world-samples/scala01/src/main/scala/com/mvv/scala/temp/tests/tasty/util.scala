@@ -72,3 +72,7 @@ object CollectionsOps :
     def contains[A1 >: A](v: A1, values: A1*): Boolean =
       if collection.contains(v) then return true
       values.exists(vv => collection.contains(vv))
+
+
+def tryDo[T](expr: => T): Option[T] =
+  try Option[T](expr).nn catch case _: Exception => None

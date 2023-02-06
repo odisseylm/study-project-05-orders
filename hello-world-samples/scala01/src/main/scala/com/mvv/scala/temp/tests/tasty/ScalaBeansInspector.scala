@@ -6,30 +6,18 @@ import scala.quoted.*
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 
 import ClassKind.classKind
-//import _FieldOps.*
-//import _MethodOps.*
 
-// TODO: in any case add support of processing pure java classes if no tasty file.
-//val classesToIgnore: Set[String] = Set("java.lang.Object", "java.lang.Comparable")
-val classesToIgnore: Set[_Type] = Set(_Type("java.lang.Object"), _Type("java.lang.Comparable"))
+val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang.Comparable"))
 
 
 class ScalaBeansInspector extends Inspector :
   import QuotesHelper.*
 
-  private val javaBeansInspector = JavaBeansInspectorInternal()
-
   // it contains ONLY 'normal' classes from input tasty file
   private val classesByFullName:  mutable.Map[String, _Class] = mutable.HashMap()
   private val processedTastyFiles: mutable.Map[String, List[_Class]] = mutable.Map()
 
-  //def classesDescr: Map[String, _Class] = Map.from(classesByFullName)
-  def classesDescr: Map[String, _Class] =
-    // TODO: is it good approach?? A bit expensive...
-    val b = Map.newBuilder[String, _Class]
-    b ++= classesByFullName
-    //b ++= javaBeansInspector.classesDescr
-    b.result()
+  def classesDescr: Map[String, _Class] = Map.from(classesByFullName)
   def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
 
   def inspectClass(fullClassName: String): _Class = inspectClass(fullClassName, Nil*)
@@ -40,13 +28,13 @@ class ScalaBeansInspector extends Inspector :
   def inspectClass(cls: Class[?]): _Class =
     cls.classKind match
       case ClassKind.Java =>
-        val res: _Class = javaBeansInspector.inspectJavaClass(cls, this)
+        val res: _Class = inspectJavaClass(cls, this)
         classesByFullName.put(cls.getName.nn, res)
         res
       case ClassKind.Scala2 =>
         // TODO: use logger or stdErr
         println(s"WARN: scala2 class ${cls.getName} is processed as java class (sine scala2 format is not supported yet).")
-        val res: _Class = javaBeansInspector.inspectJavaClass(cls, this)
+        val res: _Class = inspectJavaClass(cls, this)
         classesByFullName.put(cls.getName.nn, res)
         res
       case ClassKind.Scala3 =>
@@ -119,10 +107,9 @@ class ScalaBeansInspector extends Inspector :
       val alreadyProcessed = classesByFullName.get(s"${_package.name}.$typeName")
       if alreadyProcessed.isDefined then return alreadyProcessed.get
 
+      val cls = loadClass(s"${_package.name}.$typeName")
       val _class = _Class(
-        loadClass(s"${_package.name}.$typeName"),
-        // TODO: impl
-        ClassKind.Scala3, TempStubClassSource(),
+        cls, ClassKind.Scala3, ClassSource.of(cls),
         _package.name, typeName)(this)
 
       visitParentTypeDefs(_class, rhs)
@@ -173,6 +160,37 @@ class ScalaBeansInspector extends Inspector :
       _class.declaredMethods = Map.from(declaredMethods)
 
   end inspect
+
+  def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
+    import ReflectionHelper.*
+
+    val _class: _Class = _Class(
+      _cls, ClassKind.Java, ClassSource.of(_cls),
+      _cls.getPackageName.nn, _cls.getSimpleName.nn)(scalaBeansInspector)
+
+    val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
+
+    val parentClassFullNames = classChain.map(_.getName.nn)
+    _class.parentTypeNames = parentClassFullNames.map(_Type(_))
+
+    classChain.foreach { c =>
+      if toInspectParentClass(c) then
+        _class.parents :+= scalaBeansInspector.inspectClass(c)
+    }
+
+    _class.declaredFields = _cls.getDeclaredFields.nn.map { f =>
+      val _f = toField(f.nn)
+      (_f.toKey, _f)
+    }.toMap
+    _class.declaredMethods = _cls.getDeclaredMethods.nn.map { m =>
+      val _m = toMethod(m.nn)
+      (_m.toKey, _m)
+    }.toMap
+
+    _class
+  end inspectJavaClass
+
+
 end ScalaBeansInspector
 
 
@@ -346,9 +364,9 @@ object QuotesHelper :
   end extension
 
 
-def getByReflection(obj: AnyRef, propNames: String*): Any =
+def getByReflection(obj: AnyRef, propName: String*): Any =
   val klass = obj.getClass
-  propNames
+  propName
     .map( propName =>
       try
         Option(klass.getMethod(propName).nn.invoke(obj))
@@ -361,5 +379,5 @@ def getByReflection(obj: AnyRef, propNames: String*): Any =
           catch case _: Exception => None
     )
     .find( _.isDefined )
-    .getOrElse(throw IllegalArgumentException(s"Property [${klass.getName}.${propNames.mkString(", ")}] is not found."))
+    .getOrElse(throw IllegalArgumentException(s"Property [${klass.getName}.${propName.mkString(", ")}] is not found."))
 end getByReflection

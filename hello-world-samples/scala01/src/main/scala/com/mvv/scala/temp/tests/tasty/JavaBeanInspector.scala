@@ -8,51 +8,9 @@ import java.lang.reflect.Member
 import java.lang.reflect.Method
 //
 import ClassKind.classKind
-//import _FieldOps.*
-//import _MethodOps.*
 
 
-class JavaBeansInspectorInternal :
-  //private val classesByFullName: mutable.Map[String, _Class] = mutable.HashMap()
-
-  //def classesDescr: Map[String, _Class] = classesByFullName.toMap
-  //def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
-
-  //def inspect(klass: Class[?]): _Class = inspect(klass.getName.nn)
-
-  def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
-    import ReflectionHelper.*
-
-    val _class: _Class = _Class(
-      _cls,
-      // TODO: temp
-      ClassKind.Java, TempStubClassSource(),
-      _cls.getPackageName.nn, _cls.getSimpleName.nn)(scalaBeansInspector)
-
-    val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
-
-    val parentClassFullNames = classChain.map(_.getName.nn)
-    _class.parentTypeNames = parentClassFullNames.map(_Type(_))
-
-    classChain.foreach { c =>
-      if toInspectParentClass(c) then
-        _class.parents :+= scalaBeansInspector.inspectClass(c)
-    }
-
-    _class.declaredFields = _cls.getDeclaredFields.nn.map { f =>
-      val _f = toField(f.nn)
-      (_f.toKey, _f) }.toMap
-    _class.declaredMethods = _cls.getDeclaredMethods.nn.map { m =>
-      val _m = toMethod(m.nn)
-      (_m.toKey, _m) }.toMap
-
-    _class
-  end inspectJavaClass
-
-end JavaBeansInspectorInternal
-
-
-private def visibilityFromModifiers(modifiers: Int): _Visibility =
+def visibilityFromModifiers(modifiers: Int): _Visibility =
   import java.lang.reflect.Modifier
   modifiers match
     case mod if Modifier.isPublic(mod) => _Visibility.Public

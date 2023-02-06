@@ -4,63 +4,63 @@ import java.net.URL
 import java.nio.file.Path
 import scala.annotation.tailrec
 
+
 sealed class ClassSource
+object ClassSource :
+  def of(cls: Class[?]): ClassSource =
+    val classUrl = getClassLocationUrl(cls)
+    classUrl match
+      case _ if classUrl.getProtocol == "file" => DirectoryClassSource(cls)
+      case _ if classUrl.getProtocol == "jar" => JarClassSource(cls)
+      case _ => throw IllegalArgumentException(s"Unsupported url [$classUrl].")
 
-case class FileClassSource (classFile: Path) extends ClassSource
-object FileClassSource :
-  def apply(url: URL): FileClassSource = fromUrl(url.toExternalForm.nn)
-  def fromUrl(url: String): FileClassSource = new FileClassSource(fileUrlToPath(url))
-  def fromClass(_class: Class[?]): FileClassSource = apply(getClassLocationUrl(_class))
 
-class JarClassSource (jarFile: Path, filePath: String) extends ClassSource
+case class DirectoryClassSource (directoryPath: Path) extends ClassSource
+object DirectoryClassSource :
+  def apply(cls: Class[?]): DirectoryClassSource =
+    val classUrl = getClassLocationUrl(cls)
+    val classPath = fileUrlToPath(classUrl).toString.nn
+    val packageAndClassAsPath = s"${cls.getName}".replace('.', java.io.File.separatorChar).nn + ".class"
+    require(classPath.endsWith(packageAndClassAsPath))
+    val dirPathStr = classPath.stripSuffix(packageAndClassAsPath).stripSuffix(java.io.File.separator.nn)
+    new DirectoryClassSource(Path.of(dirPathStr).nn)
+
+
+case class JarClassSource (jarPath: Path) extends ClassSource
 object JarClassSource :
-  def apply(url: URL): JarClassSource =
-    val urlStr = url.toExternalForm.nn
-    require(urlStr.startsWith("jar:file:"), s"Strange jar file url [$url].")
-    var onlyJarFileUrl: String = urlStr.stripPrefix("jar:")
-    var classFilePath = ""
-    if !onlyJarFileUrl.endsWith(".jar") then
-      val i = onlyJarFileUrl.indexOf(".jar!")
-      require(i > 0, s"Strange jar file url [$url].")
-      onlyJarFileUrl = onlyJarFileUrl.substring(0, i + 4).nn
-      classFilePath = onlyJarFileUrl.substring(i + 4).nn
-    new JarClassSource(fileUrlToPath(onlyJarFileUrl), classFilePath)
-
-// TODO: remove
-class TempStubClassSource extends ClassSource
-
-//private def urlToPath(url: String): Option[Path] = url match
-//  case fileUrl if fileUrl.startsWith("file:") => fileUrlToPath(url)
-//  // TODO: temp
-//  case jarUrl if jarUrl.startsWith("jar:file:") =>
-//    val aaa = url.stripPrefix("jar:file:")
-//    Option(Path.of(aaa.substring(0, aaa.indexOf(".jar!") + 4).nn).nn)
-//  //case jarUrl if jarUrl.startsWith("jar:file:") => fileUrlToPath(url.stripPrefix("jar:"))
-//  case _ => None
+  def apply(cls: Class[?]): JarClassSource =
+    val classUrl = getClassLocationUrl(cls)
+    new JarClassSource(jarUrlToJarPath(classUrl))
 
 
 //noinspection NoTailRecursionAnnotation (there is no recursion)
 private def jarUrlToJarPath(url: URL): Path = jarUrlToJarPath(url.toExternalForm.nn)
 private def jarUrlToJarPath(url: String): Path =
-  val str = url.stripPrefix("jar:file:")
-  val jarPathStr = if str.endsWith(".jar")
-    then str
+  require(url.startsWith("jar:file:"), s"Only local jar file supported (but not [$url]).")
+  val fileUrlPart = url.stripPrefix("jar:")
+  val jarPathStr = if fileUrlPart.endsWith(".jar")
+    then fileUrlPart
   else
-    // TODO: add String.substringAfterLast and use it
-    val i = str.indexOf(".jar!")
+    val i = fileUrlPart.indexOf(".jar!")
     require(i > 0, s"Incorrect jar url [$url].")
-    str.substring(0, i + 4).nn
-  Path.of(jarPathStr).nn
+    fileUrlPart.substring(0, i + 4).nn
+  fileUrlToPath(jarPathStr)
 
 
-private def fileUrlToPath(url: String): Path =
+//noinspection NoTailRecursionAnnotation , // there is no recursion at all
+def fileUrlToPath(url: URL): Path = fileUrlToPath(url.toExternalForm.nn)
+def fileUrlToPath(url: String): Path =
   require(url.startsWith("file:"), s"Now only [file:] protocol is supported ($url).")
   val asFile = url.stripPrefix("file:")
-  // TODO: improve code by using loop
-  { if fileExists(asFile) then return Path.of(asFile).nn }
-  { val asFileN = asFile.stripPrefix("/");  if fileExists(asFileN) then return Path.of(asFileN).nn }
-  { val asFileN = asFile.stripPrefix("//"); if fileExists(asFileN) then return Path.of(asFileN).nn }
-  Path.of(asFile).nn
+  var existentPath: Option[Path] = None
+  for
+    i <- 0 to 2
+    if existentPath.isEmpty
+  do
+    val asFileN = asFile.stripPrefix("/".repeat(i).nn)
+    if fileExists(asFileN) then existentPath = Option(Path.of(asFileN).nn)
+
+  existentPath.getOrElse(Path.of(asFile).nn)
 
 
 def getClassLocationUrl(fullClassName: String, classLoaders: ClassLoader*): URL =
@@ -68,14 +68,12 @@ def getClassLocationUrl(fullClassName: String, classLoaders: ClassLoader*): URL 
   getClassLocationUrl(cls)
 
 private def getClassLocationUrl(cls: Class[?]): URL =
-  val asResource = s"${cls.nn.getSimpleName}.class"
-  val thisClassUrl = cls.getResource(asResource)
+  var asResource = s"${cls.nn.getSimpleName}.class"
+  var thisClassUrl = cls.getResource(asResource)
+  if thisClassUrl == null then // for local/member classes
+    asResource = s"${cls.nn.getName.nn.stripPrefix(cls.getPackageName.nn).stripPrefix(".")}.class"
+    thisClassUrl = cls.getResource(asResource)
   checkNotNull(thisClassUrl, s"Location of class [${cls.getName}] is not found.")
-
-
-// TODO: move to some util file
-private def tryDo[T](expr: => T): Option[T] =
-  try Option[T](expr).nn catch case _: Exception => None
 
 
 private def loadClass(fullClassName: String, classLoaders: ClassLoader*): Class[?] =
@@ -86,10 +84,15 @@ private def loadClass(fullClassName: String, classLoaders: ClassLoader*): Class[
   cls
 
 
+def tastyFileUrl(cls: Class[?]): URL|Null =
+  var tastyAsResourceUrl = cls.getResource(s"${cls.getSimpleName}.tasty")
+  if tastyAsResourceUrl == null then // for local/member classes
+    val asResource = s"${cls.nn.getName.nn.stripPrefix(cls.getPackageName.nn).stripPrefix(".")}.tasty"
+    tastyAsResourceUrl = cls.getResource(asResource)
+  tastyAsResourceUrl
 
-
-def tastyFileExists(cls: Class[?]): Boolean =
-  cls.getResource(cls.getSimpleName.nn + ".tasty").isNotNull
+def tastyFileExists(cls: Class[?]): Boolean = tastyFileUrl(cls) != null
+//noinspection ScalaUnusedSymbol
 def tastyFileExists(fullClassName: String, classLoaders: ClassLoader*): Boolean =
   val cls = loadClass(fullClassName, classLoaders*)
   tastyFileExists(cls)

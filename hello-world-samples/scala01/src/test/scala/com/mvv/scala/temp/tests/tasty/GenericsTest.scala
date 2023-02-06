@@ -48,10 +48,10 @@ class GenericsTest {
   }
 
   @Test
-  def sss(): Unit = {
+  def showJavaImplMethods(): Unit = {
     val cls = classOf[com.mvv.scala.temp.tests.tasty.testclasses.JGenericClass2]
     val ms = cls.getMethods.nnArray
-    println(ms)
+    println(ms.mkString("\n"))
   }
 
   extension (collection: IterableOnce[?])
