@@ -104,6 +104,10 @@ trait _ClassMember :
   val visibility: _Visibility
   val modifiers: Set[_Modifier]
   def withAddedModifiers(newModifiers: _Modifier*): _ClassMember
+  def toKey: AnyRef
+  // it is used for replacing generic type name (like A, T, etc) with runtime type
+  // (in most cases it will be java.lang.Object)
+  def fixResultingType(resultingClass: Class[?]): _ClassMember
 
 
 case class _Field (
@@ -119,6 +123,8 @@ case class _Field (
   override def toString: String = s"Field '$name' : $_type (modifiers: $modifiers)"
   def withAddedModifiers(newModifiers: _Modifier*): _Field =
     this.copy(modifiers = this.modifiers ++ newModifiers)(internalValue)
+  override def toKey: _FieldKey = _FieldKey(this)
+  override def fixResultingType(resultingClass: Class[?]): _Field = fixFieldType(resultingClass, this)
 
 
 
@@ -127,15 +133,11 @@ case class _FieldKey(fieldName: String)(field: Option[_Field] = None) :
     val resultTypeStr = field.map(f => s": ${f._type}").getOrElse("")
     s"$fieldName$resultTypeStr"
 
-
 object _FieldKey :
   def apply(field: _Field): _FieldKey =
     new _FieldKey(field.name)(Option(field))
   def apply(fieldName: String): _FieldKey =
     new _FieldKey(fieldName)(None)
-
-extension (f: _Field)
-  def toKey: _FieldKey = _FieldKey(f)
 
 
 
@@ -170,6 +172,9 @@ case class _Method (
 
   def withAddedModifiers(newModifiers: _Modifier*): _Method =
     this.copy(modifiers = this.modifiers ++ newModifiers)(internalValue)
+  override def toKey: _MethodKey = _MethodKey(this)
+  override def fixResultingType(resultingClass: Class[?]): _Method = fixMethodType(resultingClass, this)
+
 
 
 case class _MethodKey (methodName: String, params: List[_Type], hasExtraScalaParams: Boolean)(method: Option[_Method] = None) :
@@ -193,38 +198,23 @@ object _MethodKey :
   def getter(propName: String): _MethodKey = apply(propName, Nil, false)
   def setter[T](propName: String)(implicit ct: ClassTag[T]): _MethodKey = apply(s"${propName}_=", List(_Type(ct.toString)), false)
 
-extension (m: _Method)
-  def toKey: _MethodKey = _MethodKey(m)
 
 
 def mergeAllFields(thisClass: Class[?], thisDeclaredFields: scala.collection.Map[_FieldKey,_Field], parents: List[_Class]): Map[_FieldKey,_Field] =
   val merged = mutable.Map[_FieldKey,_Field]()
-  parents.distinct.reverse.foreach( p => mergeFields(thisClass, merged, p.fields) )
-  mergeFields(thisClass, merged, thisDeclaredFields)
+  parents.distinct.reverse.foreach( p => mergeMembers(thisClass, merged, p.fields) )
+  mergeMembers(thisClass, merged, thisDeclaredFields)
   Map.from(merged)
 
 def mergeAllMethods(thisClass: Class[?], thisDeclaredMethods: scala.collection.Map[_MethodKey,_Method], parents: List[_Class]): Map[_MethodKey,_Method] =
   val merged = mutable.Map[_MethodKey,_Method]()
-  parents.distinct.reverse.foreach( p => mergeMethods(thisClass, merged, p.methods) )
-  mergeMethods(thisClass, merged, thisDeclaredMethods)
+  parents.distinct.reverse.foreach( p => mergeMembers(thisClass, merged, p.methods) )
+  mergeMembers(thisClass, merged, thisDeclaredMethods)
   Map.from(merged)
 
 
-private def mergeFields(thisClass: Class[?],
-                        targetFields: mutable.Map[_FieldKey,_Field],
-                        toAddOrUpdate: scala.collection.Map[_FieldKey,_Field]): Unit =
-  mergeMembers(thisClass, targetFields, toAddOrUpdate, f => f.toKey, fixFieldType)
-private def mergeMethods(thisClass: Class[?],
-                         targetMethods: mutable.Map[_MethodKey,_Method],
-                         toAddOrUpdate: scala.collection.Map[_MethodKey,_Method]): Unit =
-  mergeMembers(thisClass, targetMethods, toAddOrUpdate, m => m.toKey, fixMethodType)
-
-
 private def mergeMembers[K,M <: _ClassMember](
-            thisClass: Class[?],
-            targetMembers: mutable.Map[K,M], toAddOrUpdate: scala.collection.Map[K,M],
-            keyFunc: M=>K, fixTypesFunc: (Class[?],M)=>M,
-            ): Unit =
+            thisClass: Class[?], targetMembers: mutable.Map[K,M], toAddOrUpdate: scala.collection.Map[K,M] ): Unit =
   toAddOrUpdate.foreach { (k, v) =>
     // replacing key is needed for having proper optional key metadata (it is optional but really helps debugging & testing)
     val removed: Option[M] = targetMembers.remove(k)
@@ -234,8 +224,8 @@ private def mergeMembers[K,M <: _ClassMember](
         if parentDeclaredMember.modifiers.contains(_Modifier.JavaPropertyAccessor)
           then v.withAddedModifiers(_Modifier.JavaPropertyAccessor).asInstanceOf[M] else v }
       .getOrElse(v)
-    val fixed = fixTypesFunc(thisClass, newMember)
-    targetMembers.put(keyFunc(fixed), fixed)
+    val fixed = newMember.fixResultingType(thisClass).asInstanceOf[M]
+    targetMembers.put(fixed.toKey.asInstanceOf[K], fixed)
   }
 
 
