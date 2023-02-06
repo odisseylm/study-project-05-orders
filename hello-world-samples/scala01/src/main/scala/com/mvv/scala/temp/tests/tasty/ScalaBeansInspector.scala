@@ -4,8 +4,9 @@ import scala.annotation.nowarn
 import scala.collection.mutable
 import scala.quoted.*
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
-
 import ClassKind.classKind
+
+import java.nio.file.Path
 
 val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang.Comparable"))
 
@@ -16,6 +17,7 @@ class ScalaBeansInspector extends Inspector :
   // it contains ONLY 'normal' classes from input tasty file
   private val classesByFullName:  mutable.Map[String, _Class] = mutable.HashMap()
   private val processedTastyFiles: mutable.Map[String, List[_Class]] = mutable.Map()
+  private val processedJars: mutable.Set[Path] = mutable.Set()
 
   def classesDescr: Map[String, _Class] = Map.from(classesByFullName)
   def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
@@ -41,7 +43,7 @@ class ScalaBeansInspector extends Inspector :
         val classLocation = getClassLocationUrl(cls)
         classLocation.getProtocol match
           case "file" => inspectTastyFile(fileUrlToPath(classLocation.toExternalForm.nn).toString).head
-          case "jar" => inspectJar(jarUrlToJarPath(classLocation).toString)
+          case "jar" => inspectJar(jarUrlToJarPath(classLocation))
             classesByFullName(cls.getName.nn)
           case _ => throw IllegalStateException(s"Unsupported class location [$classLocation].")
 
@@ -54,8 +56,10 @@ class ScalaBeansInspector extends Inspector :
     this.processedTastyFiles.get(tastyFile)
       .map(_.toList) .getOrElse(List())
 
-  def inspectJar(jarPath: String): List[_Class] =
-    TastyInspector.inspectTastyFilesInJar(jarPath)(this)
+  def inspectJar(jarPath: Path): List[_Class] =
+    processedJars.addOne(jarPath)
+
+    TastyInspector.inspectTastyFilesInJar(jarPath.toString)(this)
     //this.processedTastyFiles.get(tastyFile)
     //  .map(_.toList) .getOrElse(List())
     // TODO: return new dded _Class-es
@@ -63,6 +67,8 @@ class ScalaBeansInspector extends Inspector :
 
   override def inspect(using Quotes)(beanType: List[Tasty[quotes.type]]): Unit =
     import quotes.reflect.*
+
+    val dependenciesJars = mutable.Set[Path]()
 
     for tasty <- beanType do
       println(s"tasty.path: ${tasty.path} | ${Thread.currentThread().nn.getName}")
@@ -77,6 +83,10 @@ class ScalaBeansInspector extends Inspector :
         processedTastyFiles.put( tasty.path, processedClasses )
         processedTastyFiles.put( tasty.path.replaceSuffix(".class", ".tasty"), processedClasses )
         processedTastyFiles.put( tasty.path.replaceSuffix(".tasty", ".class"), processedClasses )
+
+    dependenciesJars.foreach { jarPath =>
+      if !processedJars.contains(jarPath) then inspectJar(jarPath)
+    }
 
 
     def visitTree(el: Tree): Option[_Package] =
@@ -115,6 +125,14 @@ class ScalaBeansInspector extends Inspector :
       visitParentTypeDefs(_class, rhs)
       visitTypeDefEl(_class, rhs)
       //mergeAllDeclaredMembers(_class)
+
+      _class.parents.foreach { parentCls =>
+        val clsSrc = ClassSource.of(parentCls.runtimeClass)
+        clsSrc match
+          case JarClassSource(jarPath) => dependenciesJars.addOne(jarPath)
+          case _ =>
+      }
+
       _class
 
 
