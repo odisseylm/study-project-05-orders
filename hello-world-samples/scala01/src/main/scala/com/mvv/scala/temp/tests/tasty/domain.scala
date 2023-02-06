@@ -5,9 +5,24 @@ import scala.annotation.{nowarn, tailrec}
 import scala.compiletime.uninitialized
 import scala.collection.mutable
 import scala.reflect.ClassTag
+import scala.collection.Map as BaseMap
+//
+import java.lang.reflect.Field as JavaField
+import java.lang.reflect.Method as JavaMethod
 //
 import com.mvv.scala.temp.tests.tasty._Type.toPortableType
 import CollectionsOps.containsOneOf
+
+
+
+private enum _Visibility :
+  case Private, Package, Protected, Public, Other
+
+
+enum _Modifier :
+  case ScalaStandardFieldAccessor, ScalaCustomFieldAccessor, JavaPropertyAccessor,
+  // not really used now
+  ParamAccessor, ExtensionMethod, Transparent, Macro, Static
 
 
 enum ClassKind :
@@ -49,18 +64,6 @@ class _Class (val runtimeClass: Class[?], val classKind: ClassKind, val classSou
 
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
                                   s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
-
-object _Class
-
-
-enum _Modifier :
-  case ScalaStandardFieldAccessor, ScalaCustomFieldAccessor, JavaPropertyAccessor,
-  // not really used now
-  ParamAccessor, ExtensionMethod, Transparent, Macro, Static
-
-
-private enum _Visibility :
-  case Private, Package, Protected, Public, Other
 
 
 case class _TypeParam (name: String) :
@@ -212,13 +215,13 @@ object _MethodKey :
 
 
 
-def mergeAllFields(thisClass: Class[?], thisDeclaredFields: scala.collection.Map[_FieldKey,_Field], parents: List[_Class]): Map[_FieldKey,_Field] =
+def mergeAllFields(thisClass: Class[?], thisDeclaredFields: BaseMap[_FieldKey,_Field], parents: List[_Class]): Map[_FieldKey,_Field] =
   val merged = mutable.Map[_FieldKey,_Field]()
   parents.distinct.reverse.foreach( p => mergeMembers(thisClass, merged, p.fields) )
   mergeMembers(thisClass, merged, thisDeclaredFields)
   Map.from(merged)
 
-def mergeAllMethods(thisClass: Class[?], thisDeclaredMethods: scala.collection.Map[_MethodKey,_Method], parents: List[_Class]): Map[_MethodKey,_Method] =
+def mergeAllMethods(thisClass: Class[?], thisDeclaredMethods: BaseMap[_MethodKey,_Method], parents: List[_Class]): Map[_MethodKey,_Method] =
   val merged = mutable.Map[_MethodKey,_Method]()
   parents.distinct.reverse.foreach( p => mergeMembers(thisClass, merged, p.methods) )
   mergeMembers(thisClass, merged, thisDeclaredMethods)
@@ -226,7 +229,7 @@ def mergeAllMethods(thisClass: Class[?], thisDeclaredMethods: scala.collection.M
 
 
 private def mergeMembers[K,M <: _ClassMember](
-            thisClass: Class[?], targetMembers: mutable.Map[K,M], toAddOrUpdate: scala.collection.Map[K,M] ): Unit =
+            thisClass: Class[?], targetMembers: mutable.Map[K,M], toAddOrUpdate: BaseMap[K,M] ): Unit =
   toAddOrUpdate.foreach { (k, v) =>
     // replacing key is needed for having proper optional key metadata (it is optional but really helps debugging & testing)
     val removed: Option[M] = targetMembers.remove(k)
@@ -246,11 +249,11 @@ private def fixFieldType(cls: Class[?], field: _Field): _Field =
   // no sense to process private fields in scope of 'java beans' (at least now)
   //if field.visibility == _Visibility.Private then field
 
-  val foundJavaMethod: Option[java.lang.reflect.Method] = findJavaMethod(cls, field.name)
+  val foundJavaMethod: Option[JavaMethod] = findJavaMethod(cls, field.name)
   if foundJavaMethod.isDefined /*&& foundJavaMethod.get.getReturnType != classOf[Object]*/ then
     return foundJavaMethod.map(javaMethod => changeFieldType(field, javaMethod)).get
 
-  val foundJavaField: Option[java.lang.reflect.Field] = findJavaField(cls, field.name)
+  val foundJavaField: Option[JavaField] = findJavaField(cls, field.name)
   if foundJavaField.isDefined /*&& foundJavaField.get.getType != classOf[Object]*/ then
     return foundJavaField.map(javaField => changeFieldType(field, javaField)).get
 
@@ -282,16 +285,16 @@ private def fixMethodType(cls: Class[?], method: _Method): _Method =
   method
 
 
-private def changeFieldType(field: _Field, jf: java.lang.reflect.Field): _Field =
+private def changeFieldType(field: _Field, jf: JavaField): _Field =
   field.copy(_type = field._type.withRuntimeType(jf.getType.nn))(field.internalValue)
 
-private def changeFieldType(field: _Field, jm: java.lang.reflect.Method): _Field =
+private def changeFieldType(field: _Field, jm: JavaMethod): _Field =
   field.copy(_type = field._type.withRuntimeType(jm.getReturnType.nn))(field.internalValue)
 
-private def changeReturnType(method: _Method, jm: java.lang.reflect.Method): _Method =
+private def changeReturnType(method: _Method, jm: JavaMethod): _Method =
   method.copy(returnType = method.returnType.withRuntimeType(jm.getReturnType.nn))(method.internalValue)
 
-private def changeFirstParamType(method: _Method, jm: java.lang.reflect.Method): _Method =
+private def changeFirstParamType(method: _Method, jm: JavaMethod): _Method =
   require(method.mainParams.size == 1 && jm.getParameterCount == 1)
   val paramTypes = jm.getParameterTypes.nnArray
   method.copy(mainParams = List(method.mainParams.head.withRuntimeType(paramTypes(0))))(method.internalValue)

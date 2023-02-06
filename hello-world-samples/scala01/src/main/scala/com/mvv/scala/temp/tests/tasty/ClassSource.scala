@@ -11,7 +11,7 @@ object ClassSource :
     val classUrl = getClassLocationUrl(cls)
     classUrl match
       case _ if classUrl.getProtocol == "file" => DirectoryClassSource(cls)
-      case _ if classUrl.getProtocol == "jar" => JarClassSource(cls)
+      case _ if classUrl.getProtocol == "jar"  => JarClassSource(cls)
       case _ => throw IllegalArgumentException(s"Unsupported url [$classUrl].")
 
 

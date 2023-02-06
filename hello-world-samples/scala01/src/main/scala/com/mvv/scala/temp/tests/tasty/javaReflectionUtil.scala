@@ -1,5 +1,23 @@
 package com.mvv.scala.temp.tests.tasty
 
+import scala.collection.mutable
+
+
+private def getClassesAndInterfacesImpl(cls: Class[?], interfaces: Array[Class[?]]): List[Class[?]] =
+  val all = mutable.ArrayBuffer[Class[?]]()
+  import scala.language.unsafeNulls
+  var c: Class[?]|Null = cls
+  while c != null && c != classOf[Object] && c != classOf[Any] && c != classOf[AnyRef] do
+    all.addOne(cls)
+    c = cls.getSuperclass.nn
+
+  interfaces.nn.foreach { i => all.addOne(i.nn) }
+  all.distinct.toList
+
+
+def getAllSubClassesAndInterfaces(cls: Class[?]): List[Class[?]] =
+  import scala.language.unsafeNulls
+  getClassesAndInterfacesImpl(cls.getSuperclass, cls.getInterfaces): List[Class[?]]
 
 
 val StandardTypes = Set(

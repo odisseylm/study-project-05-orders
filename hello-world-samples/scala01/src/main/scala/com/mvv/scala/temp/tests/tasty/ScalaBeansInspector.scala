@@ -223,6 +223,11 @@ private class _Package (val name: String) : // TODO: replace with List or Map
   override def toString: String = s"package $name \n${ classes.values.mkString("\n") }"
 
 
+def toInspectParentClass(_class: Class[?]): Boolean =
+  _class.classKind match
+    case ClassKind.Java   => true
+    case ClassKind.Scala2 => true
+    case ClassKind.Scala3 => getClassLocationUrl(_class).getProtocol != "jar"
 
 
 private val _templateArgs = List("constr", "preParentsOrDerived", "self", "preBody")
@@ -386,16 +391,19 @@ def getByReflection(obj: AnyRef, propName: String*): Any =
   val klass = obj.getClass
   propName
     .map( propName =>
-      try
-        Option(klass.getMethod(propName).nn.invoke(obj))
-      catch
-        case _: Exception =>
+      try Option(klass.getMethod(propName).nn.invoke(obj))
+      catch case _: Exception =>
           try
             val field: java.lang.reflect.Field = klass.getDeclaredField(propName).nn
             field.setAccessible(true)
-            Option(field.get(obj)) // we use/return 1st successful case
+            Option(field.get(obj)) // we use/return of 1st successful case
           catch case _: Exception => None
     )
     .find( _.isDefined )
     .getOrElse(throw IllegalArgumentException(s"Property [${klass.getName}.${propName.mkString(", ")}] is not found."))
 end getByReflection
+
+extension [T](v: T|Null|Option[T])
+  @nowarn @unchecked //noinspection IsInstanceOf
+  def unwrapOption: T|Null =
+    if v.isInstanceOf[Option[T]] then v.asInstanceOf[Option[T]].orNull else v.asInstanceOf[T|Null]

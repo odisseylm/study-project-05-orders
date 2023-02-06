@@ -63,34 +63,8 @@ object ReflectionHelper :
       _Field(f.getName.nn, visibilityOf(f), fieldModifiers(f), _Type(f.getType.nn.getName.nn))(f)
 
 
-private def getClassesAndInterfacesImpl(
-                                         cls: Class[?], interfaces: Array[Class[?]]): List[Class[?]] =
-  val all = mutable.ArrayBuffer[Class[?]]()
-  import scala.language.unsafeNulls
-  var c: Class[?]|Null = cls
-  while c != null && c != classOf[Object] && c != classOf[Any] && c != classOf[AnyRef] do
-    all.addOne(cls)
-    c = cls.getSuperclass.nn
-
-  interfaces.nn.foreach { i => all.addOne(i.nn) }
-  all.distinct.toList
-
-
-def getAllSubClassesAndInterfaces(cls: Class[?]): List[Class[?]] =
-  import scala.language.unsafeNulls
-  getClassesAndInterfacesImpl(cls.getSuperclass, cls.getInterfaces): List[Class[?]]
-
-
 private def generalModifiers(member: java.lang.reflect.Member): Set[_Modifier] =
   import java.lang.reflect.Modifier
   member.getModifiers match
     case m if Modifier.isStatic(m) => Set(_Modifier.Static)
     case _ => Set()
-
-
-def toInspectParentClass(_class: Class[?]): Boolean =
-  _class.classKind match
-    case ClassKind.Java => true
-    case ClassKind.Scala2 => true
-    case ClassKind.Scala3 => getClassLocationUrl(_class).getProtocol != "jar"
-
