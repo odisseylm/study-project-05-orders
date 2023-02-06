@@ -17,20 +17,12 @@ import java.beans.{BeanDescriptor, BeanInfo, EventSetDescriptor, MethodDescripto
 //
 import com.mvv.scala.macros.printFields
 
-
-extension (_class: _Class)
-  def toBeanProperties: Map[String, Property] = {
-    //val classChain = _class.parents.re
-    ???
-  }
-
-
-private class _BeanProps (val beanType: Any /* TypeRepr[Any] or Type[] ??? */ ) :
-  val map: scala.collection.mutable.Map[String, _Prop] = scala.collection.mutable.HashMap()
-
-
-private class _Prop (val name: String) :
-  var propType: Any = uninitialized // TypeRepr[Any] or Type[] ???
-  var getter: Option[Any] = None
-  var setter: Option[Any] = None
+//private class _BeanProps (val beanType: Any /* TypeRepr[Any] or Type[] ??? */ ) :
+//  val map: scala.collection.mutable.Map[String, _Prop] = scala.collection.mutable.HashMap()
+//
+//
+//private class _Prop (val name: String) :
+//  var propType: Any = uninitialized // TypeRepr[Any] or Type[] ???
+//  var getter: Option[Any] = None
+//  var setter: Option[Any] = None
 

@@ -13,3 +13,8 @@ inline def equalImpl[T <: Equals](thisV: T, other: Any|Null)(inline comparing: (
 
 def tryDo[T](expr: => T): Option[T] =
   try Option[T](expr).nn catch case _: Exception => None
+
+
+extension [T](v :T)
+  inline def isOneOf(values: T*): Boolean =
+    values.contains(v)

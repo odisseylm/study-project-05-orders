@@ -9,7 +9,7 @@ object CollectionsOps :
       values.exists(vv => collection.contains(vv))
 
   extension [A, CC[_], C](collection: scala.collection.SeqOps[A,CC,C])
-    def contains[A1 >: A](v: A1, values: A1*): Boolean =
+    def containsOnOf[A1 >: A](v: A1, values: A1*): Boolean =
       if collection.contains(v) then return true
       values.exists(vv => collection.contains(vv))
 

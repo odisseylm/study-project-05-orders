@@ -109,12 +109,17 @@ object _Type :
   val StringType: _Type = _Type("java.lang.String")
 
   extension (t: _Type)
+    private def toTypeName: String = t.runtimeTypeName.getOrElse(t.declaredTypeName)
+
     def toPortableType: _Type = t.declaredTypeName match
       case VoidTypeName => UnitType
       case _ => t
 
-    def isVoid: Boolean = { t == VoidType || t == UnitType }
+    def isVoid: Boolean =
+      t.toTypeName.isOneOf("void", "Void", "Unit", "scala.Unit")
 
+    def isBool: Boolean =
+      t.toTypeName.isOneOf("boolean", "Boolean", "java.lang.Boolean", "scala.Boolean")
 
 
 trait _ClassMember :
