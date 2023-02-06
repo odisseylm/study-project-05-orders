@@ -103,9 +103,10 @@ trait _ClassMember :
   val name: String
   val visibility: _Visibility
   val modifiers: Set[_Modifier]
+  def withAddedModifiers(newModifiers: _Modifier*): _ClassMember
 
 
-case class _Field(
+case class _Field (
   override val name: String,
   override val visibility: _Visibility,
   override val modifiers: Set[_Modifier],
@@ -116,6 +117,9 @@ case class _Field(
   val internalValue: Any
   ) extends _ClassMember :
   override def toString: String = s"Field '$name' : $_type (modifiers: $modifiers)"
+  def withAddedModifiers(newModifiers: _Modifier*): _Field =
+    this.copy(modifiers = this.modifiers ++ newModifiers)(internalValue)
+
 
 
 case class _FieldKey(fieldName: String)(field: Option[_Field] = None) :
@@ -130,7 +134,6 @@ object _FieldKey :
   def apply(fieldName: String): _FieldKey =
     new _FieldKey(fieldName)(None)
 
-//object _FieldOps :
 extension (f: _Field)
   def toKey: _FieldKey = _FieldKey(f)
 
@@ -165,6 +168,9 @@ case class _Method (
     val extraSuffix = if hasExtraScalaParams then ", hasExParams" else ""
     s"Method { $name (${mainParams.mkString(",")}) $extraSuffix }"
 
+  def withAddedModifiers(newModifiers: _Modifier*): _Method =
+    this.copy(modifiers = this.modifiers ++ newModifiers)(internalValue)
+
 
 case class _MethodKey (methodName: String, params: List[_Type], hasExtraScalaParams: Boolean)(method: Option[_Method] = None) :
   override def toString: String =
@@ -187,7 +193,6 @@ object _MethodKey :
   def getter(propName: String): _MethodKey = apply(propName, Nil, false)
   def setter[T](propName: String)(implicit ct: ClassTag[T]): _MethodKey = apply(s"${propName}_=", List(_Type(ct.toString)), false)
 
-//object _MethodOps :
 extension (m: _Method)
   def toKey: _MethodKey = _MethodKey(m)
 
@@ -208,38 +213,30 @@ def mergeAllMethods(thisClass: Class[?], thisDeclaredMethods: scala.collection.M
 private def mergeFields(thisClass: Class[?],
                         targetFields: mutable.Map[_FieldKey,_Field],
                         toAddOrUpdate: scala.collection.Map[_FieldKey,_Field]): Unit =
-  mergeMembers(thisClass, targetFields, toAddOrUpdate, mergeMember, f => f.toKey, fixFieldType)
+  mergeMembers(thisClass, targetFields, toAddOrUpdate, f => f.toKey, fixFieldType)
 private def mergeMethods(thisClass: Class[?],
                          targetMethods: mutable.Map[_MethodKey,_Method],
                          toAddOrUpdate: scala.collection.Map[_MethodKey,_Method]): Unit =
-  mergeMembers(thisClass, targetMethods, toAddOrUpdate, mergeMember, m => m.toKey, fixMethodType)
+  mergeMembers(thisClass, targetMethods, toAddOrUpdate, m => m.toKey, fixMethodType)
 
-private def mergeMembers[K,M](
+
+private def mergeMembers[K,M <: _ClassMember](
             thisClass: Class[?],
             targetMembers: mutable.Map[K,M], toAddOrUpdate: scala.collection.Map[K,M],
-            mergeMemberFunc: (M,M)=>M,
-            keyFunc: M=>K,
-            fixTypesFunc: (Class[?],M)=>M,
+            keyFunc: M=>K, fixTypesFunc: (Class[?],M)=>M,
             ): Unit =
   toAddOrUpdate.foreach { (k, v) =>
     // replacing key is needed for having proper optional key metadata (it is optional but really helps debugging & testing)
     val removed: Option[M] = targetMembers.remove(k)
-    val newMember = removed.map(parentMember => mergeMemberFunc(parentMember, v)) .getOrElse(v)
+    val newMember: M = removed
+      .map { parentDeclaredMember =>
+        // we need to inherit 'java property' modifier from super java class
+        if parentDeclaredMember.modifiers.contains(_Modifier.JavaPropertyAccessor)
+          then v.withAddedModifiers(_Modifier.JavaPropertyAccessor).asInstanceOf[M] else v }
+      .getOrElse(v)
     val fixed = fixTypesFunc(thisClass, newMember)
     targetMembers.put(keyFunc(fixed), fixed)
   }
-
-// TODO: try to use them as givens
-private def mergeMember(parentDeclaredMember: _Field, thisDeclaredMember: _Field): _Field =
-  if parentDeclaredMember.modifiers.contains(_Modifier.JavaPropertyAccessor)
-    then thisDeclaredMember.copy(modifiers = thisDeclaredMember.modifiers + _Modifier.JavaPropertyAccessor)
-                                (thisDeclaredMember.internalValue)
-    else thisDeclaredMember
-private def mergeMember(parentDeclaredMember: _Method, thisDeclaredMember: _Method): _Method =
-  if parentDeclaredMember.modifiers.contains(_Modifier.JavaPropertyAccessor)
-    then thisDeclaredMember.copy(modifiers = thisDeclaredMember.modifiers + _Modifier.JavaPropertyAccessor)
-                                (thisDeclaredMember.internalValue)
-    else thisDeclaredMember
 
 
 private def fixFieldType(cls: Class[?], field: _Field): _Field =
@@ -249,26 +246,28 @@ private def fixFieldType(cls: Class[?], field: _Field): _Field =
 
   val foundJavaMethod: Option[java.lang.reflect.Method] = findJavaMethod(cls, field.name)
   if foundJavaMethod.isDefined /*&& foundJavaMethod.get.getReturnType != classOf[Object]*/ then
-    return foundJavaMethod.map(javaMethod => changeType(field, javaMethod)).get
+    return foundJavaMethod.map(javaMethod => changeFieldType(field, javaMethod)).get
 
   val foundJavaField: Option[java.lang.reflect.Field] = findJavaField(cls, field.name)
   if foundJavaField.isDefined /*&& foundJavaField.get.getType != classOf[Object]*/ then
-    return foundJavaField.map(javaField => changeType(field, javaField)).get
+    return foundJavaField.map(javaField => changeFieldType(field, javaField)).get
 
   field
 
+
 private def fixMethodType(cls: Class[?], method: _Method): _Method =
-  //if typeExists(method._type) then return method
   // no sense to process private fields in scope of 'java beans' (at least now)
   if method.visibility == _Visibility.Private
      || method.mainParams.isEmpty && method.returnType == _Type.VoidType
     then return method
 
   if method.mainParams.isEmpty && !method.returnType.isVoid && !method.hasExtraScalaParams then
+    if typeExists(method.returnType) then return method
     val m = findJavaMethod(cls, method.name)
     if m.isDefined then return changeReturnType(method, m.get)
 
   if method.mainParams.size == 1 && !method.hasExtraScalaParams then
+    if typeExists(method.mainParams.head) then return method
     val m = findJavaMethodWithOneParam(cls, method.name)
     if m.isDefined then return changeFirstParamType(method, m.get)
 
@@ -281,93 +280,26 @@ private def fixMethodType(cls: Class[?], method: _Method): _Method =
   method
 
 
-private def changeType(field: _Field, jf: java.lang.reflect.Field): _Field =
+private def changeFieldType(field: _Field, jf: java.lang.reflect.Field): _Field =
   field.copy(
     _type = _Type(jf.getType.nn.getName.nn),
-    genericType = field._type.toString,
-    //genericType = jf.getGenericType.toString,
+    genericType = field._type.toString, // jf.getGenericType.toString,
   )(field.internalValue)
 
-private def changeType(field: _Field, jm: java.lang.reflect.Method): _Field =
+private def changeFieldType(field: _Field, jm: java.lang.reflect.Method): _Field =
   field.copy(
     _type = _Type(jm.getReturnType.nn.getName.nn),
-    genericType = field._type.toString,
-    //genericType = jm.getGenericReturnType.toString,
+    genericType = field._type.toString, // jm.getGenericReturnType.toString,
   )(field.internalValue)
 
 private def changeReturnType(method: _Method, jm: java.lang.reflect.Method): _Method =
   method.copy(
     returnType = _Type(jm.getReturnType.nn.getName.nn),
-    returnGenericType = method.returnType.toString,
-    //resultGenericType = jm.getGenericReturnType.toString,
+    returnGenericType = method.returnType.toString, // jm.getGenericReturnType.toString,
   )(method.internalValue)
 
 private def changeFirstParamType(method: _Method, jm: java.lang.reflect.Method): _Method =
-  require(method.mainParams.size == 1)
-  require(jm.getParameterCount == 1)
-  //method.copy(mainParams = List(_Type(jm.getParameterTypes.nnArray.apply(0).getName.nn)))(method.internalValue)
+  require(method.mainParams.size == 1 && jm.getParameterCount == 1)
   val paramTypes = jm.getParameterTypes.nnArray
   method.copy(mainParams = List(_Type(paramTypes(0).getName.nn)))(method.internalValue)
 
-
-val StandardTypes = Set(
-  "byte", "Byte", "java.lang.Byte",
-  "char", "Character", "java.lang.Character",
-  "short", "Short", "java.lang.Short",
-  "int", "Integer", "java.lang.Integer",
-  "long", "Long", "java.lang.Long",
-  "String", "java.lang.String",
-)
-
-private def typeExists(_type: _Type): Boolean =
-  if StandardTypes.contains(_type.className) then return true
-  try { Class.forName(_type.className); true }
-  catch case _: Exception => false
-
-def findJavaField(cls: Class[?], name: String): Option[java.lang.reflect.Field] =
-  try return Option(cls.getField(name).nn) catch case _: Exception => { }
-
-  var f: Option[java.lang.reflect.Field] = None
-  var c: Class[?]|Null = cls
-  while f.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
-    f = try Option(c.nn.getDeclaredField(name).nn) catch case _: Exception => None
-    c = c.nn.getSuperclass
-  f
-
-
-def findJavaMethod(cls: Class[?], name: String): Option[java.lang.reflect.Method] =
-  val jMethodName = scalaMethodNameToJava(name)
-  try return Option(cls.getMethod(jMethodName).nn) catch case _: Exception => { }
-
-  var m: Option[java.lang.reflect.Method] = None
-  var c: Class[?]|Null = cls
-  while m.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
-    m = try Option(c.nn.getDeclaredMethod(jMethodName).nn) catch case _: Exception => None
-    c = c.nn.getSuperclass
-  m
-
-
-def findJavaMethodWithOneParam(cls: Class[?], name: String): Option[java.lang.reflect.Method] =
-  val jMethodName = scalaMethodNameToJava(name)
-  var m = findMethodWithOneParam(cls.getMethods, jMethodName)
-  if m.isDefined then return m
-
-  var c: Class[?] | Null = cls
-  while m.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
-    m = findMethodWithOneParam(cls.getDeclaredMethods, jMethodName)
-    c = c.nn.getSuperclass
-  m
-
-private def findMethodWithOneParam(methods: Array[java.lang.reflect.Method|Null]|Null, methodName: String): Option[java.lang.reflect.Method] =
-  val methodsWithOneParam = methods.nnArray.iterator
-    .filter(m => m.getParameterCount == 1)
-    .filter(_.getName == methodName)
-    .toList
-  if methodsWithOneParam.length == 1
-    then Option(methodsWithOneParam.head)
-    // Now I don't know how to choose one of several methods
-    else None
-
-
-private def scalaMethodNameToJava(methodName: String): String =
-  methodName.replace("_=", "_$eq").nn
