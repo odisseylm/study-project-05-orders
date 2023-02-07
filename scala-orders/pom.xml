@@ -19,9 +19,9 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <encoding>UTF-8</encoding>
 
-    <!--<scala.version>3.2.2</scala.version>-->
+    <scala.version>3.2.2</scala.version>
     <!--<scala-sbt.version>1.8.0</scala-sbt.version>-->
-    <scala.version>3.3.0-RC1-bin-20230116-d99d9bf-NIGHTLY</scala.version>
+    <!--<scala.version>3.3.0-RC1-bin-20230116-d99d9bf-NIGHTLY</scala.version>-->
     <scala-sbt.version>2.0.0-alpha7</scala-sbt.version>
 
     <scala.compat.version>3</scala.compat.version>
@@ -462,6 +462,9 @@
               <goal>testCompile</goal>
             </goals>
             <configuration>
+              <jvmArgs>
+                <!--<arg>-Xdebug</arg><arg>-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8003</arg>-->
+              </jvmArgs>
               <args>
                 <arg>-Yexplicit-nulls</arg>
                 <arg>-Ysafe-init</arg>

@@ -34,9 +34,24 @@ case class BeanPropAccessMethod (propName: String, accessKind: PropAccessKind, m
 
 class BeanProperties (
   val beanProps: Map[String, BeanProperty],
-  // for MapStruct
-  //val beanPropsByMethod: Map[PropAccessKind, BeanProperty],
-  )
+  ) :
+  private lazy val propsByGetterMethodName: Map[String, BeanProperty] =
+    beanProps.values.flatMap( bp => bp.javaGetMethods.map(m => (m.getName.nn, bp) )).toMap
+  private lazy val propsBySetterMethodName: Map[String, BeanProperty] =
+    beanProps.values.flatMap( bp => bp.javaSetMethods.map(m => (m.getName.nn, bp) )).toMap
+
+  def isGetter(methodName: String): Boolean = propsByGetterMethodName.contains(methodName)
+  def isSetter(methodName: String, typeName: String): Boolean =
+    val prop = propsBySetterMethodName.get(methodName)
+      .iterator
+      .flatMap(p => p.javaSetMethods.iterator.map{ m => println(s"||| isSetter($methodName, $typeName)"); m }.filter(methodName == _.getName.nn))
+      .map { m => println(s"||| meth444 ${m.getName} ${m.firstParamType.getName} needed typeName $typeName"); m }
+      .find(typeName == _.firstParamType.getName.nn)
+    println(s"%%% setter prop: $prop")
+    prop.isDefined
+  def getPropertyNameByMethod(methodName: String): Option[String] =
+    propsByGetterMethodName.get(methodName) .orElse(propsBySetterMethodName.get(methodName)) .map(_.name)
+
 
 extension (cls: _Class)
   def beanProperties: BeanProperties =
@@ -99,7 +114,6 @@ extension (cls: _Class)
 
     val props: Map[String, collection.Iterable[BeanPropAccessMethod]] = allPropMethods.groupBy(_.propName)
 
-    //val beanProps: Map[String, BeanProperty] = props.map(vv => (vv._1, toBeanProperty(vv))).toMap
     val beanProps: Map[String, BeanProperty] = props.map(vv => toBeanProperty(cls, vv))
                                                     .filter(_.isDefined)
                                                     .map(bp => (bp.get.name, bp.get)).toMap
@@ -140,11 +154,11 @@ private def toBeanProperty(cls: _Class, nameAndMethods: (String, collection.Iter
 
 private def getterBeanPropAccessMethod(m_m: (_ClassMember, Option[JavaMethod]) ): BeanPropAccessMethod =
   val member = m_m._1;  val method = m_m._2.get
-  BeanPropAccessMethod(member.name, PropAccessKind.Getter, method.getName.nn, method.getReturnType.nn)
+  BeanPropAccessMethod(member.toBeanPropertyName, PropAccessKind.Getter, method.getName.nn, method.getReturnType.nn)
 
 private def setterBeanPropAccessMethod(m_m: (_ClassMember, Option[JavaMethod]) ): BeanPropAccessMethod =
   val member = m_m._1;  val method = m_m._2.get
-  BeanPropAccessMethod(member.name, PropAccessKind.Setter, method.getName.nn, method.getParameterTypes.nnArray(0).nn)
+  BeanPropAccessMethod(member.toBeanPropertyName, PropAccessKind.Setter, method.getName.nn, method.getParameterTypes.nnArray(0).nn)
 
 private def findGetterMethod(cls: Class[?], methodName: String): Option[JavaMethod] =
   try { Option(cls.getMethod(methodName).nn) } catch case _: Exception => None
@@ -152,17 +166,50 @@ private def findGetterMethod(cls: Class[?], methodName: String): Option[JavaMeth
 // actually there can be several overloaded methods...
 // for that reason we really use type of getters as property type
 private def findSetterMethod(cls: Class[?], methodName: String): Option[JavaMethod] =
+  findSetterMethodImpl(cls, methodName)
+    .orElse(findSetterMethodImpl(cls, scalaMethodNameToJava(methodName)))
+private def findSetterMethodImpl(cls: Class[?], methodName: String): Option[JavaMethod] =
   val methods: Array[JavaMethod] = cls.getMethods.nnArray
   methods.find(m => m.getName.nn == methodName && m.getParameterCount == 1)
 
 private def findSetterMethod(cls: Class[?], methodName: String, propType: Class[?]): Option[JavaMethod] =
+  findSetterMethodImpl(cls, methodName, propType)
+    .orElse(findSetterMethodImpl(cls, scalaMethodNameToJava(methodName), propType))
+private def findSetterMethodImpl(cls: Class[?], methodName: String, propType: Class[?]): Option[JavaMethod] =
   val methods: Array[JavaMethod] = cls.getMethods.nnArray
-  methods.view
+  val methodsWithTheSameName = methods.view
     .filter(m => m.getName.nn == methodName && m.getParameterCount == 1)
-    .find { m =>
-      val firstParamType: Class[?] = m.getParameterTypes.nnArray(0)
-      firstParamType.isAssignableFrom(firstParamType)
-    }
+    .toList
 
-extension (t: _Type)
-  def toClass: Class[?] = loadClass(t.runtimeTypeName.getOrElse(t.declaredTypeName))
+  if methodsWithTheSameName.isEmpty then return None
+
+  val methodWithExpectedType = methodsWithTheSameName.find { m => propType.isAssignableFrom(m.firstParamType) }
+
+  if methodWithExpectedType.isDefined then methodWithExpectedType
+    else
+      println(s"WARN probably method/methods ${cls.getName}.$methodName has incorrect type.")
+      // I hope that problem is connected with using generics or something like that
+      // but really everything will work fine.
+      Option(methodsWithTheSameName.head)
+
+extension (member: _ClassMember)
+  def toBeanPropertyName: String = member match
+      case f: _Field => f.name
+      case m: _Method => m.name match
+        case getName if getName.startsWith("get") => getName.stripPrefix("get").capitalize
+        case setName if setName.startsWith("set") => setName.stripPrefix("set").uncapitalize
+        case scalaSetterName if scalaSetterName.endsWith("_=") => scalaSetterName.stripSuffix("_=")
+        case scalaSetterName if scalaSetterName.endsWith("_$eq") => scalaSetterName.stripSuffix("_$eq")
+        case other => other
+
+
+extension (s: String)
+  def uncapitalize: String =
+    if s.isNull || s.isEmpty || !s.charAt(0).isUpper then s
+    else s"${s.charAt(0).toUpper}${s.substring(1)}"
+
+
+extension (m: JavaMethod)
+  def firstParamType: Class[?] =
+    require(m.getParameterCount >= 1)
+    m.getParameterTypes.nnArray(0)

@@ -121,7 +121,7 @@ object _Type :
       t.toTypeName.isOneOf("boolean", "Boolean", "java.lang.Boolean", "scala.Boolean")
 
 
-trait _ClassMember :
+sealed trait _ClassMember :
   val name: String
   val visibility: _Visibility
   val modifiers: Set[_Modifier]
