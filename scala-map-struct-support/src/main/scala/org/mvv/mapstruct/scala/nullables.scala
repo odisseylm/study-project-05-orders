@@ -29,6 +29,7 @@ extension (v: AnyRef|Null)
 extension [T](v: T|Null)
   //noinspection ScalaUnusedSymbol
   inline def castToNonNullable: T = v.asInstanceOf[T]
+  inline def nnIgnore: T = v.asInstanceOf[T]
 
 extension [T](v: Array[T|Null]|Null)
   @targetName("castArrayToNonNullable")

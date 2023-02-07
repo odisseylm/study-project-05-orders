@@ -1,5 +1,6 @@
 package org.mvv.mapstruct.scala
 
+import org.junit.jupiter.api.Disabled
 import org.mvv.mapstruct.scala.testclasses.{InheritedClass1, InheritedFromJavaClass1}
 
 import scala.tasty.inspector.Tasty
@@ -14,8 +15,10 @@ import org.assertj.core.api.SoftAssertions
 class TastyTest :
 
   @Test
+  @Disabled("for manual testing since it depends on local file path")
   def inspectBeansNoToFailAtAll(): Unit = {
-    val classesDir = "/home/vmelnykov/projects/study-project-05-orders/scala-map-struct-support/target/test-classes"
+    val userHome = System.getProperty("user.home")
+    val classesDir = s"$userHome/projects/study-project-05-orders/scala-map-struct-support/target/test-classes"
     val tastyFiles = List(s"$classesDir/org/mvv/mapstruct/scala/testclasses/A3.tasty")
     TastyInspector.inspectTastyFiles(tastyFiles)(ScalaBeansInspector())
   }

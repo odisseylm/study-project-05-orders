@@ -14,6 +14,8 @@ val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang.Compara
 class ScalaBeansInspector extends Inspector :
   import QuotesHelper.*
 
+  private val log = Logger(classOf[ScalaBeansInspector])
+
   // it contains ONLY 'normal' classes from input tasty file
   private val classesByFullName:  mutable.Map[String, _Class] = mutable.HashMap()
   private val processedTastyFiles: mutable.Map[String, List[_Class]] = mutable.Map()
@@ -34,8 +36,7 @@ class ScalaBeansInspector extends Inspector :
         classesByFullName.put(cls.getName.nn, res)
         res
       case ClassKind.Scala2 =>
-        // TODO: use logger or stdErr
-        println(s"WARN: scala2 class ${cls.getName} is processed as java class (sine scala2 format is not supported yet).")
+        log.warn(s"scala2 class ${cls.getName} is processed as java class (sine scala2 format is not supported now).")
         val res: _Class = inspectJavaClass(cls, this)
         classesByFullName.put(cls.getName.nn, res)
         res
@@ -71,7 +72,7 @@ class ScalaBeansInspector extends Inspector :
     val dependenciesJars = mutable.Set[Path]()
 
     for tasty <- beanType do
-      println(s"tasty.path: ${tasty.path} | ${Thread.currentThread().nn.getName}")
+      log.trace(s"tasty.path: ${tasty.path}")
       val tree: Tree = tasty.ast
 
       if !processedTastyFiles.contains(tasty.path) then

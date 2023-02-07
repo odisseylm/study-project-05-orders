@@ -1,5 +1,9 @@
 package org.mvv.mapstruct.scala
 
+
+//noinspection ScalaUnusedSymbol,ScalaFileName
+object TypeOps
+
 /*
 object TypeOps :
   extension (t: _Type)

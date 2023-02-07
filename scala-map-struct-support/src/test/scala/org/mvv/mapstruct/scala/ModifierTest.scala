@@ -62,12 +62,13 @@ class ModifierTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("for manual testing since it depends on local file path")
   def testInheritingJavaPropAccessorModifierAfterOverriding(): Unit = {
     import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
 
-    val classesDir = "/home/vmelnykov/projects/study-project-05-orders/scala-map-struct-support/target/test-classes"
+    val userHome = System.getProperty("user.home")
+    val classesDir = s"$userHome/projects/study-project-05-orders/scala-map-struct-support/target/test-classes"
     val tastyFile = s"$classesDir/org/mvv/mapstruct/scala/testclasses/InheritedFromJavaClass2.tasty"
     //val tastyClassFullName = "com.mvv.scala.temp.tests.tasty.testclasses.InheritedFromJavaClass2"
 

@@ -86,7 +86,11 @@ class InspectingByClassOrClassNameTest {
     import scala.language.unsafeNulls
     val _class: _Class = ScalaBeansInspector()
       .inspectClass(classOf[com.mvv.scala3.samples.InheritedFromJavaClass2].getName)
+
     assertThat(_class).isNotNull
+    // it does not make to verify this class if it loaded from file
+    assertThat(_class.classSource).isInstanceOf(classOf[JarClassSource])
+
     assertThat(_class.fields.asJava).isNotEmpty
 
     assertThat(_class.fields.keys.map(_.toString).asJava)

@@ -1,11 +1,12 @@
-package org.mvv.mapstruct.scala
+package org.mvv.mapstruct.scala.debug
 
+private val log = org.mvv.mapstruct.scala.Logger("org.mvv.mapstruct.scala.debug")
 
 //noinspection ScalaUnusedSymbol
 // Debug functions
 // temp
 def printFields(label: String, obj: Any): Unit =
-  println(s"\n\n$label   $obj")
+  log.info(s"\n\n$label   $obj")
   import scala.language.unsafeNulls
   //noinspection TypeCheckCanBeMatch // scala3 warns about non matchable type
   if obj .isInstanceOf [List[?]] then
@@ -16,7 +17,7 @@ def printFields(label: String, obj: Any): Unit =
 
 
 def printField(label: String, obj: Any, prop: String): Unit =
-  try { println(s"$label.$prop: ${ getProp(obj, prop) }") } catch { case _: Exception => }
+  try { log.info(s"$label.$prop: ${ getProp(obj, prop) }") } catch { case _: Exception => }
 
 
 //noinspection ScalaUnusedSymbol

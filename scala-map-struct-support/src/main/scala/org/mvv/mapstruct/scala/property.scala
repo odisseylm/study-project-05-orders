@@ -9,6 +9,8 @@ import CollectionsOps.containsOneOf
 //enum PropertyOwnerKindType :
 //  case Java, Scala
 
+private val log = Logger(classOf[BeanProperties])
+
 
 /**
  * It probably has to much info, but it is to implement easily both MapStruct extension and java bean descriptor.
@@ -44,10 +46,8 @@ class BeanProperties (
   def isSetter(methodName: String, typeName: String): Boolean =
     val prop = propsBySetterMethodName.get(methodName)
       .iterator
-      .flatMap(p => p.javaSetMethods.iterator.map{ m => println(s"||| isSetter($methodName, $typeName)"); m }.filter(methodName == _.getName.nn))
-      .map { m => println(s"||| meth444 ${m.getName} ${m.firstParamType.getName} needed typeName $typeName"); m }
+      .flatMap(p => p.javaSetMethods.iterator.filter(methodName == _.getName.nn))
       .find(typeName == _.firstParamType.getName.nn)
-    println(s"%%% setter prop: $prop")
     prop.isDefined
   def getPropertyNameByMethod(methodName: String): Option[String] =
     propsByGetterMethodName.get(methodName) .orElse(propsBySetterMethodName.get(methodName)) .map(_.name)
@@ -126,7 +126,7 @@ private def toBeanProperty(cls: _Class, nameAndMethods: (String, collection.Iter
   val gettersAndSetters = methods.groupBy(_.accessKind)
   val getters = gettersAndSetters.getOrElse(PropAccessKind.Getter, Nil)
   if getters.isEmpty then
-    println(s"WARN property [$propName] does not have any get methods.")
+    log.warn(s"Property [$propName] does not have any getters.")
     return None
 
   val propType = getters.head.propertyType
@@ -187,8 +187,8 @@ private def findSetterMethodImpl(cls: Class[?], methodName: String, propType: Cl
 
   if methodWithExpectedType.isDefined then methodWithExpectedType
     else
-      println(s"WARN probably method/methods ${cls.getName}.$methodName has incorrect type.")
-      // I hope that problem is connected with using generics or something like that
+      log.warn(s"Probably method/methods ${cls.getName}.$methodName has incorrect type.")
+      // I hope that problem is connected with improper processing generics (or something like that)
       // but really everything will work fine.
       Option(methodsWithTheSameName.head)
 
