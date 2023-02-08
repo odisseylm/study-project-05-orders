@@ -60,11 +60,12 @@ class ScalaBeansInspector extends Inspector :
   def inspectJar(jarPath: Path): List[_Class] =
     processedJars.addOne(jarPath)
 
+    val before = this.classesDescr
     TastyInspector.inspectTastyFilesInJar(jarPath.toString)(this)
-    //this.processedTastyFiles.get(tastyFile)
-    //  .map(_.toList) .getOrElse(List())
-    // TODO: return new dded _Class-es
-    Nil
+    val after = this.classesDescr
+
+    val dif = after.values.toSet -- before.values.toSet
+    dif.toList
 
   override def inspect(using Quotes)(beanType: List[Tasty[quotes.type]]): Unit =
     import quotes.reflect.*
@@ -125,7 +126,6 @@ class ScalaBeansInspector extends Inspector :
 
       visitParentTypeDefs(_class, rhs)
       visitTypeDefEl(_class, rhs)
-      //mergeAllDeclaredMembers(_class)
 
       _class.parents.foreach { parentCls =>
         val clsSrc = ClassSource.of(parentCls.runtimeClass)
@@ -180,7 +180,7 @@ class ScalaBeansInspector extends Inspector :
 
   end inspect
 
-  def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
+  private def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
     import ReflectionHelper.*
 
     val _class: _Class = _Class(
@@ -194,16 +194,14 @@ class ScalaBeansInspector extends Inspector :
 
     classChain.foreach { c =>
       if toInspectParentClass(c) then
-        _class.parents :+= scalaBeansInspector.inspectClass(c)
+        scalaBeansInspector.inspectClass(c)
     }
 
     _class.declaredFields = _cls.getDeclaredFields.nn.map { f =>
-      val _f = toField(f.nn)
-      (_f.toKey, _f)
+      val _f = toField(f.nn);  (_f.toKey, _f)
     }.toMap
     _class.declaredMethods = _cls.getDeclaredMethods.nn.map { m =>
-      val _m = toMethod(m.nn)
-      (_m.toKey, _m)
+      val _m = toMethod(m.nn);  (_m.toKey, _m)
     }.toMap
 
     _class
@@ -219,7 +217,7 @@ class TastyFileNotFoundException protected (message: String, cause: Option[Throw
   def this(message: String) = this(message, None)
 
 
-private class _Package (val name: String) : // TODO: replace with List or Map
+private class _Package (val name: String) :
   val classes: mutable.Map[String, _Class] = mutable.HashMap()
   override def toString: String = s"package $name \n${ classes.values.mkString("\n") }"
 
@@ -278,6 +276,7 @@ object QuotesHelper :
     Set.from(m)
 
 
+  // TODO: try to move it (at least some ones) to helper to another file
   extension (using Quotes)(el: quotes.reflect.Tree)
 
     def toSymbol: Option[quotes.reflect.Symbol] =

@@ -113,7 +113,6 @@ class BaseClass1 :
   def publicMethod1(): String = ""
 
 
-// TODO: move to tests
 class StandardScalaModifiersTesClass :
   private val privateValField1: String = ""
   protected val protectedValField1: String = ""

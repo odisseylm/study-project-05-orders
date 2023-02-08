@@ -34,9 +34,14 @@ extension [T](v: T|Null)
 extension [T](v: Array[T|Null]|Null)
   @targetName("castArrayToNonNullable")
   //noinspection ScalaUnusedSymbol
-  inline def nnArray: Array[T] = v.asInstanceOf[Array[T]]
+  inline def nnArray: Array[T] = v.nn.asInstanceOf[Array[T]]
+
+extension [T](v: Array[T]|Null)
+  @targetName("castArrayToNonNullableAlt")
+  //noinspection ScalaUnusedSymbol
+  inline def nnArray: Array[T] = v.nn.asInstanceOf[Array[T]]
 
 extension [T](v: List[T|Null]|Null)
   @targetName("castArrayToNonNullable")
   //noinspection ScalaUnusedSymbol
-  inline def nnList: java.util.List[T] = v.asInstanceOf[java.util.List[T]]
+  inline def nnList: java.util.List[T] = v.nn.asInstanceOf[java.util.List[T]]

@@ -6,8 +6,6 @@ import java.lang.reflect.Method as JavaMethod
 //
 import CollectionsOps.containsOneOf
 
-//enum PropertyOwnerKindType :
-//  case Java, Scala
 
 private val log = Logger(classOf[BeanProperties])
 
@@ -20,10 +18,10 @@ class BeanProperty (
   val propertyType: Class[?],
   // it can be in java but later in jav
   //val ownerKind: PropertyOwnerKindType,
+  val owner: _Class,
   val ownerClass: Class[?],
   val javaGetMethods: List[JavaMethod],
   val javaSetMethods: List[JavaMethod],
-  val owner: _Class,
 )
 
 
@@ -35,6 +33,7 @@ enum PropAccessKind :
 case class BeanPropAccessMethod (propName: String, accessKind: PropAccessKind, methodName: String, propertyType: Class[?])
 
 class BeanProperties (
+  val _class: _Class,
   val beanProps: Map[String, BeanProperty],
   ) :
   private lazy val propsByGetterMethodName: Map[String, BeanProperty] =
@@ -53,74 +52,40 @@ class BeanProperties (
     propsByGetterMethodName.get(methodName) .orElse(propsBySetterMethodName.get(methodName)) .map(_.name)
 
 
-extension (cls: _Class)
+extension (_class: _Class)
   def beanProperties: BeanProperties =
     val allPropMethods = mutable.ArrayBuffer[BeanPropAccessMethod]()
 
-    // TODO: refactor all this to make less code
-
-    val gettersForValAndVars = cls.fields.values
-      .filter(_.visibility == _Visibility.Public)
-      .map(f => (f, findGetterMethod(cls.runtimeClass, f.name)))
-      .filter(m_m => m_m._2.isDefined)
+    val gettersForValAndVars = _class.fields.values
+      .filter(_.isPublic)
+      .map(f => (f, findGetterMethod(_class.runtimeClass, f.name)))
+      .filter(_._2.isDefined) // if method is found
       .map(m => getterBeanPropAccessMethod(m))
     allPropMethods.addAll(gettersForValAndVars)
 
-    val customScalaGetters = cls.methods.values
-      .filter(_.visibility == _Visibility.Public)
-      .filter(_.mainParams.isEmpty)
-      .filter(_.modifiers.containsOneOf(_Modifier.ScalaStandardFieldAccessor, _Modifier.ScalaCustomFieldAccessor))
-      .map(m => (m, findGetterMethod(cls.runtimeClass, m.name)))
-      .filter(m_m => m_m._2.isDefined)
+    val getters = _class.methods.values
+      .filter(m => m.isPublic && m.isPropertyAccessor && m.mainParams.isEmpty)
+      .map(m => (m, findGetterMethod(_class.runtimeClass, m.name)))
+      .filter(_._2.isDefined) // if method is found
       .map(m => getterBeanPropAccessMethod(m))
-    allPropMethods.addAll(customScalaGetters)
+    allPropMethods.addAll(getters)
 
-    val javaGetGetters = cls.methods.values
-      .filter(_.visibility == _Visibility.Public)
-      .filter(_.mainParams.isEmpty)
-      .filter(_.modifiers.containsOneOf(_Modifier.JavaPropertyAccessor))
-      .map(m => (m, findGetterMethod(cls.runtimeClass, "get" + m.name.capitalize)))
-      .filter(m_m => m_m._2.isDefined)
-      .map(m => getterBeanPropAccessMethod(m))
-    allPropMethods.addAll(javaGetGetters)
-
-    val javaIsGetters = cls.methods.values
-      .filter(_.visibility == _Visibility.Public)
-      .filter(_.mainParams.isEmpty)
-      .filter(_.modifiers.containsOneOf(_Modifier.JavaPropertyAccessor))
-      .filter(_.returnType.isBool)
-      .map(m => (m, findGetterMethod(cls.runtimeClass, "is" + m.name.capitalize)))
-      .filter(m_m => m_m._2.isDefined)
-      .map(m => getterBeanPropAccessMethod(m))
-    allPropMethods.addAll(javaIsGetters)
-
-    val scalaSetters = cls.methods.values
-      .filter(_.visibility == _Visibility.Public)
-      .filter(_.mainParams.size == 1)
-      .filter(_.modifiers.containsOneOf(_Modifier.ScalaStandardFieldAccessor, _Modifier.ScalaCustomFieldAccessor))
-      .map(m => (m, findSetterMethod(cls.runtimeClass, m.name)))
-      .filter(m_m => m_m._2.isDefined)
+    val setters = _class.methods.values
+      .filter(m => m.isPublic && m.isPropertyAccessor && m.mainParams.size == 1)
+      .map(m => (m, findSetterMethod(_class.runtimeClass, m.name)))
+      .filter(_._2.isDefined) // if method is found
       .map(m => setterBeanPropAccessMethod(m))
-    allPropMethods.addAll(scalaSetters)
-
-    val javaSetters = cls.methods.values
-      .filter(_.visibility == _Visibility.Public)
-      .filter(_.mainParams.size == 1)
-      .filter(_.modifiers.containsOneOf(_Modifier.JavaPropertyAccessor))
-      .map(m => (m, findSetterMethod(cls.runtimeClass, "set" + m.name.capitalize)))
-      .filter(m_m => m_m._2.isDefined)
-      .map(m => setterBeanPropAccessMethod(m))
-    allPropMethods.addAll(javaSetters)
+    allPropMethods.addAll(setters)
 
     val props: Map[String, collection.Iterable[BeanPropAccessMethod]] = allPropMethods.groupBy(_.propName)
 
-    val beanProps: Map[String, BeanProperty] = props.map(vv => toBeanProperty(cls, vv))
+    val beanProps: Map[String, BeanProperty] = props.map(vv => toBeanProperty(_class, vv))
                                                     .filter(_.isDefined)
                                                     .map(bp => (bp.get.name, bp.get)).toMap
-    BeanProperties(beanProps)
+    BeanProperties(_class, beanProps)
 
 
-private def toBeanProperty(cls: _Class, nameAndMethods: (String, collection.Iterable[BeanPropAccessMethod]) ): Option[BeanProperty] =
+private def toBeanProperty(_class: _Class, nameAndMethods: (String, collection.Iterable[BeanPropAccessMethod]) ): Option[BeanProperty] =
   val (propName, methods) = nameAndMethods
 
   val gettersAndSetters = methods.groupBy(_.accessKind)
@@ -130,14 +95,14 @@ private def toBeanProperty(cls: _Class, nameAndMethods: (String, collection.Iter
     return None
 
   val propType = getters.head.propertyType
-  // TODO: refactor to avoid finding it twice
+  // T O D O: refactor to avoid finding method twice
   val getterMethods = getters
-    .map(v => findGetterMethod(cls.runtimeClass, v.methodName).get)
+    .map(v => findGetterMethod(_class.runtimeClass, v.methodName).get)
     .toList
 
   val setterMethods = gettersAndSetters.getOrElse(PropAccessKind.Setter, Nil)
-    // TODO: refactor to avoid finding it twice
-    .map(v => findSetterMethod(cls.runtimeClass, v.methodName, propType))
+    // T O D O: refactor to avoid finding method twice
+    .map(v => findSetterMethod(_class.runtimeClass, v.methodName, propType))
     .filter(_.isDefined)
     .map(_.get)
     .toList
@@ -145,10 +110,10 @@ private def toBeanProperty(cls: _Class, nameAndMethods: (String, collection.Iter
   Option(BeanProperty (
     name = propName,
     propertyType = propType,
-    ownerClass = cls.runtimeClass,
+    owner = _class,
+    ownerClass = _class.runtimeClass,
     javaGetMethods = getterMethods,
     javaSetMethods= setterMethods,
-    owner = cls,
   ))
 
 
@@ -193,10 +158,11 @@ private def findSetterMethodImpl(cls: Class[?], methodName: String, propType: Cl
       Option(methodsWithTheSameName.head)
 
 extension (member: _ClassMember)
-  def toBeanPropertyName: String = member match
+  private def toBeanPropertyName: String = member match
       case f: _Field => f.name
       case m: _Method => m.name match
-        case getName if getName.startsWith("get") => getName.stripPrefix("get").capitalize
+        case getName if getName.startsWith("is") => getName.stripPrefix("is").uncapitalize
+        case getName if getName.startsWith("get") => getName.stripPrefix("get").uncapitalize
         case setName if setName.startsWith("set") => setName.stripPrefix("set").uncapitalize
         case scalaSetterName if scalaSetterName.endsWith("_=") => scalaSetterName.stripSuffix("_=")
         case scalaSetterName if scalaSetterName.endsWith("_$eq") => scalaSetterName.stripSuffix("_$eq")
@@ -204,12 +170,20 @@ extension (member: _ClassMember)
 
 
 extension (s: String)
-  def uncapitalize: String =
+  private def uncapitalize: String =
     if s.isNull || s.isEmpty || !s.charAt(0).isUpper then s
-    else s"${s.charAt(0).toUpper}${s.substring(1)}"
+    else s"${s.charAt(0).toLower}${s.substring(1)}"
 
 
 extension (m: JavaMethod)
-  def firstParamType: Class[?] =
+  private def firstParamType: Class[?] =
     require(m.getParameterCount >= 1)
     m.getParameterTypes.nnArray(0)
+
+extension (m: _Method)
+  private def isPropertyAccessor: Boolean =
+    m.modifiers.containsOneOf(
+      _Modifier.ScalaStandardFieldAccessor, _Modifier.ScalaCustomFieldAccessor, _Modifier.JavaPropertyAccessor)
+
+extension (m: _ClassMember)
+  private def isPublic: Boolean = m.visibility == _Visibility.Public
