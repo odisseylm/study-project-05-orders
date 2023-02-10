@@ -1,0 +1,79 @@
+
+Scala macros DEBUG dumpTerm => expr ['{ ... }], [v1 match {
+  case com.mvv.scala.temp.tests.macros2.TestEnum1.TestEnumValue1 =>
+    com.mvv.scala.temp.tests.macros2.TestEnum2.TestEnumValue1
+  case com.mvv.scala.temp.tests.macros2.TestEnum1.TestEnumValue2 =>
+    com.mvv.scala.temp.tests.macros2.TestEnum2.TestEnumValue2
+}], as term [
+
+Inlined(
+  EmptyTree,
+  List(),
+  Match(
+    Ident(v1),
+    List(
+      CaseDef(
+        Select(Ident(TestEnum1), TestEnumValue1),
+        EmptyTree,
+        Block(
+          List(),
+          Select(Ident(TestEnum2), TestEnumValue1)
+        )
+      ),
+      CaseDef(
+        Select(Ident(TestEnum1),TestEnumValue2),
+        EmptyTree,
+        Block(
+          List(),
+          Select(Ident(TestEnum2),TestEnumValue2))
+      )
+    )
+  )
+)
+
+
+
+
+Inlined(
+  EmptyTree,
+  List(),
+  Block(
+    List(
+      DefDef(
+        $anonfun,
+        List(
+          List(     <=========== params
+            ValDef( <===========================
+              vvvv,
+              TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class macros2)),
+                  class TestEnum1)], <============ param type
+              EmptyTree))
+        ),
+        TypeTree[
+          TypeRef(
+            ThisType(TypeRef(NoPrefix,module class macros2)),
+            class TestEnum2  <============= return type
+          )
+        ],
+        Match(
+          Ident(vvvv),
+          List(
+            CaseDef(Select(Ident(TestEnum1),TestEnumValue1),EmptyTree,Block(List(),Select(Ident(TestEnum2),TestEnumValue1))),
+            CaseDef(Select(Ident(TestEnum1),TestEnumValue2),EmptyTree,Block(List(),Select(Ident(TestEnum2),TestEnumValue2)))
+          )
+        )
+      )
+    ),
+    Closure(List(),Ident($anonfun),EmptyTree)
+  )
+)
+
+
+
+matchCases += CaseDef(Literal(IntConstant(c.ordinal)), None, handler.asTerm)
+case CaseDef(Bind(_, Ident(nme.WILDCARD)), EmptyTree, _) => true
+
+val tpt = Inferred(TypeRepr.of[JsString])
+val pattern = TypedOrTest(tree, tpt)
+CaseDef(pattern, None, Ref(tpe.termSymbol))
+

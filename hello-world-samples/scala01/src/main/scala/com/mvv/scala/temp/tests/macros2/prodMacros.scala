@@ -1,8 +1,6 @@
 //noinspection DuplicatedCode , ScalaUnusedSymbol
 package com.mvv.scala.macros
 
-import com.sun.tools.javac.code.TypeTag
-
 import runtime.stdLibPatches.Predef.nn
 import scala.Option
 import scala.annotation.unused
@@ -360,7 +358,230 @@ private def dumpTermImpl[T](expr: Expr[T])(using Quotes)(using Type[T]): Expr[T]
   import quotes.reflect.*
   val asTerm = expr.asTerm
   log.debug(s"dumpTerm => expr [$expr], [${expr.show}], as term [$asTerm].")
+
+  /*
+  val matchTerm: Match = expr.asTerm.asInstanceOf[Inlined].body.asInstanceOf[Match]
+  printFields("matchTerm", matchTerm)
+  val caseDef: CaseDef = matchTerm.cases.head
+  val pattern: Tree = caseDef.pattern
+
+  println(s"caseDef pattern: $pattern")
+  //val Select(q, v22) = pattern
+  val q = pattern.asInstanceOf[Select].qualifier
+  printFields("q", q)
+
+  val name = pattern.asInstanceOf[Select].name
+  printFields("name", name)
+
+  val tpe: TermRef = getProp(q, "tpe").asInstanceOf[TermRef]
+  printFields("tpe", tpe)
+
+  // TODO: how to create/get it ???  => ThisType(TypeRef(NoPrefix,module class macros2))
+  val tpe_1 : TypeRepr= getProp(tpe, "_1").asInstanceOf[TypeRepr]
+  printFields("tpe_1", tpe_1)
+  printFields("Symbol.spliceOwner", Symbol.spliceOwner)
+  printFields("Symbol.spliceOwner.tree", Symbol.spliceOwner.tree)
+  // experimental, not accessible by default
+  //printFields("Symbol.spliceOwner.info", Symbol.spliceOwner.info)
+  printFields("Symbol.spliceOwner.moduleClass", Symbol.spliceOwner.moduleClass)
+  printFields("Symbol.spliceOwner.tree.tpe", Symbol.spliceOwner.tree.asInstanceOf[Term].tpe)
+
+  println("\n\n---------------------------------------------------------------------------------\n\n")
+
+  val tpe_2 = getProp(tpe, "_2")
+  printFields("tpe_2", tpe_2)
+  val tpe_2_AsSymbol: Symbol = tpe_2.asInstanceOf[Symbol]
+  println(s"tpe_2_AsSymbol.name: ${tpe_2_AsSymbol.name}")
+
+  //val tpe2: TermRef = TermRef(tpe_1, tpe_2_AsSymbol.name)
+  val tpe2: TermRef = TermRef(tpe_1, "TestEnum1")
+
+  val ident: Term = Ident(tpe2)
+  println(s"222 ident: $ident")
+
+  val sel222 = Select.unique(ident, "TestEnumValue1")
+  println(s"sel222: $sel222")
+
+  /*
+  val thisScopeTypeRepr: TypeRepr = findCurrentScopeTypeRepr(
+      //Symbol.classSymbol("com.mvv.scala.temp.tests.macros2.TestEnum1"), 0)
+      Symbol.requiredClass("com.mvv.scala.temp.tests.macros2.TestEnum1"), 0)
+    .getOrElse(throw IllegalStateException("Current scope TypeRepr is not found."))
+  //val thisScopeTypeRepr: TypeRepr = findCurrentScopeTypeRepr()
+  //  .getOrElse(throw IllegalStateException("Current scope TypeRepr is not found."))
+
+  println(s"thisScopeTypeRepr: $thisScopeTypeRepr")
+  */
+  println(s"tpe_1: $tpe_1")
+  println(s"tpe_345: ${Symbol.classSymbol("com.mvv.scala.temp.tests.macros2.TestEnum1").tree}")
+  println(s"tpe_345: ${Symbol.requiredClass("com.mvv.scala.temp.tests.macros2.TestEnum1").tree}")
+
+  //val tpe3: TermRef = TermRef(thisScopeTypeRepr, "com.mvv.scala.temp.tests.macros2.TestEnum1")
+  //val ident3: Term = Ident(tpe3)
+
+  //val trrrr: TermRef = Symbol.requiredClass("com.mvv.scala.temp.tests.macros2.TestEnum1").termRef
+
+  //val ident3: Term = Ident(tpe3)
+  //val ident3: Term = Ident(TermRef.unapply(trrrr)._1)
+  //val ident3: Term = Ident(Symbol.requiredClass("com.mvv.scala.temp.tests.macros2.TestEnum1").termRef)
+
+  //val ident3: Term = Ident(Symbol.requiredClass("com.mvv.scala3.samples.Scala3TestEnum1").termRef)
+  //val ident3: Term = Ident(Symbol.requiredClass("com.mvv.scala.temp.tests.macros2.TestEnum1").termRef)
+  val ident3: Term = Ident(Symbol.classSymbol("com.mvv.scala.temp.tests.macros2.TestEnum1").termRef)
+  println(s"ident3: $ident3")
+  //val sel3 = Select.unique(ident3, "TestEnumValue1")
+
+  val enumValueChild = Symbol.requiredClass("com.mvv.scala3.samples.Scala3TestEnum1")
+    .children
+    .find(_.toString.contains("TestEnumValue1")).get
+
+  val sel3 = Select.apply(ident3, enumValueChild)
+//  //val sel3 = Select.unique(TermRef.unapply(trrrr)._1.asInstanceOf[Term], "TestEnumValue1")
+  println(s"sel3: $sel3")
+
+
+  //val ddddd = '{}.asTerm
+  //val ddddd = '{}.asTerm
+  //printFields("ddddd", ddddd)
+  //val ddddd2 = ddddd.underlying.underlying
+  //printFields("ddddd2", ddddd2)
+
+  //val emptyTree = q""
+  //val emptyTreeExpr44 = '{}
+
+  printFields("noSymbol", Symbol.noSymbol)
+  //printFields("noSymbol.tree", Symbol.noSymbol.tree)
+  printFields("noSymbol.tree", getProp(Symbol.noSymbol, "defTree"))
+
+  val emptyTree = getProp(Symbol.noSymbol, "defTree").asInstanceOf[Tree]
+  //val ident22 =  Ident.copy(emptyTree)("TestEnum1")
+  //val ident22 =  Ident.copy(emptyTree)("com.mvv.scala.temp.tests.macros2.TestEnum1")
+  //val ident22 =  Ident.copy(emptyTree)("com.mvv.scala.temp.tests.macros2.TestEnum1")
+  //println(s"ident22: $ident22")
+  //val select22 = Select.unique(ident22, "TestEnumValue1")
+  //println(s"select22: $select22")
+
+  class MyTraverser extends TreeTraverser :
+    override def traverseTree(tree: Tree)(owner: Symbol): Unit =
+      println(s"traverseTree: $traverseTree")
+      printFields("traverseTree", traverseTree)
+    override protected def traverseTreeChildren(tree: Tree)(owner: Symbol): Unit =
+      println(s"traverseTreeChildren: $tree, owner: $owner")
+      super.traverseTreeChildren(tree)(owner)
+
+  val trav = MyTraverser()
+
+
+
+  //val emptyTree = EmptyTree
+  //val emptyTree: Tree = '{}.asTerm
+  //val aa = Ident.copy(emptyTree, "Fck")
+  //println(s"aa: $aa")
+  */
+
   expr
+
+
+
+def findCurrentScopeTypeRepr()(using quotes: Quotes): Option[quotes.reflect.TypeRepr] =
+  import quotes.reflect.*
+
+  // probably we can use experimental Symbol.info
+  // but now it is experimental
+  // TODO: try to use Symbol.info
+
+  val spliceOwner: Symbol = Symbol.spliceOwner
+  require(spliceOwner.isTerm, "hm...")
+
+  printFields("Symbol.spliceOwner", Symbol.spliceOwner)
+  printFields("Symbol.spliceOwner.tree", Symbol.spliceOwner.tree)
+
+  println(s"\n\n%%% spliceOwner.isTerm: ${spliceOwner.isTerm}")
+  println(s"%%% spliceOwner.children: ${spliceOwner.children}")
+  println(s"%%% spliceOwner.declarations: ${spliceOwner.declarations}")
+  println(s"%%% spliceOwner.paramSymss: ${spliceOwner.paramSymss}")
+  println(s"%%% spliceOwner.caseFields: ${spliceOwner.caseFields}")
+  println(s"%%% spliceOwner.typeRef: ${spliceOwner.typeRef}")
+  println(s"%%% spliceOwner.termRef: ${spliceOwner.termRef}")
+  println(s"%%% spliceOwner.tree: ${spliceOwner.tree}")
+
+  findCurrentScopeTypeRepr(Symbol.spliceOwner, 0)
+
+def findCurrentScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symbol, recursionLevel: Int): Option[quotes.reflect.TypeRepr] =
+  import quotes.reflect.*
+
+  if recursionLevel > 100 then
+    throw IllegalStateException("Error of finding CurrentScopeTypeRepr => StackOverflow.")
+
+  println(s"666: ${symbol.tree}")
+  printSymbolInfo(symbol)
+
+  val typeRepr : Option[TypeRepr] = symbol match
+    case vd if symbol.isValDef =>
+      println("666 isValDef")
+      val asValDef = vd.tree.asInstanceOf[ValDef]
+      val tpt: TypeTree = asValDef.tpt
+      println(s"tpt: $tpt")
+      //var thisScopeTypeReprOption = findCurrentScopeTypeReprFromTypeTree(tpt)
+      //if thisScopeTypeReprOption.isDefined then return thisScopeTypeReprOption
+
+      println(s"&&&&&&& tpt: $tpt")
+      println(s"&&&&&&& tpt.tpe: ${tpt.tpe}")
+
+      val typeRepr0: TypeRepr = tpt.tpe
+      val typeRepr: TypeRepr =
+        if true then { // typeRepr0.isTypeRef
+          val asTypeRef: TypeRef = typeRepr0.asInstanceOf[TypeRef]
+          //val (typeRepr22, _) = unapply(asTypeRef) // it shows warnings
+          val typeRepr22: TypeRepr = TypeRef.unapply(asTypeRef)._1
+          typeRepr22
+        } else {
+          typeRepr0
+        }
+
+      Option(typeRepr)
+
+      //val rhs: Option[Term] = asValDef.rhs
+      //println(s"rhs: $rhs")
+      //thisScopeTypeReprOption = rhs.map(term => findCurrentScopeTypeReprFromTerm(term))
+      //if thisScopeTypeReprOption.isDefined then return thisScopeTypeReprOption
+    case td if symbol.isTypeDef =>
+      println("666 isTypeDef")
+      val asTypeDef: TypeDef = td.tree.asInstanceOf[TypeDef]
+      val rhs: Tree = asTypeDef.rhs
+      println(s"666 rhs: $rhs")
+
+      None
+
+    case td if symbol.isClassDef =>
+      println("666 isClassDef")
+      val typeRef: TypeRef = symbol.typeRef
+
+      //val typRepr1: TypeRepr = typeRef.translucentSuperType
+      //println(s"666 444 rhs: $typRepr1")
+
+      val typRepr2: TypeRepr = TypeRef.unapply(typeRef)._1
+      println(s"666 445 rhs: $typRepr2")
+
+      val termRefRef: TermRef = symbol.termRef
+      val typRepr22: TypeRepr = TermRef.unapply(termRefRef)._1
+      println(s"666 445_2 : $typRepr22")
+
+      Option(typRepr22)
+
+    case other =>
+      println("666 other")
+      //throw IllegalStateException(s"Finding CurrentScopeTypeRepr from $other is not supported.")
+      None
+
+  typeRepr
+
+//private def findCurrentScopeTypeReprFromTerm(using quotes: Quotes)(symbol: quotes.reflect.Symbol, recursionLevel: Int): Option[quotes.reflect.TypeRepr] =
+//  throw IllegalStateException("Not implemented.")
+//
+//private def findCurrentScopeTypeReprFromTypeTree(using quotes: Quotes)(tpt: quotes.reflect.TypeTree, recursionLevel: Int): Option[quotes.reflect.TypeRepr] =
+//  import quotes.reflect.*
+//  tpt.tpe
 
 
 
@@ -378,7 +599,7 @@ def printFields(label: String, obj: Any): Unit =
   else
     allMethods(obj).foreach( printField(obj.getClass.getSimpleName, obj, _) )
 
-def printField(label: String, obj: Any, prop: String): Unit =
+private def printField(label: String, obj: Any, prop: String): Unit =
   try { println(s"$label.$prop: ${ getProp(obj, prop) }") } catch { case _: Exception => }
 
 //noinspection ScalaUnusedSymbol
@@ -816,3 +1037,58 @@ abstract class NeighborVisitor[A <% Int => Double](val dim:Int) {
   }
 }
 */
+
+
+def printSymbolInfo(using quotes: Quotes)(symbol: quotes.reflect.Symbol): Unit =
+  var str = ""
+  str += s"name: ${symbol.name}\n"
+  if symbol.privateWithin.isDefined then str += s"privateWithin: ${symbol.privateWithin}\n"
+  if symbol.protectedWithin.isDefined then str += s"protectedWithin: ${symbol.protectedWithin}\n"
+  str += s"fullName: ${symbol.fullName}\n"
+  str += s"tree: ${symbol.tree}\n"
+
+  if symbol.isType then str += s"isType: ${symbol.isType}\n"
+  if symbol.isTerm then str += s"isTerm: ${symbol.isTerm}\n"
+  if symbol.isAliasType then str += s"isAliasType: ${symbol.isAliasType}\n"
+
+  if symbol.isDefinedInCurrentRun then str += s"isDefinedInCurrentRun: ${symbol.isDefinedInCurrentRun}\n"
+  if symbol.isLocalDummy then str += s"isLocalDummy: ${symbol.isLocalDummy}\n"
+  if symbol.isRefinementClass then str += s"isRefinementClass: ${symbol.isRefinementClass}\n"
+  if symbol.isAnonymousClass then str += s"isAnonymousClass: ${symbol.isAnonymousClass}\n"
+  if symbol.isAnonymousFunction then str += s"isAnonymousFunction: ${symbol.isAnonymousFunction}\n"
+  if symbol.isAbstractType then str += s"isAbstractType: ${symbol.isAbstractType}\n"
+  if symbol.isClassConstructor then str += s"isClassConstructor: ${symbol.isClassConstructor}\n"
+  if symbol.isPackageDef then str += s"isPackageDef: ${symbol.isPackageDef}\n"
+  if symbol.isClassDef then str += s"isClassDef: ${symbol.isClassDef}\n"
+  if symbol.isTypeDef then str += s"isTypeDef: ${symbol.isTypeDef}\n"
+  if symbol.isValDef then str += s"isValDef: ${symbol.isValDef}\n"
+  if symbol.isDefDef then str += s"isDefDef: ${symbol.isDefDef}\n"
+  if symbol.isBind then str += s"isBind: ${symbol.isBind}\n"
+  if symbol.isNoSymbol then str += s"isNoSymbol: ${symbol.isNoSymbol}\n"
+  if symbol.exists then str += s"exists: ${symbol.exists}\n"
+  if symbol.isTypeParam then str += s"isTypeParam: ${symbol.isTypeParam}\n"
+
+  str += s"typeRef: ${symbol.typeRef}\n"
+  str += s"termRef: ${symbol.termRef}\n"
+
+  if symbol.annotations.nonEmpty then str += s"annotations: ${symbol.annotations}\n"
+  if symbol.declaredFields.nonEmpty then str += s"declaredFields: ${symbol.declaredFields}\n"
+  if symbol.fieldMembers.nonEmpty then str += s"fieldMembers: ${symbol.fieldMembers}\n"
+  if symbol.declaredMethods.nonEmpty then str += s"declaredMethods: ${symbol.declaredMethods}\n"
+  if symbol.methodMembers.nonEmpty then str += s"methodMembers: ${symbol.methodMembers}\n"
+  if symbol.declaredTypes.nonEmpty then str += s"declaredTypes: ${symbol.declaredTypes}\n"
+  if symbol.typeMembers.nonEmpty then str += s"typeMembers: ${symbol.typeMembers}\n"
+  if symbol.declarations.nonEmpty then str += s"declarations: ${symbol.declarations}\n"
+  if symbol.paramSymss.nonEmpty then str += s"paramSymss: ${symbol.paramSymss}\n"
+  if symbol.allOverriddenSymbols.nonEmpty then str += s"allOverriddenSymbols: ${symbol.allOverriddenSymbols}\n"
+  if symbol.caseFields.nonEmpty then str += s"caseFields: ${symbol.caseFields}\n"
+  if symbol.children.nonEmpty then str += s"children: ${symbol.children}\n"
+
+  str += s"primaryConstructor: ${symbol.primaryConstructor}\n"
+  str += s"signature: ${symbol.signature}\n"
+  str += s"moduleClass: ${symbol.moduleClass}\n"
+  str += s"companionClass: ${symbol.companionClass}\n"
+  str += s"companionModule: ${symbol.companionModule}\n"
+
+
+  println(s"Symbold details\n$str")

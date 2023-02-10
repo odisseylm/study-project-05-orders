@@ -42,5 +42,7 @@ def sss(): Unit = {
   //val values222 = BuySellType.values()
   val value1 = BuySellType.valueOf("BUY")
 
+  //val cc = BuySellType.ordinal
+
 
 }

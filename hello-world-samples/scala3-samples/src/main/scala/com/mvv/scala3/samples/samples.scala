@@ -108,3 +108,9 @@ class InheritedFromJavaClass2 extends BaseJavaClass1 with Trait1 with Trait2 wit
   protected def protectedMethod2(): String = ""
   def publicMethod2(): String = ""
 }
+
+
+enum Scala3TestEnum1 :
+  case TestEnumValue1, TestEnumValue2
+  case TestEnumValue3
+

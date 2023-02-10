@@ -270,7 +270,7 @@ class TesPropsClass extends BaseClass:
     dumpTerm((v: String|Null) => tempStrPropVar1_=(v.asInstanceOf[String]) )
     */
 
-    dumpTerm((v: String) => { val obj: Any = ""; tempStrPropVar1_=(obj.asInstanceOf[String]) } )
+    //dumpTerm((v: String) => { val obj: Any = ""; tempStrPropVar1_=(obj.asInstanceOf[String]) } )
 
   }
 

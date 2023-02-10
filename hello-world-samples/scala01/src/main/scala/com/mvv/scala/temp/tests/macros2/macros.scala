@@ -310,7 +310,7 @@ def asBeanValue3Impl[T](expr: Expr[T])(using t: Type[T])(using q: Quotes): Expr[
 
 
 private def printFields(label: String, obj: Any): Unit =
-  println(label)
+  println(s"\n\n$label")
   import scala.language.unsafeNulls
   allMethods(obj).foreach( printField(obj.getClass.getSimpleName, obj, _) )
 
