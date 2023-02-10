@@ -77,3 +77,42 @@ val tpt = Inferred(TypeRepr.of[JsString])
 val pattern = TypedOrTest(tree, tpt)
 CaseDef(pattern, None, Ref(tpe.termSymbol))
 
+
+
+Inlined(
+  EmptyTree,
+  List(),
+  Block(
+    List(
+      DefDef(
+        $anonfun,
+        List(
+          List(
+            ValDef(
+              vvvv,
+              TypeTree[TypeRef(
+                ThisType(TypeRef(NoPrefix,module class macros2)),
+                class TestEnum1
+              )],
+              EmptyTree
+            )
+          )
+        ),
+        TypeTree[
+          TypeRef(
+            ThisType(TypeRef(NoPrefix,module class macros2)),
+            class TestEnum2
+          )
+        ],
+        Match(
+          Ident(vvvv),
+            List(
+              CaseDef(
+                Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1),TestEnumValue1),
+                EmptyTree,
+                Block(
+                  List(),
+                  Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum2),TestEnumValue1)
+                )
+              ),
+             CaseDef(Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1),TestEnumValue2),EmptyTree,Block(List(),Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum2),TestEnumValue2))))))),Closure(List(),Ident($anonfun),EmptyTree)))

@@ -208,22 +208,75 @@ def enumMappingFuncImpl[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.re
     //val ident3: Term = Ident(Symbol.classSymbol("com.mvv.scala.temp.tests.macros2.TestEnum1").termRef)
     // T O D O: use widen
 
-    val scopeTypRepr = findCurrentScopeTypeRepr(Symbol.requiredClass(TypeRepr.of[EnumFrom].show), 0)
+    val scopeTypRepr: TypeRepr = findCurrentScopeTypeRepr(Symbol.requiredClass(TypeRepr.of[EnumFrom].show), 0).get
     println(s"scopeTypRepr: $scopeTypRepr")
 
     //Ident.copy(original: Tree)(name: String)
-    val termRef123From = TermRef(scopeTypRepr.get, "TestEnum1")
+    val termRef123From = TermRef(scopeTypRepr, "TestEnum1")
     val ident123From = Ident(termRef123From)
     val selectFrom123From = Select.unique(ident123From, "TestEnumValue1")
     println(s"selectFrom123From: $selectFrom123From")
 
-    val termRef123To = TermRef(scopeTypRepr.get, "TestEnum2")
+    /*
+    //val termRef123From4 = TermRef(scopeTypRepr, "com.mvv.scala.temp.tests.macros2.TestEnum1")
+    val termRef123From4 = Symbol.classSymbol("com.mvv.scala.temp.tests.macros2.TestEnum1").termRef
+    val ident123From4 = Ident(termRef123From4)
+    val selectFrom123From4 = Select.unique(ident123From4, "TestEnumValue1")
+    println(s"selectFrom123From4: $selectFrom123From4")
+    */
+
+    //Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1)
+    //val comTermRef = TermRef(scopeTypRepr, "com")
+    //val termIdentCom = Ident(comTermRef)
+    val termIdentCom = Ident(Symbol.requiredPackage("com").termRef)
+    val selectMvv = Select.unique(termIdentCom, "mvv")
+    val selectScala = Select.unique(selectMvv, "scala")
+    val selectTemp = Select.unique(selectScala, "temp")
+    val selectTests = Select.unique(selectTemp, "tests")
+    val selectMacros = Select.unique(selectTests, "macros2")
+    val selectTestEnum1 = Select.unique(selectMacros, "TestEnum1")
+    val selectFrom123From2 = Select.unique(selectTestEnum1, "TestEnumValue1")
+    println(s"selectFrom123From2: $selectFrom123From2")
+
+    /*
+    //Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1)
+    val comTermRef = TermRef(scopeTypRepr, "com")
+    val termIdentCom = Ident(comTermRef)
+    //val selectCom = Select(termIdentCom)
+    //val selectMvv = Select.unique(termIdentCom, "mvv")
+    val selectMvv = Select(termIdentCom, Symbol.requiredPackage("com.mvv"))
+    //val selectMvv = Select.unique(selectCom, "mvv")
+    //val selectMvv = Select.unique(termIdentCom, "mvv")
+    val selectScala = Select(selectMvv, Symbol.requiredPackage("com.mvv.scala"))
+    val selectTemp = Select(selectScala, Symbol.requiredPackage("com.mvv.scala.temp"))
+    val selectTests = Select(selectTemp, Symbol.requiredPackage("com.mvv.scala.temp.tests"))
+    val selectMacros = Select(selectTests, Symbol.requiredPackage("com.mvv.scala.temp.tests.macros2"))
+    //val selectFrom123From2 = Select.unique(selectMacros, "TestEnum1")
+    //val selectFrom123From2 = Select(selectMacros, Symbol.requiredClass("TestEnum1"))
+    val selectTestEnum1 = Select(selectMacros, Symbol.requiredClass("com.mvv.scala.temp.tests.macros2.TestEnum1"))
+    //val selectTestEnum1 = Select(selectMacros, Symbol.classSymbol("TestEnum1"))
+    //val selectTestEnum1 = Select.unique(selectMacros, "TestEnum1")
+    val selectFrom123From2 = Select.unique(selectTestEnum1, "TestEnumValue1")
+    println(s"selectFrom123From2: $selectFrom123From2")
+    */
+
+    //scopeTypRepr.select(Symbol.requiredClass("com.mvv.scala.temp.tests.macros2.TestEnum1"))
+
+    //val aa = TermRef(scopeTypRepr, Symbol.requiredClass(TypeRepr.of[EnumFrom].show))
+    //val aa = TermRef(scopeTypRepr, TypeRepr.of[EnumFrom].show)
+    //val selectFrom123From3 = Select.unique(Ident(aa), "TestEnumValue1")
+    //println(s"selectFrom123From3: $selectFrom123From3")
+
+    //println(s"selectFrom123From: $selectFrom123From2")
+
+    val termRef123To = TermRef(scopeTypRepr, "TestEnum2")
     val ident123To = Ident(termRef123To)
     val selectFrom123To = Select.unique(ident123To, "TestEnumValue1")
-    println(s"selectFrom123: $selectFrom123To")
+    println(s"selectTo123: $selectFrom123To")
 
     //???
 
+    /*
     val enumFromClassSymbol = Symbol.requiredClass(TypeRepr.of[EnumFrom].show)
     val identFrom: Term = Ident(enumFromClassSymbol.termRef)
     val enumValueChildFrom = enumFromClassSymbol
@@ -231,6 +284,7 @@ def enumMappingFuncImpl[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.re
       .find(_.toString.contains("TestEnumValue1")).get
     val selectFrom = Select.apply(identFrom, enumValueChildFrom)
     println(s"selectFrom: $selectFrom")
+    */
 
     /*
     val enumToClassSymbol = Symbol.requiredClass(TypeRepr.of[EnumTo].show)
@@ -248,7 +302,12 @@ def enumMappingFuncImpl[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.re
       //dd1.tree,
       //childSymbol1.tree,
       //selectFrom,
-      selectFrom123From,
+      //selectFrom123From,
+      //selectFrom123From4,
+      selectFrom123From2,
+      //selectFrom123From2,
+      //selectFrom123From2,
+      //selectFrom123From3,
       None,
       Block(
         Nil,

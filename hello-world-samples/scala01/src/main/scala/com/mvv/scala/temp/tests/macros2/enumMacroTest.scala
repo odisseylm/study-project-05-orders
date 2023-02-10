@@ -39,9 +39,14 @@ def test1(): Unit = {
     case TestEnum1.TestEnumValue2 => TestEnum2.TestEnumValue2
 
 
+  //val v222: (TestEnum1 => TestEnum2) = dumpTerm( vvvv => vvvv match
+  //  case TestEnum1.TestEnumValue1 => TestEnum2.TestEnumValue1
+  //  case TestEnum1.TestEnumValue2 => TestEnum2.TestEnumValue2
+  //)
+  //println(v222)
   val v222: (TestEnum1 => TestEnum2) = dumpTerm( vvvv => vvvv match
-    case TestEnum1.TestEnumValue1 => TestEnum2.TestEnumValue1
-    case TestEnum1.TestEnumValue2 => TestEnum2.TestEnumValue2
+    case com.mvv.scala.temp.tests.macros2.TestEnum1.TestEnumValue1 => com.mvv.scala.temp.tests.macros2.TestEnum2.TestEnumValue1
+    case com.mvv.scala.temp.tests.macros2.TestEnum1.TestEnumValue2 => com.mvv.scala.temp.tests.macros2.TestEnum2.TestEnumValue2
   )
   println(v222)
 
