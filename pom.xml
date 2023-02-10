@@ -175,6 +175,7 @@
     <module>hello-world-samples/scala2-samples</module>
     <!--<module>hello-world-samples/scala3-samples</module>-->
     <module>scala-map-struct-processor-support</module>
+    <module>scala-map-struct-support</module>
     <module>kotlin-orders</module>
     <module>scala-orders</module>
   </modules>

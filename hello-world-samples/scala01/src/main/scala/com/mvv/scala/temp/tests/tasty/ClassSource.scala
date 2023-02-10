@@ -76,13 +76,26 @@ private def getClassLocationUrl(cls: Class[?]): URL =
   checkNotNull(thisClassUrl, s"Location of class [${cls.getName}] is not found.")
 
 
-private def loadClass(fullClassName: String, classLoaders: ClassLoader*): Class[?] =
+def loadClass(fullClassName: String, classLoaders: ClassLoader*): Class[?] =
   val cls: Class[?] = classLoaders.view
-    .flatMap(cl => tryDo(Class.forName(fullClassName, false, cl).nn))
+    .flatMap(cl => tryDo(loadClassImpl(fullClassName, Option(cl)).nn))
     .headOption
-    .getOrElse(Class.forName(fullClassName).nn)
+    .getOrElse(loadClassImpl(fullClassName, None).nn)
   cls
 
+private def loadClassImpl(fullClassName: String, classLoader: Option[ClassLoader]): Class[?] =
+  try  classLoader.map(cl => Class.forName(fullClassName, false, cl).nn).getOrElse(Class.forName(fullClassName).nn)
+  catch case _: Exception =>
+    val fixedName = fixInternalClassName(fullClassName)
+    classLoader.map(cl => Class.forName(fixedName, false, cl).nn).getOrElse(Class.forName(fixedName).nn)
+
+private def fixInternalClassName(fullClassName: String) =
+  val classParts = fullClassName.split('.')
+  classParts
+    .map(p => if p.charAt(0).isUpper then p + '$' else p + '.' )
+    .mkString("")
+    .stripSuffix(".")
+    .stripSuffix("$")
 
 def tastyFileUrl(cls: Class[?]): URL|Null =
   var tastyAsResourceUrl = cls.getResource(s"${cls.getSimpleName}.tasty")
@@ -102,7 +115,7 @@ def isScala3Class(cls: Class[?]): Boolean = tastyFileExists(cls)
 
 def isScala2Class(cls: Class[?]): Boolean =
   try
-    val scala2MetaDataAnnotation = Class.forName("scala.reflect.ScalaSignature")
+    val scala2MetaDataAnnotation = loadClass("scala.reflect.ScalaSignature")
       .asInstanceOf[Class[? <: java.lang.annotation.Annotation]]
     cls.getAnnotation(scala2MetaDataAnnotation) .isNotNull
   catch case _: Exception => false

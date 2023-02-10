@@ -1,6 +1,8 @@
 package org.mvv.mapstruct.scala.debug
 
+
 private val log = org.mvv.mapstruct.scala.Logger("org.mvv.mapstruct.scala.debug")
+
 
 //noinspection ScalaUnusedSymbol
 // Debug functions

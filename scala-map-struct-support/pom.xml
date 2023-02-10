@@ -2,11 +2,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.mvv.scala</groupId>
-  <artifactId>scala-map-struct-processor-support</artifactId>
+  <artifactId>scala-map-struct-support</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <name>${project.artifactId}</name>
-  <description>It allows to pick up scala props</description>
+  <description>Helpers fro map-struct usage from scala</description>
 
   <licenses>
     <license>
@@ -107,19 +107,6 @@
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct</artifactId>
       <version>${mapstruct.version}</version>
-    </dependency>
-
-    <!-- With this approach scala compiler will pick up MapStruct processor during compiling java sources. -->
-    <dependency>
-      <groupId>org.mapstruct</groupId>
-      <artifactId>mapstruct-processor</artifactId>
-      <version>${mapstruct.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.mvv.scala</groupId>
-      <artifactId>scala-map-struct-support</artifactId>
-      <version>${project.version}</version>
     </dependency>
 
     <dependency>

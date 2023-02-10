@@ -1,6 +1,8 @@
 //noinspection DuplicatedCode , ScalaUnusedSymbol
 package com.mvv.scala.macros
 
+import com.mvv.scala.temp.tests.tasty.loadClass
+
 import runtime.stdLibPatches.Predef.nn
 import scala.Option
 import scala.annotation.unused
@@ -291,7 +293,7 @@ private def findClassExpr[T](using Type[T], Quotes): Option[Expr[Class[T]]] =
   val asString: String = Type.show[T]
   if asString.startsWitOneOf("java.", "javax.", "scala.")
   then try {
-    Option(Expr(Class.forName(asString).asInstanceOf[Class[T]]))
+    Option(Expr(loadClass(asString).asInstanceOf[Class[T]]))
   } catch {
     case _: Exception => None
   }

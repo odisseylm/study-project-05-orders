@@ -5,6 +5,7 @@ import scala.collection.mutable
 import scala.quoted.*
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 import ClassKind.classKind
+import com.mvv.scala.macros.printSymbolInfo
 
 import java.nio.file.Path
 
@@ -166,10 +167,12 @@ class ScalaBeansInspector extends Inspector :
       val declaredFields = mutable.Map[_FieldKey, _Field]()
       val declaredMethods = mutable.Map[_MethodKey, _Method]()
       val declaredTypeParams = mutable.ArrayBuffer[_TypeParam]()
-      classEls.foreach (
-        _ match
-          case el if el.isDefDef => val m = el.toMethod; declaredMethods.put(m.toKey, m)
+      classEls.foreach (elll =>
+        println(s"elll: $elll")
+        elll match
+          case el if el.isImport => // it also ValDef... need to skip
           case el if el.isValDef => val f = el.toField;  declaredFields.addOne(f.toKey, f)
+          case el if el.isDefDef => val m = el.toMethod; declaredMethods.put(m.toKey, m)
           case el if el.isTypeDef => val typeParamName = extractName(el);  declaredTypeParams.addOne(_TypeParam(typeParamName))
           case el => throw IllegalStateException(s"Unexpected class element: [$el].")
       )
@@ -294,7 +297,24 @@ object QuotesHelper :
       el.toSymbol .map(_.isClassDef) .getOrElse(false)
 
     def isValDef: Boolean =
-      el.toSymbol .map(_.isValDef) .getOrElse(false)
+      //el.toSymbol .map(_.isValDef) .getOrElse(false)
+      el.toSymbol .map(s =>
+        val vvv: Boolean = s.isValDef
+        if s.toString.contains("import") || s.toString.contains("Import") then
+          val vvv1 = s.isValDef
+          //val vvv2 = s.isImport
+          println(s"vvv: $vvv")
+          printFields("imports 22", s)
+          printFields("imports 22 tree", s.tree)
+          printSymbolInfo(s)
+        vvv
+      ) .getOrElse(false)
+
+    def isImport: Boolean =
+      //println(s"isImport: $el")
+      if !el.isValDef then return false
+      el.toSymbol .map(_.name == "<import>") .getOrElse(false)
+
 
     def isDefDef: Boolean =
       el.toSymbol .map(_.isDefDef) .getOrElse(false)

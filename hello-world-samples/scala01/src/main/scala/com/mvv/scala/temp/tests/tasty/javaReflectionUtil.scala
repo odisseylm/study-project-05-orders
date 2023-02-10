@@ -31,7 +31,7 @@ val StandardTypes = Set(
 
 def typeExists(_type: _Type): Boolean =
   if StandardTypes.contains(_type.className) then return true
-  try { Class.forName(_type.className); true }
+  try { loadClass(_type.className); true }
   catch case _: Exception => false
 
 def findJavaField(cls: Class[?], name: String): Option[java.lang.reflect.Field] =
