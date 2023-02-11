@@ -5,7 +5,7 @@ import scala.collection.mutable
 import scala.quoted.*
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 import ClassKind.classKind
-import com.mvv.scala.macros.printSymbolInfo
+import com.mvv.scala.macros.{printSymbolInfo, printTreeSymbolInfo}
 
 import java.nio.file.Path
 
@@ -124,7 +124,7 @@ class ScalaBeansInspector extends Inspector :
         _package.name, typeName)(this)
 
       visitParentTypeDefs(_class, rhs)
-      visitTypeDefEl(_class, rhs)
+      visitTypeDefEl(_class, typeDef, rhs)
       //mergeAllDeclaredMembers(_class)
 
       _class.parents.foreach { parentCls =>
@@ -158,9 +158,17 @@ class ScalaBeansInspector extends Inspector :
       case _ =>
 
 
-    def visitTypeDefEl(_class: _Class, rhs: Tree): Unit = rhs match
-      case cd if cd.isClassDef || cd.isTemplate => visitClassEls(_class, getClassMembers(cd))
-      case _ =>
+    def visitTypeDefEl(_class: _Class, typeDef: TypeDef, rhs: Tree): Unit =
+      //println(s"visitTypeDefEl ${_class.fullName} $typeDef")
+      //printFields("typeDef", typeDef)
+      //printTreeSymbolInfo(typeDef)
+
+      if typeDef.isClassDef && typeDef.name.endsWith("$") then { return }
+
+      rhs match
+        case s if s.isSingletonDef => // nothing important and it has unexpected format
+        case cd if cd.isClassDef || cd.isTemplate => visitClassEls(_class, getClassMembers(cd))
+        case _ =>
 
 
     def visitClassEls(_class: _Class, classEls: List[Tree]): Unit =
@@ -168,13 +176,16 @@ class ScalaBeansInspector extends Inspector :
       val declaredMethods = mutable.Map[_MethodKey, _Method]()
       val declaredTypeParams = mutable.ArrayBuffer[_TypeParam]()
       classEls.foreach (elll =>
-        println(s"elll: $elll")
+        //println(s"elll: $elll")
         elll match
           case el if el.isImport => // it also ValDef... need to skip
           case el if el.isValDef => val f = el.toField;  declaredFields.addOne(f.toKey, f)
           case el if el.isDefDef => val m = el.toMethod; declaredMethods.put(m.toKey, m)
           case el if el.isTypeDef => val typeParamName = extractName(el);  declaredTypeParams.addOne(_TypeParam(typeParamName))
-          case el => throw IllegalStateException(s"Unexpected class element: [$el].")
+          case el =>
+            printSymbolInfo(el.toSymbol.get)
+            println(s"Unexpected class element (${el.getClass.getName}): [$el]\nin parent ${_class.fullName}.")
+            throw IllegalStateException(s"Unexpected class element (${el.getClass.getName}): [$el]\nin parent ${_class.fullName}.")
       )
       _class.declaredTypeParams = List.from(declaredTypeParams)
       _class.declaredFields = Map.from(declaredFields)
@@ -290,6 +301,9 @@ object QuotesHelper :
     def isTypeDef: Boolean =
       el.toSymbol.map(s => s.isTypeDef || s.isClassDef).getOrElse(false)
 
+    def isSingletonDef: Boolean =
+      el.isClassDef && el.toSymbol.map(_.name.endsWith("$")) .getOrElse(false)
+
     def isPackageDef: Boolean =
       el.toSymbol .map(_.isPackageDef) .getOrElse(false)
 
@@ -298,23 +312,11 @@ object QuotesHelper :
 
     def isValDef: Boolean =
       //el.toSymbol .map(_.isValDef) .getOrElse(false)
-      el.toSymbol .map(s =>
-        val vvv: Boolean = s.isValDef
-        if s.toString.contains("import") || s.toString.contains("Import") then
-          val vvv1 = s.isValDef
-          //val vvv2 = s.isImport
-          println(s"vvv: $vvv")
-          printFields("imports 22", s)
-          printFields("imports 22 tree", s.tree)
-          printSymbolInfo(s)
-        vvv
-      ) .getOrElse(false)
+      el.toSymbol .map(_.isValDef) .getOrElse(false)
 
     def isImport: Boolean =
-      //println(s"isImport: $el")
       if !el.isValDef then return false
       el.toSymbol .map(_.name == "<import>") .getOrElse(false)
-
 
     def isDefDef: Boolean =
       el.toSymbol .map(_.isDefDef) .getOrElse(false)

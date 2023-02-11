@@ -148,7 +148,20 @@
       <groupId>com.mvv.scala.test</groupId>
       <artifactId>scala3-samples</artifactId>
       <version>${project.version}</version>
-      <optional>true</optional>
+      <!--<optional>true</optional>-->
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang.modules</groupId>
+      <artifactId>scala-xml_3</artifactId>
+      <version>2.1.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang.modules</groupId>
+      <artifactId>scala-xml_2.13</artifactId>
+      <version>2.1.0</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>

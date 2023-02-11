@@ -12,6 +12,7 @@ import scala.quoted.{Expr, Quotes, Type}
 import scala.reflect.ClassTag
 //
 import com.mvv.scala.macros.Logger as log
+import com.mvv.scala.temp.tests.tasty.QuotesHelper.toSymbol
 
 
 inline def asPropValue[T](inline expr: T): PropValue[T, Any] =
@@ -1041,6 +1042,12 @@ abstract class NeighborVisitor[A <% Int => Double](val dim:Int) {
 */
 
 
+def printTreeSymbolInfo(using quotes: Quotes)(tree: quotes.reflect.Tree): Unit =
+  tree.toSymbol.foreach(s => printSymbolInfo(s))
+
+def printSymbolInfo(using quotes: Quotes)(symbol: Option[quotes.reflect.Symbol]): Unit =
+  symbol.foreach(s => printSymbolInfo(s))
+
 def printSymbolInfo(using quotes: Quotes)(symbol: quotes.reflect.Symbol): Unit =
   var str = ""
   str += s"name: ${symbol.name}\n"
@@ -1093,4 +1100,4 @@ def printSymbolInfo(using quotes: Quotes)(symbol: quotes.reflect.Symbol): Unit =
   str += s"companionModule: ${symbol.companionModule}\n"
 
 
-  println(s"Symbold details\n$str")
+  println(s"Symbol details\n$str")

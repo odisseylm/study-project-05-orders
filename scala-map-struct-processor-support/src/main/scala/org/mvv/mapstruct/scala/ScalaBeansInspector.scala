@@ -4,22 +4,29 @@ import scala.annotation.nowarn
 import scala.collection.mutable
 import scala.quoted.*
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
+//
 import ClassKind.classKind
-
+import org.mvv.mapstruct.scala.debug.printFields
+import org.mvv.mapstruct.scala.debug.printSymbolInfo
+import org.mvv.mapstruct.scala.debug.printTreeSymbolInfo
+//
+import java.net.{ URI, URL, URLClassLoader }
 import java.nio.file.Path
 
-val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang.Comparable"))
+
+private val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang.Comparable"))
+private val log: Logger = Logger(classOf[ScalaBeansInspector])
 
 
 class ScalaBeansInspector extends Inspector :
   import QuotesHelper.*
 
-  private val log = Logger(classOf[ScalaBeansInspector])
-
   // it contains ONLY 'normal' classes from input tasty file
   private val classesByFullName:  mutable.Map[String, _Class] = mutable.HashMap()
   private val processedTastyFiles: mutable.Map[String, List[_Class]] = mutable.Map()
   private val processedJars: mutable.Set[Path] = mutable.Set()
+
+  private var classLoaders: Map[String, ClassLoader] = Map()
 
   def classesDescr: Map[String, _Class] = Map.from(classesByFullName)
   def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
@@ -27,7 +34,8 @@ class ScalaBeansInspector extends Inspector :
   def inspectClass(fullClassName: String): _Class = inspectClass(fullClassName, Nil*)
 
   def inspectClass(fullClassName: String, classLoaders: ClassLoader*): _Class =
-    inspectClass(loadClass(fullClassName, classLoaders*))
+    addClassLoaders(classLoaders*)
+    inspectClass(loadClass(fullClassName, this.classLoaders.values))
 
   def inspectClass(cls: Class[?]): _Class =
     cls.classKind match
@@ -48,6 +56,36 @@ class ScalaBeansInspector extends Inspector :
             classesByFullName(cls.getName.nn)
           case _ => throw IllegalStateException(s"Unsupported class location [$classLocation].")
 
+  private def addJarClassLoaderIfNeeded(jarPath: Path): Unit =
+    if classLoaders.contains(jarPath.toString) then { return }
+
+    val someJarClassFullNames: List[String] = getJarClassFullNames(jarPath, 20)
+    val jarClassesAreAlreadyPresentInClassLoaders: Boolean = someJarClassFullNames
+      .exists(className => tryToLoadClass(className, classLoaders.values).isDefined)
+
+    if !jarClassesAreAlreadyPresentInClassLoaders then
+      import scala.language.unsafeNulls
+      classLoaders += (jarPath.toString, URLClassLoader(Array(jarPath.toUri.toURL)))
+
+  private def addClassLoaders(classLoaders: ClassLoader*): Unit =
+    classLoaders.foreach { cl =>
+      val alreadyAdded = this.classLoaders.values.exists(_ == cl)
+      if !alreadyAdded then
+        this.classLoaders += (cl.getName.nn, cl)
+    }
+
+  private def getJarClassFullNames(jarPath: Path, classCount: Int): List[String] =
+    import scala.language.unsafeNulls
+    import scala.jdk.CollectionConverters.*
+
+    val jarFile: java.util.jar.JarFile = java.util.jar.JarFile(jarPath.toFile.nn, false)
+    val classList: java.util.List[String] = jarFile.stream()
+      .filter { entry => val path = entry.getName
+        path.endsWith(".class") && !path.contains("$") }
+      .limit(classCount)
+      .map(entry => entry.getName.stripSuffix(".class").replace('/', '.'))
+      .toList
+    List.from(classList.asScala)
 
   def inspectTastyFile(tastyOrClassFile: String): List[_Class] =
     val tastyFile = if tastyOrClassFile.endsWith(".tasty")
@@ -59,6 +97,8 @@ class ScalaBeansInspector extends Inspector :
 
   def inspectJar(jarPath: Path): List[_Class] =
     processedJars.addOne(jarPath)
+
+    addJarClassLoaderIfNeeded(jarPath)
 
     val before = this.classesDescr
     TastyInspector.inspectTastyFilesInJar(jarPath.toString)(this)
@@ -73,7 +113,8 @@ class ScalaBeansInspector extends Inspector :
     val dependenciesJars = mutable.Set[Path]()
 
     for tasty <- beanType do
-      log.trace(s"tasty.path: ${tasty.path}")
+      // lets keep it as 'info' since this info is needed very often
+      log.info(s"tasty.path: ${tasty.path}")
       val tree: Tree = tasty.ast
 
       if !processedTastyFiles.contains(tasty.path) then
@@ -100,7 +141,9 @@ class ScalaBeansInspector extends Inspector :
     def visitPackageTag(packageClause: PackageClause): _Package =
       val PackageClause(_, children) = packageClause
 
-      val _package = _Package(packageClause.toSymbol.get.fullName)
+      val tastyPackageName = packageClause.toSymbol.get.fullName
+      val realPackageName = if tastyPackageName == "<empty>" then "" else tastyPackageName
+      val _package = _Package(realPackageName)
       children.foreach(
         visitPackageEl(_package, _)
           .foreach(cls => _package.classes.put(cls.simpleName, cls) ))
@@ -116,10 +159,12 @@ class ScalaBeansInspector extends Inspector :
     def visitTypeDef(_package: _Package, typeDef: TypeDef): _Class =
 
       val TypeDef(typeName, rhs) = typeDef
-      val alreadyProcessed = classesByFullName.get(s"${_package.name}.$typeName")
+      val alreadyProcessed = classesByFullName.get(fullName(_package.name, typeName))
       if alreadyProcessed.isDefined then return alreadyProcessed.get
 
-      val cls = loadClass(s"${_package.name}.$typeName")
+      //printFields(s"${_package.name}.$typeName  typeDef", typeDef)
+
+      val cls = loadClass(fullName(_package.name, typeName), classLoaders.values)
       val _class = _Class(
         cls, ClassKind.Scala3, ClassSource.of(cls),
         _package.name, typeName)(this)
@@ -148,7 +193,7 @@ class ScalaBeansInspector extends Inspector :
 
         parentFullClassNames
           .foreach { parentClassFullName =>
-            val parentClass = loadClass(parentClassFullName.className)
+            val parentClass = loadClass(parentClassFullName.className, classLoaders.values)
             val toInspectParent: Boolean = toInspectParentClass(parentClass)
 
             if (!classesByFullName.contains(parentClassFullName.className) && toInspectParent)
@@ -159,6 +204,7 @@ class ScalaBeansInspector extends Inspector :
 
 
     def visitTypeDefEl(_class: _Class, rhs: Tree): Unit = rhs match
+      case s if s.isSingletonDef => // nothing important and it has unexpected format
       case cd if cd.isClassDef || cd.isTemplate => visitClassEls(_class, getClassMembers(cd))
       case _ =>
 
@@ -169,13 +215,19 @@ class ScalaBeansInspector extends Inspector :
       val declaredTypeParams = mutable.ArrayBuffer[_TypeParam]()
       classEls.foreach (
         _ match
-          case el if el.isImport => // it also ValDef... need to skip
+          case el if el.isImport => // it is also ValDef... need to skip
+          //case el if el.isEnumValueDef => // skipping now
+          case el if el.isExprStatement => // skipping now
           case el if el.isValDef => val f = el.toField;  declaredFields.addOne(f.toKey, f)
+          case el if el.isApply =>  // some instructions inside class definition
           case el if el.isDefDef => val m = el.toMethod; declaredMethods.put(m.toKey, m)
-          case el if el.isTypeDef => val typeParamName = extractName(el);  declaredTypeParams.addOne(_TypeParam(typeParamName))
+          case el if el.isTypeDef || el.isTemplate => val typeParamName = extractName(el);  declaredTypeParams.addOne(_TypeParam(typeParamName))
           case el =>
-            //throw IllegalStateException(s"Unexpected class element: [$el].")
+            printFields(s"Unexpected member class", el)
+            printTreeSymbolInfo(el)
             log.warn(s"Unexpected member class [$el]. Please add explicit its processing or skipping (similar to <import>).")
+            // uncomment to fix warnings
+            //throw IllegalStateException(s"Unexpected class element: [$el].") // fir deeper testing
       )
       _class.declaredTypeParams = List.from(declaredTypeParams)
       _class.declaredFields = Map.from(declaredFields)
@@ -288,7 +340,7 @@ object QuotesHelper :
       _Field(valName, visibility(v), mod, fieldType)(v)
 
 
-    def toMethod(using quotes.reflect.Printer[quotes.reflect.Tree]): _Method =
+    def toMethod/*(using quotes.reflect.Printer[quotes.reflect.Tree])*/: _Method =
       import quotes.reflect.*
 
       require(el.isDefDef)
@@ -313,7 +365,13 @@ object QuotesHelper :
         if paramss.size == 1 && paramss.head.params.size == 0 then Nil // case with non field-accessor but without params
         else paramss.map(_.params.map(paramToType).mkString("|")).map(v => _Type(v))
 
-      val methodName: String = m.name
+      try m.name catch case _: Exception =>
+        println(s"Bad element $m")
+        printTreeSymbolInfo(el)
+        printFields("Bad element", el)
+
+
+      val methodName: String = tryDo( m.name ) .orElse(m.toSymbol.map(_.name)) .get
 
       val returnType = extractJavaClass(m.returnTpt)
 

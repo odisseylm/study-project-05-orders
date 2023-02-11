@@ -116,3 +116,34 @@ Inlined(
                 )
               ),
              CaseDef(Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1),TestEnumValue2),EmptyTree,Block(List(),Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum2),TestEnumValue2))))))),Closure(List(),Ident($anonfun),EmptyTree)))
+
+
+Apply(
+  TypeApply(
+    Select(Apply(TypeApply(
+      Select(Ident(List),apply),List(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Int)])),
+      List(Typed(SeqLiteral(
+            List(Literal(Constant(1)), Literal(Constant(2))),
+            TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Int)]
+          ),
+          TypeTree[
+            AppliedType(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),<repeated>),List(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Int)))]
+          ))
+      ),
+      foreach
+      ),
+      List(TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Int)])
+  ),
+  List(Block(List(DefDef(
+    $anonfun,
+    List(
+      List(
+        ValDef(
+          var345,
+          TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Int)],
+          EmptyTree
+        )
+      )
+    ),
+  TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Int)],Block(List(),Ident(var345)))),
+  Closure(List(),Ident($anonfun),EmptyTree))))

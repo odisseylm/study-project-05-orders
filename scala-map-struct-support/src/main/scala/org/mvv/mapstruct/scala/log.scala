@@ -7,10 +7,15 @@ enum LogLevel :
 
 sealed trait Logger :
   def trace(msg: => String): Unit
+  def trace(msg: => String, ex: Throwable): Unit
   def debug(msg: => String): Unit
+  def debug(msg: => String, ex: Throwable): Unit
   def info (msg: => String): Unit
+  def info (msg: => String, ex: Throwable): Unit
   def warn (msg: => String): Unit
+  def warn (msg: => String, ex: Throwable): Unit
   def error(msg: => String): Unit
+  def error(msg: => String, ex: Throwable): Unit
 
 object Logger :
   def apply(_class: Class[?]): Logger = apply(_class.getName.nn)
@@ -44,9 +49,20 @@ final class ConsoleLogger (val loggerName: String) extends Logger :
   // we can make them 'inline' but I do not think that it is good idea
   override def trace(msg: =>String): Unit = if isEnabled(LogLevel.TRACE) then printlnToOut(LogLevel.TRACE, msg)
   override def debug(msg: =>String): Unit = if isEnabled(LogLevel.DEBUG) then printlnToOut(LogLevel.DEBUG, msg)
-  override def info(msg: =>String): Unit = if isEnabled(LogLevel.INFO) then printlnToOut(LogLevel.INFO, msg)
-  override def warn(msg: =>String): Unit = if isEnabled(LogLevel.WARN) then printlnToErr(LogLevel.WARN, msg)
+  override def info(msg:  =>String): Unit = if isEnabled(LogLevel.INFO)  then printlnToOut(LogLevel.INFO, msg)
+  override def warn(msg:  =>String): Unit = if isEnabled(LogLevel.WARN)  then printlnToErr(LogLevel.WARN, msg)
   override def error(msg: =>String): Unit = if isEnabled(LogLevel.ERROR) then printlnToErr(LogLevel.ERROR, msg)
+
+  override def trace(msg: =>String, ex: Throwable): Unit =
+    if isEnabled(LogLevel.TRACE) then printlnToOut(LogLevel.TRACE, msg); ex.printStackTrace()
+  override def debug(msg: =>String, ex: Throwable): Unit =
+    if isEnabled(LogLevel.DEBUG) then printlnToOut(LogLevel.DEBUG, msg); ex.printStackTrace()
+  override def info(msg: =>String, ex: Throwable): Unit =
+    if isEnabled(LogLevel.INFO)  then printlnToOut(LogLevel.INFO, msg);  ex.printStackTrace()
+  override def warn(msg: =>String, ex: Throwable): Unit =
+    if isEnabled(LogLevel.WARN)  then printlnToErr(LogLevel.WARN, msg);  ex.printStackTrace(System.err)
+  override def error(msg: =>String, ex: Throwable): Unit =
+    if isEnabled(LogLevel.ERROR) then printlnToErr(LogLevel.ERROR, msg); ex.printStackTrace(System.err)
 
   private def printlnToOut(logLevel: LogLevel, msg: =>String): Unit =
     Console.out.println(formatOutLine(logLevel, msg))
@@ -68,9 +84,15 @@ final class Slf4jLogger (val loggerName: String) extends Logger :
   // we can make them 'inline' but I do not think that it is good idea
   override def trace(msg: =>String): Unit = if log.isTraceEnabled() then log.trace(msg)
   override def debug(msg: =>String): Unit = if log.isDebugEnabled then log.debug(msg)
-  override def info(msg: =>String): Unit = if log.isInfoEnabled then log.info(msg)
-  override def warn(msg: =>String): Unit = if log.isWarnEnabled then log.warn(msg)
+  override def info(msg:  =>String): Unit = if log.isInfoEnabled then log.info(msg)
+  override def warn(msg:  =>String): Unit = if log.isWarnEnabled then log.warn(msg)
   override def error(msg: =>String): Unit = if log.isErrorEnabled then log.error(msg)
+
+  override def trace(msg: =>String, ex: Throwable): Unit = if log.isTraceEnabled() then log.trace(msg, ex)
+  override def debug(msg: =>String, ex: Throwable): Unit = if log.isDebugEnabled then log.debug(msg, ex)
+  override def info(msg:  =>String, ex: Throwable): Unit = if log.isInfoEnabled then log.info(msg, ex)
+  override def warn(msg:  =>String, ex: Throwable): Unit = if log.isWarnEnabled then log.warn(msg, ex)
+  override def error(msg: =>String, ex: Throwable): Unit = if log.isErrorEnabled then log.error(msg, ex)
 
 
 
@@ -80,6 +102,12 @@ final class Log4j2Logger (val loggerName: String) extends Logger :
   // we can make them 'inline' but I do not think that it is good idea
   override def trace(msg: =>String): Unit = if log.isTraceEnabled then log.trace(msg)
   override def debug(msg: =>String): Unit = if log.isDebugEnabled then log.debug(msg)
-  override def info(msg: =>String):  Unit = if log.isInfoEnabled  then log.info(msg)
-  override def warn(msg: =>String):  Unit = if log.isWarnEnabled  then log.warn(msg)
+  override def info(msg:  =>String): Unit = if log.isInfoEnabled  then log.info(msg)
+  override def warn(msg:  =>String): Unit = if log.isWarnEnabled  then log.warn(msg)
   override def error(msg: =>String): Unit = if log.isErrorEnabled then log.error(msg)
+
+  override def trace(msg: =>String, ex: Throwable): Unit = if log.isTraceEnabled then log.trace(msg, ex)
+  override def debug(msg: =>String, ex: Throwable): Unit = if log.isDebugEnabled then log.debug(msg, ex)
+  override def info(msg:  =>String, ex: Throwable): Unit = if log.isInfoEnabled then log.info(msg, ex)
+  override def warn(msg:  =>String, ex: Throwable): Unit = if log.isWarnEnabled then log.warn(msg, ex)
+  override def error(msg: =>String, ex: Throwable): Unit = if log.isErrorEnabled then log.error(msg, ex)

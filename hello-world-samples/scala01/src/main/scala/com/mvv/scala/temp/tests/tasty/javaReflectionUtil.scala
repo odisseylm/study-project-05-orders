@@ -9,7 +9,7 @@ private def getClassesAndInterfacesImpl(cls: Class[?], interfaces: Array[Class[?
   var c: Class[?]|Null = cls
   while c != null && c != classOf[Object] && c != classOf[Any] && c != classOf[AnyRef] do
     all.addOne(cls)
-    c = cls.getSuperclass.nn
+    c = c.getSuperclass.nn
 
   interfaces.nn.foreach { i => all.addOne(i.nn) }
   all.distinct.toList

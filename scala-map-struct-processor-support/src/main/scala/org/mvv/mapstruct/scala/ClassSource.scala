@@ -12,6 +12,7 @@ object ClassSource :
     classUrl match
       case _ if classUrl.getProtocol == "file" => DirectoryClassSource(cls)
       case _ if classUrl.getProtocol == "jar"  => JarClassSource(cls)
+      case _ if classUrl.getProtocol == "jrt"  => SystemClassSource(cls) // system classloader
       case _ => throw IllegalArgumentException(s"Unsupported url [$classUrl].")
 
 
@@ -31,6 +32,11 @@ object JarClassSource :
   def apply(cls: Class[?]): JarClassSource =
     val classUrl = getClassLocationUrl(cls)
     new JarClassSource(jarUrlToJarPath(classUrl))
+
+
+case class SystemClassSource (classSource: URL) extends ClassSource
+object SystemClassSource :
+  def apply(cls: Class[?]): SystemClassSource = new SystemClassSource(getClassLocationUrl(cls))
 
 
 //noinspection NoTailRecursionAnnotation (there is no recursion)
@@ -64,7 +70,7 @@ def fileUrlToPath(url: String): Path =
 
 
 def getClassLocationUrl(fullClassName: String, classLoaders: ClassLoader*): URL =
-  val cls = loadClass(fullClassName, classLoaders *)
+  val cls = loadClass(fullClassName, classLoaders)
   getClassLocationUrl(cls)
 
 private def getClassLocationUrl(cls: Class[?]): URL =
@@ -76,7 +82,16 @@ private def getClassLocationUrl(cls: Class[?]): URL =
   checkNotNull(thisClassUrl, s"Location of class [${cls.getName}] is not found.")
 
 
-def loadClass(fullClassName: String, classLoaders: ClassLoader*): Class[?] =
+//def tryToLoadClass(fullClassName: String, classLoaders: ClassLoader*): Option[Class[?]] =
+//  try Option(loadClass(fullClassName, classLoaders*)) catch case _: Exception => None
+def tryToLoadClass(fullClassName: String, classLoaders: Iterable[ClassLoader]): Option[Class[?]] =
+  try Option(loadClass(fullClassName, classLoaders)) catch case _: Exception => None
+
+//def loadClass(fullClassName: String, classLoaders: scala.collection.Iterable[ClassLoader]): Class[?] =
+//  loadClass(fullClassName, classLoaders.toSeq)
+
+def loadClass(fullClassName: String): Class[?] = loadClass(fullClassName, Nil)
+def loadClass(fullClassName: String, classLoaders: Iterable[ClassLoader]): Class[?] =
   val cls: Class[?] = classLoaders.view
     .flatMap(cl => tryDo(loadClassImpl(fullClassName, Option(cl)).nn))
     .headOption
@@ -108,7 +123,7 @@ def tastyFileUrl(cls: Class[?]): URL|Null =
 def tastyFileExists(cls: Class[?]): Boolean = tastyFileUrl(cls) != null
 //noinspection ScalaUnusedSymbol
 def tastyFileExists(fullClassName: String, classLoaders: ClassLoader*): Boolean =
-  val cls = loadClass(fullClassName, classLoaders*)
+  val cls = loadClass(fullClassName, classLoaders)
   tastyFileExists(cls)
 
 

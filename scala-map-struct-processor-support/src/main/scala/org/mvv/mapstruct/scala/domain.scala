@@ -47,7 +47,7 @@ object ClassKind :
 
 class _Class (val runtimeClass: Class[?], val classKind: ClassKind, val classSource: ClassSource, val _package: String, val simpleName: String)
              (inspector: ScalaBeansInspector) :
-  def fullName: String = s"$_package.$simpleName"
+  def fullName: String = org.mvv.mapstruct.scala.fullName(_package, simpleName)
   // with current impl it possibly can have duplicates
   var parentTypeNames: List[_Type] = Nil
   // with current impl it possibly can have duplicates
