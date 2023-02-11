@@ -76,25 +76,41 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
     el.toSymbol .map(_.name == "<import>") .getOrElse(false) || el.isImplClass("Import")
 
   def isApply: Boolean = el.isDefDef && el.isImplClass("Apply")
+  def isUnapply: Boolean = el.isDefDef && el.isImplClass("Unapply")
+  def isAssign: Boolean = el.isDefDef && el.isImplClass("Assign")
+
+  def isClosure: Boolean = el.isDefDef && el.isImplClass("Closure")
+  def isLambda: Boolean = el.isDefDef && el.isImplClass("Lambda")
+  def isReturn: Boolean = el.isDefDef && el.isImplClass("Return")
+  def isInlined: Boolean = el.isDefDef && el.isImplClass("Inlined")
+
+  def isBind: Boolean = el.isDefDef && el.isImplClass("Bind")
+
+  def isSingleton: Boolean = el.isDefDef && el.isImplClass("Singleton")
 
   def isIf: Boolean = el.isTerm && el.isImplClass("If")
-
   def isMatch: Boolean = el.isTerm && el.isImplClass("Match")
-
   def isWhile: Boolean = el.isTerm &&
     el.isOneOfImplClasses("While", "WhileDo", "DoWhile")
-
   def isBlock: Boolean = el.isTerm && el.isImplClass("Block")
+  def isLiteral: Boolean = el.isTerm && el.isImplClass("Literal")
+  def isConstant: Boolean = el.isTerm && el.isOneOfImplClasses(
+    "Constant",
+    "BooleanConstant", "CharConstant",
+    "ByteConstant", "ShortConstant", "IntConstant", "LongConstant",
+    "FloatConstant", "DoubleConstant",
+    "CharConstant", "StringConstant",
+    "UnitConstant", "NullConstant",
+    "ClassOfConstant",
+  )
 
   def isTry: Boolean = el.isTerm && el.isImplClass("Try")
-
-  def isLiteral: Boolean = el.isTerm && el.isImplClass("Literal")
-
-  def isConstant: Boolean = el.isTerm && el.isImplClass("Constant")
 
   def isExprStatement: Boolean =
     el.isApply || el.isIf || el.isWhile || el.isMatch || el.isBlock || el.isTry
       || el.isLiteral || el.isConstant
+      || el.isUnapply || el.isAssign
+      || el.isClosure || el.isLambda || el.isReturn || el.isInlined
 
   def isDefDef: Boolean =
     el.toSymbol .map(_.isDefDef) .getOrElse(false)

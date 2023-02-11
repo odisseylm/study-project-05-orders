@@ -3,7 +3,7 @@ package org.mvv.mapstruct.scala
 import scala.annotation.nowarn
 import scala.jdk.CollectionConverters.*
 //
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.{ assertThat, assertThatCode }
 import org.junit.jupiter.api.Test
 
 
@@ -51,11 +51,23 @@ class ClassWithBodyStatements :
   //this()
   //yield
   //with
-
-  //forSome
+  // forSome
 
   lazy val lazyProp: String = { s"${this.hashCode}" }
 end ClassWithBodyStatements
+
+
+class ClassWithThrowInBody :
+  // in AST throw is Apply(
+  //   Apply( Ident(throw),
+  //     List( Apply(
+  //      Select( New(Ident(IllegalStateException)), <init> ),
+  //      List(Literal(Constant(Some error.)))
+  //   )))
+  throw IllegalStateException("Some error.")
+  println("ClassWithThrowInBody")
+
+
 
 
 class InspectClassWithBodyStatementsTest {
@@ -80,6 +92,15 @@ class InspectClassWithBodyStatementsTest {
       // Why is it there? Is it ok or not?
       "Temp",
     )
+  }
+
+  @Test
+  def testClassWithThrowInBody(): Unit = {
+    assertThatCode {
+        ScalaBeansInspector().inspectClass(classOf[ClassWithThrowInBody])
+        return // needed since java lambda is required
+      }
+      .doesNotThrowAnyException()
   }
 }
 

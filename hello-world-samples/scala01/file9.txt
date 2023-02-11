@@ -117,7 +117,7 @@ Inlined(
               ),
              CaseDef(Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1),TestEnumValue2),EmptyTree,Block(List(),Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum2),TestEnumValue2))))))),Closure(List(),Ident($anonfun),EmptyTree)))
 
-
+// 'for' loop
 Apply(
   TypeApply(
     Select(Apply(TypeApply(
@@ -147,3 +147,10 @@ Apply(
     ),
   TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Int)],Block(List(),Ident(var345)))),
   Closure(List(),Ident($anonfun),EmptyTree))))
+
+// 'throw'
+Apply( Ident(throw),
+  List( Apply(
+      Select( New(Ident(IllegalStateException)), <init> ),
+      List(Literal(Constant(Some error.)))
+    )))
