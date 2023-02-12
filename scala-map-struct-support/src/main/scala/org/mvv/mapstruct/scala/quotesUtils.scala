@@ -31,13 +31,17 @@ def extractClassName(using Quotes)(t: quotes.reflect.Tree): String =
   clsStr
 
 
-extension (using quotes: Quotes)(el: quotes.reflect.Tree)
-
-  private def isImplClass(className: String): Boolean =
+extension (el: Any)
+  // internal
+  def isImplClass( className: String): Boolean =
     el.isInstanceOf[Product] && el.asInstanceOf[Product].productPrefix == className
 
-  private def isOneOfImplClasses(className: String, otherClassNames: String*): Boolean =
+  // internal
+  def isOneOfImplClasses(className: String, otherClassNames: String*): Boolean =
     el.isImplClass(className) || otherClassNames.exists(clName => el.isImplClass(clName))
+
+
+extension (using quotes: Quotes)(el: quotes.reflect.Tree)
 
   def toSymbol: Option[quotes.reflect.Symbol] =
     // TODO: try to remove risky asInstanceOf[Symbol]
@@ -94,15 +98,6 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
     el.isOneOfImplClasses("While", "WhileDo", "DoWhile")
   def isBlock: Boolean = el.isTerm && el.isImplClass("Block")
   def isLiteral: Boolean = el.isTerm && el.isImplClass("Literal")
-  def isConstant: Boolean = el.isTerm && el.isOneOfImplClasses(
-    "Constant",
-    "BooleanConstant", "CharConstant",
-    "ByteConstant", "ShortConstant", "IntConstant", "LongConstant",
-    "FloatConstant", "DoubleConstant",
-    "CharConstant", "StringConstant",
-    "UnitConstant", "NullConstant",
-    "ClassOfConstant",
-  )
 
   def isTry: Boolean = el.isTerm && el.isImplClass("Try")
 
@@ -125,53 +120,6 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
     // NOot tested yet
     el.isInstanceOf[Product] && el.asInstanceOf[Product].productPrefix == "Definition"
 
-  /*
-  private def treeElementName: Option[String] =
-    import quotes.reflect.*
-    try
-      el match
-        case e if e.isNamedType => Option(e.asInstanceOf[NamedType].name)
-        case e if e.isTypeRef => Option(e.asInstanceOf[TermRef].name)
-        case e if e.isTermRef => Option(e.asInstanceOf[TermRef].name)
-        case e if e.isRefinement => Option(e.asInstanceOf[Refinement].name)
-        case e if e.isRefinement => Option(e.asInstanceOf[Refinement].name)
-        case e if e.isRefinement => Option(e.asInstanceOf[Refinement].name)
-        case e if e.isRefinement => Option(e.asInstanceOf[Refinement].name)
-        case e if e.isDefinition => Option(e.asInstanceOf[Definition].name)
-        case e if e.isIdent => Option(e.asInstanceOf[Ident].name)
-        case e if e.isSelect => Option(e.asInstanceOf[Select].name)
-        case e if e.isNamedArg => Option(e.asInstanceOf[NamedArg].name)
-        case e if e.isSelectOuter => Option(e.asInstanceOf[SelectOuter].name)
-        case e if e.isTypeIdent => Option(e.asInstanceOf[TypeIdent].name)
-        case e if e.isTypeSelect => Option(e.asInstanceOf[TypeSelect].name)
-        case e if e.isTypeProjection => Option(e.asInstanceOf[TypeProjection].name)
-        case e if e.isTypeBind => Option(e.asInstanceOf[TypeBind].name)
-        case e if e.isBind => Option(e.asInstanceOf[Bind].name)
-        case e if e.isSimpleSelector => Option(e.asInstanceOf[SimpleSelector].name)
-        case e if e.isOmitSelector => Option(e.asInstanceOf[OmitSelector].name)
-        case e if e.isTypeProjection => Option(e.asInstanceOf[TypeProjection].name)
-        case _ => None
-    catch case ex: Exception =>
-      log.info(s"Unexpected error of getting name: [$ex]", ex)
-      None
-
-  def elementName: Boolean =
-    el.treeElementName .orElse(el.toSymbol.map(s => s.name))
-      .getOrElse(throw IllegalStateException(s"Error of getting name of [$el]."))
-  */
-
-  //def isEnumValueDef: Boolean =
-  //  val symbolOpt = el.toSymbol
-  //  if symbolOpt.isEmpty then return false
-  //
-  //  import quotes.reflect.*
-  //  val symbol: Symbol = symbolOpt.get
-  //  val name = symbol.fullName
-  //  val fullName = symbol.fullName
-  //  val typeRef: TypeRef = symbol.typeRef
-  //
-  //  false
-
   def getClassMembers: List[quotes.reflect.Tree] =
     el match
       case cd if cd.isClassDef => cd.asInstanceOf[quotes.reflect.ClassDef].body
@@ -186,17 +134,22 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
         .unwrapOption.asInstanceOf[List[quotes.reflect.Tree]]
       case _ => throw IllegalArgumentException(s"Unexpected tree $el.")
 
-  //// ???? Dow we need it?
-  //def getConstructor: List[Tree] =
-  //  el match
-  //    case cd if cd.isClassDef => cd.asInstanceOf[ClassDef].constructor
-  //    //case t if t.isTemplate  => getByReflection(t, "constructor") // template does not have constructor
-  //    case _ => throw IllegalArgumentException(s"Unexpected tree $tree.")
-
 end extension
 
 
-def getByReflection(obj: AnyRef, propName: String*): Any =
+extension (using quotes: Quotes)(el: AnyRef)
+  def isConstant: Boolean = el.isNotNull && el.isOneOfImplClasses(
+    "Constant",
+    "BooleanConstant", "CharConstant",
+    "ByteConstant", "ShortConstant", "IntConstant", "LongConstant",
+    "FloatConstant", "DoubleConstant",
+    "CharConstant", "StringConstant",
+    "UnitConstant", "NullConstant",
+    "ClassOfConstant",
+  )
+
+
+def getByReflection(obj: Any, propName: String*): Any =
   val klass = obj.getClass
   propName
     .map( propName =>
