@@ -14,3 +14,6 @@ def dumpPosition(using quotes: Quotes)(el: quotes.reflect.Position, str: StringB
 // SourceFile <: AnyRef
 def dumpSourceFile(using quotes: Quotes)(el: quotes.reflect.SourceFile, str: StringBuilder, nextPadLength: Int): Unit = {}
 
+
+def symbolToString(using quotes: Quotes)(symbol: quotes.reflect.Symbol) =
+  ???

@@ -17,6 +17,9 @@ extension (str: StringBuilder)
   def addTagName(tagName: String, currentPadLength: Int): StringBuilder =
     val padStr = " ".repeat(currentPadLength)
     str.append(padStr).append(tagName).append('\n')
+  def addTagName(tagName: String, v: Any, currentPadLength: Int): StringBuilder =
+    val padStr = " ".repeat(currentPadLength)
+    str.append(padStr).append(s"<$tagName>").append(v).append(s"</$tagName>").append('\n')
   def addChildTagName(childTagName: String, currentPadLength: Int): StringBuilder =
     val padChildStr = " ".repeat(currentPadLength + indentPerLevel)
     str.append(padChildStr).append(childTagName).append('\n')
@@ -47,8 +50,7 @@ private def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: Strin
 
     // Definition <: Statement <: Tree
     // Template is not present now in API??..
-    // TODO: impl by reflection
-    //case el if el.isTemplate => dumpTemplate(el.asInstanceOf[Template], str, nextPadLength)
+    case el if el.isTemplate => dumpTemplate(el.asInstanceOf[Tree], str, nextPadLength)
     // ClassDef <: Definition
     case el if el.isClassDef => dumpClassDef(el.asInstanceOf[ClassDef], str, nextPadLength)
     // DefDef <: Definition
@@ -351,6 +353,7 @@ def dumpImport(using quotes: Quotes)(_import: quotes.reflect.Import, str: String
   val selectors: List[Selector] = _import.selectors
 
   str.addTagName("<import>", padLength)
+    dumpTreeImpl(_import, str, padLength)
     str.addChildTagName("<expr>", padLength)
     dumpTree(expr, str, padLength + 2 * padLength)
     str.addChildTagName("</expr>", padLength)

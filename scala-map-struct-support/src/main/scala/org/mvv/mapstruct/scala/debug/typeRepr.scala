@@ -65,3 +65,5 @@ def dumpNoPrefix(using quotes: Quotes)(el: quotes.reflect.NoPrefix, str: StringB
 def dumpBaseTypeRepr(using quotes: Quotes)(el: quotes.reflect.TypeRepr, str: StringBuilder, nextPadLength: Int): Unit = {}
 
 
+def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): String =
+  ???

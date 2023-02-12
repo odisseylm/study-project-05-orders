@@ -1,12 +1,56 @@
 package org.mvv.mapstruct.scala.debug
 
 import scala.quoted.*
+//
+import org.mvv.mapstruct.scala.{ getByReflection, unwrapOption }
 
 
 // Definition <: Statement <: Tree
 // Template is not present now in API??..
-def dumpTemplate(using quotes: Quotes)(el: quotes.reflect.Tree, str: StringBuilder, nextPadLength: Int): Unit =
-  ???
+def dumpTemplate(using quotes: Quotes)(t: quotes.reflect.Tree, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val name: String = getByReflection(t, "name", "preName", "unforcedName")
+    .unwrapOption.asInstanceOf[String]
+  val constr: DefDef = getByReflection(t, "constr", "preConstr", "unforcedConstr")
+    .unwrapOption.asInstanceOf[DefDef]
+  val self: ValDef = getByReflection(t, "self", "preSelf", "unforcedSelf")
+    .unwrapOption.asInstanceOf[ValDef]
+  val body: List[Tree] = getByReflection(t, "body", "preBody", "unforcedBody")
+    .unwrapOption.asInstanceOf[List[Tree]]
+  val parents: List[Tree] = getByReflection(t, "parents", "preParents", "unforcedParents")
+    .unwrapOption.asInstanceOf[List[quotes.reflect.Tree]]
+  val derived: List[Tree] = getByReflection(t, "derived", "preDerived", "unforcedDerived")
+    .unwrapOption.asInstanceOf[List[Tree]]
+  val parentsOrDerived: List[Tree] = getByReflection(t, "parentsOrDerived", "preParentsOrDerived", "unforcedParentsOrDerived")
+    .unwrapOption.asInstanceOf[List[Tree]]
+
+  str.addTagName("<Template>", padLength)
+    str.addChildTagName("name", name, padLength)
+
+    str.addChildTagName("<constr>", padLength)
+    dumpDefDef(constr, str, padLength + 2 * padLength)
+    str.addChildTagName("</constr>", padLength)
+
+    str.addChildTagName("<self>", padLength)
+    dumpValDef(self, str, padLength + 2 * padLength)
+    str.addChildTagName("</self>", padLength)
+
+    str.addChildTagName("<body>", padLength)
+    body.foreach(t => dumpTree(t, str, padLength + 2 * padLength))
+    str.addChildTagName("</body>", padLength)
+
+    str.addChildTagName("<parents>", padLength)
+    parents.foreach(s => dumpTree(s, str, padLength + 2 * padLength))
+    str.addChildTagName("</parents>", padLength)
+
+    str.addChildTagName("<derived>", padLength)
+    derived.foreach(s => dumpTree(s, str, padLength + 2 * padLength))
+    str.addChildTagName("</derived>", padLength)
+
+    str.addChildTagName("<parentsOrDerived>", padLength)
+    parentsOrDerived.foreach(s => dumpTree(s, str, padLength + 2 * padLength))
+    str.addChildTagName("</parentsOrDerived>", padLength)
+  str.addTagName("</Template>", padLength)
 
 
 // ClassDef <: Definition
