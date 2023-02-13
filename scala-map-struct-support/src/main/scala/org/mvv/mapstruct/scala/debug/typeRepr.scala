@@ -11,7 +11,7 @@ def dumpConstantType(using quotes: Quotes)(ct: quotes.reflect.ConstantType, str:
   str.addTagName("<ConstantType>", padLength)
     dumpTypeReprImpl(ct, str, padLength)
     str.addChildTagName("<constant>", padLength)
-    dumpConstant(constant, str, padLength + 2 * indentPerLevel)
+      dumpConstant(constant, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</constant>", padLength)
   str.addTagName("</ConstantType>", padLength)
 
@@ -201,51 +201,185 @@ def dumpParamRef(using quotes: Quotes)(paramRef: quotes.reflect.ParamRef, str: S
 
 
 // ThisType <: TypeRepr
-def dumpThisType(using quotes: Quotes)(el: quotes.reflect.ThisType, str: StringBuilder, padLength: Int): Unit = {}
+def dumpThisType(using quotes: Quotes)(thisType: quotes.reflect.ThisType, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val tref: TypeRepr = thisType.tref
+
+  str.addTagName("<ThisType>", padLength)
+    dumpTypeReprImpl(thisType, str, padLength)
+    str.addChildTagName("tref", typeReprToString(tref), padLength)
+  str.addTagName("</ThisType>", padLength)
+
 
 
 // RecursiveThis <: TypeRepr
-def dumpRecursiveThis(using quotes: Quotes)(el: quotes.reflect.RecursiveThis, str: StringBuilder, padLength: Int): Unit = {}
+def dumpRecursiveThis(using quotes: Quotes)(recursiveThis: quotes.reflect.RecursiveThis, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val binder: RecursiveType = recursiveThis.binder
+
+  str.addTagName("<RecursiveThis>", padLength)
+    dumpTypeReprImpl(recursiveThis, str, padLength)
+    str.addChildTagName("<binder>", padLength)
+      if padLength > 100
+        then str.addChildTagName("binder", "... WARN: too many recursion", padLength)
+        else dumpRecursiveType(binder, str, padLength + 2 *indentPerLevel)
+    str.addChildTagName("</binder>", padLength)
+  str.addTagName("</RecursiveThis>", padLength)
+
 
 
 // RecursiveType <: TypeRepr
-def dumpRecursiveType(using quotes: Quotes)(el: quotes.reflect.RecursiveType, str: StringBuilder, padLength: Int): Unit = {}
+def dumpRecursiveType(using quotes: Quotes)(recursiveType: quotes.reflect.RecursiveType, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val underlying: TypeRepr = recursiveType.underlying
+  val recThis: RecursiveThis = recursiveType.recThis
+
+  str.addTagName("<RecursiveType>", padLength)
+    dumpTypeReprImpl(recursiveType, str, padLength)
+    str.addChildTagName("underlying", typeReprToString(underlying), padLength)
+
+    str.addChildTagName("<recThis>", padLength)
+      if padLength > 100
+        then str.addChildTagName("binder", "... WARN: too many recursion", padLength)
+        else dumpRecursiveThis(recThis, str, padLength + 2 *indentPerLevel)
+    str.addChildTagName("</recThis>", padLength)
+  str.addTagName("</RecursiveType>", padLength)
+
 
 
 //
 // LambdaType <: TypeRepr
 // MethodOrPoly <: LambdaType
 // MethodType <: MethodOrPoly
-def dumpMethodType(using quotes: Quotes)(el: quotes.reflect.MethodType, str: StringBuilder, padLength: Int): Unit = {}
+def dumpMethodType(using quotes: Quotes)(methodType: quotes.reflect.MethodType, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val isImplicit: Boolean = methodType.isImplicit
+  val isErased: Boolean = methodType.isErased
+  val signature: (List[String], List[TypeRepr], TypeRepr) = MethodType.unapply(methodType)
+
+  str.addTagName("<MethodType>", padLength)
+    dumpMethodOrPolyImpl(methodType, str, padLength)
+    if isImplicit then str.addChildTagName("<isImplicit/>", padLength)
+    if isErased   then str.addChildTagName("<isErased/>", padLength)
+
+    if signature._1.nonEmpty then
+      str.addChildTagName("<paramTypes>", padLength)
+      signature._2.zipWithIndex.foreach((_, idx) => str.addChildTagName("<paramType>", typeReprToString(methodType.param(idx)), padLength + indentPerLevel))
+      str.addChildTagName("</paramTypes>", padLength)
+  str.addTagName("</MethodType>", padLength)
+
 
 
 // PolyType <: MethodOrPoly
-def dumpPolyType(using quotes: Quotes)(el: quotes.reflect.PolyType, str: StringBuilder, padLength: Int): Unit = {}
+def dumpPolyType(using quotes: Quotes)(polyType: quotes.reflect.PolyType, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  def paramBounds: List[TypeBounds] = polyType.paramBounds
+
+  str.addTagName("<PolyType>", padLength)
+    dumpMethodOrPolyImpl(polyType, str, padLength)
+
+    str.addChildTagName("<paramBounds>", padLength)
+    paramBounds.zipWithIndex.foreach( (typeBounds, idx) =>
+      str.addChildTagName("<paramBound>", padLength + indentPerLevel)
+      str.addChildTagName("<type>", typeReprToString(polyType.param(idx)), padLength + 2 * indentPerLevel)
+      str.addChildTagName("<boundType>", str, padLength + 2 * indentPerLevel)
+      dumpTypeBounds(typeBounds, str, padLength + 3 * indentPerLevel)
+      str.addChildTagName("</boundType>", str, padLength + 2 * indentPerLevel)
+      str.addChildTagName("</paramBound>", padLength + indentPerLevel)
+    )
+    str.addChildTagName("</paramBounds>", padLength)
+  str.addTagName("</PolyType>", padLength)
+
 
 
 // TypeLambda <: LambdaType
-def dumpTypeLambda(using quotes: Quotes)(el: quotes.reflect.TypeLambda, str: StringBuilder, padLength: Int): Unit = {}
+def dumpTypeLambda(using quotes: Quotes)(typeLambda: quotes.reflect.TypeLambda, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  def paramBounds: List[TypeBounds] = typeLambda.paramBounds
+
+  str.addTagName("<TypeLambda>", padLength)
+    dumpLambdaTypeImpl(typeLambda, str, padLength)
+
+    str.addChildTagName("<paramBounds>", padLength)
+    paramBounds.zipWithIndex.foreach( (typeBounds, idx) =>
+      str.addChildTagName("<paramBound>", padLength + indentPerLevel)
+      str.addChildTagName("<type>", typeReprToString(typeLambda.param(idx)), padLength + 2 * indentPerLevel)
+      str.addChildTagName("<typeBound>", str, padLength + 2 * indentPerLevel)
+      dumpTypeBounds(typeBounds, str, padLength + 3 * indentPerLevel)
+      str.addChildTagName("</typeBound>", str, padLength + 2 * indentPerLevel)
+      str.addChildTagName("</paramBound>", padLength + indentPerLevel)
+    )
+    str.addChildTagName("</paramBounds>", padLength)
+  str.addTagName("</TypeLambda>", padLength)
 
 
 // base MethodOrPoly <: LambdaType
-def dumpMethodOrPoly(using quotes: Quotes)(el: quotes.reflect.MethodOrPoly, str: StringBuilder, padLength: Int): Unit = {}
+private def dumpMethodOrPolyImpl(using quotes: Quotes)(methodOrPoly: quotes.reflect.MethodOrPoly, str: StringBuilder, padLength: Int): Unit =
+  dumpLambdaTypeImpl(methodOrPoly, str, padLength)
+def dumpMethodOrPoly(using quotes: Quotes)(methodOrPoly: quotes.reflect.MethodOrPoly, str: StringBuilder, padLength: Int): Unit =
+  str.addTagName("<MethodOrPoly>", padLength)
+  dumpMethodOrPolyImpl(methodOrPoly, str, padLength)
+  str.addTagName("</MethodOrPoly>", padLength)
 
 
 // base LambdaType = LambdaType <: TypeRepr
-def dumpLambdaType(using quotes: Quotes)(el: quotes.reflect.LambdaType, str: StringBuilder, padLength: Int): Unit = {}
+def dumpLambdaType(using quotes: Quotes)(lambdaType: quotes.reflect.LambdaType, str: StringBuilder, padLength: Int): Unit =
+  str.addTagName("<LambdaType>", padLength)
+  dumpLambdaTypeImpl(lambdaType, str, padLength)
+  str.addTagName("</LambdaType>", padLength)
+
+
+// base LambdaType = LambdaType <: TypeRepr
+private def dumpLambdaTypeImpl(using quotes: Quotes)(lambdaType: quotes.reflect.LambdaType, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val paramNames: List[String] = lambdaType.paramNames
+  val paramTypes: List[TypeRepr] = lambdaType.paramTypes
+  val resType: TypeRepr = lambdaType.resType
+
+  dumpTypeReprImpl(lambdaType, str, padLength)
+
+  str.addChildTagName("resType", typeReprToString(resType), padLength)
+  if paramTypes.nonEmpty then
+    str.addChildTagName("paramNames", paramNames, padLength)
+    str.addChildTagName("<paramTypes>", padLength)
+    paramTypes.foreach(pType => str.addChildTagName("<paramType>", typeReprToString(pType), padLength + indentPerLevel))
+    str.addChildTagName("</paramTypes>", padLength)
+
 
 
 //
 // MatchCase <: TypeRepr
-def dumpMatchCase(using quotes: Quotes)(el: quotes.reflect.MatchCase, str: StringBuilder, padLength: Int): Unit = {}
+def dumpMatchCase(using quotes: Quotes)(matchCase: quotes.reflect.MatchCase, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val pattern: TypeRepr = matchCase.pattern
+  val rhs: TypeRepr = matchCase.rhs
+
+  str.addTagName("<MatchCase>", padLength)
+    dumpTypeReprImpl(matchCase, str, padLength)
+    str.addChildTagName("pattern", typeReprToString(pattern), padLength)
+    str.addChildTagName("rhs", typeReprToString(rhs), padLength)
+  str.addTagName("</MatchCase>", padLength)
+
 
 
 // TypeBounds <: TypeRepr
-def dumpTypeBounds(using quotes: Quotes)(el: quotes.reflect.TypeBounds, str: StringBuilder, padLength: Int): Unit = {}
+def dumpTypeBounds(using quotes: Quotes)(typeBounds: quotes.reflect.TypeBounds, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val low: TypeRepr = typeBounds.low
+  val hi: TypeRepr = typeBounds.hi
+  str.addTagName("<TypeBounds>", padLength)
+    dumpTypeReprImpl(typeBounds, str, padLength)
+    str.addChildTagName("low", typeReprToString(low), padLength)
+    str.addChildTagName("hi", typeReprToString(hi), padLength)
+  str.addTagName("</TypeBounds>", padLength)
 
 
 // NoPrefix <: TypeRepr
-def dumpNoPrefix(using quotes: Quotes)(el: quotes.reflect.NoPrefix, str: StringBuilder, padLength: Int): Unit = {}
+def dumpNoPrefix(using quotes: Quotes)(noPrefix: quotes.reflect.NoPrefix, str: StringBuilder, padLength: Int): Unit =
+  str.addTagName("<NoPrefix>", str, padLength)
+    dumpTypeReprImpl(noPrefix, str, padLength)
+  str.addTagName("<NoPrefix>", str, padLength)
+
 
 
 // base type TypeRepr
@@ -274,10 +408,12 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   val widen: TypeRepr = typeRepr.widen
   val widenShow: String = widen.show
 
+  /*
   // skip now
   val classSymbol: Option[Symbol] = typeRepr.classSymbol
   val typeSymbol: Symbol = typeRepr.typeSymbol
   val termSymbol: Symbol = typeRepr.termSymbol
+  */
 
   val isSingleton: Boolean = typeRepr.isSingleton
   val isFunctionType: Boolean = typeRepr.isFunctionType
