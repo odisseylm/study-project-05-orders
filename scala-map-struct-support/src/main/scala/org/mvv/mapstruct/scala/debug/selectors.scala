@@ -56,7 +56,7 @@ def dumpGivenSelector(using quotes: Quotes)(selector: quotes.reflect.GivenSelect
   val bound: Option[TypeTree] = selector.bound
 
   str.addTagName("<GivenSelector>", padLength)
-  bound.foreach(b => dumpTypeTree(b, str, padLength + 2 * padLength))
+  bound.foreach(b => dumpTree(b, str, padLength + 2 * indentPerLevel))
   str.addTagName("</GivenSelector>", padLength)
 
 

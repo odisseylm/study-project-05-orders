@@ -33,4 +33,4 @@ def dumpTypeBind(using quotes: Quotes)(el: quotes.reflect.TypeBind, str: StringB
 def dumpTypeBlock(using quotes: Quotes)(el: quotes.reflect.TypeBlock, str: StringBuilder, nextPadLength: Int): Unit = {}
 //
 // base TypeTree == TypeTree <: Tree
-def dumpTypeTree(using quotes: Quotes)(el: quotes.reflect.TypeTree, str: StringBuilder, nextPadLength: Int): Unit = {}
+def dumpBaseTypeTree(using quotes: Quotes)(el: quotes.reflect.TypeTree, str: StringBuilder, nextPadLength: Int): Unit = {}

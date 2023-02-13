@@ -28,27 +28,27 @@ def dumpTemplate(using quotes: Quotes)(t: quotes.reflect.Tree, str: StringBuilde
     str.addChildTagName("name", name, padLength)
 
     str.addChildTagName("<constr>", padLength)
-    dumpDefDef(constr, str, padLength + 2 * padLength)
+    dumpDefDef(constr, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</constr>", padLength)
 
     str.addChildTagName("<self>", padLength)
-    dumpValDef(self, str, padLength + 2 * padLength)
+    dumpValDef(self, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</self>", padLength)
 
     str.addChildTagName("<body>", padLength)
-    body.foreach(t => dumpTree(t, str, padLength + 2 * padLength))
+    body.foreach(t => dumpTree(t, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</body>", padLength)
 
     str.addChildTagName("<parents>", padLength)
-    parents.foreach(s => dumpTree(s, str, padLength + 2 * padLength))
+    parents.foreach(s => dumpTree(s, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</parents>", padLength)
 
     str.addChildTagName("<derived>", padLength)
-    derived.foreach(s => dumpTree(s, str, padLength + 2 * padLength))
+    derived.foreach(s => dumpTree(s, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</derived>", padLength)
 
     str.addChildTagName("<parentsOrDerived>", padLength)
-    parentsOrDerived.foreach(s => dumpTree(s, str, padLength + 2 * padLength))
+    parentsOrDerived.foreach(s => dumpTree(s, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</parentsOrDerived>", padLength)
   str.addTagName("</Template>", padLength)
 
@@ -66,19 +66,19 @@ def dumpClassDef(using quotes: Quotes)(classDef: quotes.reflect.ClassDef, str: S
     str.addChildTagName("name", name, padLength)
 
     str.addChildTagName("<constructor>", padLength)
-    dumpDefDef(constructor, str, padLength + 2 * padLength)
+    dumpDefDef(constructor, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</constructor>", padLength)
 
     str.addChildTagName("<parents>", padLength)
-    parents.foreach(s => dumpTree(s, str, padLength + 2 * padLength))
+    parents.foreach(s => dumpTree(s, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</parents>", padLength)
 
     str.addChildTagName("<self>", padLength)
-    self.foreach(s => dumpValDef(s, str, padLength + 2 * padLength))
+    self.foreach(s => dumpValDef(s, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</self>", padLength)
 
     str.addChildTagName("<body>", padLength)
-    body.foreach(s => dumpTree(s, str, padLength + 2 * padLength))
+    body.foreach(s => dumpTree(s, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</body>", padLength)
   str.addTagName("</ClassDef>", padLength)
 
@@ -98,27 +98,27 @@ def dumpDefDef(using quotes: Quotes)(defDef: quotes.reflect.DefDef, str: StringB
     str.addChildTagName("name", name, padLength)
 
     str.addChildTagName("<paramss>", padLength)
-    paramss.foreach(p => dumpParam(p, str, padLength + 2 * padLength))
+    paramss.foreach(p => dumpParam(p, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</paramss>", padLength)
 
     str.addChildTagName("<leadingTypeParams>", padLength)
-    leadingTypeParams.foreach(td => dumpTypeDef(td, str, padLength + 2 * padLength))
+    leadingTypeParams.foreach(td => dumpTypeDef(td, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</leadingTypeParams>", padLength)
 
     str.addChildTagName("<trailingParamss>", padLength)
-    trailingParamss.foreach(p => dumpParam(p, str, padLength + 2 * padLength))
+    trailingParamss.foreach(p => dumpParam(p, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</trailingParamss>", padLength)
 
     str.addChildTagName("<termParamss>", padLength)
-    termParamss.foreach(p => dumpParam(p, str, padLength + 2 * padLength))
+    termParamss.foreach(p => dumpParam(p, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</termParamss>", padLength)
 
     str.addChildTagName("<returnTpt>", padLength)
-    dumpTree(returnTpt, str, padLength + 2 * padLength)
+    dumpTree(returnTpt, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</returnTpt>", padLength)
 
     str.addChildTagName("<rhs>", padLength)
-    rhs.foreach(p => dumpTree(p, str, padLength + 2 * padLength))
+    rhs.foreach(p => dumpTree(p, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</rhs>", padLength)
   str.addTagName("</DefDef>", padLength)
 
@@ -134,11 +134,11 @@ def dumpValDef(using quotes: Quotes)(valDef: quotes.reflect.ValDef, str: StringB
     str.addChildTagName("name", name, padLength)
 
     str.addChildTagName("<tpt>", padLength)
-    dumpTree(tpt, str, padLength + 2 * padLength)
+    dumpTree(tpt, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</tpt>", padLength)
 
     str.addChildTagName("<rhs>", padLength)
-    rhs.foreach(t => dumpTree(t, str, padLength + 2 * padLength))
+    rhs.foreach(t => dumpTree(t, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</rhs>", padLength)
   str.addTagName("</ValDef>", padLength)
 
@@ -152,7 +152,7 @@ def dumpTypeDef(using quotes: Quotes)(typeDef: quotes.reflect.TypeDef, str: Stri
   str.addTagName("<TypeDef>", padLength)
     str.addChildTagName("name", name, padLength)
     str.addChildTagName("<rhs>", padLength)
-    dumpTree(rhs, str, padLength + 2 * padLength)
+    dumpTree(rhs, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</rhs>", padLength)
   str.addTagName("</TypeDef>", padLength)
 

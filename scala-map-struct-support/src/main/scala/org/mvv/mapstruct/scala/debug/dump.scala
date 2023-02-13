@@ -10,8 +10,8 @@ def dumpExpr(using quotes: Quotes)(term: quotes.reflect.Term): String =
 
 
 
-private val indentPerLevel: Int = 2
-private val indentPerLevelStr: String = " ".repeat(indentPerLevel).nn
+val indentPerLevel: Int = 2
+val indentPerLevelStr: String = " ".repeat(indentPerLevel).nn
 
 extension (str: StringBuilder)
   def addTagName(tagName: String, currentPadLength: Int): StringBuilder =
@@ -50,7 +50,7 @@ private def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: Strin
 
     // Definition <: Statement <: Tree
     // Template is not present now in API??..
-    case el if el.isTemplate => dumpTemplate(el.asInstanceOf[Tree], str, nextPadLength)
+    case el if el.isTemplate => dumpTemplate(el, str, nextPadLength)
     // ClassDef <: Definition
     case el if el.isClassDef => dumpClassDef(el.asInstanceOf[ClassDef], str, nextPadLength)
     // DefDef <: Definition
@@ -153,7 +153,7 @@ private def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: Strin
     case el if el.isTypeBlock => dumpTypeBlock(el.asInstanceOf[TypeBlock], str, nextPadLength)
     //
     // base TypeTree == TypeTree <: Tree
-    case el if el.isTypeTree => dumpTypeTree(el.asInstanceOf[TypeTree], str, nextPadLength)
+    case el if el.isTypeTree => dumpBaseTypeTree(el.asInstanceOf[TypeTree], str, nextPadLength)
 
     // TypeBoundsTree <: Tree
     case el if el.isTypeBoundsTree => dumpTypeBoundsTree(el.asInstanceOf[TypeBoundsTree], str, nextPadLength)
@@ -335,12 +335,12 @@ def dumpPackageClause(using quotes: Quotes)(packageClause: quotes.reflect.Packag
   import quotes.reflect.*
   str.addTagName("<PackageClause>", padLength)
     str.addChildTagName("<pid>", padLength)
-    dumpRef(packageClause.pid, str, padLength + 2 * padLength)
+    dumpRef(packageClause.pid, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</pid>", padLength)
 
     str.addChildTagName("<bindings>", padLength)
     val stats: List[Tree] = packageClause.stats
-    stats.foreach(t => dumpTree(t, str, padLength + 2 * padLength))
+    stats.foreach(t => dumpTree(t, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</bindings>", padLength)
   str.addTagName("</PackageClause>", padLength)
 
@@ -355,11 +355,11 @@ def dumpImport(using quotes: Quotes)(_import: quotes.reflect.Import, str: String
   str.addTagName("<import>", padLength)
     dumpTreeImpl(_import, str, padLength)
     str.addChildTagName("<expr>", padLength)
-    dumpTree(expr, str, padLength + 2 * padLength)
+    dumpTree(expr, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</expr>", padLength)
 
     str.addChildTagName("<selectors>", padLength)
-    selectors.foreach(s => dumpSelector(s, str, padLength + 2 * padLength))
+    selectors.foreach(s => dumpSelector(s, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</selectors>", padLength)
   str.addTagName("</import>", padLength)
 
@@ -372,11 +372,11 @@ def dumpExport(using quotes: Quotes)(_export: quotes.reflect.Export, str: String
 
   str.addTagName("<export>", padLength)
     str.addChildTagName("<expr>", padLength)
-    dumpTree(expr, str, padLength + 2 * padLength)
+    dumpTree(expr, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</expr>", padLength)
 
     str.addChildTagName("<selectors>", padLength)
-    selectors.foreach(s => dumpSelector(s, str, padLength + 2 * padLength))
+    selectors.foreach(s => dumpSelector(s, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</selectors>", padLength)
   str.addTagName("</export>", padLength)
 

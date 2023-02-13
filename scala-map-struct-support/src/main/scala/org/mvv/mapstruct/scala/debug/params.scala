@@ -18,7 +18,7 @@ def dumpTermParamClause(using quotes: Quotes)(tp: quotes.reflect.TermParamClause
     str.addChildTagName("isErased", isErased, padLength)
 
     str.addChildTagName("<params>", padLength)
-    params.foreach(vd => dumpValDef(vd, str, padLength + 2 * padLength))
+    params.foreach(vd => dumpValDef(vd, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</params>", padLength)
   str.addTagName("</TermParamClause>", padLength)
 
@@ -30,7 +30,7 @@ def dumpTypeParamClause(using quotes: Quotes)(tpc: quotes.reflect.TypeParamClaus
   val params: List[TypeDef] = tpc.params
 
   str.addTagName("<TypeParamClause>", padLength)
-  params.foreach(td => dumpTypeDef(td, str, padLength + 2 * padLength))
+  params.foreach(td => dumpTypeDef(td, str, padLength + 2 * indentPerLevel))
   str.addTagName("</TypeParamClause>", padLength)
 
 
@@ -42,8 +42,8 @@ def dumpParamClause(using quotes: Quotes)(p: quotes.reflect.ParamClause, str: St
 
   str.addTagName("<ParamClause>", padLength)
   params.foreach(pp => pp match
-    case vd if vd.isValDef => dumpValDef(vd.asInstanceOf[ValDef], str, padLength + 2 * padLength)
-    case td if td.isTypeDef => dumpTypeDef(td.asInstanceOf[TypeDef], str, padLength + 2 * padLength)
+    case vd if vd.isValDef => dumpValDef(vd.asInstanceOf[ValDef], str, padLength + 2 * indentPerLevel)
+    case td if td.isTypeDef => dumpTypeDef(td.asInstanceOf[TypeDef], str, padLength + 2 * indentPerLevel)
     case _ => log.warn(s"Unexpected param clause [$pp]")
   )
   str.addTagName("</ParamClause>", padLength)

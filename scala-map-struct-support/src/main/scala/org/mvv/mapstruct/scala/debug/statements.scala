@@ -35,11 +35,11 @@ def dumpSelect(using quotes: Quotes)(select: quotes.reflect.Select, str: StringB
     str.addChildTagName("name", name, padLength)
 
     str.addChildTagName("<qualifier>", padLength)
-    dumpTree(qualifier, str, padLength + 2 * padLength)
+    dumpTree(qualifier, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</qualifier>", padLength)
 
     str.addChildTagName("<signature>", padLength)
-    signature.foreach(s => dumpSignature(s, str, padLength + 2 * padLength))
+    signature.foreach(s => dumpSignature(s, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</signature>", padLength)
   str.addTagName("</Select>", padLength)
 
@@ -68,15 +68,15 @@ def dumpIf(using quotes: Quotes)(_if: quotes.reflect.If, str: StringBuilder, pad
     str.addChildTagName("isInline", isInline, padLength)
 
     str.addChildTagName("<cond>", padLength)
-    dumpTree(cond, str, padLength + 2 * padLength)
+    dumpTree(cond, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</cond>", padLength)
 
     str.addChildTagName("<thenp>", padLength)
-    dumpTree(thenp, str, padLength + 2 * padLength)
+    dumpTree(thenp, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</thenp>", padLength)
 
     str.addChildTagName("<elsep>", padLength)
-    dumpTree(elsep, str, padLength + 2 * padLength)
+    dumpTree(elsep, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</elsep>", padLength)
   str.addTagName("</If>", padLength)
 
@@ -94,11 +94,11 @@ def dumpMatch(using quotes: Quotes)(_match: quotes.reflect.Match, str: StringBui
     str.addChildTagName("isInline", isInline, padLength)
 
     str.addChildTagName("<scrutinee>", padLength)
-    dumpTree(scrutinee, str, padLength + 2 * padLength)
+    dumpTree(scrutinee, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</scrutinee>", padLength)
 
     str.addChildTagName("<cases>", padLength)
-    cases.foreach(c => dumpCaseDef(c, str, padLength + 2 * padLength))
+    cases.foreach(c => dumpCaseDef(c, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</cases>", padLength)
   str.addTagName("</Match>", padLength)
 
@@ -112,7 +112,7 @@ def dumpSummonFrom(using quotes: Quotes)(summonFrom: quotes.reflect.SummonFrom, 
     dumpTermImpl(summonFrom, str, padLength)
 
     str.addChildTagName("<cases>", padLength)
-    cases.foreach(c => dumpCaseDef(c, str, padLength + 2 * padLength))
+    cases.foreach(c => dumpCaseDef(c, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</cases>", padLength)
   str.addTagName("</SummonFrom>", padLength)
 
@@ -128,15 +128,15 @@ def dumpTry(using quotes: Quotes)(_try: quotes.reflect.Try, str: StringBuilder, 
     dumpTermImpl(_try, str, padLength)
 
     str.addChildTagName("<body>", padLength)
-    dumpTree(body, str, padLength + 2 * padLength)
+    dumpTree(body, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</body>", padLength)
 
     str.addChildTagName("<cases>", padLength)
-    cases.foreach(c => dumpCaseDef(c, str, padLength + 2 * padLength))
+    cases.foreach(c => dumpCaseDef(c, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</cases>", padLength)
 
     str.addChildTagName("<finalizer>", padLength)
-    finalizer.foreach(f => dumpTree(f, str, padLength + 2 * padLength))
+    finalizer.foreach(f => dumpTree(f, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</finalizer>", padLength)
   str.addTagName("</Try>", padLength)
 
@@ -151,11 +151,11 @@ def dumpReturn(using quotes: Quotes)(_return: quotes.reflect.Return, str: String
     dumpTermImpl(_return, str, padLength)
 
     str.addChildTagName("<expr>", padLength)
-    dumpTree(expr, str, padLength + 2 * padLength)
+    dumpTree(expr, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</expr>", padLength)
 
     str.addChildTagName("<from>", padLength)
-    dumpSymbol(from, str, padLength + 2 * padLength)
+    dumpSymbol(from, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</from>", padLength)
   str.addTagName("</Return>", padLength)
 
@@ -171,11 +171,11 @@ def dumpRepeated(using quotes: Quotes)(repeated: quotes.reflect.Repeated, str: S
     dumpTermImpl(repeated, str, padLength)
 
     str.addChildTagName("<elems>", padLength)
-    elems.foreach(el => dumpTree(el, str, padLength + 2 * padLength))
+    elems.foreach(el => dumpTree(el, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</elems>", padLength)
 
     str.addChildTagName("<elemtpt>", padLength)
-    dumpTree(elemtpt, str, padLength + 2 * padLength)
+    dumpTree(elemtpt, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</elemtpt>", padLength)
   str.addTagName("</Repeated>", padLength)
 
@@ -195,7 +195,7 @@ def dumpSelectOuter(using quotes: Quotes)(selectOuter: quotes.reflect.SelectOute
     str.addChildTagName("level", level, padLength)
 
     str.addChildTagName("<qualifier>", padLength)
-    dumpTree(qualifier, str, padLength + 2 * padLength)
+    dumpTree(qualifier, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</qualifier>", padLength)
   str.addTagName("</SelectOuter>", padLength)
 
@@ -211,11 +211,11 @@ def dumpWhile(using quotes: Quotes)(_while: quotes.reflect.While, str: StringBui
     dumpTermImpl(_while, str, padLength)
 
     str.addChildTagName("<cond>", padLength)
-    dumpTree(cond, str, padLength + 2 * padLength)
+    dumpTree(cond, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</cond>", padLength)
 
     str.addChildTagName("<body>", padLength)
-    dumpTree(body, str, padLength + 2 * padLength)
+    dumpTree(body, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</body>", padLength)
   str.addTagName("</While>", padLength)
 
@@ -232,11 +232,11 @@ def dumpApply(using quotes: Quotes)(apply: quotes.reflect.Apply, str: StringBuil
     dumpTermImpl(apply, str, padLength)
 
     str.addChildTagName("<args>", padLength)
-    args.foreach(arg => dumpTree(arg, str, padLength + 2 * padLength))
+    args.foreach(arg => dumpTree(arg, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</args>", padLength)
 
     str.addChildTagName("<fun>", padLength)
-    dumpTree(fun, str, padLength + 2 * padLength)
+    dumpTree(fun, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</fun>", padLength)
   str.addTagName("</Apply>", padLength)
 
@@ -253,15 +253,15 @@ def dumpUnapply(using quotes: Quotes)(unapply: quotes.reflect.Unapply, str: Stri
     dumpTreeImpl(unapply, str, padLength)
 
     str.addChildTagName("<fun>", padLength)
-    dumpTree(fun, str, padLength + 2 * padLength)
+    dumpTree(fun, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</fun>", padLength)
 
     str.addChildTagName("<implicits>", padLength)
-    implicits.foreach(arg => dumpTree(arg, str, padLength + 2 * padLength))
+    implicits.foreach(arg => dumpTree(arg, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</implicits>", padLength)
 
     str.addChildTagName("<patterns>", padLength)
-    patterns.foreach(arg => dumpTree(arg, str, padLength + 2 * padLength))
+    patterns.foreach(arg => dumpTree(arg, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</patterns>", padLength)
   str.addTagName("</Unapply>", padLength)
 
@@ -277,11 +277,11 @@ def dumpAssign(using quotes: Quotes)(assign: quotes.reflect.Assign, str: StringB
     dumpTermImpl(assign, str, padLength)
 
     str.addChildTagName("<lhs>", padLength)
-    dumpTree(lhs, str, padLength + 2 * padLength)
+    dumpTree(lhs, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</lhs>", padLength)
 
     str.addChildTagName("<rhs>", padLength)
-    dumpTree(rhs, str, padLength + 2 * padLength)
+    dumpTree(rhs, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</rhs>", padLength)
   str.addTagName("</Assign>", padLength)
 
@@ -300,7 +300,7 @@ def dumpBind(using quotes: Quotes)(bind: quotes.reflect.Bind, str: StringBuilder
     dumpTreeImpl(bind, str, padLength)
 
     str.addChildTagName("<pattern>", padLength)
-    dumpTree(pattern, str, padLength + 2 * padLength)
+    dumpTree(pattern, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</pattern>", padLength)
   str.addTagName("</Bind>", padLength)
 
@@ -315,7 +315,7 @@ def dumpAlternatives(using quotes: Quotes)(alternatives: quotes.reflect.Alternat
     dumpTreeImpl(alternatives, str, padLength)
 
     str.addChildTagName("<patterns>", padLength)
-    patterns.foreach(p => dumpTree(p, str, padLength + 2 * padLength))
+    patterns.foreach(p => dumpTree(p, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</patterns>", padLength)
   str.addTagName("</Alternatives>", padLength)
 
@@ -333,15 +333,15 @@ private def dumpInlined(using quotes: Quotes)(inlined: quotes.reflect.Inlined, s
     dumpTermImpl(inlined, str, padLength)
 
     str.addChildTagName("<call>", padLength)
-    call.foreach(_call => dumpTree(_call, str, padLength + 2 * padLength))
+    call.foreach(_call => dumpTree(_call, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</call>", padLength)
 
     str.addChildTagName("<bindings>", padLength)
-    bindings.foreach(d => dumpDefinition(d, str, padLength + 2 * padLength))
+    bindings.foreach(d => dumpDefinition(d, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</bindings>", padLength)
 
     str.addChildTagName("<body>", padLength)
-    dumpTree(body, str, padLength + 2 * padLength)
+    dumpTree(body, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</body>", padLength)
   str.addTagName("</Inlined>", padLength)
 
@@ -369,11 +369,33 @@ private def dumpRefImpl(using quotes: Quotes)(ref: quotes.reflect.Ref, str: Stri
 
 private def dumpIdentImpl(using quotes: Quotes)(term: quotes.reflect.Term, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
-  val name: String = tryDo { term.asInstanceOf[Ident].name }
-    .orElse( tryDo { getByReflection(term, "name", "getName").asInstanceOf[String] } )
-    .orElse( term.toSymbol .map(_.name)) .getOrElse("?name?")
+  val name: String = treeName(term)
   str.addChildTagName("name", name, padLength)
   dumpTermImpl(term, str, padLength)
+
+
+def treeName(using quotes: Quotes)(tree: quotes.reflect.Tree): String =
+  import quotes.reflect.*
+  // TODO: use also
+  // Definition.name:
+  // Select.name:
+  // NamedArg.name:
+  // SelectOuter.name:
+  // TypeIdent.name:
+  // TypeSelect.name:
+  // TypeProjection.name:
+  // TypeBind.name:
+  // SimpleSelector.name:
+  // OmitSelector.name:
+  // NamedType.name:
+  // Refinement.name:
+  // Refinement.name:
+  // Bind.name:
+  val name: String =
+    tryDo { tree.asInstanceOf[Ident].name }
+    .orElse( tryDo { getByReflection(tree, "name", "getName").asInstanceOf[String] } )
+    .orElse( tree.toSymbol .map(_.name)) .getOrElse("?name?")
+  name
 
 
 private def dumpTermImpl(using quotes: Quotes)(term: quotes.reflect.Term, str: StringBuilder, padLength: Int): Unit =
