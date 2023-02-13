@@ -163,6 +163,7 @@ def dumpDefinition(using quotes: Quotes)(_def: quotes.reflect.Definition, str: S
   val name: String = _def.name
 
   str.addTagName("<Definition>", padLength)
+    dumpStatementImpl(_def, str, padLength)
     str.addChildTagName("name", name, padLength)
   str.addTagName("</Definition>", padLength)
 

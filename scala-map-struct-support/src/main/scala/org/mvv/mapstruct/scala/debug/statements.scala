@@ -321,9 +321,8 @@ def dumpAlternatives(using quotes: Quotes)(alternatives: quotes.reflect.Alternat
 
 
 
-
 // Inlined <: Term
-private def dumpInlined(using quotes: Quotes)(inlined: quotes.reflect.Inlined, str: StringBuilder, padLength: Int): Unit =
+def dumpInlined(using quotes: Quotes)(inlined: quotes.reflect.Inlined, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
   val call: Option[Tree] = inlined.call
   val bindings: List[Definition] = inlined.bindings
@@ -362,11 +361,13 @@ private def dumpSignature(using quotes: Quotes)(signature: quotes.reflect.Signat
   str.addTagName("</Signature>", padLength)
 
 
+// Ref <: Term
 private def dumpRefImpl(using quotes: Quotes)(ref: quotes.reflect.Ref, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
   dumpTermImpl(ref, str, padLength)
 
 
+// According to API Ident function creates Term type
 private def dumpIdentImpl(using quotes: Quotes)(term: quotes.reflect.Term, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
   val name: String = treeName(term)
@@ -398,6 +399,7 @@ def treeName(using quotes: Quotes)(tree: quotes.reflect.Tree): String =
   name
 
 
+// Term <: Statement
 private def dumpTermImpl(using quotes: Quotes)(term: quotes.reflect.Term, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
   val tpe: TypeRepr = term.tpe
@@ -407,9 +409,16 @@ private def dumpTermImpl(using quotes: Quotes)(term: quotes.reflect.Term, str: S
   //val underlying: Term = term.underlying
   //val appliedToNone: Term = term.appliedToNone
 
+  dumpStatementImpl(term, str, padLength)
   str.addChildTagName("tpe", typeReprToString(tpe), padLength)
 
 
+// Statement <: Tree
+private def dumpStatementImpl(using quotes: Quotes)(statement: quotes.reflect.Statement, str: StringBuilder, padLength: Int): Unit =
+  dumpTreeImpl(statement, str, padLength)
+
+
+// Tree <: AnyRef
 private def dumpTreeImpl(using quotes: Quotes)(tree: quotes.reflect.Tree, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
 
@@ -426,6 +435,7 @@ private def dumpTreeImpl(using quotes: Quotes)(tree: quotes.reflect.Tree, str: S
   val asExpr: Option[scala.quoted.Expr[Any]] = if toShowExpr then Option(tree.asExpr) else None
   //val asExprOf[T] scala.quoted.Expr[T]
 
+  if isExpr then str.addChildTagName("<isExpr/>", padLength)
   pos.foreach(p => str.addChildTagName("position", positionToString(p), padLength))
   symbol.foreach(s => str.addChildTagName("symbol", symbolToString(s), padLength))
   show.foreach(s => str.addChildTagName("show", s, padLength))

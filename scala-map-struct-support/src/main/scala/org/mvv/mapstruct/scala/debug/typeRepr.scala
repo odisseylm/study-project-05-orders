@@ -53,7 +53,7 @@ def dumpNamedTypeImpl(using quotes: Quotes)(namedType: quotes.reflect.NamedType,
   val name: String = namedType.name
 
   dumpTypeReprImpl(namedType, str, padLength)
-  str.addChildTagName("qualifier", typeReprToString(qualifier), padLength)
+  str.addTypeChildTagName("qualifier", qualifier, padLength)
   str.addChildTagName("name", name, padLength)
 
 
@@ -66,8 +66,8 @@ def dumpSuperType(using quotes: Quotes)(superType: quotes.reflect.SuperType, str
 
   str.addTagName("<SuperType>", padLength)
     dumpTypeReprImpl(superType, str, padLength)
-    str.addChildTagName("thistpe", typeReprToString(thistpe), padLength)
-    str.addChildTagName("supertpe", typeReprToString(supertpe), padLength)
+    str.addTypeChildTagName("thistpe", thistpe, padLength)
+    str.addTypeChildTagName("supertpe", supertpe, padLength)
   str.addTagName("</SuperType>", padLength)
 
 
@@ -81,8 +81,8 @@ def dumpRefinement(using quotes: Quotes)(refinement: quotes.reflect.Refinement, 
   str.addTagName("<Refinement>", padLength)
     dumpTypeReprImpl(refinement, str, padLength)
     str.addChildTagName("name", name, padLength)
-    str.addChildTagName("info", typeReprToString(info), padLength)
-    str.addChildTagName("parent", typeReprToString(parent), padLength)
+    str.addTypeChildTagName("info", info, padLength)
+    str.addTypeChildTagName("parent", parent, padLength)
   str.addTagName("</Refinement>", padLength)
 
 
@@ -95,7 +95,7 @@ def dumpAppliedType(using quotes: Quotes)(appliedType: quotes.reflect.AppliedTyp
 
   str.addTagName("<AppliedType>", padLength)
     dumpTypeReprImpl(appliedType, str, padLength)
-    str.addChildTagName("tycon", typeReprToString(tycon), padLength)
+    str.addTypeChildTagName("tycon", tycon, padLength)
 
     str.addChildTagName("<args>", padLength)
       args.foreach(a => dumpTypeRepr(a, str, padLength + 2 * indentPerLevel))
@@ -112,7 +112,7 @@ def dumpAnnotatedType(using quotes: Quotes)(annotatedType: quotes.reflect.Annota
 
   str.addTagName("<AppliedType>", padLength)
     dumpTypeReprImpl(annotatedType, str, padLength)
-    str.addChildTagName("underlying", typeReprToString(underlying), padLength)
+    str.addTypeChildTagName("underlying", underlying, padLength)
 
     str.addChildTagName("<annotation>", padLength)
       dumpTree(annotation, str, padLength + 2 * indentPerLevel)
@@ -135,8 +135,8 @@ private def dumpAndOrTypeImpl(using quotes: Quotes)(andOrType: quotes.reflect.An
   val right: TypeRepr = andOrType.right
 
   dumpTypeReprImpl(andOrType, str, padLength)
-  str.addChildTagName("left", typeReprToString(left), padLength)
-  str.addChildTagName("right", typeReprToString(right), padLength)
+  str.addTypeChildTagName("left", left, padLength)
+  str.addTypeChildTagName("right", right, padLength)
 
 
 
@@ -164,8 +164,8 @@ def dumpMatchType(using quotes: Quotes)(matchType: quotes.reflect.MatchType, str
 
   str.addTagName("<MatchType>", padLength)
     dumpTypeReprImpl(matchType, str, padLength)
-    str.addChildTagName("bound", typeReprToString(bound), padLength)
-    str.addChildTagName("scrutinee", typeReprToString(scrutinee), padLength)
+    str.addTypeChildTagName("bound", bound, padLength)
+    str.addTypeChildTagName("scrutinee", scrutinee, padLength)
 
     str.addChildTagName("<cases>", str, padLength)
       cases.foreach(c => dumpTypeRepr(c, str, padLength + 2 * indentPerLevel))
@@ -181,7 +181,7 @@ def dumpByNameType(using quotes: Quotes)(byNameType: quotes.reflect.ByNameType, 
 
   str.addTagName("<ByNameType>", padLength)
     dumpTypeReprImpl(byNameType, str, padLength)
-    str.addChildTagName("underlying", typeReprToString(underlying), padLength)
+    str.addTypeChildTagName("underlying", underlying, padLength)
   str.addTagName("</ByNameType>", padLength)
 
 
@@ -195,7 +195,7 @@ def dumpParamRef(using quotes: Quotes)(paramRef: quotes.reflect.ParamRef, str: S
   str.addTagName("<ParamRef>", padLength)
     dumpTypeReprImpl(paramRef, str, padLength)
     str.addChildTagName("paramNum", paramNum, padLength)
-    str.addChildTagName("binder", typeReprToString(binder), padLength)
+    str.addTypeChildTagName("binder", binder, padLength)
   str.addTagName("</ParamRef>", padLength)
 
 
@@ -207,7 +207,7 @@ def dumpThisType(using quotes: Quotes)(thisType: quotes.reflect.ThisType, str: S
 
   str.addTagName("<ThisType>", padLength)
     dumpTypeReprImpl(thisType, str, padLength)
-    str.addChildTagName("tref", typeReprToString(tref), padLength)
+    str.addTypeChildTagName("tref", tref, padLength)
   str.addTagName("</ThisType>", padLength)
 
 
@@ -236,7 +236,7 @@ def dumpRecursiveType(using quotes: Quotes)(recursiveType: quotes.reflect.Recurs
 
   str.addTagName("<RecursiveType>", padLength)
     dumpTypeReprImpl(recursiveType, str, padLength)
-    str.addChildTagName("underlying", typeReprToString(underlying), padLength)
+    str.addTypeChildTagName("underlying", underlying, padLength)
 
     str.addChildTagName("<recThis>", padLength)
       if padLength > 100
@@ -264,7 +264,8 @@ def dumpMethodType(using quotes: Quotes)(methodType: quotes.reflect.MethodType, 
 
     if signature._1.nonEmpty then
       str.addChildTagName("<paramTypes>", padLength)
-      signature._2.zipWithIndex.foreach((_, idx) => str.addChildTagName("<paramType>", typeReprToString(methodType.param(idx)), padLength + indentPerLevel))
+      signature._2.zipWithIndex.foreach((_, idx) =>
+        str.addTypeChildTagName("<paramType>", methodType.param(idx), padLength + indentPerLevel))
       str.addChildTagName("</paramTypes>", padLength)
   str.addTagName("</MethodType>", padLength)
 
@@ -281,7 +282,7 @@ def dumpPolyType(using quotes: Quotes)(polyType: quotes.reflect.PolyType, str: S
     str.addChildTagName("<paramBounds>", padLength)
     paramBounds.zipWithIndex.foreach( (typeBounds, idx) =>
       str.addChildTagName("<paramBound>", padLength + indentPerLevel)
-      str.addChildTagName("<type>", typeReprToString(polyType.param(idx)), padLength + 2 * indentPerLevel)
+      str.addTypeChildTagName("<type>", polyType.param(idx), padLength + 2 * indentPerLevel)
       str.addChildTagName("<boundType>", str, padLength + 2 * indentPerLevel)
       dumpTypeBounds(typeBounds, str, padLength + 3 * indentPerLevel)
       str.addChildTagName("</boundType>", str, padLength + 2 * indentPerLevel)
@@ -303,10 +304,10 @@ def dumpTypeLambda(using quotes: Quotes)(typeLambda: quotes.reflect.TypeLambda, 
     str.addChildTagName("<paramBounds>", padLength)
     paramBounds.zipWithIndex.foreach( (typeBounds, idx) =>
       str.addChildTagName("<paramBound>", padLength + indentPerLevel)
-      str.addChildTagName("<type>", typeReprToString(typeLambda.param(idx)), padLength + 2 * indentPerLevel)
-      str.addChildTagName("<typeBound>", str, padLength + 2 * indentPerLevel)
-      dumpTypeBounds(typeBounds, str, padLength + 3 * indentPerLevel)
-      str.addChildTagName("</typeBound>", str, padLength + 2 * indentPerLevel)
+        str.addTypeChildTagName("<type>", typeLambda.param(idx), padLength + 2 * indentPerLevel)
+        str.addChildTagName("<typeBound>", str, padLength + 2 * indentPerLevel)
+          dumpTypeBounds(typeBounds, str, padLength + 3 * indentPerLevel)
+        str.addChildTagName("</typeBound>", str, padLength + 2 * indentPerLevel)
       str.addChildTagName("</paramBound>", padLength + indentPerLevel)
     )
     str.addChildTagName("</paramBounds>", padLength)
@@ -338,11 +339,12 @@ private def dumpLambdaTypeImpl(using quotes: Quotes)(lambdaType: quotes.reflect.
 
   dumpTypeReprImpl(lambdaType, str, padLength)
 
-  str.addChildTagName("resType", typeReprToString(resType), padLength)
+  str.addTypeChildTagName("resType", resType, padLength)
   if paramTypes.nonEmpty then
     str.addChildTagName("paramNames", paramNames, padLength)
     str.addChildTagName("<paramTypes>", padLength)
-    paramTypes.foreach(pType => str.addChildTagName("<paramType>", typeReprToString(pType), padLength + indentPerLevel))
+      paramTypes.foreach(pType =>
+        str.addTypeChildTagName("<paramType>", pType, padLength + indentPerLevel))
     str.addChildTagName("</paramTypes>", padLength)
 
 
@@ -356,8 +358,8 @@ def dumpMatchCase(using quotes: Quotes)(matchCase: quotes.reflect.MatchCase, str
 
   str.addTagName("<MatchCase>", padLength)
     dumpTypeReprImpl(matchCase, str, padLength)
-    str.addChildTagName("pattern", typeReprToString(pattern), padLength)
-    str.addChildTagName("rhs", typeReprToString(rhs), padLength)
+    str.addTypeChildTagName("pattern", pattern, padLength)
+    str.addTypeChildTagName("rhs", rhs, padLength)
   str.addTagName("</MatchCase>", padLength)
 
 
@@ -366,11 +368,11 @@ def dumpMatchCase(using quotes: Quotes)(matchCase: quotes.reflect.MatchCase, str
 def dumpTypeBounds(using quotes: Quotes)(typeBounds: quotes.reflect.TypeBounds, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
   val low: TypeRepr = typeBounds.low
-  val hi: TypeRepr = typeBounds.hi
+  val hi:  TypeRepr = typeBounds.hi
   str.addTagName("<TypeBounds>", padLength)
     dumpTypeReprImpl(typeBounds, str, padLength)
-    str.addChildTagName("low", typeReprToString(low), padLength)
-    str.addChildTagName("hi", typeReprToString(hi), padLength)
+    str.addTypeChildTagName("low", low, padLength)
+    str.addTypeChildTagName("hi",  hi,  padLength)
   str.addTagName("</TypeBounds>", padLength)
 
 
@@ -438,3 +440,8 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   if typeArgs.nonEmpty then str.append(" typeArgs: ").append(typeArgs.map(_.show))
 
   str.toString
+
+
+extension (str: StringBuilder)
+  def addTypeChildTagName(using quotes: Quotes)(childName: String, childType: quotes.reflect.TypeRepr, padLength: Int): Unit =
+    str.addChildTagName(childName, typeReprToString(childType), padLength)

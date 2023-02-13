@@ -346,6 +346,7 @@ def dumpPackageClause(using quotes: Quotes)(packageClause: quotes.reflect.Packag
 
 
 // Statement <: Tree
+//
 // Import <: Statement
 def dumpImport(using quotes: Quotes)(_import: quotes.reflect.Import, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
@@ -353,13 +354,14 @@ def dumpImport(using quotes: Quotes)(_import: quotes.reflect.Import, str: String
   val selectors: List[Selector] = _import.selectors
 
   str.addTagName("<import>", padLength)
-    dumpTreeImpl(_import, str, padLength)
+    dumpStatementImpl(_import, str, padLength)
+
     str.addChildTagName("<expr>", padLength)
-    dumpTree(expr, str, padLength + 2 * indentPerLevel)
+      dumpTree(expr, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</expr>", padLength)
 
     str.addChildTagName("<selectors>", padLength)
-    selectors.foreach(s => dumpSelector(s, str, padLength + 2 * indentPerLevel))
+      selectors.foreach(s => dumpSelector(s, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</selectors>", padLength)
   str.addTagName("</import>", padLength)
 
@@ -371,8 +373,10 @@ def dumpExport(using quotes: Quotes)(_export: quotes.reflect.Export, str: String
   val selectors: List[Selector] = _export.selectors
 
   str.addTagName("<export>", padLength)
+    dumpStatementImpl(_export, str, padLength)
+
     str.addChildTagName("<expr>", padLength)
-    dumpTree(expr, str, padLength + 2 * indentPerLevel)
+      dumpTree(expr, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</expr>", padLength)
 
     str.addChildTagName("<selectors>", padLength)
