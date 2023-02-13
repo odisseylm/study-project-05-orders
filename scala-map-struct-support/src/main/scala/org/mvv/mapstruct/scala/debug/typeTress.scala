@@ -264,3 +264,93 @@ def dumpTypeTreeImpl(using quotes: Quotes)(typeTree: quotes.reflect.TypeTree, st
     dumpTypeRepr(tpe, str, padLength + 2 * indentPerLevel)
   str.addChildTagName("</tpe>", padLength)
 
+
+
+
+// TypeBoundsTree <: Tree
+def dumpTypeBoundsTree(using quotes: Quotes)(typeBoundsTree: quotes.reflect.TypeBoundsTree, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val tpe: TypeBounds = typeBoundsTree.tpe
+  val low: TypeTree   = typeBoundsTree.low
+  val hi:  TypeTree   = typeBoundsTree.hi
+
+  str.addTagName("<TypeBoundsTree>", padLength)
+    dumpTreeImpl(typeBoundsTree, str, padLength)
+
+    str.addChildTagName("<tpe>", padLength)
+      dumpTypeRepr(tpe, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</tpe>", padLength)
+
+    str.addChildTagName("<low>", padLength)
+      dumpTree(low, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</low>", padLength)
+
+    str.addChildTagName("<hi>", padLength)
+      dumpTree(hi, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</hi>", padLength)
+  str.addTagName("</TypeBoundsTree>", padLength)
+
+
+
+// WildcardTypeTree <: Tree
+def dumpWildcardTypeTree(using quotes: Quotes)(wildcardTypeTree: quotes.reflect.WildcardTypeTree, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val tpe: TypeRepr = wildcardTypeTree.tpe
+
+  str.addTagName("<WildcardTypeTree>", padLength)
+    dumpTreeImpl(wildcardTypeTree, str, padLength)
+
+    str.addChildTagName("<tpe>", padLength)
+      dumpTypeRepr(tpe, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</tpe>", padLength)
+  str.addTagName("</WildcardTypeTree>", padLength)
+
+
+// CaseDef <: Tree
+def dumpCaseDef(using quotes: Quotes)(caseDef: quotes.reflect.CaseDef, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val pattern: Tree = caseDef.pattern
+  val guard: Option[Term] = caseDef.guard
+  val rhs: Term = caseDef.rhs
+
+  str.addTagName("<CaseDef>", padLength)
+    dumpTreeImpl(caseDef, str, padLength)
+
+    str.addChildTagName("<pattern>", padLength)
+      dumpTree(pattern, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</pattern>", padLength)
+
+    str.addChildTagName("<guard>", padLength)
+      guard.foreach(g => dumpTree(g, str, padLength + 2 * indentPerLevel))
+    str.addChildTagName("</guard>", padLength)
+
+    str.addChildTagName("<rhs>", padLength)
+      dumpTree(rhs, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</rhs>", padLength)
+  str.addTagName("</CaseDef>", padLength)
+
+
+// TypeCaseDef <: Tree
+def dumpTypeCaseDef(using quotes: Quotes)(typeCaseDef: quotes.reflect.TypeCaseDef, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val pattern: Tree = typeCaseDef.pattern
+  val rhs: TypeTree = typeCaseDef.rhs
+
+  str.addTagName("<CaseDef>", padLength)
+    dumpTreeImpl(typeCaseDef, str, padLength)
+
+    str.addChildTagName("<pattern>", padLength)
+      dumpTree(pattern, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</pattern>", padLength)
+
+    str.addChildTagName("<rhs>", padLength)
+      dumpTree(rhs, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</rhs>", padLength)
+  str.addTagName("</CaseDef>", padLength)
+
+
+def dumpInferredTypeTree(using quotes: Quotes)(inferredTypeTree: quotes.reflect.TypeTree, str: StringBuilder, padLength: Int): Unit =
+  str.addTagName("<InferredTypeTree>", padLength)
+    dumpTypeTreeImpl(inferredTypeTree, str, padLength)
+  str.addTagName("</InferredTypeTree>", padLength)
+

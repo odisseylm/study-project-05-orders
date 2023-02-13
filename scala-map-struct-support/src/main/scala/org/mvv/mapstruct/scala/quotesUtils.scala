@@ -9,7 +9,8 @@ import java.nio.file.Path
 
 
 
-private val _templateArgs = List("constr", "preParentsOrDerived", "self", "preBody")
+//noinspection ScalaUnusedSymbol
+//private val _templateArgs = List("constr", "preParentsOrDerived", "self", "preBody")
 private val log: Logger = Logger("org.mvv.mapstruct.scala.quoteUtils")
 
 def fullName(parentName: String, name: String) =
@@ -23,7 +24,7 @@ def extractName(using quotes: Quotes)(el: quotes.reflect.Tree): String =
   //  case _ => throw IllegalArgumentException(s"Unexpected $el tree element in identifier. ")
 
 
-def extractClassName(using Quotes)(t: quotes.reflect.Tree): String =
+def extractClassName(using quotes: Quotes)(t: quotes.reflect.Tree): String =
   val symbol = t.toSymbol.get
   val clsStr = if symbol.isType
     then symbol.typeRef.dealias.widen.dealias.show // we also can use symbol.fullName
@@ -137,7 +138,7 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
 end extension
 
 
-extension (using quotes: Quotes)(el: AnyRef)
+extension (el: AnyRef)
   def isConstant: Boolean = el.isNotNull && el.isOneOfImplClasses(
     "Constant",
     "BooleanConstant", "CharConstant",

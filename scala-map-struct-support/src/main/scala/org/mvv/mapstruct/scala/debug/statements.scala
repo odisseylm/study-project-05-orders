@@ -4,6 +4,62 @@ import scala.quoted.Quotes
 import org.mvv.mapstruct.scala.{ tryDo, getByReflection }
 
 
+
+def dumpPackageClause(using quotes: Quotes)(packageClause: quotes.reflect.PackageClause, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  str.addTagName("<PackageClause>", padLength)
+    str.addChildTagName("<pid>", padLength)
+    dumpRef(packageClause.pid, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</pid>", padLength)
+
+    str.addChildTagName("<bindings>", padLength)
+    val stats: List[Tree] = packageClause.stats
+    stats.foreach(t => dumpTree(t, str, padLength + 2 * indentPerLevel))
+    str.addChildTagName("</bindings>", padLength)
+  str.addTagName("</PackageClause>", padLength)
+
+
+// Statement <: Tree
+//
+// Import <: Statement
+def dumpImport(using quotes: Quotes)(_import: quotes.reflect.Import, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val expr: Term = _import.expr
+  val selectors: List[Selector] = _import.selectors
+
+  str.addTagName("<import>", padLength)
+    dumpStatementImpl(_import, str, padLength)
+
+    str.addChildTagName("<expr>", padLength)
+      dumpTree(expr, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</expr>", padLength)
+
+    str.addChildTagName("<selectors>", padLength)
+      selectors.foreach(s => dumpSelector(s, str, padLength + 2 * indentPerLevel))
+    str.addChildTagName("</selectors>", padLength)
+  str.addTagName("</import>", padLength)
+
+
+// Export <: Statement
+def dumpExport(using quotes: Quotes)(_export: quotes.reflect.Export, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val expr: Term = _export.expr
+  val selectors: List[Selector] = _export.selectors
+
+  str.addTagName("<export>", padLength)
+    dumpStatementImpl(_export, str, padLength)
+
+    str.addChildTagName("<expr>", padLength)
+      dumpTree(expr, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</expr>", padLength)
+
+    str.addChildTagName("<selectors>", padLength)
+    selectors.foreach(s => dumpSelector(s, str, padLength + 2 * indentPerLevel))
+    str.addChildTagName("</selectors>", padLength)
+  str.addTagName("</export>", padLength)
+
+
+
 // Term <: Statement
 //
 // Ref <: Term
@@ -38,9 +94,11 @@ def dumpSelect(using quotes: Quotes)(select: quotes.reflect.Select, str: StringB
     dumpTree(qualifier, str, padLength + 2 * indentPerLevel)
     str.addChildTagName("</qualifier>", padLength)
 
-    str.addChildTagName("<signature>", padLength)
-    signature.foreach(s => dumpSignature(s, str, padLength + 2 * indentPerLevel))
-    str.addChildTagName("</signature>", padLength)
+    signature.foreach { s =>
+      str.addChildTagName("<signature>", padLength)
+      dumpSignature(s, str, padLength + 2 * indentPerLevel)
+      str.addChildTagName("</signature>", padLength)
+    }
   str.addTagName("</Select>", padLength)
 
 
@@ -58,14 +116,14 @@ def dumpRef(using quotes: Quotes)(ref: quotes.reflect.Ref, str: StringBuilder, p
 def dumpIf(using quotes: Quotes)(_if: quotes.reflect.If, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
   val isInline: Boolean = _if.isInline
-  val cond: Term = _if.cond
+  val cond:  Term = _if.cond
   val thenp: Term = _if.thenp
   val elsep: Term = _if.elsep
 
   str.addTagName("<If>", padLength)
     dumpTermImpl(_if, str, padLength)
 
-    str.addChildTagName("isInline", isInline, padLength)
+    if isInline then str.addChildTagName("<isInline/>", padLength)
 
     str.addChildTagName("<cond>", padLength)
     dumpTree(cond, str, padLength + 2 * indentPerLevel)
@@ -91,7 +149,7 @@ def dumpMatch(using quotes: Quotes)(_match: quotes.reflect.Match, str: StringBui
   str.addTagName("<Match>", padLength)
     dumpTermImpl(_match, str, padLength)
 
-    str.addChildTagName("isInline", isInline, padLength)
+    if isInline then str.addChildTagName("<isInline/>", padLength)
 
     str.addChildTagName("<scrutinee>", padLength)
     dumpTree(scrutinee, str, padLength + 2 * indentPerLevel)
@@ -375,6 +433,74 @@ private def dumpIdentImpl(using quotes: Quotes)(term: quotes.reflect.Term, str: 
   dumpTermImpl(term, str, padLength)
 
 
+
+// Block <: Term
+def dumpBlock(using quotes: Quotes)(block: quotes.reflect.Block, str: StringBuilder, padLength: Int): Unit =
+  str.addTagName("<Block>", padLength)
+    dumpBlockImpl(block, str, padLength)
+  str.addTagName("</Block>", padLength)
+
+// Block <: Term
+private def dumpBlockImpl(using quotes: Quotes)(block: quotes.reflect.Block, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val statements: List[Statement] = block.statements
+  val expr: Term = block.expr
+
+  dumpTermImpl(block, str, padLength)
+
+  str.addChildTagName("<statements>", padLength)
+    statements.foreach(s => dumpTree(s, str, padLength + 2 * indentPerLevel))
+  str.addChildTagName("</statements>", padLength)
+
+  dumpTree(expr, str, padLength + 2 * indentPerLevel)
+
+
+// Closure <: Term
+def dumpClosure(using quotes: Quotes)(closure: quotes.reflect.Closure, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val meth: Term = closure.meth
+  val tpeOpt: Option[TypeRepr] = closure.tpeOpt
+
+  str.addTagName("<Closure>", padLength)
+    dumpTermImpl(closure, str, padLength)
+
+    str.addChildTagName("<meth>", padLength)
+      dumpTree(meth, str, padLength + 2 * indentPerLevel)
+    str.addChildTagName("</meth>", padLength)
+
+    str.addChildTagName("<tpeOpt>", padLength)
+      tpeOpt.foreach(tpe => dumpTypeRepr(tpe, str, padLength + 2 * indentPerLevel))
+    str.addChildTagName("</tpeOpt>", padLength)
+  str.addTagName("</Closure>", padLength)
+
+
+// Lambda: LambdaModule
+// ?
+
+//
+def dumpLambda(using quotes: Quotes)(tree: quotes.reflect.Block, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val opt: Option[(List[ValDef], Term)] = Lambda.unapply(tree)
+
+  str.addTagName("<Lambda>", padLength)
+    dumpBlockImpl(tree, str, padLength)
+
+    opt.foreach { oo =>
+      val valDefs: List[ValDef] = oo._1
+      val term: Term = oo._2
+
+      str.addChildTagName("<mvalDefs>", padLength)
+        valDefs.foreach(vd => dumpTree(vd, str, padLength + 2 * indentPerLevel))
+      str.addChildTagName("</valDefs>", padLength)
+
+      str.addChildTagName("<term>", padLength)
+        dumpTree(term, str, padLength + 2 * indentPerLevel)
+      str.addChildTagName("</term>", padLength)
+    }
+  str.addTagName("</Lambda>", padLength)
+
+
+
 def treeName(using quotes: Quotes)(tree: quotes.reflect.Tree): String =
   import quotes.reflect.*
   // TODO: use also
@@ -441,5 +567,22 @@ private def dumpTreeImpl(using quotes: Quotes)(tree: quotes.reflect.Tree, str: S
   show.foreach(s => str.addChildTagName("show", s, padLength))
   asExpr.foreach(e => str.addChildTagName("asExpr", e, padLength))
 
+
+// !!! WARN: use it ONLY as super.dump() !!!
+//
+// base Term
+def dumpBaseTerm(using quotes: Quotes)(term: quotes.reflect.Term, str: StringBuilder, padLength: Int): Unit =
+  str.addTagName("<Term>", padLength)
+    dumpTermImpl(term, str, padLength)
+  str.addTagName("<Term>", padLength)
+
+
+// !!! WARN: use it ONLY as super.dump() !!!
+//
+// base Statement
+def dumpBaseStatement(using quotes: Quotes)(statement: quotes.reflect.Statement, str: StringBuilder, padLength: Int): Unit =
+  str.addTagName("<Statement>", padLength)
+    dumpStatementImpl(statement, str, padLength)
+  str.addTagName("<Statement>", padLength)
 
 

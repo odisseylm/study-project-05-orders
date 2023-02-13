@@ -37,6 +37,7 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
   def isTypeDef: Boolean = org.mvv.mapstruct.scala.isTypeDef(el)
   def isDefinition: Boolean = org.mvv.mapstruct.scala.isDefinition(el)
   def isTemplate: Boolean = org.mvv.mapstruct.scala.isTemplate(el)
+  def isInferredTypeTree: Boolean = el.getClass.nn.getSimpleName.nn == "InferredTypeTree"
 
   def isPackageClause: Boolean = org.mvv.mapstruct.scala.isPackageDef(el)
   def isImport: Boolean = org.mvv.mapstruct.scala.isImport(el)
@@ -60,7 +61,11 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
   def isAssign: Boolean = el.isImplClass("Assign")
   def isBlock: Boolean = el.isImplClass("Block")
   def isClosure: Boolean = el.isImplClass("Closure")
+  // not tested, probably is incorrect
   def isLambda: Boolean = el.isImplClass("Lambda")
+
+  def isSummonFrom: Boolean = el.isImplClass("SummonFrom")
+  def isRepeated: Boolean = el.isImplClass("Repeated")
 
   def isIf: Boolean = org.mvv.mapstruct.scala.isIf(el)
   def isMatch: Boolean = org.mvv.mapstruct.scala.isMatch(el)

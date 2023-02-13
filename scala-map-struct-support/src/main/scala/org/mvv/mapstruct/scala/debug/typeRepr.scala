@@ -36,7 +36,7 @@ def dumpTypeRef(using quotes: Quotes)(typeRef: quotes.reflect.TypeRef, str: Stri
   str.addTagName("<TypeRef>", padLength)
     if isOpaqueAlias then str.addChildTagName("isOpaqueAlias", padLength)
     dumpNamedTypeImpl(typeRef, str, padLength)
-    str.addChildTagName("translucentSuperType", translucentSuperType.show, padLength)
+    str.addChildTagName("translucentSuperType", typeReprToSimpleString(translucentSuperType), padLength)
   str.addTagName("</TypeRef>", padLength)
 
 
@@ -399,16 +399,15 @@ private def dumpTypeReprImpl(using quotes: Quotes)(typeRepr: quotes.reflect.Type
   //val baseType(cls: Symbol): TypeRepr
 
 
+private def tryToGetName(getNameExpr: =>String): String = try getNameExpr catch case _: Exception => ""
 
 def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): String =
   import quotes.reflect.*
-  val show: String = typeRepr.show
-  val dealias: TypeRepr = typeRepr.dealias
-  val dealiasShow: String = dealias.show
-  val simplified: TypeRepr = typeRepr.simplified
-  val simplifiedShow: String = simplified.show
-  val widen: TypeRepr = typeRepr.widen
-  val widenShow: String = widen.show
+
+  val show: String = tryToGetName(typeRepr.show)
+  val dealiasShow: String = tryToGetName(typeRepr.dealias.show)
+  val simplifiedShow: String = tryToGetName(typeRepr.simplified.show)
+  val widenShow: String = tryToGetName(typeRepr.widen.show)
 
   /*
   // skip now
@@ -440,6 +439,25 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   if typeArgs.nonEmpty then str.append(" typeArgs: ").append(typeArgs.map(_.show))
 
   str.toString
+
+
+
+def typeReprToSimpleString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): String =
+  import quotes.reflect.*
+
+  val show: String = tryToGetName(typeRepr.show)
+  val dealiasShow: String = tryToGetName(typeRepr.dealias.show)
+  val simplifiedShow: String = tryToGetName(typeRepr.simplified.show)
+  val widenShow: String = tryToGetName(typeRepr.widen.show)
+
+  val str = StringBuilder()
+  str.append(show)
+  if dealiasShow.nonEmptyName && dealiasShow != show then str.append(" dealias: ").append(dealiasShow)
+  if simplifiedShow.nonEmptyName && simplifiedShow != show then str.append(" simplified: ").append(simplifiedShow)
+  if widenShow.nonEmptyName && dealiasShow != show then str.append(" widen: ").append(widenShow)
+
+  val nameDescr = str.toString
+  if nameDescr.nonEmpty then nameDescr else "?name?"
 
 
 extension (str: StringBuilder)

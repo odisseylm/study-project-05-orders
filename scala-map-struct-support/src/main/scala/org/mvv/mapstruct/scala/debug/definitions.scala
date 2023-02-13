@@ -98,7 +98,7 @@ def dumpDefDef(using quotes: Quotes)(defDef: quotes.reflect.DefDef, str: StringB
     str.addChildTagName("name", name, padLength)
 
     str.addChildTagName("<paramss>", padLength)
-    paramss.foreach(p => dumpParam(p, str, padLength + 2 * indentPerLevel))
+    paramss.foreach(p => dumpParamClause(p, str, padLength + 2 * indentPerLevel))
     str.addChildTagName("</paramss>", padLength)
 
     str.addChildTagName("<leadingTypeParams>", padLength)

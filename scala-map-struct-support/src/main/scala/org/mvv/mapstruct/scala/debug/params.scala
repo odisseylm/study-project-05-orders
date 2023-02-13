@@ -42,7 +42,8 @@ def dumpParamClause(using quotes: Quotes)(p: quotes.reflect.ParamClause, str: St
 
   str.addTagName("<ParamClause>", padLength)
   params.foreach(pp => pp match
-    case vd if vd.isValDef => dumpValDef(vd.asInstanceOf[ValDef], str, padLength + 2 * indentPerLevel)
+    //case vd if vd.isValDef => dumpValDef(vd.asInstanceOf[ValDef], str, padLength + 2 * indentPerLevel)
+    case vd if vd.isValDef => dumpTree(vd.asInstanceOf[ValDef], str, padLength + 2 * indentPerLevel)
     case td if td.isTypeDef => dumpTypeDef(td.asInstanceOf[TypeDef], str, padLength + 2 * indentPerLevel)
     case _ => log.warn(s"Unexpected param clause [$pp]")
   )
