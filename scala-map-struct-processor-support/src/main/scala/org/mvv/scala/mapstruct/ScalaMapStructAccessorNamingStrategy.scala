@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala.mapstruct
+package org.mvv.scala.mapstruct
 
 //
 import javax.lang.model.`type`.TypeMirror
@@ -6,13 +6,7 @@ import javax.lang.model.element.{ExecutableElement, TypeElement, VariableElement
 //
 import org.mapstruct.ap.spi.MapStructProcessingEnvironment
 //
-import org.mvv.mapstruct.scala.Logger
-import org.mvv.mapstruct.scala._Class
-import org.mvv.mapstruct.scala.ScalaBeansInspector
-import org.mvv.mapstruct.scala.BeanProperties
-import org.mvv.mapstruct.scala.BeanProperty
-import org.mvv.mapstruct.scala.beanProperties
-import org.mvv.mapstruct.scala.nnArray
+import org.mvv.mapstruct.scala.*
 
 
 class ScalaMapStructAccessorNamingStrategy extends org.mapstruct.ap.spi.DefaultAccessorNamingStrategy {
