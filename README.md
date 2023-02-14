@@ -3,6 +3,7 @@
 
  - Fast build
    - `mvn install -DskipTests -Dmaven.test.skip=true`
+   - `rm -f ./target/test-classes/org/mvv/mapstruct/scala/debug/*.class &&  mvn install`
    - `mvn dependency:tree`
 
 

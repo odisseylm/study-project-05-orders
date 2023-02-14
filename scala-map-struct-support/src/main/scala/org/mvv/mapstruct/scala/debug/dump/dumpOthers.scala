@@ -1,7 +1,13 @@
-package org.mvv.mapstruct.scala.debug
+package org.mvv.mapstruct.scala.debug.dump
 
 import scala.quoted.*
 
+
+// overloading does not work?!
+def dumpTree1(using quotes: Quotes)(tree: quotes.reflect.Tree): Unit =
+  val str = StringBuilder()
+  dumpTree(tree, str, 2)
+  print(str)
 
 
 def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: StringBuilder, padLength: Int): Unit =
@@ -327,9 +333,3 @@ private def dumpImplicitSearch(using quotes: Quotes)(implicitSearch: AnyRef, str
     // SourceFile <: AnyRef
     case el if el.isSourceFile => dumpSourceFile(el.asInstanceOf[SourceFile], str, nextPadLength)
 */
-
-
-def dumpTree33(using quotes: Quotes)(tree: quotes.reflect.Tree): Unit =
-  val str = StringBuilder()
-  dumpTree(tree, str, 2)
-  print(str)

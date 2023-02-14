@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala.debug
+package org.mvv.mapstruct.scala.debug.dump
 
 import scala.quoted.*
 //

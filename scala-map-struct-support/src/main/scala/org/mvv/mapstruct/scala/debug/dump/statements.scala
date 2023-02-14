@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala.debug
+package org.mvv.mapstruct.scala.debug.dump
 
 import scala.quoted.Quotes
 import org.mvv.mapstruct.scala.{ tryDo, getByReflection, unwrapOption, isNull }
@@ -83,7 +83,7 @@ def dumpIdent(using quotes: Quotes)(t: quotes.reflect.Term, str: StringBuilder, 
 // Select <: Ref
 def dumpSelect(using quotes: Quotes)(select: quotes.reflect.Select, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
-  val qualifier: Tree = getProp(select, "qualifier").asInstanceOf[Tree]
+  val qualifier: Tree = unwrapOption(getByReflection(select, "qualifier")).asInstanceOf[Tree]
   val name: String = select.name
   val signature: Option[Signature] = select.signature
 

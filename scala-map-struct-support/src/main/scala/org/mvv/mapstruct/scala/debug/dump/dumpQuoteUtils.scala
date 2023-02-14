@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala.debug
+package org.mvv.mapstruct.scala.debug.dump
 
 import scala.quoted.*
 //
@@ -39,7 +39,8 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
   def isTemplate: Boolean = org.mvv.mapstruct.scala.isTemplate(el)
   def isInferredTypeTree: Boolean = el.getClass.nn.getSimpleName.nn == "InferredTypeTree"
 
-  def isPackageClause: Boolean = org.mvv.mapstruct.scala.isPackageDef(el) && el.isImplClass("PackageClause")
+  def isPackageClause: Boolean = org.mvv.mapstruct.scala.isPackageDef(el)
+    && el.isOneOfImplClasses("PackageClause", "PackageDef")
   def isImport: Boolean = org.mvv.mapstruct.scala.isImport(el)
   def isExport: Boolean =
     if !el.isValDef then return false
