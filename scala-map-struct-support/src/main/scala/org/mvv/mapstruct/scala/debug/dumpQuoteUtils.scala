@@ -39,7 +39,7 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
   def isTemplate: Boolean = org.mvv.mapstruct.scala.isTemplate(el)
   def isInferredTypeTree: Boolean = el.getClass.nn.getSimpleName.nn == "InferredTypeTree"
 
-  def isPackageClause: Boolean = org.mvv.mapstruct.scala.isPackageDef(el)
+  def isPackageClause: Boolean = org.mvv.mapstruct.scala.isPackageDef(el) && el.isImplClass("PackageClause")
   def isImport: Boolean = org.mvv.mapstruct.scala.isImport(el)
   def isExport: Boolean =
     if !el.isValDef then return false

@@ -1,7 +1,7 @@
 package org.mvv.mapstruct.scala.debug
 
 import scala.quoted.Quotes
-import org.mvv.mapstruct.scala.{ tryDo, getByReflection }
+import org.mvv.mapstruct.scala.{ tryDo, getByReflection, unwrapOption, isNull }
 
 
 
@@ -76,13 +76,14 @@ def dumpWildcardClause(using quotes: Quotes)(w: quotes.reflect.Wildcard, str: St
 def dumpIdent(using quotes: Quotes)(t: quotes.reflect.Term, str: StringBuilder, padLength: Int): Unit =
   str.addTagName("<Ident>", padLength)
   dumpIdentImpl(t, str, padLength)
+  dumpExtraData(t, str, padLength)
   str.addTagName("</Ident>", padLength)
 
 
 // Select <: Ref
 def dumpSelect(using quotes: Quotes)(select: quotes.reflect.Select, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
-  val qualifier: Term = select.qualifier
+  val qualifier: Tree = getProp(select, "qualifier").asInstanceOf[Tree]
   val name: String = select.name
   val signature: Option[Signature] = select.signature
 
@@ -428,9 +429,18 @@ private def dumpRefImpl(using quotes: Quotes)(ref: quotes.reflect.Ref, str: Stri
 // According to API Ident function creates Term type
 private def dumpIdentImpl(using quotes: Quotes)(term: quotes.reflect.Term, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
+
   val name: String = treeName(term)
   str.addChildTagName("name", name, padLength)
   dumpTermImpl(term, str, padLength)
+  //dumpRefImpl(term, str, padLength)
+
+  /*
+  term.toSymbol.foreach { s =>
+    val termRef: TermRef = s.termRef
+    println(s"termRef: $termRef")
+  }
+  */
 
 
 
@@ -567,6 +577,13 @@ private def dumpTreeImpl(using quotes: Quotes)(tree: quotes.reflect.Tree, str: S
   show.foreach(s => str.addChildTagName("show", s, padLength))
   asExpr.foreach(e => str.addChildTagName("asExpr", e, padLength))
 
+  str.addChildTagName("javaClassName", tree.getClass.nn.getSimpleName.nn, padLength)
+  str.addChildTagName("javaClassFullName", tree.getClass.nn.getName.nn, padLength)
+
+def dumpExtraData(obj: Any, str: StringBuilder, padLength: Int): Unit =
+  val extraInfo: Option[Any] = getExtraInfo(obj)
+  extraInfo.foreach(e => str.addChildTagName("extra", e, padLength))
+
 
 // !!! WARN: use it ONLY as super.dump() !!!
 //
@@ -585,4 +602,19 @@ def dumpBaseStatement(using quotes: Quotes)(statement: quotes.reflect.Statement,
     dumpStatementImpl(statement, str, padLength)
   str.addTagName("<Statement>", padLength)
 
+
+def getExtraInfo(obj: Any): Option[Any] =
+  val productElsData = try {
+    val products = unwrapOption(getByReflection(obj, "productIterator")).asInstanceOf[Iterator[Any]].toList
+    products.zipWithIndex.map((v, i) => s"$i: ${v.getClass.nn.getSimpleName} = $v")
+  } catch case _: Exception => ""
+  if isObjEmpty(productElsData) then None else Option(productElsData)
+
+
+//noinspection TypeCheckCanBeMatch
+private def isObjEmpty(obj: Any): Boolean =
+  if obj.isNull then return true
+  if obj.isInstanceOf[List[?]] && obj.asInstanceOf[List[?]].isEmpty then return true
+  if obj.isInstanceOf[String]  && obj.asInstanceOf[String].isBlank  then return true
+  false
 

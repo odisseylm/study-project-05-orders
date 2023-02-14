@@ -14,6 +14,7 @@ class DumpTest {
 
   @Test
   def testDump1(): Unit = {
+    val v = 1
 
     val v222: (TestEnum1 => TestEnum2) = dumpExpr( vvvv => vvvv match
             case org.mvv.mapstruct.scala.debug.TestEnum1.TestEnumValue1 => org.mvv.mapstruct.scala.debug.TestEnum2.TestEnumValue1

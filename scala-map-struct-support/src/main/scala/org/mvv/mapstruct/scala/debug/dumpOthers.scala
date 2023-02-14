@@ -12,7 +12,9 @@ def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: StringBuilder
   //val padChildStr = " ".repeat(nextPadLength)
   tree match
     // PackageClause <: Tree
-    case el if el.isPackageClause => dumpPackageClause(el.asInstanceOf[PackageClause], str, nextPadLength)
+    case el if el.isPackageClause =>
+      // WARN it may not work !!!
+      dumpPackageClause(el.asInstanceOf[PackageClause], str, nextPadLength)
 
     // Statement <: Tree
     // Import <: Statement
@@ -24,21 +26,25 @@ def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: StringBuilder
     // Template is not present now in API??..
     case el if el.isTemplate => dumpTemplate(el, str, nextPadLength)
     // ClassDef <: Definition
-    case el if el.isClassDef => el match
-      case el if el.isInferredTypeTree => dumpInferredTypeTree(el.asInstanceOf[TypeTree], str, nextPadLength)
-      case _ => dumpClassDef(el.asInstanceOf[ClassDef], str, nextPadLength)
+    case el if el.isClassDef =>
+      el match
+        case el if el.isInferredTypeTree => dumpInferredTypeTree(el.asInstanceOf[TypeTree], str, nextPadLength)
+        case _ => dumpClassDef(el.asInstanceOf[ClassDef], str, nextPadLength)
     // DefDef <: Definition
-    case el if el.isDefDef => el match
-      case it if it.isIdent => dumpIdent(it.asInstanceOf[Term], str, nextPadLength)
-      case _ => dumpDefDef(el.asInstanceOf[DefDef], str, nextPadLength)
+    case el if el.isDefDef =>
+      el match
+        case it if it.isSelect => dumpSelect(it.asInstanceOf[Select], str, nextPadLength)
+        case it if it.isIdent => dumpIdent(it.asInstanceOf[Term], str, nextPadLength)
+        case _ => dumpDefDef(el.asInstanceOf[DefDef], str, nextPadLength)
     // about ValDef
     //case el if el.isInferredTypeTree => dumpInferredTypeTree(el.asInstanceOf[TypeTree], str, nextPadLength)
     // ValDef <: Definition
-    case el if el.isValDef => el match
-      case it if it.isInferredTypeTree => dumpInferredTypeTree(it.asInstanceOf[TypeTree], str, nextPadLength)
-      case it if it.isIdent => dumpIdent(it.asInstanceOf[Term], str, nextPadLength)
-      case it if it.isSelect => dumpIdent(it.asInstanceOf[Select], str, nextPadLength)
-      case _ => dumpValDef(el.asInstanceOf[ValDef], str, nextPadLength)
+    case el if el.isValDef =>
+      el match
+        case it if it.isInferredTypeTree => dumpInferredTypeTree(it.asInstanceOf[TypeTree], str, nextPadLength)
+        case it if it.isSelect => dumpSelect(it.asInstanceOf[Select], str, nextPadLength)
+        case it if it.isIdent => dumpIdent(it.asInstanceOf[Term], str, nextPadLength)
+        case _ => dumpValDef(el.asInstanceOf[ValDef], str, nextPadLength)
     // TypeDef <: Definition
     case el if el.isTypeDef => dumpTypeDef(el.asInstanceOf[TypeDef], str, nextPadLength)
     // base Definition = Definition <: Statement <: Tree

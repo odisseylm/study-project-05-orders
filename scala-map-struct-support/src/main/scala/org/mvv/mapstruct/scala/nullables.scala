@@ -12,21 +12,19 @@ inline def requireNotNull[T](v: T|Null, msg: =>String): T =
   v.asInstanceOf[T]
 
 
-extension (v: AnyRef|Null)
+extension [T](v: T|Null)
   inline def isNull: Boolean =
     import scala.language.unsafeNulls
     //val asRaw = v.asInstanceOf[AnyRef]
     //asRaw == null
-    v.asInstanceOf[AnyRef] == null
+    v.asInstanceOf[T] == null
 
   inline def isNotNull: Boolean =
     import scala.language.unsafeNulls
     //val asRaw = v.asInstanceOf[AnyRef]
     //asRaw != null
-    v.asInstanceOf[AnyRef] != null
+    v.asInstanceOf[T] != null
 
-
-extension [T](v: T|Null)
   //noinspection ScalaUnusedSymbol
   inline def castToNonNullable: T = v.asInstanceOf[T]
   inline def nnIgnore: T = v.asInstanceOf[T]
