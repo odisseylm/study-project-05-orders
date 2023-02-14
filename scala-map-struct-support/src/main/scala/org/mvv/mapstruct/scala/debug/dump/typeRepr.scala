@@ -1,6 +1,7 @@
 package org.mvv.mapstruct.scala.debug.dump
 
 import scala.quoted.Quotes
+import org.mvv.mapstruct.scala. { getByReflection, tryDo, unwrapOption, isOneOf, endsWithOneOf }
 
 
 // type TypeRepr
@@ -400,15 +401,41 @@ private def dumpTypeReprImpl(using quotes: Quotes)(typeRepr: quotes.reflect.Type
 
 
 private def tryToGetName(getNameExpr: =>String): String = try getNameExpr catch case _: Exception => ""
+//private def tryToGetName(getNameExpr: =>String): String = try getNameExpr catch case ex: Exception => { ex.printStackTrace(); "" }
 
 def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): String =
   import quotes.reflect.*
 
+  // in case of enum it will contain full path to enum value
+  // for example: org.mvv.mapstruct.scala.debug.TestEnum2.TestEnumValue1
   val show: String = tryToGetName(typeRepr.show)
   val dealiasShow: String = tryToGetName(typeRepr.dealias.show)
   val simplifiedShow: String = tryToGetName(typeRepr.simplified.show)
+  // in case of enum it will contain full path to enum CLASS value
+  // for example: org.mvv.mapstruct.scala.debug.TestEnum2
   val widenShow: String = tryToGetName(typeRepr.widen.show)
 
+  val typeShortDescr: String = tryDo { typeRepr.typeSymbol.toString }.getOrElse("?NoShortDescr?")
+  //noinspection ScalaUnusedSymbol
+  val classShortDescr: String = tryDo { typeRepr.classSymbol.get.toString }.getOrElse("?NoShortDescr?")
+  val isPackageOrModule: Boolean = typeShortDescr.startsWith("module class ")
+  val elOrTypeReprFullClassName: String = tryDo { typeRepr.classSymbol.get.fullName } .getOrElse("?NoElOrTypeReprFullClassName?")
+
+  val flags: List[String] = tryDo { activeFlags(typeRepr.typeSymbol.flags).keys.toList } .getOrElse(Nil)
+
+  var isClassTypeRepr = !isPackageOrModule && (
+       elOrTypeReprFullClassName == show
+    || elOrTypeReprFullClassName.endsWith(show)
+    || elOrTypeReprFullClassName.endsWith(s".$simplifiedShow")
+    || elOrTypeReprFullClassName.endsWith(s"$$$simplifiedShow")
+  )
+
+  if !isClassTypeRepr && flags.contains("Module") && elOrTypeReprFullClassName.endsWith("$") then
+    val elOrTypeReprFullClassName2: String = elOrTypeReprFullClassName.stripSuffix("$")
+    isClassTypeRepr = elOrTypeReprFullClassName2 == show
+        || elOrTypeReprFullClassName2.endsWith(show)
+        || elOrTypeReprFullClassName2.endsWith(s".$simplifiedShow")
+        || elOrTypeReprFullClassName2.endsWith(s"$$$simplifiedShow")
   /*
   // skip now
   val classSymbol: Option[Symbol] = typeRepr.classSymbol
@@ -416,13 +443,30 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   val termSymbol: Symbol = typeRepr.termSymbol
   */
 
+  val isThisType: Boolean = typeRepr.getClass.nn.getSimpleName.nn.endsWith("ThisType")
+  //noinspection ScalaUnusedSymbol
+  val isAppliedType: Boolean = typeRepr.getClass.nn.getSimpleName.nn.endsWith("AppliedType")
+
+  //noinspection ScalaUnusedSymbol
   val isSingleton: Boolean = typeRepr.isSingleton
   val isFunctionType: Boolean = typeRepr.isFunctionType
   val isContextFunctionType: Boolean = typeRepr.isContextFunctionType
   val isErasedFunctionType: Boolean = typeRepr.isErasedFunctionType
   val isDependentFunctionType: Boolean = typeRepr.isDependentFunctionType
   val isTupleN: Boolean = typeRepr.isTupleN
+  //noinspection ScalaUnusedSymbol
+  val isTermRef: Boolean = typeRepr.isTermRef || typeRepr.getClass.nn.getSimpleName.nn.endsWith("TermRef")
+  //noinspection ScalaUnusedSymbol
+  val isTypeRef: Boolean = typeRepr.isTypeRef || typeRepr.getClass.nn.getSimpleName.nn.endsWith("TypeRef")
   val typeArgs: List[TypeRepr] = typeRepr.typeArgs
+
+  val isPackage    = tryDo { typeRepr.typeSymbol.isPackageDef } .getOrElse(false)
+  //noinspection ScalaUnusedSymbol
+  val isClassDef1  = tryDo { typeRepr.typeSymbol.isClassDef }   .getOrElse(false)
+  //noinspection ScalaUnusedSymbol
+  val isClassDef2  = tryDo { typeRepr.classSymbol.map(_.isClassDef).getOrElse(false) } .getOrElse(false)
+  val isTypeDef    = tryDo { typeRepr.typeSymbol.isTypeDef }    .getOrElse(false)
+  val isTypeParam  = tryDo { typeRepr.typeSymbol.isTypeParam }  .getOrElse(false)
 
   val str = StringBuilder()
   str.append(show)
@@ -430,15 +474,49 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   if simplifiedShow.nonEmptyName && simplifiedShow != show then str.append(" simplified: ").append(simplifiedShow)
   if widenShow.nonEmptyName && dealiasShow != show then str.append(" widen: ").append(widenShow)
 
-  if isSingleton then str.append(" isSingleton")
-  if isFunctionType then str.append(" isFunctionType")
-  if isContextFunctionType then str.append(" isContextFunctionType")
-  if isErasedFunctionType then str.append(" isErasedFunctionType")
-  if isDependentFunctionType then str.append(" isDependentFunctionType")
-  if isTupleN then str.append(" isTupleN")
-  if typeArgs.nonEmpty then str.append(" typeArgs: ").append(typeArgs.map(_.show))
+  var attrs: List[Any] = Nil
 
-  str.toString
+  // seems it is always trur
+  //if isTermRef then attrs ::= "isTermRef"
+  // no big use of it
+  //if isSingleton then attrs ::= "isSingleton"
+  if isFunctionType then attrs ::= "isFunctionType"
+  if isContextFunctionType then attrs ::= "isContextFunctionType"
+  if isErasedFunctionType then attrs ::= "isErasedFunctionType"
+  if isDependentFunctionType then attrs ::= "isDependentFunctionType"
+  if isTupleN then attrs ::= "isTupleN"
+
+  if flags.contains("Enum") then attrs ::= "isEnum"
+
+  if isPackage   then attrs ::= "isPackage"
+  if isTypeParam then attrs ::= "isTypeParam"
+  if isTypeDef   then attrs ::= "isTypeDef"
+  if isClassTypeRepr then attrs ::= "isClass"
+  // seems it is always true
+  //if isClassDef  then attrs ::= "isClassDef"
+
+  if typeArgs.nonEmpty then str.append(" typeArgs: ").append( typeArgs.map(a => tryToGetName(a.show)))
+
+  if isThisType then return typeRepr.toString
+  //if isAppliedType then return typeRepr.toString
+
+  if attrs.nonEmpty then
+    str.append( attrs.mkString(" (", ",", ")") )
+
+  val asString =  str.toString
+
+  /*
+  if "org" == show then
+    println("??? org")
+  if show.isOneOf("TestEnum2", "org.mvv.mapstruct.scala.debug.TestEnum2") then
+    println("??? org.mvv.mapstruct.scala.debug.TestEnum2")
+  if show.isOneOf("TestEnum1", "org.mvv.mapstruct.scala.debug.TestEnum1") then
+    println("??? org.mvv.mapstruct.scala.debug.TestEnum2")
+  if show.isOneOf("TestEnumValue1", "org.mvv.mapstruct.scala.debug.TestEnum2.TestEnumValue1") then
+    println("??? org.mvv.mapstruct.scala.debug.TestEnum2.TestEnumValue1")
+  */
+
+  asString
 
 
 
