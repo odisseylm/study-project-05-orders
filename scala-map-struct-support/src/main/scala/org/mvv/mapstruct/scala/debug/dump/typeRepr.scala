@@ -418,24 +418,12 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   val typeShortDescr: String = tryDo { typeRepr.typeSymbol.toString }.getOrElse("?NoShortDescr?")
   //noinspection ScalaUnusedSymbol
   val classShortDescr: String = tryDo { typeRepr.classSymbol.get.toString }.getOrElse("?NoShortDescr?")
-  val isPackageOrModule: Boolean = typeShortDescr.startsWith("module class ")
-  val elOrTypeReprFullClassName: String = tryDo { typeRepr.classSymbol.get.fullName } .getOrElse("?NoElOrTypeReprFullClassName?")
+  //val isPackageOrModule: Boolean = typeShortDescr.startsWith("module class ")
+  //val elOrTypeReprFullClassName: String = tryDo { typeRepr.classSymbol.get.fullName } .getOrElse("?NoElOrTypeReprFullClassName?")
 
-  val flags: List[String] = tryDo { activeFlags(typeRepr.typeSymbol.flags).keys.toList } .getOrElse(Nil)
+  val flags: Set[Flags] = tryDo { activeFlags(typeRepr.typeSymbol) } .getOrElse(Set())
 
-  var isClassTypeRepr = !isPackageOrModule && (
-       elOrTypeReprFullClassName == show
-    || elOrTypeReprFullClassName.endsWith(show)
-    || elOrTypeReprFullClassName.endsWith(s".$simplifiedShow")
-    || elOrTypeReprFullClassName.endsWith(s"$$$simplifiedShow")
-  )
-
-  if !isClassTypeRepr && flags.contains("Module") && elOrTypeReprFullClassName.endsWith("$") then
-    val elOrTypeReprFullClassName2: String = elOrTypeReprFullClassName.stripSuffix("$")
-    isClassTypeRepr = elOrTypeReprFullClassName2 == show
-        || elOrTypeReprFullClassName2.endsWith(show)
-        || elOrTypeReprFullClassName2.endsWith(s".$simplifiedShow")
-        || elOrTypeReprFullClassName2.endsWith(s"$$$simplifiedShow")
+  val isClassTypeRepr: Boolean = typeReprIsClass(typeRepr)
   /*
   // skip now
   val classSymbol: Option[Symbol] = typeRepr.classSymbol
@@ -443,9 +431,10 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   val termSymbol: Symbol = typeRepr.termSymbol
   */
 
-  val isThisType: Boolean = typeRepr.getClass.nn.getSimpleName.nn.endsWith("ThisType")
+  val shortClassName = typeRepr.getClass.nn.getSimpleName.nn
+  val isThisType: Boolean = shortClassName.endsWith("ThisType")
   //noinspection ScalaUnusedSymbol
-  val isAppliedType: Boolean = typeRepr.getClass.nn.getSimpleName.nn.endsWith("AppliedType")
+  val isAppliedType: Boolean = shortClassName.endsWith("AppliedType")
 
   //noinspection ScalaUnusedSymbol
   val isSingleton: Boolean = typeRepr.isSingleton
@@ -455,9 +444,9 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   val isDependentFunctionType: Boolean = typeRepr.isDependentFunctionType
   val isTupleN: Boolean = typeRepr.isTupleN
   //noinspection ScalaUnusedSymbol
-  val isTermRef: Boolean = typeRepr.isTermRef || typeRepr.getClass.nn.getSimpleName.nn.endsWith("TermRef")
+  val isTermRef: Boolean = typeRepr.isTermRef || shortClassName.endsWith("TermRef")
   //noinspection ScalaUnusedSymbol
-  val isTypeRef: Boolean = typeRepr.isTypeRef || typeRepr.getClass.nn.getSimpleName.nn.endsWith("TypeRef")
+  val isTypeRef: Boolean = typeRepr.isTypeRef || shortClassName.endsWith("TypeRef")
   val typeArgs: List[TypeRepr] = typeRepr.typeArgs
 
   val isPackage    = tryDo { typeRepr.typeSymbol.isPackageDef } .getOrElse(false)
@@ -486,7 +475,7 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   if isDependentFunctionType then attrs ::= "isDependentFunctionType"
   if isTupleN then attrs ::= "isTupleN"
 
-  if flags.contains("Enum") then attrs ::= "isEnum"
+  if flags.contains(Flags.Enum) then attrs ::= "isEnum"
 
   if isPackage   then attrs ::= "isPackage"
   if isTypeParam then attrs ::= "isTypeParam"
@@ -517,6 +506,28 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   */
 
   asString
+
+
+def typeReprIsClass(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): Boolean =
+  import quotes.reflect.Flags
+
+  val show: String = tryToGetName(typeRepr.show)
+  val simplifiedShow: String = tryToGetName(typeRepr.simplified.show)
+  val elOrTypeReprFullClassName: String = tryDo { typeRepr.classSymbol.get.fullName } .getOrElse("?NoElOrTypeReprFullClassName?")
+  val flags: Set[Flags] = tryDo { activeFlags(typeRepr.typeSymbol) } .getOrElse(Set())
+  val typeReprIsModule = flags.contains(Flags.Module)
+
+  def typeIsClassName(elOrTypeReprFullClassName: String): Boolean =
+    elOrTypeReprFullClassName == show
+      || elOrTypeReprFullClassName.endsWith(show)
+      || elOrTypeReprFullClassName.endsWith(s".$simplifiedShow")
+      || elOrTypeReprFullClassName.endsWith(s"$$$simplifiedShow")
+
+  val isClassTypeRepr = !typeReprIsModule && typeIsClassName(elOrTypeReprFullClassName)
+  val isPossiblyEnumClassTypeRepr = // probably this approach is used for other scala class types too
+    typeReprIsModule && elOrTypeReprFullClassName.endsWith("$") && typeIsClassName(elOrTypeReprFullClassName.stripSuffix("$"))
+
+  isClassTypeRepr || isPossiblyEnumClassTypeRepr
 
 
 

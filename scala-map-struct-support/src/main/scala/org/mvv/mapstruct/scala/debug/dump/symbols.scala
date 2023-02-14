@@ -2,6 +2,8 @@ package org.mvv.mapstruct.scala.debug.dump
 
 import scala.quoted.Quotes
 
+import org.mvv.mapstruct.scala.isSingleItemList
+
 
 // Symbol <: AnyRef
 def dumpSymbol(using quotes: Quotes)(symbol: quotes.reflect.Symbol, str: StringBuilder, padLength: Int): Unit =
@@ -99,7 +101,7 @@ def symbolToString(using quotes: Quotes)(symbol: quotes.reflect.Symbol, details:
     pos.foreach(p => str.append(", pos: ").append(p) )
     docstring.foreach(ds => str.append(", docstring: ").append(ds) )
 
-    val flagsList = activeFlags(flags)
+    val flagsList = activeFlagEntries(symbol)
     if isFlagsEmpty(flagsList) then str.append(", flags: ").append(flagsToString(flagsList))
 
     privateWithin.foreach( p => str.append(", privateWithin: ").append(p) )
@@ -151,24 +153,30 @@ def symbolToString(using quotes: Quotes)(symbol: quotes.reflect.Symbol, details:
   str.toString()
 
 
-//def flagsToStrings(using quotes: Quotes)(flags: quotes.reflect.Flags): List[String] =
-def activeFlags(using quotes: Quotes)(flags: quotes.reflect.Flags): Map[String, quotes.reflect.Flags] =
-  val allFlags: Map[String, quotes.reflect.Flags] = flagsMap
-  allFlags.filter((_, f) => flags.is(f))
+def flagsToSet(using quotes: Quotes)(flags: quotes.reflect.Flags): Set[quotes.reflect.Flags] =
+  allPossibleFlags.filter((_, f) => flags.is(f)).map(_._2).toSet
+def flagsToEntries(using quotes: Quotes)(flags: quotes.reflect.Flags): List[(String, quotes.reflect.Flags)] =
+  allPossibleFlags.filter((_, f) => flags.is(f))
 
-def flagsToString(using quotes: Quotes)(flags: Map[String, quotes.reflect.Flags]): String =
-  flags.keys.mkString("Flags { ", ", ", " }")
+def activeFlags(using quotes: Quotes)(symbol: quotes.reflect.Symbol): Set[quotes.reflect.Flags] =
+  flagsToSet(symbol.flags)
+def activeFlagEntries(using quotes: Quotes)(symbol: quotes.reflect.Symbol): List[(String, quotes.reflect.Flags)] =
+  flagsToEntries(symbol.flags)
 
+
+def flagsToString(using quotes: Quotes)(flags: IterableOnce[(String, quotes.reflect.Flags)]): String =
+  flags.iterator.map(_._1).mkString("Flags { ", ", ", " }")
+//noinspection NoTailRecursionAnnotation // there is no recursion
 def flagsToString(using quotes: Quotes)(flags: quotes.reflect.Flags): String =
-  activeFlags(flags).map(_._1).mkString("Flags { ", ", ", " }")
+  flagsToString(flagsToEntries(flags))
 
-def isFlagsEmpty(using quotes: Quotes)(flags: Map[String, quotes.reflect.Flags]) =
-  flags.isEmpty || (flags.size == 1 && flags.contains("EmptyFlags"))
+private def isFlagsEmpty(using quotes: Quotes)(flags: List[(String, quotes.reflect.Flags)]) =
+  flags.isEmpty || (flags.isSingleItemList && flags.head._2 == quotes.reflect.Flags.EmptyFlags)
 
 
-def flagsMap(using quotes: Quotes): Map[String, quotes.reflect.Flags] =
+def allPossibleFlags(using quotes: Quotes): List[ (String, quotes.reflect.Flags) ] =
   import quotes.reflect.*
-  val flagsMap: Map[String, Flags] = Map(
+  val flagEntries: List[(String, Flags)] = List(
     "Abstract" -> Flags.Abstract, "Artifact" -> Flags.Artifact, "Case" -> Flags.Case,
     "CaseAccessor" -> Flags.CaseAccessor, "Contravariant" -> Flags.Contravariant, "Covariant" -> Flags.Covariant,
     "Deferred" -> Flags.Deferred, "EmptyFlags" -> Flags.EmptyFlags, "Enum" -> Flags.Enum,
@@ -185,7 +193,7 @@ def flagsMap(using quotes: Quotes): Map[String, quotes.reflect.Flags] =
     "Sealed" -> Flags.Sealed, "StableRealizable" -> Flags.StableRealizable, "Static" -> Flags.Static,
     "Synthetic" -> Flags.Synthetic, "Trait" -> Flags.Trait, "Transparent" -> Flags.Transparent,
   )
-  flagsMap
+  flagEntries
 
 extension (str: String)
   def nonEmptyName: Boolean =

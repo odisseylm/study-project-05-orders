@@ -15,6 +15,12 @@ def tryDo[T](expr: => T): Option[T] =
   try Option[T](expr).nn catch case _: Exception => None
 
 
-extension [T](v :T)
+extension [T](v: T)
   inline def isOneOf(values: T*): Boolean =
     values.contains(v)
+
+extension [T](l: List[T])
+  def isSingleItemList: Boolean =
+    l.nonEmpty && l.tail == Nil
+  def isSingleItemList(v: T): Boolean =
+    l.nonEmpty && l.tail == Nil && l.head == v
