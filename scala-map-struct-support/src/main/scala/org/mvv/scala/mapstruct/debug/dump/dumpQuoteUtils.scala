@@ -38,6 +38,7 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
   def isDefinition: Boolean = org.mvv.scala.mapstruct.isDefinition(el)
   def isTemplate: Boolean = org.mvv.scala.mapstruct.isTemplate(el)
   def isInferredTypeTree: Boolean = el.getClass.nn.getSimpleName.nn == "InferredTypeTree"
+  //def isMemberDef: Boolean = el.getClass.nn.getSimpleName.nn == "MemberDef"
 
   def isPackageClause: Boolean = org.mvv.scala.mapstruct.isPackageDef(el)
     && el.isOneOfImplClasses("PackageClause", "PackageDef")
@@ -151,7 +152,7 @@ extension (using quotes: Quotes)(el: quotes.reflect.TypeRepr)
   def isTypeRepr: Boolean = el.isImplClass("TypeRepr")
 
 
-extension (using quotes: Quotes)(el: AnyRef)
+extension (el: AnyRef)
   def isBooleanConstant: Boolean = el.isImplClass("BooleanConstant")
   def isByteConstant: Boolean = el.isImplClass("ByteConstant")
   def isShortConstant: Boolean = el.isImplClass("ShortConstant")
@@ -173,8 +174,7 @@ extension (using quotes: Quotes)(el: AnyRef)
   def isImplicitSearchFailure: Boolean = el.isImplClass("ImplicitSearchFailure")
   def isImplicitSearchResult: Boolean = el.isImplClass("ImplicitSearchResult")
 
-  def isSymbol: Boolean = el.isImplClass("Symbol") // TODO: ???
-
-  def isFlags: Boolean = el.isImplClass("Flags")
-  def isPosition: Boolean = el.isImplClass("Position")
-  def isSourceFile: Boolean = el.isImplClass("SourceFile")
+  //def isSymbol: Boolean = el.isImplClass("Symbol")
+  //def isFlags: Boolean = el.isImplClass("Flags")
+  //def isPosition: Boolean = el.isImplClass("Position")
+  //def isSourceFile: Boolean = el.isImplClass("SourceFile")

@@ -1,6 +1,8 @@
 package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.Quotes
+//
+import org.mvv.scala.mapstruct.{ getByReflection, unwrapOption }
 
 
 // TypedOrTest <: Tree
@@ -353,4 +355,20 @@ def dumpInferredTypeTree(using quotes: Quotes)(inferredTypeTree: quotes.reflect.
   str.addTagName("<InferredTypeTree>", padLength)
     dumpTypeTreeImpl(inferredTypeTree, str, padLength)
   str.addTagName("</InferredTypeTree>", padLength)
+
+
+def dumpMemberDef(using quotes: Quotes)(memberDef: quotes.reflect.Tree, str: StringBuilder, padLength: Int): Unit =
+  import quotes.reflect.*
+  val name: String = getByReflection(memberDef, "name").unwrapOption.asInstanceOf[String]
+  val isDef: Any = getByReflection(memberDef, "isDef").unwrapOption
+  val namedType: Any = getByReflection(memberDef, "namedType").unwrapOption
+  val comment: Any = getByReflection(memberDef, "rawComment", "comment").unwrapOption
+
+  str.addTagName("<MemberDef>", padLength)
+    str.addChildTagName("name", name, padLength)
+    dumpTreeImpl(memberDef, str, padLength)
+    str.addChildTagName("isDef", isDef, padLength)
+    str.addChildTagName("namedType", namedType, padLength)
+    str.addChildTagName("comment", comment, padLength)
+  str.addTagName("</MemberDef>", padLength)
 

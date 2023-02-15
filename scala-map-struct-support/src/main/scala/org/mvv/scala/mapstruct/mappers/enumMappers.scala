@@ -1,6 +1,7 @@
 package org.mvv.scala.mapstruct.mappers
 
 import scala.quoted.{Expr, Quotes, Type}
+import scala.reflect.Enum as ScalaEnum
 //
 import org.mvv.scala.mapstruct.Logger
 
@@ -8,19 +9,16 @@ import org.mvv.scala.mapstruct.Logger
 private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.enumMappers")
 
 
-inline def enumMappingFunc[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.reflect.Enum*/]
+inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (): EnumFrom => EnumTo = ${ enumMappingFuncImpl[EnumFrom, EnumTo]() }
 
 
-def enumMappingFuncImpl[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.reflect.Enum*/]
+def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   ()
   (using quotes: Quotes)(using etFrom: Type[EnumFrom])(using etTo: Type[EnumTo]):
     Expr[EnumFrom => EnumTo] =
 
   import quotes.reflect.*
-
-  //val enumFromFromTypeRepr: TypeRepr = TypeRepr.of[EnumFrom]
-  //val enumToFromTypeRepr: TypeRepr = TypeRepr.of[EnumTo]
 
   val enumFromClassName: String = Type.show[EnumFrom]
   val enumToClassName: String = Type.show[EnumTo]
@@ -28,7 +26,7 @@ def enumMappingFuncImpl[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.re
   val logPrefix = s"enumMappingFuncImpl [ $enumFromClassName => $enumToClassName ], "
 
 
-  def enumValues[EnumType /*<: scala.reflect.Enum*/](using Type[EnumType]): List[String] =
+  def enumValues[EnumType <: ScalaEnum](using Type[EnumType]): List[String] =
     val classSymbol: Symbol = Symbol.classSymbol(Type.show[EnumType]) // Symbol.requiredClass(typeNameStr)
     val children: List[Symbol] = classSymbol.children
     // maybe with complex enums we need to filter out non-enum items
@@ -36,7 +34,7 @@ def enumMappingFuncImpl[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.re
     enumNames
 
   val useFullEnumClassName = true
-  def enumValue[EnumType](using Type[EnumType])(enumValue: String): Term =
+  def enumValue[EnumType <: ScalaEnum](using Type[EnumType])(enumValue: String): Term =
     if useFullEnumClassName
       then enumValueUsingFullClassName[EnumType](enumValue)
       else enumValueUsingSimpleClassNameAndEnumClassThisScope[EnumType](enumValue)
@@ -116,10 +114,10 @@ def enumMappingFuncImpl[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.re
   inlinedExpr
 
 
-def enumValueUsingSimpleClassNameAndEnumClassThisScope[T](using quotes: Quotes)(using enumType: Type[T])(enumValueName: String): quotes.reflect.Term =
+def enumValueUsingSimpleClassNameAndEnumClassThisScope[T <: ScalaEnum](using quotes: Quotes)(using enumType: Type[T])(enumValueName: String): quotes.reflect.Term =
   ???
 
-def enumValueUsingFullClassName[T](using quotes: Quotes)(using enumType: Type[T])(enumValueName: String): quotes.reflect.Term =
+def enumValueUsingFullClassName[T <: ScalaEnum](using quotes: Quotes)(using enumType: Type[T])(enumValueName: String): quotes.reflect.Term =
   import quotes.reflect.*
   val fullClassName: String = TypeRepr.of[T].widen.show
 
@@ -127,9 +125,17 @@ def enumValueUsingFullClassName[T](using quotes: Quotes)(using enumType: Type[T]
   require(parts.nonEmpty, s"Invalid enum class [$fullClassName].")
 
   if parts.sizeIs == 1 then
-    // TODO: to test it
-    val classIdent = Ident(Symbol.requiredClass(fullClassName).termRef)
-    return Select.unique(classIdent, enumValueName)
+    // It does not work... as usual :-(
+    // val typeRepr = TypeRepr.of[T]
+    // val classSymbol = typeRepr.typeSymbol // typeRepr.typeSymbol
+    // return Select.unique(Ident(classSymbol.termRef), enumValueName)
+
+    // defn.RootPackage/_root_/<root> does not work for it.
+    // Scala uses special 'empty' package for this purpose.
+    // See some details in a bit deprecated scala-reflect-2.13.8-sources.jar!/scala/reflect/internal/StdNames.scala
+    val emptyPackageIdent = Ident(Symbol.requiredPackage("<empty>").termRef)
+    val classSelect = Select.unique(emptyPackageIdent, fullClassName)
+    return Select.unique(classSelect, enumValueName)
 
   val rootPackageIdentCom = Ident(Symbol.requiredPackage(parts.head).termRef)
   val resultingFullClassNameSelect = parts.tail.tail.foldLeft

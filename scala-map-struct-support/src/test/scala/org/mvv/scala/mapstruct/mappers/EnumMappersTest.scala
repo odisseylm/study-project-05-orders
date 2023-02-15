@@ -22,10 +22,11 @@ enum TestEnum22 :
   case TestEnumValue1, TestEnumValue2
 
 
+//noinspection ScalaUnnecessaryParentheses
 class EnumMappersTest {
 
   @Test
-  def test1(): Unit = {
+  def testUsualEnums(): Unit = {
 
     val mapFunc: (TestEnum1 => TestEnum2) = enumMappingFunc[TestEnum1, TestEnum2]()
 

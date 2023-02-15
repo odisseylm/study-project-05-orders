@@ -35,12 +35,16 @@ def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: StringBuilder
     case el if el.isClassDef =>
       el match
         case el if el.isInferredTypeTree => dumpInferredTypeTree(el.asInstanceOf[TypeTree], str, nextPadLength)
+        //case el if el.isMemberDef => dumpMemberDef(el.asInstanceOf[TypeTree], str, nextPadLength)
+        case el if el.isIdent => dumpIdent(el.asInstanceOf[Term], str, nextPadLength)
         case _ => dumpClassDef(el.asInstanceOf[ClassDef], str, nextPadLength)
     // DefDef <: Definition
     case el if el.isDefDef =>
       el match
         case it if it.isSelect => dumpSelect(it.asInstanceOf[Select], str, nextPadLength)
         case it if it.isIdent => dumpIdent(it.asInstanceOf[Term], str, nextPadLength)
+        case it if it.isApply => dumpApply(it.asInstanceOf[Apply], str, nextPadLength)
+        //case el if el.isMemberDef => dumpMemberDef(el.asInstanceOf[TypeTree], str, nextPadLength)
         case _ => dumpDefDef(el.asInstanceOf[DefDef], str, nextPadLength)
     // about ValDef
     //case el if el.isInferredTypeTree => dumpInferredTypeTree(el.asInstanceOf[TypeTree], str, nextPadLength)
@@ -50,6 +54,10 @@ def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: StringBuilder
         case it if it.isInferredTypeTree => dumpInferredTypeTree(it.asInstanceOf[TypeTree], str, nextPadLength)
         case it if it.isSelect => dumpSelect(it.asInstanceOf[Select], str, nextPadLength)
         case it if it.isIdent => dumpIdent(it.asInstanceOf[Term], str, nextPadLength)
+        case el if el.isTyped => dumpTyped(el.asInstanceOf[Typed], str, nextPadLength)
+        // hm... strange type
+        case el if el.isTypeTree => dumpBaseTypeTree(el.asInstanceOf[TypeTree], str, nextPadLength)
+        //case el if el.isMemberDef => dumpMemberDef(el.asInstanceOf[TypeTree], str, nextPadLength)
         case _ => dumpValDef(el.asInstanceOf[ValDef], str, nextPadLength)
     // TypeDef <: Definition
     case el if el.isTypeDef => dumpTypeDef(el.asInstanceOf[TypeDef], str, nextPadLength)
