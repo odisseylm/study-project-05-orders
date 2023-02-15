@@ -144,87 +144,35 @@ def enumValueUsingFullClassName[T <: ScalaEnum](using quotes: Quotes)(using enum
 
 
 
-def enumValueUsingSimpleClassNameAndEnumClassThisScope[T <: ScalaEnum](using quotes: Quotes)(using enumType: Type[T])(enumValueName: String): quotes.reflect.Term =
-  import quotes.reflect.*
-  //val classSymbol = Symbol.requiredClass(TypeRepr.of[T].show)
+def enumValueUsingSimpleClassNameAndEnumClassThisScope[T <: ScalaEnum]
+  (using quotes: Quotes)(using enumType: Type[T])
+  (enumValueName: String): quotes.reflect.Term =
+
+  import quotes.reflect.{ Symbol, TypeRepr, TermRef, Ident, Select }
+
   val typeRepr: TypeRepr = TypeRepr.of[T]
   val classSymbol: Symbol = typeRepr.typeSymbol // typeRepr.typeSymbol
 
-  //val scopeTypRepr: TypeRepr = findCurrentScopeTypeRepr(classSymbol, 0).get
-  val scopeTypRepr: TypeRepr = findCurrentScopeTypeRepr(Symbol.requiredClass(TypeRepr.of[T].show), 0).get
-  val simpleEnumClassName = typeRepr.show.lastAfter('.').getOrElse(typeRepr.show)
-  println(s"777: simpleEnumClassName: $simpleEnumClassName, scopeTypRepr: $scopeTypRepr, ${typeRepr.show}")
+  val scopeTypRepr: TypeRepr = findCurrentScopeTypeRepr(classSymbol).get
+  val fullEnumClassName = typeRepr.show
+  val simpleEnumClassName = fullEnumClassName.lastAfter('.').getOrElse(fullEnumClassName)
   val classTerm = TermRef(scopeTypRepr, simpleEnumClassName)
-  val classIdent = Ident(classTerm)
-  val enumValueSelect = Select.unique(classIdent, enumValueName)
+  val enumValueSelect = Select.unique(Ident(classTerm), enumValueName)
   enumValueSelect
 
 
-/*
-def findCurrentScopeTypeRepr()(using quotes: Quotes): Option[quotes.reflect.TypeRepr] =
+
+def findCurrentScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symbol): Option[quotes.reflect.TypeRepr] =
   import quotes.reflect.*
-
-  // probably we can use experimental Symbol.info
-  // but now it is experimental
-
-  val spliceOwner: Symbol = Symbol.spliceOwner
-  require(spliceOwner.isTerm, "hm...")
-
-  //printFields("Symbol.spliceOwner", Symbol.spliceOwner)
-  //printFields("Symbol.spliceOwner.tree", Symbol.spliceOwner.tree)
-
-  println(s"\n\n%%% spliceOwner.isTerm: ${spliceOwner.isTerm}")
-  println(s"%%% spliceOwner.children: ${spliceOwner.children}")
-  println(s"%%% spliceOwner.declarations: ${spliceOwner.declarations}")
-  println(s"%%% spliceOwner.paramSymss: ${spliceOwner.paramSymss}")
-  println(s"%%% spliceOwner.caseFields: ${spliceOwner.caseFields}")
-  println(s"%%% spliceOwner.typeRef: ${spliceOwner.typeRef}")
-  println(s"%%% spliceOwner.termRef: ${spliceOwner.termRef}")
-  println(s"%%% spliceOwner.tree: ${spliceOwner.tree}")
-
-  findCurrentScopeTypeRepr(Symbol.spliceOwner, 0)
-*/
-
-
-def findCurrentScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symbol, recursionLevel: Int): Option[quotes.reflect.TypeRepr] =
-  import quotes.reflect.*
-
-  if recursionLevel > 100 then
-    throw IllegalStateException("Error of finding CurrentScopeTypeRepr => StackOverflow.")
 
   val typeRepr : Option[TypeRepr] = symbol match
-    case vd if vd.isValDef =>
-      println("666 isValDef")
-      val asValDef = vd.tree.asInstanceOf[ValDef]
-      val tpt: TypeTree = asValDef.tpt
-      val typeRepr0: TypeRepr = tpt.tpe
-      val typeRepr: TypeRepr =
-        if true then {
-          val asTypeRef: TypeRef = typeRepr0.asInstanceOf[TypeRef]
-          val typeRepr22: TypeRepr = TypeRef.unapply(asTypeRef)._1
-          typeRepr22
-        } else {
-          typeRepr0
-        }
-      Option(typeRepr)
-
-    case td if td.isTypeDef =>
-      println("667 isValDef")
-      val asTypeDef: TypeDef = td.tree.asInstanceOf[TypeDef]
-      val rhs: Tree = asTypeDef.rhs
-      None
-
-    case cd if cd.isClassDef =>
-      println("668 isValDef")
-      val typeRef: TypeRef = symbol.typeRef
-      val typRepr2: TypeRepr = TypeRef.unapply(typeRef)._1
-      val termRefRef: TermRef = symbol.termRef
-      val typRepr22: TypeRepr = TermRef.unapply(termRefRef)._1
-
-      Option(typRepr22)
+    case td if td.isTypeDef || td.isClassDef =>
+      val thisTypeRepr: TypeRepr = TypeRef.unapply(symbol.typeRef)._1
+      //val thisTypeRepr: TypeRepr = TermRef.unapply(symbol.termRef)._1
+      Option(thisTypeRepr)
 
     case other =>
-      println("669 isValDef")
+      log.warn(s"findCurrentScopeTypeRepr: Unexpected flow $other.")
       None
 
   typeRepr
