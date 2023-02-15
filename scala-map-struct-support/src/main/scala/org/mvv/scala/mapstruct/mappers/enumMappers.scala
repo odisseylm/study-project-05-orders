@@ -2,20 +2,20 @@ package org.mvv.scala.mapstruct.mappers
 
 import scala.quoted.{Expr, Quotes, Type}
 //
-import org.mvv.scala.mapstruct.{ Logger }
+import org.mvv.scala.mapstruct.Logger
 
 
 private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.enumMappers")
 
 
 inline def enumMappingFunc[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.reflect.Enum*/]
-  (): (EnumFrom => EnumTo) = ${ enumMappingFuncImpl[EnumFrom, EnumTo]() }
+  (): EnumFrom => EnumTo = ${ enumMappingFuncImpl[EnumFrom, EnumTo]() }
 
 
 def enumMappingFuncImpl[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.reflect.Enum*/]
   ()
   (using quotes: Quotes)(using etFrom: Type[EnumFrom])(using etTo: Type[EnumTo]):
-    Expr[(EnumFrom => EnumTo)] =
+    Expr[EnumFrom => EnumTo] =
 
   import quotes.reflect.*
 
@@ -55,8 +55,8 @@ def enumMappingFuncImpl[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.re
       then Option(s"Enum [$enumClassName] has non-mapped values ${unexpectedEnumValuesIt.mkString("[", ", ", "]")}")
       else None
 
-  val unexpectedEnumFromValues: List[String] = (enumFromValues diff enumToValues)
-  val unexpectedEnumToValues: List[String] = (enumToValues diff enumFromValues)
+  val unexpectedEnumFromValues: List[String] = enumFromValues diff enumToValues
+  val unexpectedEnumToValues:   List[String] = enumToValues   diff enumFromValues
 
   val err1: Option[String] = unexpectedEnumValuesErrorMsg(enumFromClassName, unexpectedEnumFromValues)
   val err2: Option[String] = unexpectedEnumValuesErrorMsg(enumToClassName, unexpectedEnumToValues)
@@ -108,7 +108,7 @@ def enumMappingFuncImpl[EnumFrom /*<: scala.reflect.Enum*/, EnumTo /*<: scala.re
     rhsFn
   )
 
-  println(s"anonFunLambda expr: ${anonFunLambda.asExprOf[(EnumFrom => EnumTo)].show}")
+  println(s"anonFunLambda expr: ${anonFunLambda.asExprOf[EnumFrom => EnumTo].show}")
 
   val inlined = Inlined(None, Nil, anonFunLambda)
   val inlinedExpr = inlined.asExprOf[EnumFrom => EnumTo]
