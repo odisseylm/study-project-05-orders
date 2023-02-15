@@ -3,7 +3,7 @@ package org.mvv.scala.mapstruct.mappers
 import scala.quoted.{Expr, Quotes, Type}
 import scala.reflect.Enum as ScalaEnum
 //
-import org.mvv.scala.mapstruct.Logger
+import org.mvv.scala.mapstruct.{ Logger, lastAfter }
 
 
 private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.enumMappers")
@@ -33,7 +33,7 @@ def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
     val enumNames: List[String] = children.map(_.name)
     enumNames
 
-  val useFullEnumClassName = true
+  val useFullEnumClassName = false
   def enumValue[EnumType <: ScalaEnum](using Type[EnumType])(enumValue: String): Term =
     if useFullEnumClassName
       then enumValueUsingFullClassName[EnumType](enumValue)
@@ -106,16 +106,14 @@ def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
     rhsFn
   )
 
-  println(s"anonFunLambda expr: ${anonFunLambda.asExprOf[EnumFrom => EnumTo].show}")
+  log.trace(s"$logPrefix anonFunLambda expr: ${anonFunLambda.asExprOf[EnumFrom => EnumTo].show}")
 
   val inlined = Inlined(None, Nil, anonFunLambda)
   val inlinedExpr = inlined.asExprOf[EnumFrom => EnumTo]
-  println(s"${inlinedExpr.show}")
+  log.trace(s"$logPrefix ${inlinedExpr.show}")
   inlinedExpr
 
 
-def enumValueUsingSimpleClassNameAndEnumClassThisScope[T <: ScalaEnum](using quotes: Quotes)(using enumType: Type[T])(enumValueName: String): quotes.reflect.Term =
-  ???
 
 def enumValueUsingFullClassName[T <: ScalaEnum](using quotes: Quotes)(using enumType: Type[T])(enumValueName: String): quotes.reflect.Term =
   import quotes.reflect.*
@@ -141,5 +139,92 @@ def enumValueUsingFullClassName[T <: ScalaEnum](using quotes: Quotes)(using enum
   val resultingFullClassNameSelect = parts.tail.tail.foldLeft
     (Select.unique(rootPackageIdentCom, parts.tail.head))
     ((preSelect, nextPart) => Select.unique(preSelect, nextPart))
-  Select.unique(resultingFullClassNameSelect, enumValueName)
+  val enumValueSelect = Select.unique(resultingFullClassNameSelect, enumValueName)
+  enumValueSelect
 
+
+
+def enumValueUsingSimpleClassNameAndEnumClassThisScope[T <: ScalaEnum](using quotes: Quotes)(using enumType: Type[T])(enumValueName: String): quotes.reflect.Term =
+  import quotes.reflect.*
+  //val classSymbol = Symbol.requiredClass(TypeRepr.of[T].show)
+  val typeRepr: TypeRepr = TypeRepr.of[T]
+  val classSymbol: Symbol = typeRepr.typeSymbol // typeRepr.typeSymbol
+
+  //val scopeTypRepr: TypeRepr = findCurrentScopeTypeRepr(classSymbol, 0).get
+  val scopeTypRepr: TypeRepr = findCurrentScopeTypeRepr(Symbol.requiredClass(TypeRepr.of[T].show), 0).get
+  val simpleEnumClassName = typeRepr.show.lastAfter('.').getOrElse(typeRepr.show)
+  println(s"777: simpleEnumClassName: $simpleEnumClassName, scopeTypRepr: $scopeTypRepr, ${typeRepr.show}")
+  val classTerm = TermRef(scopeTypRepr, simpleEnumClassName)
+  val classIdent = Ident(classTerm)
+  val enumValueSelect = Select.unique(classIdent, enumValueName)
+  enumValueSelect
+
+
+/*
+def findCurrentScopeTypeRepr()(using quotes: Quotes): Option[quotes.reflect.TypeRepr] =
+  import quotes.reflect.*
+
+  // probably we can use experimental Symbol.info
+  // but now it is experimental
+
+  val spliceOwner: Symbol = Symbol.spliceOwner
+  require(spliceOwner.isTerm, "hm...")
+
+  //printFields("Symbol.spliceOwner", Symbol.spliceOwner)
+  //printFields("Symbol.spliceOwner.tree", Symbol.spliceOwner.tree)
+
+  println(s"\n\n%%% spliceOwner.isTerm: ${spliceOwner.isTerm}")
+  println(s"%%% spliceOwner.children: ${spliceOwner.children}")
+  println(s"%%% spliceOwner.declarations: ${spliceOwner.declarations}")
+  println(s"%%% spliceOwner.paramSymss: ${spliceOwner.paramSymss}")
+  println(s"%%% spliceOwner.caseFields: ${spliceOwner.caseFields}")
+  println(s"%%% spliceOwner.typeRef: ${spliceOwner.typeRef}")
+  println(s"%%% spliceOwner.termRef: ${spliceOwner.termRef}")
+  println(s"%%% spliceOwner.tree: ${spliceOwner.tree}")
+
+  findCurrentScopeTypeRepr(Symbol.spliceOwner, 0)
+*/
+
+
+def findCurrentScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symbol, recursionLevel: Int): Option[quotes.reflect.TypeRepr] =
+  import quotes.reflect.*
+
+  if recursionLevel > 100 then
+    throw IllegalStateException("Error of finding CurrentScopeTypeRepr => StackOverflow.")
+
+  val typeRepr : Option[TypeRepr] = symbol match
+    case vd if vd.isValDef =>
+      println("666 isValDef")
+      val asValDef = vd.tree.asInstanceOf[ValDef]
+      val tpt: TypeTree = asValDef.tpt
+      val typeRepr0: TypeRepr = tpt.tpe
+      val typeRepr: TypeRepr =
+        if true then {
+          val asTypeRef: TypeRef = typeRepr0.asInstanceOf[TypeRef]
+          val typeRepr22: TypeRepr = TypeRef.unapply(asTypeRef)._1
+          typeRepr22
+        } else {
+          typeRepr0
+        }
+      Option(typeRepr)
+
+    case td if td.isTypeDef =>
+      println("667 isValDef")
+      val asTypeDef: TypeDef = td.tree.asInstanceOf[TypeDef]
+      val rhs: Tree = asTypeDef.rhs
+      None
+
+    case cd if cd.isClassDef =>
+      println("668 isValDef")
+      val typeRef: TypeRef = symbol.typeRef
+      val typRepr2: TypeRepr = TypeRef.unapply(typeRef)._1
+      val termRefRef: TermRef = symbol.termRef
+      val typRepr22: TypeRepr = TermRef.unapply(termRefRef)._1
+
+      Option(typRepr22)
+
+    case other =>
+      println("669 isValDef")
+      None
+
+  typeRepr

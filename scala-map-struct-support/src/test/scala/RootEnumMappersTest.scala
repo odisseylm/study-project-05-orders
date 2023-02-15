@@ -24,9 +24,12 @@ class RootEnumMappersTest {
     a.assertThat(manualMapFunc(RootPackageTestEnum1.TestEnumValue1)).isEqualTo(RootPackageTestEnum2.TestEnumValue1)
     a.assertThat(manualMapFunc(RootPackageTestEnum1.TestEnumValue2)).isEqualTo(RootPackageTestEnum2.TestEnumValue2)
 
+    /*
+    // commented out to avoid a lot of console output
     org.mvv.scala.mapstruct.debug.dump.dumpExpr((v: RootPackageTestEnum1) => (v: @unchecked) match
       case RootPackageTestEnum1.TestEnumValue1 => RootPackageTestEnum2.TestEnumValue1
     )
+    */
 
     val mapFunc: (RootPackageTestEnum1 => RootPackageTestEnum2) = enumMappingFunc[RootPackageTestEnum1, RootPackageTestEnum2]()
 
