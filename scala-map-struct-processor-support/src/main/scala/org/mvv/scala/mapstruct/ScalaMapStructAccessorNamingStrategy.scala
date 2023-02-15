@@ -6,7 +6,7 @@ import javax.lang.model.element.{ExecutableElement, TypeElement, VariableElement
 //
 import org.mapstruct.ap.spi.MapStructProcessingEnvironment
 //
-import org.mvv.mapstruct.scala.*
+import org.mvv.scala.mapstruct.*
 
 
 class ScalaMapStructAccessorNamingStrategy extends org.mapstruct.ap.spi.DefaultAccessorNamingStrategy {

@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 import scala.annotation.nowarn
 import scala.collection.mutable
@@ -11,7 +11,7 @@ import java.nio.file.Path
 
 //noinspection ScalaUnusedSymbol
 //private val _templateArgs = List("constr", "preParentsOrDerived", "self", "preBody")
-private val log: Logger = Logger("org.mvv.mapstruct.scala.quoteUtils")
+private val log: Logger = Logger("org.mvv.scala.mapstruct.quoteUtils")
 
 def fullName(parentName: String, name: String) =
   if parentName == "" || parentName == "<empty>" then name else s"$parentName.$name"

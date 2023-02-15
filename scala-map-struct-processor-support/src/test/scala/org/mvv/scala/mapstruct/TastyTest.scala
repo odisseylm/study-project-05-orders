@@ -1,7 +1,7 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 import org.junit.jupiter.api.Disabled
-import org.mvv.mapstruct.scala.testclasses.{InheritedClass1, InheritedFromJavaClass1}
+import org.mvv.scala.mapstruct.testclasses.{InheritedClass1, InheritedFromJavaClass1}
 
 import scala.tasty.inspector.Tasty
 import scala.tasty.inspector.TastyInspector
@@ -39,13 +39,13 @@ class TastyTest :
     a.assertThat(r.asJava)
       //.hasSize(4)
       .containsOnlyKeys(
-        "org.mvv.mapstruct.scala.testclasses.Trait1",
-        "org.mvv.mapstruct.scala.testclasses.Trait2",
-        "org.mvv.mapstruct.scala.testclasses.BaseClass1",
-        "org.mvv.mapstruct.scala.testclasses.InheritedClass1",
+        "org.mvv.scala.mapstruct.testclasses.Trait1",
+        "org.mvv.scala.mapstruct.testclasses.Trait2",
+        "org.mvv.scala.mapstruct.testclasses.BaseClass1",
+        "org.mvv.scala.mapstruct.testclasses.InheritedClass1",
       )
 
-    val _class = r("org.mvv.mapstruct.scala.testclasses.InheritedClass1")
+    val _class = r("org.mvv.scala.mapstruct.testclasses.InheritedClass1")
 
     a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "trait1Val: java.lang.String", "trait2Val: java.lang.String",
@@ -108,16 +108,16 @@ class TastyTest :
     a.assertThat(r.asJava)
       //.hasSize(4)
       .containsOnlyKeys(
-        "org.mvv.mapstruct.scala.testclasses.Trait1",
-        "org.mvv.mapstruct.scala.testclasses.Trait2",
-        "org.mvv.mapstruct.scala.testclasses.JavaInterface1",
-        "org.mvv.mapstruct.scala.testclasses.JavaInterface2",
-        "org.mvv.mapstruct.scala.testclasses.BaseJavaClass1",
-        "org.mvv.mapstruct.scala.testclasses.BaseJavaClass2",
-        "org.mvv.mapstruct.scala.testclasses.InheritedFromJavaClass1",
+        "org.mvv.scala.mapstruct.testclasses.Trait1",
+        "org.mvv.scala.mapstruct.testclasses.Trait2",
+        "org.mvv.scala.mapstruct.testclasses.JavaInterface1",
+        "org.mvv.scala.mapstruct.testclasses.JavaInterface2",
+        "org.mvv.scala.mapstruct.testclasses.BaseJavaClass1",
+        "org.mvv.scala.mapstruct.testclasses.BaseJavaClass2",
+        "org.mvv.scala.mapstruct.testclasses.InheritedFromJavaClass1",
       )
 
-    val _class = r("org.mvv.mapstruct.scala.testclasses.InheritedFromJavaClass1")
+    val _class = r("org.mvv.scala.mapstruct.testclasses.InheritedFromJavaClass1")
 
     a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "trait1Val: java.lang.String", "trait2Val: java.lang.String",

@@ -1,7 +1,7 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 import org.junit.jupiter.api.Disabled
-import org.mvv.mapstruct.scala.testclasses.StandardScalaModifiersTesClass
+import org.mvv.scala.mapstruct.testclasses.StandardScalaModifiersTesClass
 
 import scala.tasty.inspector.Tasty
 import scala.tasty.inspector.TastyInspector

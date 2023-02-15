@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 import scala.language.unsafeNulls
 import scala.jdk.CollectionConverters.*
@@ -8,7 +8,7 @@ import java.beans.PropertyDescriptor
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
-import org.mvv.mapstruct.scala.testclasses.InheritedFromJavaClass2
+import org.mvv.scala.mapstruct.testclasses.InheritedFromJavaClass2
 
 
 class ScalaBeanPropsTest {

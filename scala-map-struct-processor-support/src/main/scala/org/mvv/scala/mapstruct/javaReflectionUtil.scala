@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 import scala.collection.mutable
 

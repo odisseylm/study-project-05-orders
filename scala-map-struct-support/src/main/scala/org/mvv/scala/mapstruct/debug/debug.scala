@@ -1,9 +1,11 @@
-package org.mvv.mapstruct.scala.debug
+package org.mvv.scala.mapstruct.debug
 
 import scala.quoted.Quotes
+//
+import org.mvv.scala.mapstruct.Logger
 
 
-private val log = org.mvv.mapstruct.scala.Logger("org.mvv.mapstruct.scala.debug")
+private val log = Logger("org.mvv.scala.mapstruct.debug")
 
 
 //noinspection ScalaUnusedSymbol
@@ -48,7 +50,7 @@ def getProp(obj: Any, method: String): Any = {
 
 
 def printTreeSymbolInfo(using quotes: Quotes)(tree: quotes.reflect.Tree): Unit =
-  org.mvv.mapstruct.scala.toSymbol(tree).foreach(s => printSymbolInfo(s))
+  org.mvv.scala.mapstruct.toSymbol(tree).foreach(s => printSymbolInfo(s))
 
 def printSymbolInfo(using quotes: Quotes)(symbol: Option[quotes.reflect.Symbol]): Unit =
   symbol.foreach(s => printSymbolInfo(s))

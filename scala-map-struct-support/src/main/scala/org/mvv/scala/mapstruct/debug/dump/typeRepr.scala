@@ -1,7 +1,7 @@
-package org.mvv.mapstruct.scala.debug.dump
+package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.Quotes
-import org.mvv.mapstruct.scala. { getByReflection, tryDo, unwrapOption, isOneOf, endsWithOneOf }
+import org.mvv.scala.mapstruct. { getByReflection, tryDo, unwrapOption, isOneOf, endsWithOneOf }
 
 
 // type TypeRepr
@@ -407,12 +407,12 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   import quotes.reflect.*
 
   // in case of enum it will contain full path to enum value
-  // for example: org.mvv.mapstruct.scala.debug.TestEnum2.TestEnumValue1
+  // for example: org.mvv.scala.mapstruct.debug.TestEnum2.TestEnumValue1
   val show: String = tryToGetName(typeRepr.show)
   val dealiasShow: String = tryToGetName(typeRepr.dealias.show)
   val simplifiedShow: String = tryToGetName(typeRepr.simplified.show)
   // in case of enum it will contain full path to enum CLASS value
-  // for example: org.mvv.mapstruct.scala.debug.TestEnum2
+  // for example: org.mvv.scala.mapstruct.debug.TestEnum2
   val widenShow: String = tryToGetName(typeRepr.widen.show)
 
   val typeShortDescr: String = tryDo { typeRepr.typeSymbol.toString }.getOrElse("?NoShortDescr?")
@@ -497,12 +497,12 @@ def typeReprToString(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): S
   /*
   if "org" == show then
     println("??? org")
-  if show.isOneOf("TestEnum2", "org.mvv.mapstruct.scala.debug.TestEnum2") then
-    println("??? org.mvv.mapstruct.scala.debug.TestEnum2")
-  if show.isOneOf("TestEnum1", "org.mvv.mapstruct.scala.debug.TestEnum1") then
-    println("??? org.mvv.mapstruct.scala.debug.TestEnum2")
-  if show.isOneOf("TestEnumValue1", "org.mvv.mapstruct.scala.debug.TestEnum2.TestEnumValue1") then
-    println("??? org.mvv.mapstruct.scala.debug.TestEnum2.TestEnumValue1")
+  if show.isOneOf("TestEnum2", "org.mvv.scala.mapstruct.debug.TestEnum2") then
+    println("??? org.mvv.scala.mapstruct.debug.TestEnum2")
+  if show.isOneOf("TestEnum1", "org.mvv.scala.mapstruct.debug.TestEnum1") then
+    println("??? org.mvv.scala.mapstruct.debug.TestEnum2")
+  if show.isOneOf("TestEnumValue1", "org.mvv.scala.mapstruct.debug.TestEnum2.TestEnumValue1") then
+    println("??? org.mvv.scala.mapstruct.debug.TestEnum2.TestEnumValue1")
   */
 
   asString

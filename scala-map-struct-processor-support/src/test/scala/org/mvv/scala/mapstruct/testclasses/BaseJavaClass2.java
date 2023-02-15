@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala.testclasses;
+package org.mvv.scala.mapstruct.testclasses;
 
 @SuppressWarnings("unused")
 public class BaseJavaClass2 extends BaseJavaClass1 implements JavaInterface2, JavaInterface1 {

@@ -1,12 +1,11 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 import scala.language.unsafeNulls
 import scala.jdk.CollectionConverters.*
 //
-import org.mvv.mapstruct.scala.testclasses.GenericClass2
-import org.mvv.mapstruct.scala.testclasses.JGenericClass2
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
+import org.mvv.scala.mapstruct.testclasses.{GenericClass2, JGenericClass2}
 
 class GenericsTest {
 
@@ -49,7 +48,7 @@ class GenericsTest {
 
   @Test
   def showJavaImplMethods(): Unit = {
-    val cls = classOf[org.mvv.mapstruct.scala.testclasses.JGenericClass2]
+    val cls = classOf[JGenericClass2]
     val ms = cls.getMethods.nnArray
     println(ms.mkString("\n"))
   }

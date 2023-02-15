@@ -1,5 +1,4 @@
-package org.mvv.mapstruct.scala.debug
-
+package org.mvv.scala.mapstruct.debug
 
 enum TestEnum1 :
   case TestEnumValue1, TestEnumValue2

@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 import scala.annotation.nowarn
 import scala.collection.mutable
@@ -6,9 +6,9 @@ import scala.quoted.*
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 //
 import ClassKind.classKind
-import org.mvv.mapstruct.scala.debug.printFields
-import org.mvv.mapstruct.scala.debug.printSymbolInfo
-import org.mvv.mapstruct.scala.debug.printTreeSymbolInfo
+import org.mvv.scala.mapstruct.debug.printFields
+import org.mvv.scala.mapstruct.debug.printSymbolInfo
+import org.mvv.scala.mapstruct.debug.printTreeSymbolInfo
 //
 import java.net.{ URI, URL, URLClassLoader }
 import java.nio.file.Path

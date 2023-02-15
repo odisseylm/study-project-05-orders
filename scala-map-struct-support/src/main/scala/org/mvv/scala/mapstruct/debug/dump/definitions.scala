@@ -1,8 +1,8 @@
-package org.mvv.mapstruct.scala.debug.dump
+package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.*
 //
-import org.mvv.mapstruct.scala.{ getByReflection, unwrapOption }
+import org.mvv.scala.mapstruct.{ getByReflection, unwrapOption }
 
 
 // Definition <: Statement <: Tree

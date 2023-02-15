@@ -1,14 +1,13 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 //
-import org.mvv.mapstruct.scala._FieldKey as fk
-import org.mvv.mapstruct.scala._MethodKey as mk
+import org.mvv.scala.mapstruct._FieldKey as fk
+import org.mvv.scala.mapstruct._MethodKey as mk
 //
-import org.mvv.mapstruct.scala.testclasses.InheritedFromJavaClass2
-import org.mvv.mapstruct.scala.testclasses.AccessVisibilityTestClass
+import org.mvv.scala.mapstruct.testclasses.{AccessVisibilityTestClass, InheritedFromJavaClass2}
 
 class VisibilityTest {
 

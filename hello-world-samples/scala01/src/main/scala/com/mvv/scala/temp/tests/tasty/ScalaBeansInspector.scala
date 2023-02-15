@@ -381,7 +381,7 @@ object QuotesHelper :
           case _ => throw IllegalStateException(s"Unexpected param definition [$p].")
 
       def paramssToTypes(paramss: List[ParamClause]): List[_Type] =
-        if paramss.size == 1 && paramss.head.params.size == 0 then Nil // case with non field-accessor but without params
+        if paramss.sizeIs == 1 && paramss.head.params.isEmpty then Nil // case with non field-accessor but without params
         else paramss.map(_.params.map(paramToType).mkString("|")).map(v => _Type(v))
 
       val methodName: String = m.name

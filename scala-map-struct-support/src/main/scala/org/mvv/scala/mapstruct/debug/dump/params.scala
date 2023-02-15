@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala.debug.dump
+package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.Quotes
 

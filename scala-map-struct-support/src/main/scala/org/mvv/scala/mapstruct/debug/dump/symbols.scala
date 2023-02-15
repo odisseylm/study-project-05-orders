@@ -1,8 +1,8 @@
-package org.mvv.mapstruct.scala.debug.dump
+package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.Quotes
 
-import org.mvv.mapstruct.scala.isSingleItemList
+import org.mvv.scala.mapstruct.isSingleItemList
 
 
 // Symbol <: AnyRef

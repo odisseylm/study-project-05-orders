@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 import scala.annotation.nowarn
 import scala.jdk.CollectionConverters.*
@@ -80,7 +80,7 @@ class InspectClassWithBodyStatementsTest {
 
     assertThat(cls.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "lazyProp: java.lang.String",
-      "Temp: ClassWithBodyStatements.this.Temp/org.mvv.mapstruct.scala.ClassWithBodyStatements$Temp$"
+      "Temp: ClassWithBodyStatements.this.Temp/org.mvv.scala.mapstruct.ClassWithBodyStatements$Temp$"
     )
     assertThat(cls.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "<init>(java.lang.String)",

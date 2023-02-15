@@ -1,5 +1,5 @@
 //noinspection ScalaUnusedSymbol ,  VarCouldBeVal
-package org.mvv.mapstruct.scala.testclasses
+package org.mvv.scala.mapstruct.testclasses
 
 // Do NOT move it to test sources!
 class ClassSampleInProductionSources :

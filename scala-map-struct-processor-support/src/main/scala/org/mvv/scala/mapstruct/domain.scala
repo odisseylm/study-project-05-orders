@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 import scala.annotation.{nowarn, tailrec}
 import scala.compiletime.uninitialized
@@ -9,7 +9,7 @@ import scala.collection.Map as BaseMap
 import java.lang.reflect.Field as JavaField
 import java.lang.reflect.Method as JavaMethod
 //
-import org.mvv.mapstruct.scala._Type.toPortableType
+import org.mvv.scala.mapstruct._Type.toPortableType
 import CollectionsOps.containsOneOf
 
 
@@ -47,7 +47,7 @@ object ClassKind :
 
 class _Class (val runtimeClass: Class[?], val classKind: ClassKind, val classSource: ClassSource, val _package: String, val simpleName: String)
              (inspector: ScalaBeansInspector) :
-  def fullName: String = org.mvv.mapstruct.scala.fullName(_package, simpleName)
+  def fullName: String = org.mvv.scala.mapstruct.fullName(_package, simpleName)
   // with current impl it possibly can have duplicates
   var parentTypeNames: List[_Type] = Nil
   // with current impl it possibly can have duplicates

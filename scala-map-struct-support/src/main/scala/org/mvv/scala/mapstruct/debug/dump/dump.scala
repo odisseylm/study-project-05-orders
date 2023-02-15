@@ -1,10 +1,11 @@
-package org.mvv.mapstruct.scala.debug.dump
+package org.mvv.scala.mapstruct.debug.dump
 
-import org.mvv.mapstruct.scala.Logger
 import scala.quoted.{Expr, Quotes, Type}
+//
+import org.mvv.scala.mapstruct.Logger
 
 
-val log: Logger = Logger("org.mvv.mapstruct.scala.debug.dump")
+val log: Logger = Logger("org.mvv.scala.mapstruct.debug.dump")
 
 inline def dumpExpr[T](inline expr: T): T =
   ${ dumpExprImpl('expr) }

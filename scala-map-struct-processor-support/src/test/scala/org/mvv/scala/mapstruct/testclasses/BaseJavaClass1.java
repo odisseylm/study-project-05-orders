@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala.testclasses;
+package org.mvv.scala.mapstruct.testclasses;
 
 @SuppressWarnings("unused")
 abstract public class BaseJavaClass1 implements JavaInterface1 {

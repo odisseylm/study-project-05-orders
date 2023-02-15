@@ -1,4 +1,4 @@
-package org.mvv.mapstruct.scala
+package org.mvv.scala.mapstruct
 
 
 // Using 'given'(implicits) there is just for playing with scala.
