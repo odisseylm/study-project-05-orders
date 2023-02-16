@@ -4,14 +4,14 @@ import scala.language.unsafeNulls
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
-import org.mvv.scala.mapstruct.mappers.enumMappingFunc
+import org.mvv.scala.mapstruct.mappers.{ enumMappingFunc, SelectEnumMode }
 
 
 //noinspection ScalaUnnecessaryParentheses
 class RootEnumMappersTest {
 
   @Test
-  def testRootPackageEnums(): Unit = {
+  def testRootPackageEnumsIsAccessibleAtAll(): Unit = {
 
     val a = SoftAssertions()
 
@@ -31,7 +31,30 @@ class RootEnumMappersTest {
     )
     */
 
-    val mapFunc: (RootPackageTestEnum1 => RootPackageTestEnum2) = enumMappingFunc[RootPackageTestEnum1, RootPackageTestEnum2]()
+    a.assertAll()
+  }
+
+  @Test
+  def testRootPackageEnums_ByEnumFullClassName(): Unit = {
+
+    val a = SoftAssertions()
+
+    val mapFunc: (RootPackageTestEnum1 => RootPackageTestEnum2) =
+      enumMappingFunc[RootPackageTestEnum1, RootPackageTestEnum2](SelectEnumMode.ByEnumFullClassName)
+
+    a.assertThat(mapFunc(RootPackageTestEnum1.TestEnumValue1)).isEqualTo(RootPackageTestEnum2.TestEnumValue1)
+    a.assertThat(mapFunc(RootPackageTestEnum1.TestEnumValue2)).isEqualTo(RootPackageTestEnum2.TestEnumValue2)
+
+    a.assertAll()
+  }
+
+  @Test
+  def testRootPackageEnums_ByEnumClassThisType(): Unit = {
+
+    val a = SoftAssertions()
+
+    val mapFunc: (RootPackageTestEnum1 => RootPackageTestEnum2) =
+      enumMappingFunc[RootPackageTestEnum1, RootPackageTestEnum2](SelectEnumMode.ByEnumClassThisType)
 
     a.assertThat(mapFunc(RootPackageTestEnum1.TestEnumValue1)).isEqualTo(RootPackageTestEnum2.TestEnumValue1)
     a.assertThat(mapFunc(RootPackageTestEnum1.TestEnumValue2)).isEqualTo(RootPackageTestEnum2.TestEnumValue2)

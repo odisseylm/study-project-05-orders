@@ -9,19 +9,38 @@ import org.mvv.scala.mapstruct.{ Logger, lastAfter }
 private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.enumMappers")
 
 
+/*
+Parameters may only be:
+ * Quoted parameters or fields
+ * Literal values of primitive types
+ * References to `inline val`s
+*/
+
+inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum](): EnumFrom => EnumTo =
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]('{ SelectEnumMode.ByEnumFullClassName }) }
+
+
+//noinspection ScalaUnusedSymbol
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (): EnumFrom => EnumTo = ${ enumMappingFuncImpl[EnumFrom, EnumTo]() }
+  (inline selectEnumMode: SelectEnumMode): EnumFrom => EnumTo =
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]('selectEnumMode) }
 
 
 def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  ()
+  (selectEnumModeExpr: Expr[SelectEnumMode])
   (using quotes: Quotes)(using etFrom: Type[EnumFrom])(using etTo: Type[EnumTo]):
     Expr[EnumFrom => EnumTo] =
 
   import quotes.reflect.*
 
+  // unfortunately 'selectEnumModeExpr.valueOrAbort' does not work (for complex types).
+  val selectEnumMode = selectEnumModeExpr match
+    case sm if sm.matches( '{ SelectEnumMode.ByEnumFullClassName } ) => SelectEnumMode.ByEnumFullClassName
+    case sm if sm.matches( '{ SelectEnumMode.ByEnumClassThisType } ) => SelectEnumMode.ByEnumClassThisType
+    case other => report.errorAndAbort(s"Unexpected/unparseable selectEnumMode [$other].")
+
   val enumFromClassName: String = Type.show[EnumFrom]
-  val enumToClassName: String = Type.show[EnumTo]
+  val enumToClassName:   String = Type.show[EnumTo]
 
   val logPrefix = s"enumMappingFuncImpl [ $enumFromClassName => $enumToClassName ], "
 
@@ -33,11 +52,10 @@ def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
     val enumNames: List[String] = children.map(_.name)
     enumNames
 
-  val useFullEnumClassName = true
   def enumValue[EnumType <: ScalaEnum](using Type[EnumType])(enumValue: String): Term =
-    if useFullEnumClassName
-      then enumValueUsingFullClassName[EnumType](enumValue)
-      else enumValueUsingSimpleClassNameAndEnumClassThisScope[EnumType](enumValue)
+    selectEnumMode match
+      case SelectEnumMode.ByEnumFullClassName => enumValueUsingFullClassName[EnumType](enumValue)
+      case SelectEnumMode.ByEnumClassThisType => enumValueUsingSimpleClassNameAndEnumClassThisScope[EnumType](enumValue)
 
   val enumFromValues = enumValues[EnumFrom]
   val enumToValues = enumValues[EnumTo]
