@@ -33,7 +33,7 @@ def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
     val enumNames: List[String] = children.map(_.name)
     enumNames
 
-  val useFullEnumClassName = false
+  val useFullEnumClassName = true
   def enumValue[EnumType <: ScalaEnum](using Type[EnumType])(enumValue: String): Term =
     if useFullEnumClassName
       then enumValueUsingFullClassName[EnumType](enumValue)
@@ -117,17 +117,22 @@ def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
 
 def enumValueUsingFullClassName[T <: ScalaEnum](using quotes: Quotes)(using enumType: Type[T])(enumValueName: String): quotes.reflect.Term =
   import quotes.reflect.*
+
+  // It does not work... as usual :-(
+  //val typeRepr: TypeRepr = TypeRepr.of[T]
+  //val classSymbol: Symbol = typeRepr.classSymbol.get // typeRepr.typeSymbol
+  //return Select.unique(Ident(classSymbol.termRef), enumValueName)
+
+  // It also does not work
+  //val typeRepr: TypeRepr = TypeRepr.of[T]
+  //return Select.unique(Ref.term(typeRepr.termSymbol.termRef), enumValueName)
+
   val fullClassName: String = TypeRepr.of[T].widen.show
 
   val parts: List[String] = fullClassName.split('.').toList
   require(parts.nonEmpty, s"Invalid enum class [$fullClassName].")
 
   if parts.sizeIs == 1 then
-    // It does not work... as usual :-(
-    // val typeRepr = TypeRepr.of[T]
-    // val classSymbol = typeRepr.typeSymbol // typeRepr.typeSymbol
-    // return Select.unique(Ident(classSymbol.termRef), enumValueName)
-
     // defn.RootPackage/_root_/<root> does not work for it.
     // Scala uses special 'empty' package for this purpose.
     // See some details in a bit deprecated scala-reflect-2.13.8-sources.jar!/scala/reflect/internal/StdNames.scala
@@ -153,7 +158,7 @@ def enumValueUsingSimpleClassNameAndEnumClassThisScope[T <: ScalaEnum]
   val typeRepr: TypeRepr = TypeRepr.of[T]
   val classSymbol: Symbol = typeRepr.typeSymbol // typeRepr.typeSymbol
 
-  val scopeTypRepr: TypeRepr = findCurrentScopeTypeRepr(classSymbol).get
+  val scopeTypRepr: TypeRepr = findClassThisScopeTypeRepr(classSymbol).get
   val fullEnumClassName = typeRepr.show
   val simpleEnumClassName = fullEnumClassName.lastAfter('.').getOrElse(fullEnumClassName)
   val classTerm = TermRef(scopeTypRepr, simpleEnumClassName)
@@ -162,13 +167,13 @@ def enumValueUsingSimpleClassNameAndEnumClassThisScope[T <: ScalaEnum]
 
 
 
-def findCurrentScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symbol): Option[quotes.reflect.TypeRepr] =
+def findClassThisScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symbol): Option[quotes.reflect.TypeRepr] =
   import quotes.reflect.*
 
   val typeRepr : Option[TypeRepr] = symbol match
     case td if td.isTypeDef || td.isClassDef =>
-      val thisTypeRepr: TypeRepr = TypeRef.unapply(symbol.typeRef)._1
-      //val thisTypeRepr: TypeRepr = TermRef.unapply(symbol.termRef)._1
+      val thisTypeRepr: TypeRepr = TypeRef.unapply(symbol.typeRef)._1 // both work ok
+      //val thisTypeRepr: TypeRepr = TermRef.unapply(symbol.termRef)._1 // both work ok
       Option(thisTypeRepr)
 
     case other =>
