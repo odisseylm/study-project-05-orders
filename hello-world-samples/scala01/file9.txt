@@ -154,3 +154,72 @@ Apply( Ident(throw),
       Select( New(Ident(IllegalStateException)), <init> ),
       List(Literal(Constant(Some error.)))
     )))
+
+
+
+Inlined(
+  EmptyTree,
+  List(),
+  Apply(
+    TypeApply(
+      Select(Ident(Tuple2),apply),
+      List(
+        TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11)],
+        TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)]
+      )
+    ),
+    List(
+      Select(Ident(TestEnum11),TestEnumValue3),
+      Select(Ident(TestEnum12),TestEnumValue4)
+    )
+  )
+)
+
+
+Inlined(
+  EmptyTree,
+  List(),
+  Typed(
+    SeqLiteral(
+      List(
+        Apply(
+          TypeApply(
+            Select(
+              Ident(Tuple2),apply),
+              List(
+                TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11)],
+                TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)]
+              )
+            ),
+            List(
+              Select(Ident(TestEnum11),TestEnumValue3),
+              Select(Ident(TestEnum12),TestEnumValue4)
+            )
+          )
+        ),
+        TypeTree[
+          AppliedType(
+            TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Tuple2),
+            List(
+              TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11),
+              TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)
+            )
+          )
+        ]),
+        TypeTree[
+          AppliedType(
+            TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class <repeated>),
+            List(
+              AppliedType(
+                TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Tuple2),
+                List(
+                  TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11),
+                  TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)
+                )
+              )
+            )
+          )
+        ]
+  )
+)
+

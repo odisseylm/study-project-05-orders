@@ -11,8 +11,9 @@ inline def equalImpl[T <: Equals](thisV: T, other: Any|Null)(inline comparing: (
     else comparing(thisV, other.asInstanceOf[T])
 
 
+// use it only for hacking approach when any unexpected error can happen
 def tryDo[T](expr: => T): Option[T] =
-  try Option[T](expr).nn catch case _: Exception => None
+  try Option[T](expr).nn catch case _: Throwable => None
 
 
 extension [T](v: T)

@@ -44,8 +44,13 @@ def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: StringBuilder
         case it if it.isSelect => dumpSelect(it.asInstanceOf[Select], str, nextPadLength)
         case it if it.isIdent => dumpIdent(it.asInstanceOf[Term], str, nextPadLength)
         case it if it.isApply => dumpApply(it.asInstanceOf[Apply], str, nextPadLength)
+        case it if it.isTypeApply => dumpTypeApply(it.asInstanceOf[TypeApply], str, nextPadLength)
         //case el if el.isMemberDef => dumpMemberDef(el.asInstanceOf[TypeTree], str, nextPadLength)
-        case _ => dumpDefDef(el.asInstanceOf[DefDef], str, nextPadLength)
+        case _ =>
+          try dumpDefDef(el.asInstanceOf[DefDef], str, nextPadLength)
+          catch case ex: Exception =>
+            log.error(s"Error of DefDef parsing from $el", ex)
+            throw ex
     // about ValDef
     //case el if el.isInferredTypeTree => dumpInferredTypeTree(el.asInstanceOf[TypeTree], str, nextPadLength)
     // ValDef <: Definition

@@ -4,6 +4,8 @@ import scala.language.unsafeNulls
 //
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
+//
+import org.mvv.scala.mapstruct.debug.dump.dumpExpr
 
 
 enum TestEnum1 :
@@ -113,6 +115,28 @@ class EnumMappersTest {
     a.assertAll()
   }
   */
+
+  @Test
+  def testAsymmetricEnums(): Unit = {
+
+    val a = SoftAssertions()
+    //val aa: (TestEnum11, TestEnum12) = dumpExpr( (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4) )
+
+
+    //val aa1: String = (TestEnum11.TestEnumValue3 => TestEnum12.TestEnumValue4)
+    //val aa2: TestEnum11 => TestEnum12 = TestEnum11.TestEnumValue3 => TestEnum12.TestEnumValue4
+
+    val mapFunc: (TestEnum11 => TestEnum12) = enumMappingFunc[TestEnum11, TestEnum12](
+      SelectEnumMode.ByEnumFullClassName,
+      (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4),
+    )
+
+    a.assertThat(mapFunc(TestEnum11.TestEnumValue1)).isEqualTo(TestEnum12.TestEnumValue1)
+    a.assertThat(mapFunc(TestEnum11.TestEnumValue2)).isEqualTo(TestEnum12.TestEnumValue2)
+    a.assertThat(mapFunc(TestEnum11.TestEnumValue3)).isEqualTo(TestEnum12.TestEnumValue4)
+
+    a.assertAll()
+  }
 }
 
 def usingLocalClasses(): Unit = {

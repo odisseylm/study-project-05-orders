@@ -2,7 +2,7 @@ package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.Quotes
 
-import org.mvv.scala.mapstruct.isSingleItemList
+import org.mvv.scala.mapstruct. { isSingleItemList, tryDo }
 
 
 // Symbol <: AnyRef
@@ -41,7 +41,7 @@ def symbolToString(using quotes: Quotes)(symbol: quotes.reflect.Symbol, details:
   val str = StringBuilder()
 
   if details.contains(SymbolDetails.Base) then
-    val owner: Symbol = symbol.owner
+    val owner: Option[Symbol] = tryDo { symbol.owner }
     val maybeOwner: Symbol = symbol.maybeOwner
     val flags: Flags = symbol.flags
     val privateWithin: Option[TypeRepr] = symbol.privateWithin
@@ -96,7 +96,7 @@ def symbolToString(using quotes: Quotes)(symbol: quotes.reflect.Symbol, details:
     if isTypeParam then str.append(", isTypeParam")
 
 
-    if owner.nonEmptySymbol then str.append(", owner: ").append(owner)
+    if owner.isDefined && owner.get.nonEmptySymbol then str.append(", owner: ").append(owner)
     if maybeOwner.nonEmptySymbol then str.append(", maybeOwner: ").append(maybeOwner)
     pos.foreach(p => str.append(", pos: ").append(p) )
     docstring.foreach(ds => str.append(", docstring: ").append(ds) )
@@ -196,5 +196,6 @@ def allPossibleFlags(using quotes: Quotes): List[ (String, quotes.reflect.Flags)
   flagEntries
 
 extension (str: String)
-  def nonEmptyName: Boolean =
+  def isEmptyName: Boolean =
     str.isEmpty || str == "<none>"
+  def nonEmptyName: Boolean = !str.isEmptyName

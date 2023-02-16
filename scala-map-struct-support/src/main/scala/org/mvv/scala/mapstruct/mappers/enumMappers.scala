@@ -3,7 +3,10 @@ package org.mvv.scala.mapstruct.mappers
 import scala.quoted.{Expr, Quotes, Type}
 import scala.reflect.Enum as ScalaEnum
 //
-import org.mvv.scala.mapstruct.{ Logger, lastAfter }
+import org.mvv.scala.mapstruct.{ Logger, lastAfter, isOneOf, getByReflection, unwrapOption }
+// for debug only
+import org.mvv.scala.mapstruct.debug.dump.{ isImplClass, activeFlags, activeFlagEntries, dumpSymbol }
+import org.mvv.scala.mapstruct.debug.printFields
 
 
 private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.enumMappers")
@@ -17,17 +20,26 @@ Parameters may only be:
 */
 
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum](): EnumFrom => EnumTo =
-  ${ enumMappingFuncImpl[EnumFrom, EnumTo]('{ SelectEnumMode.ByEnumFullClassName }) }
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( '{ SelectEnumMode.ByEnumFullClassName }, '{ Nil } ) }
+
 
 
 //noinspection ScalaUnusedSymbol
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (inline selectEnumMode: SelectEnumMode): EnumFrom => EnumTo =
-  ${ enumMappingFuncImpl[EnumFrom, EnumTo]('selectEnumMode) }
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( 'selectEnumMode, '{ Nil } ) }
+
+
+
+//noinspection ScalaUnusedSymbol
+inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (inline selectEnumMode: SelectEnumMode, inline customMappings: (EnumFrom, EnumTo)*): EnumFrom => EnumTo =
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( 'selectEnumMode, 'customMappings ) }
+
 
 
 def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (selectEnumModeExpr: Expr[SelectEnumMode])
+  (selectEnumModeExpr: Expr[SelectEnumMode], customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
   (using quotes: Quotes)(using etFrom: Type[EnumFrom])(using etTo: Type[EnumTo]):
     Expr[EnumFrom => EnumTo] =
 
@@ -71,8 +83,26 @@ def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
       then Option(s"Enum [$enumClassName] has non-mapped values ${unexpectedEnumValuesIt.mkString("[", ", ", "]")}")
       else None
 
-  val unexpectedEnumFromValues: List[String] = enumFromValues diff enumToValues
-  val unexpectedEnumToValues:   List[String] = enumToValues   diff enumFromValues
+  val unexpectedByNameEnumFromValues: List[String] = enumFromValues diff enumToValues
+  val unexpectedByNameEnumToValues:   List[String] = enumToValues   diff enumFromValues
+
+  log.trace(s"$logPrefix customMappings: ${customMappings.asTerm}")
+
+  val customMappingAsEnumNames: List[(String, String)] = parseCustomEnumMappingTuplesExpr[EnumFrom, EnumTo](customMappings)
+  log.trace(s"$logPrefix customMappingAsEnumNames: $customMappingAsEnumNames")
+
+  val customProcessedEnumFromValuesAll: List[String] = customMappingAsEnumNames.map(_._1)
+  val customProcessedEnumToValuesAll: List[String]   = customMappingAsEnumNames.map(_._2)
+
+  val customProcessedEnumFromValues: List[String] = customProcessedEnumFromValuesAll.distinct
+  val customProcessedEnumToValues: List[String]   = customProcessedEnumToValuesAll.distinct
+
+  if customProcessedEnumFromValuesAll != customProcessedEnumFromValues then
+    val duplicated = customProcessedEnumFromValuesAll diff customProcessedEnumFromValues
+    throw IllegalArgumentException(s"Seems custom mappers contain duplicates for [${duplicated.mkString(", ")}].")
+
+  val unexpectedEnumFromValues: List[String] = unexpectedByNameEnumFromValues diff customProcessedEnumFromValues
+  val unexpectedEnumToValues:   List[String] = unexpectedByNameEnumToValues   diff customProcessedEnumToValues
 
   val err1: Option[String] = unexpectedEnumValuesErrorMsg(enumFromClassName, unexpectedEnumFromValues)
   val err2: Option[String] = unexpectedEnumValuesErrorMsg(enumToClassName, unexpectedEnumToValues)
@@ -85,24 +115,22 @@ def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   // if enums are not symmetric it will cause compilation error of generated (by this macro) scala code
   // what is expected/desired behavior
 
+  val enumValuesForDefaultMappings = enumFromValues diff customProcessedEnumFromValues
+
   val rhsFn: (Symbol, List[Tree]) => Tree = (s: Symbol, paramsAsTrees: List[Tree]) => {
     log.trace(s"$logPrefix rhsFn { s: $s, $paramsAsTrees }")
 
-    val caseDefs: List[CaseDef] = allEnumValues.map(enumValueLabel =>
-      val selectFrom = enumValue[EnumFrom](enumValueLabel)
+    val allMappings =
+      enumValuesForDefaultMappings.map(n => (n, n)) ++ customMappingAsEnumNames
+
+    val caseDefs: List[CaseDef] = allMappings.map( (enumValueFromLabel, enumValueToLabel) =>
+      val selectFrom = enumValue[EnumFrom](enumValueFromLabel)
       log.trace(s"$logPrefix selectFrom: $selectFrom")
 
-      val selectTo = enumValue[EnumTo](enumValueLabel)
+      val selectTo = enumValue[EnumTo](enumValueToLabel)
       log.trace(s"$logPrefix selectFrom: $selectTo")
 
-      val caseDef = CaseDef(
-        selectFrom,
-        None,
-        Block(
-          Nil,
-          selectTo,
-        )
-      )
+      val caseDef = CaseDef( selectFrom, None, Block( Nil, selectTo ) )
       log.trace(s"$logPrefix caseDef: $caseDef")
       caseDef
     )
@@ -199,3 +227,207 @@ def findClassThisScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symb
       None
 
   typeRepr
+
+
+/*
+AST of tuple (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4)
+Inlined(
+  EmptyTree,
+  List(),
+  Apply(
+    TypeApply(
+      Select(Ident(Tuple2),apply),
+      List(
+        TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11)],
+        TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)]
+      )
+    ),
+    List(
+      Select(Ident(TestEnum11),TestEnumValue3),
+      Select(Ident(TestEnum12),TestEnumValue4)
+    )
+  )
+)
+
+or
+
+Inlined(
+  EmptyTree,
+  List(),
+  Typed(
+    SeqLiteral(
+      List(
+        Apply(
+          TypeApply(
+            Select(
+              Ident(Tuple2),apply),
+              List(
+                TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11)],
+                TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)]
+              )
+            ),
+            List(
+              Select(Ident(TestEnum11),TestEnumValue3),
+              Select(Ident(TestEnum12),TestEnumValue4)
+            )
+          )
+        ),
+        TypeTree[
+          AppliedType(
+            TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Tuple2),
+            List(
+              TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11),
+              TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)
+            )
+          )
+        ]),
+        TypeTree[
+          AppliedType(
+            TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class <repeated>),
+            List(
+              AppliedType(
+                TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Tuple2),
+                List(
+                  TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11),
+                  TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)
+                )
+              )
+            )
+          )
+        ]
+  )
+)
+*/
+
+private def parseCustomEnumMappingTuplesExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (using quotes: Quotes)(using Type[EnumFrom])(using Type[EnumTo])
+  (inlinedExpr: Expr[Seq[(EnumFrom, EnumTo)]]): List[(String, String)] =
+  import quotes.reflect.asTerm
+  parseCustomEnumMappingTuples[EnumFrom, EnumTo](inlinedExpr.asTerm.asInstanceOf[quotes.reflect.Inlined])
+
+
+
+private def parseCustomEnumMappingTuples[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (using quotes: Quotes)(using Type[EnumFrom])(using Type[EnumTo])
+  (inlined: quotes.reflect.Inlined): List[(String, String)] =
+  import quotes.reflect.*
+
+  // TODO: impl
+  // val inlinedCall: Option[Tree] = inlined.call
+  //require(inlinedCall.isEmpty || inlinedCall.get == EmptyTree, "Expected only simple tuple expression.")
+
+  val bindings: List[Definition] = inlined.bindings
+  require(bindings.isEmpty, "Expected only simple tuple expression.")
+
+  val body: Term = inlined.body
+
+  if body.tpe.show.isOneOf("Nil", "scala.Nil") then return Nil
+
+  // Typed ( SeqLiteral ( List(
+  require(body.isTyped)
+  val bodyAsTyped: Typed = body.asInstanceOf[Typed]
+  val expr: Term = bodyAsTyped.expr
+
+  val elements: List[Tree] = getElements(expr)
+  val customEnumMappingTuples = elements.map(el =>
+    require(el.isApply)
+    parseApplyWithTypeApplyCustomEnumMappingTuple[EnumFrom, EnumTo](el.asInstanceOf[Apply]))
+  customEnumMappingTuples
+
+
+
+private def getElements(using quotes: Quotes)(tree: quotes.reflect.Tree): List[quotes.reflect.Tree] =
+  import quotes.reflect.Tree
+  tree match
+    case el if el.isSeqLiteral => getByReflection(el, "elems", "elements", "items").unwrapOption.asInstanceOf[List[Tree]]
+    case other => throw IllegalStateException(s"Getting elements from ${other.getClass.nn.getName} is not supported yet.")
+
+
+private def parseApplyWithTypeApplyCustomEnumMappingTuple[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (using quotes: Quotes)(using Type[EnumFrom])(using Type[EnumTo])
+  (applyWithTypeApply: quotes.reflect.Apply): (String, String) =
+
+  import quotes.reflect.*
+
+  val logPrefix = s"parseApplyWithTypeApplyCustomEnumMappingTuple [ ${Type.show[EnumFrom]} => ${Type.show[EnumTo]} ], "
+
+  val bodyAsApply: Apply = applyWithTypeApply
+  val bodyApplyFun: Term = bodyAsApply.fun
+  val bodyApplyArgs: List[Term] = bodyAsApply.args
+
+  require(bodyApplyFun.isTypeApply)
+  val typeApply: TypeApply = bodyApplyFun.asInstanceOf[TypeApply]
+  val typeApplySelect: Select = typeApply.fun.asInstanceOf[Select]
+  val typeApplyClassName = getTypeApplyClassName(typeApplySelect)
+
+  val errorMsgTuple2TypeIsExpected = "Tuple2 is expected."
+  require(typeApplyClassName.isOneOf("Tuple2", "scala.Tuple2"), errorMsgTuple2TypeIsExpected)
+
+  val typeApplyArgs: List[TypeTree] = typeApply.args
+  require(typeApplyArgs.sizeIs == 2, errorMsgTuple2TypeIsExpected)
+  val typeRepr1 = typeApplyArgs.head.tpe
+  val typeRepr2 = typeApplyArgs.tail.head.tpe
+
+  require(typeRepr1 == TypeRepr.of[EnumFrom])
+  require(typeRepr2 == TypeRepr.of[EnumTo])
+
+  require(bodyApplyArgs.sizeIs == 2, errorMsgTuple2TypeIsExpected)
+  val enumValueNames = (extractSimpleName(bodyApplyArgs.head), extractSimpleName(bodyApplyArgs.tail.head))
+  log.trace(s"$logPrefix enumValueNames: $enumValueNames")
+  enumValueNames
+
+
+
+//noinspection ScalaUnusedSymbol // TODO: move to other class/file
+extension (using quotes: Quotes)(el: quotes.reflect.Tree)
+  private def isTyped: Boolean = el.isImplClass("Typed")
+  private def isApply: Boolean = el.isImplClass("Apply")
+  private def isTypeApply: Boolean = el.isImplClass("TypeApply")
+  private def isSeqLiteral: Boolean = el.isImplClass("SeqLiteral")
+
+
+
+private def getTypeApplyClassName(using quotes: Quotes)(typeApply: quotes.reflect.Select): String =
+  import quotes.reflect.TypeRepr
+  val tpe: TypeRepr = typeApply.tpe
+  val qualifierTpe: TypeRepr = typeApply.qualifier.tpe
+  val resultingTpe = if tpe.classSymbol.isDefined then tpe else qualifierTpe
+  val resultingClassName = resultingTpe.show
+  resultingClassName
+
+
+
+// Select(Ident(TestEnum1),TestEnumValue4)
+// Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1)
+//
+private def extractSimpleName(using quotes: Quotes)(tree: quotes.reflect.Tree): String =
+  import quotes.reflect.*
+  val rawName: String = tree.symbol.name
+  rawName.lastAfter('.').getOrElse(rawName)
+
+
+
+/*
+// Select(Ident(TestEnum1),TestEnumValue4)
+// Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1)
+//
+private def extractName(using quotes: Quotes)(term: quotes.reflect.Tree): String =
+  import quotes.reflect.*
+  term match
+    case el if el.isBind  => el.asInstanceOf[Bind].name
+    case el if el.isIdent  => el.asInstanceOf[Ident].name
+    case el if el.isTypeIdent => el.asInstanceOf[TypeIdent].name
+    case el if el.isSelect => el.asInstanceOf[Select].name
+    case el if el.isTypeSelect => el.asInstanceOf[TypeSelect].name
+    case el if el.isNamedArg => el.asInstanceOf[NamedArg].name
+    case el if el.isSelectOuter => el.asInstanceOf[SelectOuter].name
+    case el if el.isSimpleSelector => el.asInstanceOf[SimpleSelector].name
+    case el if el.isOmitSelector => el.asInstanceOf[OmitSelector].name
+    case el if el.isTypeProjection => el.asInstanceOf[TypeProjection].name
+    case el if el.isTypeBind => el.asInstanceOf[TypeBind].name
+    case el if el.isNamedType => el.asInstanceOf[NamedType].name
+    case el if el.isTypeProjection => el.asInstanceOf[TypeProjection].name
+    case el if el.isSymbol => el.asInstanceOf[Symbol].name
+    case el if el.isRefinement => el.asInstanceOf[Refinement].name
+    case el if el.isDefinition => el.asInstanceOf[Definition].name
+*/
