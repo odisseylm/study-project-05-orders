@@ -174,7 +174,7 @@ def enumValueUsingSimpleClassNameAndEnumClassThisScope[T <: ScalaEnum]
   import quotes.reflect.{ Symbol, TypeRepr, TermRef, Ident, Select }
 
   val typeRepr: TypeRepr = TypeRepr.of[T]
-  val classSymbol: Symbol = typeRepr.typeSymbol // typeRepr.typeSymbol
+  val classSymbol: Symbol = typeRepr.typeSymbol // typeRepr.classSymbol.get
 
   val scopeTypRepr: TypeRepr = findClassThisScopeTypeRepr(classSymbol).get
   val fullEnumClassName = typeRepr.show
