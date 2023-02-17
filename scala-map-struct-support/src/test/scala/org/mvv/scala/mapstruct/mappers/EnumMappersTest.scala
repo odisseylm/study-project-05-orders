@@ -1,5 +1,7 @@
 package org.mvv.scala.mapstruct.mappers
 
+import org.junit.jupiter.api.Disabled
+
 import scala.language.unsafeNulls
 //
 import org.junit.jupiter.api.Test
@@ -136,6 +138,61 @@ class EnumMappersTest {
     a.assertThat(mapFunc(TestEnum11.TestEnumValue3)).isEqualTo(TestEnum12.TestEnumValue4)
 
     a.assertAll()
+  }
+
+  @Test
+  def testPassingCustomMappingsAsRepeatedParam(): Unit = {
+    _internalTestCustomMappingsAsRepeatedParams[TestEnum11, TestEnum12](
+      (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4)
+    )
+
+    _internalTestCustomMappingsAsRepeatedParams[TestEnum11, TestEnum12](
+      (TestEnum11.TestEnumValue1, TestEnum12.TestEnumValue2),
+      (TestEnum11.TestEnumValue2, TestEnum12.TestEnumValue1),
+      (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4),
+    )
+  }
+
+  @Test
+  def testPassingCustomMappingsAsListParam(): Unit = {
+    _internalTestCustomMappingsAsListParam[TestEnum11, TestEnum12](
+      List( (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4) )
+    )
+
+    _internalTestCustomMappingsAsListParam[TestEnum11, TestEnum12](
+      List(
+        (TestEnum11.TestEnumValue1, TestEnum12.TestEnumValue2),
+        (TestEnum11.TestEnumValue2, TestEnum12.TestEnumValue1),
+        (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4),
+      )
+    )
+  }
+
+  /* List with :: is not supported now.
+  @Test
+  def testPassingCustomMappingsAsListParamUsingOperators(): Unit = {
+    val temp01: List[String] = "s1" :: "s2" :: "s3" :: Nil
+
+    val temp02: List[(TestEnum11, TestEnum12)] =
+           (TestEnum11.TestEnumValue1, TestEnum12.TestEnumValue2)
+        :: (TestEnum11.TestEnumValue2, TestEnum12.TestEnumValue1)
+        :: (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4)
+        :: Nil
+
+    _internalTestCustomMappingsAsListParam[TestEnum11, TestEnum12](
+           (TestEnum11.TestEnumValue1, TestEnum12.TestEnumValue2)
+        :: (TestEnum11.TestEnumValue2, TestEnum12.TestEnumValue1)
+        :: (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4)
+        :: Nil
+    )
+  }
+  */
+
+  @Test
+  def testPassingCustomMappingsAsSingleParam(): Unit = {
+    _internalTestCustomMappingsAsSingleParam[TestEnum11, TestEnum12](
+      (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4)
+    )
   }
 }
 

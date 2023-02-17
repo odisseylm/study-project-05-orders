@@ -223,3 +223,136 @@ Inlined(
   )
 )
 
+
+
+Apply(
+  TypeApply(
+    Select(
+      Ident(List),apply),
+      List(
+        TypeTree[
+          AppliedType(
+            TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),
+            List(
+              TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11),
+              TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)
+            )
+          )
+        ]
+      )
+    ),
+    List(
+      Typed(
+        SeqLiteral(List(
+          Apply(
+            TypeApply(
+              Select(Ident(Tuple2),apply),
+              List(
+                TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11)],
+                TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)]
+              )
+            ),
+            List(
+              Select(Ident(TestEnum11),TestEnumValue3),
+              Select(Ident(TestEnum12),TestEnumValue4)
+            )
+          )),TypeTree[AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),List(TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11), TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)))]),TypeTree[AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class <repeated>),List(AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),List(TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11), TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)))))])
+  )
+)
+
+
+     (TestEnum11.TestEnumValue1, TestEnum12.TestEnumValue2)
+  :: (TestEnum11.TestEnumValue2, TestEnum12.TestEnumValue1)
+  :: (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4)
+  :: Nil
+
+Block(
+  List(
+    ValDef(
+      elem$6,
+      TypeTree[
+        AppliedType(
+          TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),
+          List(
+            TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11),
+            TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)
+          )
+        )
+      ],
+      Apply(
+        TypeApply(
+          Select(Ident(Tuple2),apply),
+          List(
+            TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11)],
+            TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)]
+          )
+        ),
+        List(
++         Select(Ident(TestEnum11),TestEnumValue1),
++         Select(Ident(TestEnum12),TestEnumValue2)
+        )
+      )
+    )
+  ),
+  Apply(
+    TypeApply(
+      Select(
+        Block(
+          List(
+            ValDef(
+              elem$5,
+              TypeTree[
+                AppliedType(
+                  TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),
+                  List(TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11),
+                  TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)))
+                ],
+                Apply(
+                  TypeApply(
+                    Select(Ident(Tuple2),apply),
+                    List(TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11)],
+                         TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)]
+                    )
+                  ),
+                  List(
++                   Select(Ident(TestEnum11),TestEnumValue2),
++                   Select(Ident(TestEnum12),TestEnumValue1)
+                  )
+                )
+              )
+            ),
+            Apply(
+              TypeApply(
+                Select(
+                  Block(
+                    List(
+                      ValDef(
+                        elem$4,
+                        TypeTree[
+                          AppliedType(
+                            TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),
+                            List(TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11),
+                                 TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)
+                            )
+                          )
+                        ],
+                        Apply(
+                          TypeApply(
+                            Select(Ident(Tuple2),apply),
+                            List(TypeTree[
+                              TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11)
+                            ],
+                            TypeTree[
+                              TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)
+                            ]
+                          )
+                        ),
+                        List(
++                         Select(Ident(TestEnum11),TestEnumValue3),
++                         Select(Ident(TestEnum12),TestEnumValue4)
+                        )
+                      )
+                    )
+                  ),
+                  Apply(TypeApply(Select(Ident(Nil),::),List(TypeTree[AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),List(TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11), TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)))])),List(Ident(elem$4)))),::),List(TypeTree[AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),List(TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11), TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)))])),List(Ident(elem$5)))),::),List(TypeTree[AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),List(TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11), TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)))])),List(Ident(elem$6))))
+

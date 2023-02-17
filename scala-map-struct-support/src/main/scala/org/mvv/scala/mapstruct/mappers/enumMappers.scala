@@ -305,6 +305,12 @@ private def parseCustomEnumMappingTuplesExpr[EnumFrom <: ScalaEnum, EnumTo <: Sc
   import quotes.reflect.asTerm
   parseCustomEnumMappingTuples[EnumFrom, EnumTo](inlinedExpr.asTerm.asInstanceOf[quotes.reflect.Inlined])
 
+private def parseCustomEnumMappingTupleExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (using quotes: Quotes)(using Type[EnumFrom])(using Type[EnumTo])
+  (inlinedExpr: Expr[(EnumFrom, EnumTo)]): (String, String) =
+  import quotes.reflect.asTerm
+  parseCustomEnumMappingTuples[EnumFrom, EnumTo](inlinedExpr.asTerm.asInstanceOf[quotes.reflect.Inlined]).head
+
 
 
 private def parseCustomEnumMappingTuples[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
@@ -320,21 +326,36 @@ private def parseCustomEnumMappingTuples[EnumFrom <: ScalaEnum, EnumTo <: ScalaE
   require(bindings.isEmpty, "Expected only simple tuple expression.")
 
   val body: Term = inlined.body
+  val bodyTypeClassName = typeReprFullClassName(body.tpe)
 
-  if body.tpe.show.isOneOf("Nil", "scala.Nil") then return Nil
+  def getElementsFromTyped(el: Tree): List[Tree] =
+    // Typed ( SeqLiteral ( List(
+    require(el.isTyped, s"Typed is expected but was $el.")
+    getElements(el.asInstanceOf[Typed].expr)
 
-  // Typed ( SeqLiteral ( List(
-  require(body.isTyped)
-  val bodyAsTyped: Typed = body.asInstanceOf[Typed]
-  val expr: Term = bodyAsTyped.expr
 
-  val elements: List[Tree] = getElements(expr)
+  val elements: List[Tree] = bodyTypeClassName match
+    case "Nil" | "scala.Nil" | "scala.collection.immutable.Nil" => Nil
+    case "Tuple2" | "scala.Tuple2" => List(body)
+    case "_*" | "<repeated>" | "scala.<repeated>" => getElementsFromTyped(body)
+    case "List" | "scala.collection.immutable.List" =>
+      require(body.isApply, s"Unexpected List format (creating list using :: is not supported, only simple format List(...) is supported)")
+      val listApplyArgs: List[Term] = body.asInstanceOf[Apply].args
+      require(listApplyArgs.sizeIs == 1) // List.apply has ONE repeated param
+      getElementsFromTyped(listApplyArgs.head)
+    case other => throw IllegalStateException(s"Unexpected type of body $other ( $body ).")
+
   val customEnumMappingTuples = elements.map(el =>
     require(el.isApply)
     parseApplyWithTypeApplyCustomEnumMappingTuple[EnumFrom, EnumTo](el.asInstanceOf[Apply]))
   customEnumMappingTuples
 
 
+// probably not ideal solution
+def typeReprFullClassName(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): String =
+  val rawClassFullName = typeRepr.classSymbol.map(_.fullName.stripSuffix("$"))
+    .getOrElse(typeRepr.show)
+  rawClassFullName
 
 private def getElements(using quotes: Quotes)(tree: quotes.reflect.Tree): List[quotes.reflect.Tree] =
   import quotes.reflect.Tree
@@ -431,3 +452,61 @@ private def extractName(using quotes: Quotes)(term: quotes.reflect.Tree): String
     case el if el.isRefinement => el.asInstanceOf[Refinement].name
     case el if el.isDefinition => el.asInstanceOf[Definition].name
 */
+
+
+//noinspection ScalaUnusedSymbol
+//----------------------------------------------------------------------------------------------------------------------
+inline def _internalTestCustomMappingsAsRepeatedParams[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (inline customMappings: (EnumFrom, EnumTo)*): Any =
+  ${ _internalTestCustomMappingsAsRepeatedParamsImpl[EnumFrom, EnumTo]( 'customMappings ) }
+
+def _internalTestCustomMappingsAsRepeatedParamsImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
+  (using quotes: Quotes)(using etFrom: Type[EnumFrom])(using etTo: Type[EnumTo]): Expr[Any] =
+
+  import quotes.reflect.*
+
+  val logPrefix = s"_internalTestCustomMappingsAsRepeatedParamsImpl [ ${Type.show[EnumFrom]} => ${Type.show[EnumTo]} ], "
+  log.trace(s"$logPrefix customMappingsRepetaed: ${customMappings.asTerm}")
+
+  val customMappingAsEnumNames: List[(String, String)] = parseCustomEnumMappingTuplesExpr[EnumFrom, EnumTo](customMappings)
+  log.info(s"$logPrefix customMappingAsEnumNames: $customMappingAsEnumNames")
+  '{}
+
+
+//----------------------------------------------------------------------------------------------------------------------
+inline def _internalTestCustomMappingsAsListParam[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (inline customMappings: List[(EnumFrom, EnumTo)]): Any =
+  ${ _internalTestCustomMappingsAsListParamImpl[EnumFrom, EnumTo]( 'customMappings ) }
+
+def _internalTestCustomMappingsAsListParamImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
+  (using quotes: Quotes)(using etFrom: Type[EnumFrom])(using etTo: Type[EnumTo]): Expr[Any] =
+
+  import quotes.reflect.*
+
+  val logPrefix = s"_internalTestCustomMappingsAsListParamsImpl [ ${Type.show[EnumFrom]} => ${Type.show[EnumTo]} ], "
+  log.trace(s"$logPrefix customMappingsList: ${customMappings.asTerm}")
+
+  val customMappingAsEnumNames: List[(String, String)] = parseCustomEnumMappingTuplesExpr[EnumFrom, EnumTo](customMappings)
+  log.info(s"$logPrefix customMappingAsEnumNames: $customMappingAsEnumNames")
+  '{}
+
+//----------------------------------------------------------------------------------------------------------------------
+inline def _internalTestCustomMappingsAsSingleParam[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (inline customMapping: (EnumFrom, EnumTo)): Any =
+  ${ _internalTestCustomMappingsAsSingleParamImpl[EnumFrom, EnumTo]( 'customMapping ) }
+
+def _internalTestCustomMappingsAsSingleParamImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
+  (customMapping: Expr[(EnumFrom, EnumTo)])
+  (using quotes: Quotes)(using etFrom: Type[EnumFrom])(using etTo: Type[EnumTo]): Expr[Any] =
+
+  import quotes.reflect.*
+
+  val logPrefix = s"_internalTestCustomMappingsAsSingleParamsImpl [ ${Type.show[EnumFrom]} => ${Type.show[EnumTo]} ], "
+  log.trace(s"$logPrefix customMappingsSingleParam: ${customMapping.asTerm}")
+
+  val customMappingAsEnumNames: (String, String) = parseCustomEnumMappingTupleExpr[EnumFrom, EnumTo](customMapping)
+  log.info(s"$logPrefix customMappingAsEnumNames: $customMappingAsEnumNames")
+  '{}
+
