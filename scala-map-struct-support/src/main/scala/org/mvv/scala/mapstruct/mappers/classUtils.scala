@@ -23,3 +23,13 @@ def findClassThisScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symb
 
   typeRepr
 
+
+
+// returns (or should return) className (without generics types)
+def getTypeApplyClassName(using quotes: Quotes)(typeApply: quotes.reflect.Select): String =
+  import quotes.reflect.TypeRepr
+  val tpe: TypeRepr = typeApply.tpe
+  val qualifierTpe: TypeRepr = typeApply.qualifier.tpe
+  val resultingTpe = if tpe.classSymbol.isDefined then tpe else qualifierTpe
+  val resultingClassName = resultingTpe.show
+  resultingClassName

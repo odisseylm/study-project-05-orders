@@ -16,13 +16,13 @@ private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.macroParamsExt
 // TODO: create base impl more generic
 
 private def parseCustomEnumMappingTuplesExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (using quotes: Quotes)(using Type[EnumFrom])(using Type[EnumTo])
+  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo])
   (inlinedExpr: Expr[Seq[(EnumFrom, EnumTo)]]): List[(String, String)] =
   import quotes.reflect.asTerm
   parseCustomEnumMappingTuples[EnumFrom, EnumTo](inlinedExpr.asTerm.asInstanceOf[quotes.reflect.Inlined])
 
 private def parseCustomEnumMappingTupleExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (using quotes: Quotes)(using Type[EnumFrom])(using Type[EnumTo])
+  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo])
   (inlinedExpr: Expr[(EnumFrom, EnumTo)]): (String, String) =
   import quotes.reflect.asTerm
   parseCustomEnumMappingTuples[EnumFrom, EnumTo](inlinedExpr.asTerm.asInstanceOf[quotes.reflect.Inlined]).head
@@ -32,7 +32,7 @@ private def parseCustomEnumMappingTupleExpr[EnumFrom <: ScalaEnum, EnumTo <: Sca
 
 
 private def parseCustomEnumMappingTuples[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (using quotes: Quotes)(using Type[EnumFrom])(using Type[EnumTo])
+  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo])
   (inlined: quotes.reflect.Inlined): List[(String, String)] =
   import quotes.reflect.*
 
@@ -105,7 +105,7 @@ private def getElements(using quotes: Quotes)(tree: quotes.reflect.Tree): List[q
 
 
 private def parseApplyWithTypeApplyCustomEnumMappingTuple[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (using quotes: Quotes)(using Type[EnumFrom])(using Type[EnumTo])
+  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo])
   (applyWithTypeApply: quotes.reflect.Apply): (String, String) =
 
   import quotes.reflect.*
@@ -136,25 +136,6 @@ private def parseApplyWithTypeApplyCustomEnumMappingTuple[EnumFrom <: ScalaEnum,
   val enumValueNames = (extractSimpleName(bodyApplyArgs.head), extractSimpleName(bodyApplyArgs.tail.head))
   log.trace(s"$logPrefix enumValueNames: $enumValueNames")
   enumValueNames
-
-
-
-//noinspection ScalaUnusedSymbol // TODO: move to other class/file
-extension (using quotes: Quotes)(el: quotes.reflect.Tree)
-  private def isTyped: Boolean = el.isImplClass("Typed")
-  private def isApply: Boolean = el.isImplClass("Apply")
-  private def isTypeApply: Boolean = el.isImplClass("TypeApply")
-  private def isSeqLiteral: Boolean = el.isImplClass("SeqLiteral")
-
-
-
-private def getTypeApplyClassName(using quotes: Quotes)(typeApply: quotes.reflect.Select): String =
-  import quotes.reflect.TypeRepr
-  val tpe: TypeRepr = typeApply.tpe
-  val qualifierTpe: TypeRepr = typeApply.qualifier.tpe
-  val resultingTpe = if tpe.classSymbol.isDefined then tpe else qualifierTpe
-  val resultingClassName = resultingTpe.show
-  resultingClassName
 
 
 
