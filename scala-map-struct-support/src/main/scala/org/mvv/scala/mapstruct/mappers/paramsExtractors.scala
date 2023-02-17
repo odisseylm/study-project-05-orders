@@ -5,35 +5,40 @@ import scala.quoted.{Expr, Quotes, Type}
 import org.mvv.scala.mapstruct.{ Logger, lastAfter, isOneOf, getByReflection, unwrapOption }
 
 
-type Tuple2Extractor[QTree, T1, T2] = ( (QTree, QTree) ) => (T1, T2)
+// TC - Tuple Component Type
+type Tuple2Extractor[QTree, TCT1, TCT2] = ( (QTree, QTree) ) => (TCT1, TCT2)
 
 
-private def parseTuple2EntriesFromSeqExpr[T1, T2]
-  (using quotes: Quotes)(using Type[T1], Type[T2])
+private def parseTuple2EntriesFromSeqExpr[T1, T2, TCT1, TCT2]
+  (using quotes: Quotes)(using Type[T1], Type[T2], Type[TCT1], Type[TCT2])
   (inlinedExpr: Expr[Seq[(T1, T2)]],
-   tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, T1, T2]): List[(T1, T2)] =
-  import quotes.reflect.asTerm
-  parseTuple2Entries[T1, T2](
-    inlinedExpr.asTerm.asInstanceOf[quotes.reflect.Inlined],
-    tupleExtractor,
+   tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, TCT1, TCT2]
+  ): List[(TCT1, TCT2)] =
+
+  import quotes.reflect.{ asTerm, Inlined }
+  parseTuple2Entries[T1, T2, TCT1, TCT2](
+    inlinedExpr.asTerm.asInstanceOf[Inlined], tupleExtractor
   )
 
-def parseTuple2EntryFromSeqExpr[T1, T2]
-  (using quotes: Quotes)(using Type[T1], Type[T2])
+/** Since macros is used during compile time you cannot create real instance of T1/T2 (java class is not exist yet)
+ * For that reason you can only return some representation of this constants
+ * (in case of enum it will be String - name of enum filed/val/constant) */
+def parseTuple2EntryFromExpr[T1, T2, TCT1, TCT2]
+  (using quotes: Quotes)(using Type[T1], Type[T2], Type[TCT1], Type[TCT2])
   (inlinedExpr: Expr[(T1, T2)],
-   tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, T1, T2]): (T1, T2) =
-  import quotes.reflect.asTerm
-  parseTuple2Entries[T1, T2](
-    inlinedExpr.asTerm.asInstanceOf[quotes.reflect.Inlined],
-    tupleExtractor,
+   tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, TCT1, TCT2]): (TCT1, TCT2) =
+
+  import quotes.reflect.{ asTerm, Inlined }
+  parseTuple2Entries[T1, T2, TCT1, TCT2](
+    inlinedExpr.asTerm.asInstanceOf[Inlined], tupleExtractor
   ).head
 
 
 
-private def parseTuple2Entries[T1, T2]
-  (using quotes: Quotes)(using Type[T1], Type[T2])
+private def parseTuple2Entries[T1, T2, TCT1, TCT2]
+  (using quotes: Quotes)(using Type[T1], Type[T2], Type[TCT1], Type[TCT2])
   (inlined: quotes.reflect.Inlined,
-   tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, T1, T2]): List[(T1, T2)] =
+   tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, TCT1, TCT2]): List[(TCT1, TCT2)] =
   import quotes.reflect.*
 
   // TODO: impl
@@ -62,19 +67,19 @@ private def parseTuple2Entries[T1, T2]
       getElementsFromTyped(listApplyArgs.head)
     case other => throw IllegalStateException(s"Unexpected type of body $other ( $body ).")
 
-  val tuples: List[(T1, T2)] = elements.map(el =>
+  val tuples: List[(TCT1, TCT2)] = elements.map(el =>
     require(el.isApply)
-    parseApplyWithTypeApplyTuple[T1, T2](el.asInstanceOf[Apply], tupleExtractor))
+    parseApplyWithTypeApplyTuple[T1, T2, TCT1, TCT2](el.asInstanceOf[Apply], tupleExtractor))
   tuples
 
 
 
-private def parseApplyWithTypeApplyTuple[T1, T2]
-  (using quotes: Quotes)(using Type[T1], Type[T2])
-  (applyWithTypeApply: quotes.reflect.Apply,
-   tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, T1, T2]): (T1, T2) =
+private def parseApplyWithTypeApplyTuple[T1, T2, TCT1, TCT2]
+  (using q: Quotes)(using Type[T1], Type[T2], Type[TCT1], Type[TCT2])
+  (applyWithTypeApply: q.reflect.Apply,
+   tupleExtractor: Tuple2Extractor[q.reflect.Tree, TCT1, TCT2]): (TCT1, TCT2) =
 
-  import quotes.reflect.*
+  import q.reflect.*
 
   val logPrefix = s"parseApplyWithTypeApplyTuple [ ${Type.show[T1]} => ${Type.show[T2]} ], "
 
@@ -103,6 +108,21 @@ private def parseApplyWithTypeApplyTuple[T1, T2]
   val treesTuple = (bodyApplyArgs.head, bodyApplyArgs.tail.head)
   log.trace(s"$logPrefix treesTuple: $treesTuple")
 
-  val tuple = tupleExtractor(treesTuple)
+  val tuple: (TCT1, TCT2) = tupleExtractor(treesTuple)
   log.trace(s"$logPrefix tuple: $tuple")
   tuple
+
+
+// probably not ideal solution
+def typeReprFullClassName(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): String =
+  val rawClassFullName = typeRepr.classSymbol.map(_.fullName.stripSuffix("$"))
+    .getOrElse(typeRepr.show)
+  rawClassFullName
+
+
+
+private def getElements(using quotes: Quotes)(tree: quotes.reflect.Tree): List[quotes.reflect.Tree] =
+  import quotes.reflect.Tree
+  tree match
+    case el if el.isSeqLiteral => getByReflection(el, "elems", "elements", "items").unwrapOption.asInstanceOf[List[Tree]]
+    case other => throw IllegalStateException(s"Getting elements from ${other.getClass.nn.getName} is not supported yet.")

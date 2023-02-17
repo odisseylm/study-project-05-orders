@@ -13,24 +13,46 @@ import org.mvv.scala.mapstruct.debug.printFields
 private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.macroParamsExtractors")
 
 
-// TODO: create base impl more generic
-
 private def parseCustomEnumMappingTuplesExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo])
-  (inlinedExpr: Expr[Seq[(EnumFrom, EnumTo)]]): List[(String, String)] =
-  import quotes.reflect.asTerm
-  parseCustomEnumMappingTuples[EnumFrom, EnumTo](inlinedExpr.asTerm.asInstanceOf[quotes.reflect.Inlined])
+  (using q: Quotes)(using Type[EnumFrom], Type[EnumTo])
+  (inlinedExpr: Expr[Seq[(EnumFrom, EnumTo)]])
+  : List[(String, String)] =
+
+  import q.reflect.{ Inlined, asTerm }
+  parseTuple2EntriesFromSeqExpr[EnumFrom, EnumTo, String, String](
+    inlinedExpr, enumMappingTuple2Extractor
+  )
 
 private def parseCustomEnumMappingTupleExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo])
-  (inlinedExpr: Expr[(EnumFrom, EnumTo)]): (String, String) =
-  import quotes.reflect.asTerm
-  parseCustomEnumMappingTuples[EnumFrom, EnumTo](inlinedExpr.asTerm.asInstanceOf[quotes.reflect.Inlined]).head
+  (using q: Quotes)(using Type[EnumFrom], Type[EnumTo])
+  (inlinedExpr: Expr[(EnumFrom, EnumTo)])
+  : (String, String) =
+
+  import q.reflect.{ Inlined, asTerm }
+  parseTuple2EntryFromExpr[EnumFrom, EnumTo, String, String](
+    inlinedExpr, enumMappingTuple2Extractor
+  )
 
 
 
+def enumMappingTuple2Extractor[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum](using q: Quotes)
+  ( tupleTerms: (q.reflect.Tree, q.reflect.Tree) ): (String, String) =
+  val enumFromValueTerm = tupleTerms._1
+  val enumToValueTerm   = tupleTerms._2
+  (extractSimpleName(enumFromValueTerm), extractSimpleName(enumToValueTerm))
 
 
+// Select(Ident(TestEnum1),TestEnumValue4)
+// Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1)
+//
+private def extractSimpleName(using quotes: Quotes)(tree: quotes.reflect.Tree): String =
+  import quotes.reflect.*
+  val rawName: String = tree.symbol.name
+  rawName.lastAfter('.').getOrElse(rawName)
+
+
+
+/*
 private def parseCustomEnumMappingTuples[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo])
   (inlined: quotes.reflect.Inlined): List[(String, String)] =
@@ -136,16 +158,8 @@ private def parseApplyWithTypeApplyCustomEnumMappingTuple[EnumFrom <: ScalaEnum,
   val enumValueNames = (extractSimpleName(bodyApplyArgs.head), extractSimpleName(bodyApplyArgs.tail.head))
   log.trace(s"$logPrefix enumValueNames: $enumValueNames")
   enumValueNames
+*/
 
-
-
-// Select(Ident(TestEnum1),TestEnumValue4)
-// Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1)
-//
-private def extractSimpleName(using quotes: Quotes)(tree: quotes.reflect.Tree): String =
-  import quotes.reflect.*
-  val rawName: String = tree.symbol.name
-  rawName.lastAfter('.').getOrElse(rawName)
 
 
 
