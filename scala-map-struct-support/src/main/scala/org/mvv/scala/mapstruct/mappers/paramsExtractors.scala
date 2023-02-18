@@ -58,7 +58,7 @@ private def parseTuple2Entries[T1, T2, TC1, TC2]
 
         log.trace(s"$traverseLogPrefix => tuple: $tuple")
 
-        super.traverseTree(tree)(owner)
+        if tuple.isEmpty then super.traverseTree(tree)(owner)
       catch
         //noinspection ScalaUnnecessaryParentheses => braces are really needed there!!!
         case ex: (Exception | AssertionError) => log.warn(s"$traverseLogPrefix => Unexpected error $ex", ex)
