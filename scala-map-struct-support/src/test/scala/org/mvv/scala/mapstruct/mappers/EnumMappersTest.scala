@@ -15,15 +15,27 @@ enum TestEnum1 :
 enum TestEnum2 :
   case TestEnumValue1, TestEnumValue2
 
+
 enum TestEnum11 :
   case TestEnumValue1, TestEnumValue2, TestEnumValue3
 enum TestEnum12 :
   case TestEnumValue1, TestEnumValue2, TestEnumValue4
 
+
 enum TestEnum21 :
   case TestEnumValue1, TestEnumValue2, TestEnumValue3
 enum TestEnum22 :
   case TestEnumValue1, TestEnumValue2
+
+
+enum TestEnumWithInheritance1 (intValue: Int) :
+  def method1(): Unit = {}
+  case TestEnumValue15 extends TestEnumWithInheritance1(15)
+  case TestEnumValue16 extends TestEnumWithInheritance1(16)
+enum TestEnumWithInheritance2 (intValue: Int) :
+  def method2(): Unit = {}
+  case TestEnumValue25 extends TestEnumWithInheritance2(25)
+  case TestEnumValue26 extends TestEnumWithInheritance2(26)
 
 
 //noinspection ScalaUnnecessaryParentheses
@@ -141,6 +153,26 @@ class EnumMappersTest {
   }
 
   @Test
+  def testAsymmetricComplexEnums(): Unit = {
+
+    val a = SoftAssertions()
+
+    val mapFunc: (TestEnumWithInheritance1 => TestEnumWithInheritance2) =
+      enumMappingFunc[TestEnumWithInheritance1, TestEnumWithInheritance2](
+      SelectEnumMode.ByEnumFullClassName,
+      (TestEnumWithInheritance1.TestEnumValue15, TestEnumWithInheritance2.TestEnumValue25),
+      (TestEnumWithInheritance1.TestEnumValue16, TestEnumWithInheritance2.TestEnumValue26),
+    )
+
+    a.assertThat(mapFunc(TestEnumWithInheritance1.TestEnumValue15))
+      .isEqualTo(TestEnumWithInheritance2.TestEnumValue25)
+    a.assertThat(mapFunc(TestEnumWithInheritance1.TestEnumValue16))
+      .isEqualTo(TestEnumWithInheritance2.TestEnumValue26)
+
+    a.assertAll()
+  }
+
+  @Test
   def testPassingCustomMappingsAsRepeatedParam(): Unit = {
     _internalTestCustomMappingsAsRepeatedParams[TestEnum11, TestEnum12](
       (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4)
@@ -168,11 +200,12 @@ class EnumMappersTest {
     )
   }
 
-  /* List with :: is not supported now.
   @Test
   def testPassingCustomMappingsAsListParamUsingOperators(): Unit = {
+    //noinspection ScalaUnusedSymbol
     val temp01: List[String] = "s1" :: "s2" :: "s3" :: Nil
 
+    //noinspection ScalaUnusedSymbol
     val temp02: List[(TestEnum11, TestEnum12)] =
            (TestEnum11.TestEnumValue1, TestEnum12.TestEnumValue2)
         :: (TestEnum11.TestEnumValue2, TestEnum12.TestEnumValue1)
@@ -186,7 +219,6 @@ class EnumMappersTest {
         :: Nil
     )
   }
-  */
 
   @Test
   def testPassingCustomMappingsAsSingleParam(): Unit = {

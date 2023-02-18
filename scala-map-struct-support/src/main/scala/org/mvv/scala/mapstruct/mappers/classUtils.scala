@@ -26,7 +26,19 @@ def findClassThisScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symb
 
 
 // returns (or should return) className (without generics types)
-def getTypeApplyClassName(using quotes: Quotes)(typeApply: quotes.reflect.Select): String =
+def getTypeApplyClassName(using quotes: Quotes)(typeApply: quotes.reflect.TypeApply): String =
+  import quotes.reflect.*
+
+  val typeApplyFun: Term = typeApply.fun
+  if typeApplyFun.isSelect then
+    getTypeApplyClassNameBySelect(typeApplyFun.asInstanceOf[Select])
+  else
+    val tpe: TypeRepr = typeApply.tpe
+    val resultingClassName: String = tpe.show
+    resultingClassName
+
+// returns (or should return) className (without generics types)
+def getTypeApplyClassNameBySelect(using quotes: Quotes)(typeApply: quotes.reflect.Select): String =
   import quotes.reflect.TypeRepr
   val tpe: TypeRepr = typeApply.tpe
   val qualifierTpe: TypeRepr = typeApply.qualifier.tpe

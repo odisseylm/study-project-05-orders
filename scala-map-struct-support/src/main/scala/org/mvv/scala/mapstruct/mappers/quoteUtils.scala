@@ -11,5 +11,6 @@ import org.mvv.scala.mapstruct.{ Logger, isImplClass }
 extension (using quotes: Quotes)(el: quotes.reflect.Tree)
   def isTyped: Boolean = el.isImplClass("Typed")
   def isApply: Boolean = el.isImplClass("Apply")
+  def isSelect: Boolean = el.isImplClass("Select")
   def isTypeApply: Boolean  = el.isImplClass("TypeApply")
   def isSeqLiteral: Boolean = el.isImplClass("SeqLiteral")
