@@ -4,10 +4,8 @@ import scala.quoted.{Expr, Quotes, Type}
 import scala.reflect.Enum as ScalaEnum
 //
 import org.mvv.scala.quotes.{ extractTuple2EntryFromExpr, extractTuple2EntriesFromSeqExpr }
-import org.mvv.scala.mapstruct.{ Logger, lastAfter, isOneOf, getByReflection, unwrapOption }
+import org.mvv.scala.mapstruct.{ Logger, lastAfter }
 // for debug only
-import org.mvv.scala.mapstruct.debug.dump.{ isImplClass, activeFlags, activeFlagEntries, dumpSymbol }
-import org.mvv.scala.mapstruct.debug.printFields
 
 
 //private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.macroParamsExtractors")

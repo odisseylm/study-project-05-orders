@@ -3,8 +3,8 @@ package org.mvv.scala.quotes
 import scala.quoted.{Expr, Quotes, Type}
 import scala.collection.mutable
 //
+import org.mvv.scala.quotes.toQuotesTypeOf
 import org.mvv.scala.mapstruct.{ Logger, lastAfter, isOneOf, getByReflection, unwrapOption }
-import org.mvv.scala.mapstruct.mappers.{ isApply, isTypeApply } // TODO: temp, replace with new API
 
 
 // TC - Tuple Component Type
@@ -118,39 +118,34 @@ def toTreesTuple2[T1, T2]
   import q.reflect.*
   val logPrefix = "tryExtractTuple2"
 
-  if !el.isApply then return None
+  el.toQuotesTypeOf[Apply]
+    .filter ( _.args.sizeIs == 2 )
+    .filter ( _.fun.toQuotesTypeOf[TypeApply]
+      .exists(typeApply => isTypeApplyOfTuple2[T1, T2](typeApply)) )
+    .map { apply =>
+      val treesTuple = (apply.args.head, apply.args.tail.head)
+      log.trace(s"$logPrefix treesTuple: $treesTuple")
+      treesTuple
+    }
 
-  val apply: Apply = el.asInstanceOf[Apply]
-  val applyFun: Term = apply.fun
-  val applyArgs: List[Term] = apply.args
 
-  if !applyFun.isTypeApply || applyArgs.sizeIs != 2 then return None
+private def isTypeApplyOfTuple2[T1, T2]
+  (using q: Quotes)(using Type[T1], Type[T2])
+  (tree: q.reflect.Tree): Boolean =
 
-  val typeApply: TypeApply = applyFun.asInstanceOf[TypeApply]
-  val typeApplyArgs: List[TypeTree] = typeApply.args
+  import q.reflect.*
+  val logPrefix = s"tryExtractTuple2[${TypeRepr.of[T1]}, ${TypeRepr.of[T2]}] "
 
-  val typeApplyClassName = getTypeApplyClassName(typeApply)
-  val isTuple2 = typeApplyClassName.isOneOf("Tuple2", "scala.Tuple2")
-  if !isTuple2 then return None
+  tree.toQuotesTypeOf[TypeApply]
+    .filter { typeApply => getTypeApplyClassName(typeApply).isTuple2 }
+    .filter { typeApply =>
+      val arg1TypeRepr = typeApply.args.head.tpe
+      val arg2TypeRepr = typeApply.args.tail.head.tpe
+      log.trace(s"$logPrefix TypeApply(${arg1TypeRepr.show}, ${arg2TypeRepr.show})")
 
-  val typeRepr1 = typeApplyArgs.head.tpe
-  val typeRepr2 = typeApplyArgs.tail.head.tpe
-
-  log.trace(s"$logPrefix  typeRepr1: $typeRepr1, TypeRepr.of[T1]: ${TypeRepr.of[T1]}")
-  log.trace(s"$logPrefix  typeRepr2: $typeRepr2, TypeRepr.of[T2]: ${TypeRepr.of[T2]}")
-  log.trace(s"$logPrefix  typeRepr1: ${typeRepr1.show}, TypeRepr.of[T1]: ${TypeRepr.of[T1].show}")
-  log.trace(s"$logPrefix  typeRepr2: ${typeRepr2.show}, TypeRepr.of[T2]: ${TypeRepr.of[T2].show}")
-
-  if !(typeRepr1 <:< TypeRepr.of[T1]) || !(typeRepr2 <:< TypeRepr.of[T2]) then return None
-
-  val treesTuple = (applyArgs.head, applyArgs.tail.head)
-  log.trace(s"$logPrefix treesTuple: $treesTuple")
-  Option(treesTuple)
-
-//  val tuple: (TC1, TC2) = tupleExtractor(treesTuple)
-//  log.trace(s"$logPrefix tuple: $tuple")
-//  Option(tuple)
-
+      (arg1TypeRepr <:< TypeRepr.of[T1]) && (arg2TypeRepr <:< TypeRepr.of[T2])
+    }
+    .isDefined
 
 
 /*
