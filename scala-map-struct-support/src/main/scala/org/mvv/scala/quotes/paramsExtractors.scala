@@ -1,52 +1,62 @@
-package org.mvv.scala.mapstruct.mappers
+package org.mvv.scala.quotes
 
 import scala.quoted.{Expr, Quotes, Type}
 import scala.collection.mutable
 //
-import org.mvv.scala.quotes.{ toQuotesTypeOf, isQuotesTypeOf, getTypeApplyClassName }
 import org.mvv.scala.mapstruct.{ Logger, lastAfter, isOneOf, getByReflection, unwrapOption }
+import org.mvv.scala.mapstruct.mappers.{ isApply, isTypeApply } // TODO: temp, replace with new API
 
 
 // TC - Tuple Component Type
-type Tuple2Extractor[QTree, TC1, TC2] = ( (QTree, QTree) ) => (TC1, TC2)
+type ValuesTuple2Extractor[QTree, TC1, TC2] = ( (QTree, QTree) ) => (TC1, TC2)
 
 
-def parseTuple2EntriesFromSeqExpr[T1, T2, TC1, TC2]
-  (using quotes: Quotes)(using Type[T1], Type[T2])
+def extractTuple2EntriesFromSeqExpr[T1, T2, TC1, TC2]
+  (using q: Quotes)(using Type[T1], Type[T2])
   (inlinedExpr: Expr[Seq[(T1, T2)]],
-   tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, TC1, TC2]
+   tupleExtractor: ValuesTuple2Extractor[q.reflect.Tree, TC1, TC2]
   ): List[(TC1, TC2)] =
 
-  import quotes.reflect.{ asTerm, Inlined }
-  parseTuple2Entries[T1, T2, TC1, TC2](
-    inlinedExpr.asTerm.asInstanceOf[Inlined], tupleExtractor
+  import q.reflect.{ asTerm, Inlined }
+  extractValuesTuple2Entries[T1, T2, TC1, TC2](
+    inlinedExpr.asTerm, tupleExtractor
   )
 
 
 /** Since macros is used during compile time you cannot create real instance of T1/T2 (java class is not exist yet)
  * For that reason you can only return some representation of this constants
  * (in case of enum it will be String - name of enum filed/val/constant) */
-def parseTuple2EntryFromExpr[T1, T2, TC1, TC2]
+def extractTuple2EntryFromExpr[T1, T2, TC1, TC2]
   (using quotes: Quotes)(using Type[T1], Type[T2])
   (inlinedExpr: Expr[(T1, T2)],
-   tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, TC1, TC2]): (TC1, TC2) =
+   tupleExtractor: ValuesTuple2Extractor[quotes.reflect.Tree, TC1, TC2]): (TC1, TC2) =
 
   import quotes.reflect.{ asTerm, Inlined }
-  parseTuple2Entries[T1, T2, TC1, TC2](
+  extractValuesTuple2Entries[T1, T2, TC1, TC2](
     inlinedExpr.asTerm.asInstanceOf[Inlined], tupleExtractor
   ).head
 
 
 
-private def parseTuple2Entries[T1, T2, TC1, TC2]
-  (using quotes: Quotes)(using Type[T1], Type[T2])
-  ( tree: quotes.reflect.Tree, tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, TC1, TC2])
+private def extractValuesTuple2Entries[T1, T2, TC1, TC2]
+  (using q: Quotes)(using Type[T1], Type[T2])
+  ( tree: q.reflect.Tree, tupleExtractor: ValuesTuple2Extractor[q.reflect.Tree, TC1, TC2])
   : List[(TC1, TC2)] =
+  import q.reflect.*
+  val treesTuples: List[(Tree, Tree)] = extractTreesTuple2Entries[T1, T2](tree)
+  treesTuples.map(t => tupleExtractor(t))
 
-  import quotes.reflect.*
+
+
+private def extractTreesTuple2Entries[T1, T2]
+  (using q: Quotes)(using Type[T1], Type[T2])
+  (tree: q.reflect.Tree)
+  : List[(q.reflect.Tree, q.reflect.Tree)] =
+
+  import q.reflect.*
   val logPrefix = "parseTuple2Entries"
 
-  val tuples: mutable.ArrayBuffer[(TC1, TC2)] = mutable.ArrayBuffer()
+  val tuples: mutable.ArrayBuffer[(Tree, Tree)] = mutable.ArrayBuffer()
 
   val traverser = new TreeTraverser {
     override def traverseTree(tree: Tree)(owner: Symbol): Unit =
@@ -54,20 +64,12 @@ private def parseTuple2Entries[T1, T2, TC1, TC2]
       try
         log.trace(s"$traverseLogPrefix")
 
-        val applyOpt: Option[Apply] = tree.toQuotesTypeOf[Apply]
-        println(s"applyOpt: $applyOpt")
-
-        val isApply: Boolean = tree.isQuotesTypeOf[Apply]
-        println(s"isApply: $isApply")
-
-        //val stringOpt: Option[String] = tree.toQuotesType[String]
-        //println(s"stringOpt: $stringOpt")
-
-        val tuple: Option[(TC1, TC2)] = tryExtractTuple2[T1, T2, TC1, TC2](tree, tupleExtractor)
+        val tuple: Option[(Tree, Tree)] = toTreesTuple2[T1, T2](tree)
         tuple.foreach(t => tuples.addOne(t))
 
         log.trace(s"$traverseLogPrefix => tuple: $tuple")
 
+        // do not traverse to children if needed AST node is found
         if tuple.isEmpty then super.traverseTree(tree)(owner)
       catch
         // There is AssertionError because it can be thrown by scala compiler?!
@@ -80,6 +82,7 @@ private def parseTuple2Entries[T1, T2, TC1, TC2]
 
 
 
+//noinspection ScalaUnusedSymbol
 /* Expected:
   Apply(
     TypeApply(
@@ -95,10 +98,22 @@ private def parseTuple2Entries[T1, T2, TC1, TC2]
     )
   )
 */
-def tryExtractTuple2[T1, T2, TC1, TC2]
+def toValuesTuple2[T1, T2, TC1, TC2]
   (using q: Quotes)(using Type[T1], Type[T2])
-  (el: q.reflect.Tree, tupleExtractor: Tuple2Extractor[q.reflect.Tree, TC1, TC2])
+  (el: q.reflect.Tree, tupleExtractor: ValuesTuple2Extractor[q.reflect.Tree, TC1, TC2])
   : Option[(TC1, TC2)] =
+  import q.reflect.Tree
+  val treesTuple: Option[(Tree, Tree)] = toTreesTuple2[T1, T2](el)
+  val valuesTuple = treesTuple.map(t => tupleExtractor(t))
+  valuesTuple
+
+
+/**
+ * Types T1/T2 are used to filter tuples (T1,T2).
+ */
+def toTreesTuple2[T1, T2]
+  (using q: Quotes)(using Type[T1], Type[T2])
+  (el: q.reflect.Tree): Option[(q.reflect.Tree, q.reflect.Tree)] =
 
   import q.reflect.*
   val logPrefix = "tryExtractTuple2"
@@ -130,10 +145,11 @@ def tryExtractTuple2[T1, T2, TC1, TC2]
 
   val treesTuple = (applyArgs.head, applyArgs.tail.head)
   log.trace(s"$logPrefix treesTuple: $treesTuple")
+  Option(treesTuple)
 
-  val tuple: (TC1, TC2) = tupleExtractor(treesTuple)
-  log.trace(s"$logPrefix tuple: $tuple")
-  Option(tuple)
+//  val tuple: (TC1, TC2) = tupleExtractor(treesTuple)
+//  log.trace(s"$logPrefix tuple: $tuple")
+//  Option(tuple)
 
 
 
@@ -141,7 +157,7 @@ def tryExtractTuple2[T1, T2, TC1, TC2]
 private def parseTuple2Entries[T1, T2, TC1, TC2]
   (using quotes: Quotes)(using Type[T1], Type[T2], Type[TC1], Type[TC2])
   (inlined: quotes.reflect.Inlined,
-   tupleExtractor: Tuple2Extractor[quotes.reflect.Tree, TC1, TC2]): List[(TC1, TC2)] =
+   tupleExtractor: ValuesTuple2Extractor[quotes.reflect.Tree, TC1, TC2]): List[(TC1, TC2)] =
   import quotes.reflect.*
 
   parseTuple2Entries_new[T1, T2, TC1, TC2](inlined, tupleExtractor)
@@ -189,7 +205,7 @@ private def getElements(using quotes: Quotes)(tree: quotes.reflect.Tree): List[q
 private def parseApplyWithTypeApplyTuple[T1, T2, TC1, TC2]
   (using q: Quotes)(using Type[T1], Type[T2])
   (applyWithTypeApply: q.reflect.Apply,
-   tupleExtractor: Tuple2Extractor[q.reflect.Tree, TC1, TC2]): (TC1, TC2) =
+   tupleExtractor: ValuesTuple2Extractor[q.reflect.Tree, TC1, TC2]): (TC1, TC2) =
 
   import q.reflect.*
 

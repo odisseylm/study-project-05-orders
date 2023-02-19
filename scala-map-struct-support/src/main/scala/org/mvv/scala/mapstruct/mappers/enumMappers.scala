@@ -73,7 +73,7 @@ def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
 
   log.trace(s"$logPrefix customMappings: ${customMappings.asTerm}")
 
-  val customMappingAsEnumNames: List[(String, String)] = parseCustomEnumMappingTuplesExpr[EnumFrom, EnumTo](customMappings)
+  val customMappingAsEnumNames: List[(String, String)] = extractCustomEnumMappingTuplesExpr[EnumFrom, EnumTo](customMappings)
   log.trace(s"$logPrefix customMappingAsEnumNames: $customMappingAsEnumNames")
 
   val customProcessedEnumFromValuesAll: List[String] = customMappingAsEnumNames.map(_._1)
