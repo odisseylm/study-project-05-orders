@@ -3,8 +3,8 @@ package org.mvv.scala.mapstruct.mappers
 import scala.quoted.{Expr, Quotes, Type}
 import scala.collection.mutable
 //
+import org.mvv.scala.quotes.{ toQuotesTypeOf, isQuotesTypeOf, getTypeApplyClassName }
 import org.mvv.scala.mapstruct.{ Logger, lastAfter, isOneOf, getByReflection, unwrapOption }
-import org.mvv.scala.quotes.{ toQuotesTypeOf, isQuotesTypeOf } // T O D O: remove after testing
 
 
 // TC - Tuple Component Type

@@ -7,6 +7,7 @@ import scala.language.unsafeNulls
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
+import org.mvv.scala.quotes.EnumValueSelectMode
 import org.mvv.scala.mapstruct.debug.dump.dumpExpr
 
 
@@ -58,7 +59,7 @@ class EnumMappersTest {
   def testUsualEnums_ByEnumFullClassName(): Unit = {
 
     val mapFunc: (TestEnum1 => TestEnum2) =
-      enumMappingFunc[TestEnum1, TestEnum2](SelectEnumMode.ByEnumFullClassName)
+      enumMappingFunc[TestEnum1, TestEnum2](EnumValueSelectMode.ByEnumFullClassName)
 
     val a = SoftAssertions()
 
@@ -72,7 +73,7 @@ class EnumMappersTest {
   def testUsualEnums_ByEnumClassThisType(): Unit = {
 
     val mapFunc: (TestEnum1 => TestEnum2) =
-      enumMappingFunc[TestEnum1, TestEnum2](SelectEnumMode.ByEnumClassThisType)
+      enumMappingFunc[TestEnum1, TestEnum2](EnumValueSelectMode.ByEnumClassThisType)
 
     val a = SoftAssertions()
 
@@ -88,7 +89,7 @@ class EnumMappersTest {
     import EnumMappersTest.LocalTestEnum2
 
     val mapFunc: (EnumMappersTest.LocalTestEnum1 => LocalTestEnum2) =
-      enumMappingFunc[LocalTestEnum1, LocalTestEnum2](SelectEnumMode.ByEnumFullClassName)
+      enumMappingFunc[LocalTestEnum1, LocalTestEnum2](EnumValueSelectMode.ByEnumFullClassName)
 
     val a = SoftAssertions()
 
@@ -104,7 +105,7 @@ class EnumMappersTest {
     import EnumMappersTest.LocalTestEnum2
 
     val mapFunc: (EnumMappersTest.LocalTestEnum1 => LocalTestEnum2) =
-      enumMappingFunc[LocalTestEnum1, LocalTestEnum2](SelectEnumMode.ByEnumClassThisType)
+      enumMappingFunc[LocalTestEnum1, LocalTestEnum2](EnumValueSelectMode.ByEnumClassThisType)
 
     val a = SoftAssertions()
 
@@ -141,7 +142,7 @@ class EnumMappersTest {
     //val aa2: TestEnum11 => TestEnum12 = TestEnum11.TestEnumValue3 => TestEnum12.TestEnumValue4
 
     val mapFunc: (TestEnum11 => TestEnum12) = enumMappingFunc[TestEnum11, TestEnum12](
-      SelectEnumMode.ByEnumFullClassName,
+      EnumValueSelectMode.ByEnumFullClassName,
       (TestEnum11.TestEnumValue3, TestEnum12.TestEnumValue4),
     )
 
@@ -159,9 +160,9 @@ class EnumMappersTest {
 
     val mapFunc: (TestEnumWithInheritance1 => TestEnumWithInheritance2) =
       enumMappingFunc[TestEnumWithInheritance1, TestEnumWithInheritance2](
-      SelectEnumMode.ByEnumFullClassName,
-      (TestEnumWithInheritance1.TestEnumValue15, TestEnumWithInheritance2.TestEnumValue25),
-      (TestEnumWithInheritance1.TestEnumValue16, TestEnumWithInheritance2.TestEnumValue26),
+        EnumValueSelectMode.ByEnumFullClassName,
+        (TestEnumWithInheritance1.TestEnumValue15, TestEnumWithInheritance2.TestEnumValue25),
+        (TestEnumWithInheritance1.TestEnumValue16, TestEnumWithInheritance2.TestEnumValue26),
     )
 
     a.assertThat(mapFunc(TestEnumWithInheritance1.TestEnumValue15))

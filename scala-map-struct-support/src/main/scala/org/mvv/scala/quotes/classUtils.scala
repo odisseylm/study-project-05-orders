@@ -1,4 +1,4 @@
-package org.mvv.scala.mapstruct.mappers
+package org.mvv.scala.quotes
 
 import scala.quoted.Quotes
 //
@@ -29,13 +29,14 @@ def findClassThisScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symb
 def getTypeApplyClassName(using quotes: Quotes)(typeApply: quotes.reflect.TypeApply): String =
   import quotes.reflect.*
 
-  val typeApplyFun: Term = typeApply.fun
-  if typeApplyFun.isSelect then
-    getTypeApplyClassNameBySelect(typeApplyFun.asInstanceOf[Select])
-  else
-    val tpe: TypeRepr = typeApply.tpe
-    val resultingClassName: String = tpe.show
-    resultingClassName
+  typeApply.fun.toQuotesTypeOf[Select]
+    .map(typeApply => getTypeApplyClassNameBySelect(typeApply))
+    .getOrElse {
+      val tpe: TypeRepr = typeApply.tpe
+      val resultingClassName: String = tpe.show
+      resultingClassName
+    }
+
 
 // returns (or should return) className (without generics types)
 def getTypeApplyClassNameBySelect(using quotes: Quotes)(typeApply: quotes.reflect.Select): String =

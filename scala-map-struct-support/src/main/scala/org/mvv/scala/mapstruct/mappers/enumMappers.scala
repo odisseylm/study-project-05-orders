@@ -7,6 +7,7 @@ import org.mvv.scala.mapstruct.{ Logger, lastAfter, isOneOf, getByReflection, un
 // for debug only
 import org.mvv.scala.mapstruct.debug.dump.{ isImplClass, activeFlags, activeFlagEntries, dumpSymbol }
 import org.mvv.scala.mapstruct.debug.printFields
+import org.mvv.scala.quotes.{ EnumValueSelectMode, enumValue, valueOrAbort, enumValueNames }
 
 
 private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.enumMappers")
@@ -20,57 +21,41 @@ Parameters may only be:
 */
 
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum](): EnumFrom => EnumTo =
-  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( '{ SelectEnumMode.ByEnumFullClassName }, '{ Nil } ) }
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( '{ EnumValueSelectMode.ByEnumFullClassName }, '{ Nil } ) }
 
 
 
 //noinspection ScalaUnusedSymbol
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (inline selectEnumMode: SelectEnumMode): EnumFrom => EnumTo =
+  (inline selectEnumMode: EnumValueSelectMode): EnumFrom => EnumTo =
   ${ enumMappingFuncImpl[EnumFrom, EnumTo]( 'selectEnumMode, '{ Nil } ) }
 
 
 
 //noinspection ScalaUnusedSymbol
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (inline selectEnumMode: SelectEnumMode, inline customMappings: (EnumFrom, EnumTo)*): EnumFrom => EnumTo =
+  (inline selectEnumMode: EnumValueSelectMode, inline customMappings: (EnumFrom, EnumTo)*): EnumFrom => EnumTo =
   ${ enumMappingFuncImpl[EnumFrom, EnumTo]( 'selectEnumMode, 'customMappings ) }
 
 
 
 def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (selectEnumModeExpr: Expr[SelectEnumMode], customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
-  (using quotes: Quotes)(using etFrom: Type[EnumFrom])(using etTo: Type[EnumTo]):
-    Expr[EnumFrom => EnumTo] =
+  (enumValueSelectModeExpr: Expr[EnumValueSelectMode], customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
+  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo], Type[EnumValueSelectMode])
+  : Expr[EnumFrom => EnumTo] =
 
   import quotes.reflect.*
 
-  // unfortunately 'selectEnumModeExpr.valueOrAbort' does not work (for complex types).
-  val selectEnumMode = selectEnumModeExpr match
-    case sm if sm.matches( '{ SelectEnumMode.ByEnumFullClassName } ) => SelectEnumMode.ByEnumFullClassName
-    case sm if sm.matches( '{ SelectEnumMode.ByEnumClassThisType } ) => SelectEnumMode.ByEnumClassThisType
-    case other => report.errorAndAbort(s"Unexpected/unparseable selectEnumMode [$other].")
+  // unfortunately standard scala Expr.valueOrAbort  does not work (for complex types)
+  val enumValueSelectMode = enumValueSelectModeExpr.valueOrAbort
 
   val enumFromClassName: String = Type.show[EnumFrom]
   val enumToClassName:   String = Type.show[EnumTo]
 
   val logPrefix = s"enumMappingFuncImpl [ $enumFromClassName => $enumToClassName ], "
 
-
-  def enumValues[EnumType <: ScalaEnum](using Type[EnumType]): List[String] =
-    val classSymbol: Symbol = Symbol.classSymbol(Type.show[EnumType]) // Symbol.requiredClass(typeNameStr)
-    val children: List[Symbol] = classSymbol.children
-    // maybe with complex enums we need to filter out non-enum items
-    val enumNames: List[String] = children.map(_.name)
-    enumNames
-
-  def enumValue[EnumType <: ScalaEnum](using Type[EnumType])(enumValue: String): Term =
-    selectEnumMode match
-      case SelectEnumMode.ByEnumFullClassName => enumValueUsingFullClassName[EnumType](enumValue)
-      case SelectEnumMode.ByEnumClassThisType => enumValueUsingSimpleClassNameAndEnumClassThisScope[EnumType](enumValue)
-
-  val enumFromValues = enumValues[EnumFrom]
-  val enumToValues = enumValues[EnumTo]
+  val enumFromValues = enumValueNames[EnumFrom]
+  val enumToValues = enumValueNames[EnumTo]
   val allEnumValues = (enumFromValues ++ enumToValues).distinct
 
   log.trace(s"$logPrefix => enumFromValues: $enumFromValues")
@@ -124,10 +109,10 @@ def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
       enumValuesForDefaultMappings.map(n => (n, n)) ++ customMappingAsEnumNames
 
     val caseDefs: List[CaseDef] = allMappings.map( (enumValueFromLabel, enumValueToLabel) =>
-      val selectFrom = enumValue[EnumFrom](enumValueFromLabel)
+      val selectFrom = enumValue[EnumFrom](enumValueFromLabel, enumValueSelectMode)
       log.trace(s"$logPrefix selectFrom: $selectFrom")
 
-      val selectTo = enumValue[EnumTo](enumValueToLabel)
+      val selectTo = enumValue[EnumTo](enumValueToLabel, enumValueSelectMode)
       log.trace(s"$logPrefix selectFrom: $selectTo")
 
       val caseDef = CaseDef( selectFrom, None, Block( Nil, selectTo ) )
@@ -158,11 +143,6 @@ def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   val inlinedExpr = inlined.asExprOf[EnumFrom => EnumTo]
   log.trace(s"$logPrefix ${inlinedExpr.show}")
   inlinedExpr
-
-
-
-
-
 
 
 

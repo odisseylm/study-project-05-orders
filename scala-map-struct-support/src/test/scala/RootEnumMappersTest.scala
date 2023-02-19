@@ -4,7 +4,8 @@ import scala.language.unsafeNulls
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
-import org.mvv.scala.mapstruct.mappers.{ enumMappingFunc, SelectEnumMode }
+import org.mvv.scala.quotes.EnumValueSelectMode
+import org.mvv.scala.mapstruct.mappers.enumMappingFunc
 
 
 //noinspection ScalaUnnecessaryParentheses
@@ -40,7 +41,7 @@ class RootEnumMappersTest {
     val a = SoftAssertions()
 
     val mapFunc: (RootPackageTestEnum1 => RootPackageTestEnum2) =
-      enumMappingFunc[RootPackageTestEnum1, RootPackageTestEnum2](SelectEnumMode.ByEnumFullClassName)
+      enumMappingFunc[RootPackageTestEnum1, RootPackageTestEnum2](EnumValueSelectMode.ByEnumFullClassName)
 
     a.assertThat(mapFunc(RootPackageTestEnum1.TestEnumValue1)).isEqualTo(RootPackageTestEnum2.TestEnumValue1)
     a.assertThat(mapFunc(RootPackageTestEnum1.TestEnumValue2)).isEqualTo(RootPackageTestEnum2.TestEnumValue2)
@@ -54,7 +55,7 @@ class RootEnumMappersTest {
     val a = SoftAssertions()
 
     val mapFunc: (RootPackageTestEnum1 => RootPackageTestEnum2) =
-      enumMappingFunc[RootPackageTestEnum1, RootPackageTestEnum2](SelectEnumMode.ByEnumClassThisType)
+      enumMappingFunc[RootPackageTestEnum1, RootPackageTestEnum2](EnumValueSelectMode.ByEnumClassThisType)
 
     a.assertThat(mapFunc(RootPackageTestEnum1.TestEnumValue1)).isEqualTo(RootPackageTestEnum2.TestEnumValue1)
     a.assertThat(mapFunc(RootPackageTestEnum1.TestEnumValue2)).isEqualTo(RootPackageTestEnum2.TestEnumValue2)
