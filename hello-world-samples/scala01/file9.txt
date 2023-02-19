@@ -356,3 +356,35 @@ Block(
                   ),
                   Apply(TypeApply(Select(Ident(Nil),::),List(TypeTree[AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),List(TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11), TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)))])),List(Ident(elem$4)))),::),List(TypeTree[AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),List(TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11), TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)))])),List(Ident(elem$5)))),::),List(TypeTree[AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),List(TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum11), TypeRef(ThisType(TypeRef(NoPrefix,module class mappers)),class TestEnum12)))])),List(Ident(elem$6))))
 
+
+
+
+Inlined(
+  EmptyTree,
+  List(),
+  Apply(
+    TypeApply(
+      Select(
+        Ident(Option),
+        apply
+      ),
+      List( TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String)] )
+    ),
+    List( Ident(v) )
+  )
+)
+
+
+Apply(
+  Select(
+    Select(
+      Select(
+        Select(
+          Select(
+            Ident(org),
+              mvv
+            ),
+          scala
+        ),
+      quotes
+    ),quotesTypes$package),isQuotesType),List(Ident(tree), Literal(Constant(Apply)))))

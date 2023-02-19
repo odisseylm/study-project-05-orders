@@ -315,6 +315,7 @@ private def dumpConstant(using quotes: Quotes)(constant: quotes.reflect.Constant
     case el if el.isClassOfConstant => dumpClassOfConstant(el.asInstanceOf[ClassOfConstant], str, padLength)
     // base Constant <: AnyRef
     case el if el.isConstant => dumpBaseConstant(el, str, padLength)
+    case other => throw IllegalStateException(s"Unexpected constant [${other.getClass.nn.getName}] [${other.getClass.nn.getSimpleName}] $other")
 
 private def dumpImplicitSearch(using quotes: Quotes)(implicitSearch: AnyRef, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*

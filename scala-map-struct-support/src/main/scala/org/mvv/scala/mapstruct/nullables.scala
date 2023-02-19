@@ -15,15 +15,11 @@ inline def requireNotNull[T](v: T|Null, msg: =>String): T =
 extension [T](v: T|Null)
   inline def isNull: Boolean =
     import scala.language.unsafeNulls
-    //val asRaw = v.asInstanceOf[AnyRef]
-    //asRaw == null
-    v.asInstanceOf[T] == null
+    v == null
 
   inline def isNotNull: Boolean =
     import scala.language.unsafeNulls
-    //val asRaw = v.asInstanceOf[AnyRef]
-    //asRaw != null
-    v.asInstanceOf[T] != null
+    v != null
 
   //noinspection ScalaUnusedSymbol
   inline def castToNonNullable: T = v.asInstanceOf[T]

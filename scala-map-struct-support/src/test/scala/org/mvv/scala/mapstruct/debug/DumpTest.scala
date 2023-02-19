@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test
 import org.mvv.scala.mapstruct.debug.dump.dumpExpr
 
 
+//noinspection ScalaUnnecessaryParentheses
 class DumpTest {
 
   @Test
@@ -13,5 +14,12 @@ class DumpTest {
             //case org.mvv.scala.mapstruct.debug.TestEnum1.TestEnumValue2 => org.mvv.scala.mapstruct.debug.TestEnum2.TestEnumValue2
     )
     println(v222)
+  }
+
+  @Test
+  def testDump2(): Unit = {
+    val v = "1"
+    //noinspection ScalaUnusedSymbol
+    val opt: Option[String] = dumpExpr( Option(v) )
   }
 }

@@ -52,6 +52,19 @@ private def parseTuple2Entries[T1, T2, TC1, TC2]
       val traverseLogPrefix = s"$logPrefix/traverseTree of ${tree.getClass.nn.getSimpleName}"
       try
         log.trace(s"$traverseLogPrefix")
+        log.info(s"$traverseLogPrefix") // TODO: remove
+
+        //val ddd33: Any = org.mvv.scala.quotes.toQuotesType33[Any, Any](tree, Apply)
+        //val ddd33_2: Any = org.mvv.scala.quotes.toQuotesType33[Any, Apply](tree, Apply)
+        //val ddd34: Any = org.mvv.scala.quotes.toQuotesType34[Any](tree, Apply)
+        //val ddd36: Any = org.mvv.scala.quotes.toQuotesType36[Apply](tree, Apply)
+
+        //val ddd22_2: Any = org.mvv.scala.quotes.toQuotesType22[String]("852")
+        //org.mvv.scala.mapstruct.debug.dump.dumpExpr[Boolean]( org.mvv.scala.quotes.isQuotesType(tree, "Apply") )
+        val applyOpt: Option[Apply] = org.mvv.scala.quotes.toQuotesType22[Apply](tree)
+        println(s"applyOpt: $applyOpt")
+
+        //val ddd22_2: Option[Any] = org.mvv.scala.quotes.toQuotesType22[Apply](tree)
 
         val tuple: Option[(TC1, TC2)] = tryExtractTuple2[T1, T2, TC1, TC2](tree, tupleExtractor)
         tuple.foreach(t => tuples.addOne(t))

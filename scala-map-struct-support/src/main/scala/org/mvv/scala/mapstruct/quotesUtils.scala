@@ -35,7 +35,8 @@ def extractClassName(using quotes: Quotes)(t: quotes.reflect.Tree): String =
 extension (el: Any)
   // internal
   def isImplClass( className: String): Boolean =
-    el.isInstanceOf[Product] && el.asInstanceOf[Product].productPrefix == className
+    el.isInstanceOf[Product] &&
+    (el.asInstanceOf[Product].productPrefix == className || el.getClass.nn.getSimpleName == className)
 
   // internal
   def isOneOfImplClasses(className: String, otherClassNames: String*): Boolean =
