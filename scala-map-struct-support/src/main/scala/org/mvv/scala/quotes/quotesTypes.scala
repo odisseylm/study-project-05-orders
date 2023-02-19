@@ -1,5 +1,10 @@
 package org.mvv.scala.quotes
 
+import org.mvv.scala.mapstruct.Logger
+
+import scala.annotation.targetName
+
+// import scala.language.existentials // it does not help :-(
 import scala.quoted.*
 import scala.reflect.ClassTag
 import scala.reflect.Manifest
@@ -9,32 +14,58 @@ import org.mvv.scala.mapstruct.lastAfter
 import org.mvv.scala.mapstruct.isImplClass
 
 
-inline def isQuotesTypeOf
-  //[T : ClassManifest]
-  [T]
-  (inline expr: Any)
-  : Boolean =
-  true
+// TODO: how to ge current package name
+private val log = Logger("org.mvv.scala.quotes.quotesTypes")
 
 
-inline def toQuotesType22[T](inline v: Any): Option[T] =
-  ${ toQuotesType22Impl[T]('v) }
+/*
+Existential types are no longer supported - use a wildcard or dependent type instead
+inline def toQuotesTreeType (using q: Quotes)
+  (inline v: QTreeType forSome { type QTreeType <: q.reflect.Tree } )
+  : Option[T] forSome { type T <: q.reflect.Tree } =
+  ${ toQuotesTreeTypeImpl[T]('v) }
+*/
 
-private def toQuotesType22Impl[T](using q: Quotes)(using t: Type[T])(v: Expr[Any]): Expr[Option[T]] =
+
+extension (using q: Quotes) (inline v: q.reflect.Tree)
+  inline def toQuotesTypeOf[T <: q.reflect.Tree]: Option[T] = toQuotesTreeType[q.reflect.Tree, T](v)
+  inline def isQuotesTypeOf[T <: q.reflect.Tree]: Boolean = v.toQuotesTypeOf[T].isDefined
+
+
+// scala does not allow using (v: q.reflect.Tree) directly in macros inline redirection function
+//inline def eee_toQuotesTreeType[T] (using q: Quotes) (inline v: q.reflect.Tree): Option[T] = _toQuotesTreeType[q.reflect.Tree, T](v)
+
+//noinspection ScalaUnusedSymbol
+// scala does not allow using (v: q.reflect.Tree) directly in macros inline redirection function
+private inline def toQuotesTreeType[V, T] (inline v: V): Option[T] =
+  ${ castToTypeImpl[V,T]('v, '{ true }) }
+
+
+/**
+ * @param validateCompatibilityWithVAndTExpr  Now scala does not allow using path-dependent types in generics type
+ *                                            for usual functions because generic type parameter is defined before
+ *                                            any declarations of implicits/usings (partially possible for extension function) and
+ *                                            alternative solution as 'Existential types' is already are not supported
+ *                                            by scala3. Fot that reason validation can be done programmatically
+ *                                            (during macros expansion). ??Probably it always should be true??
+ */
+private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
+                                (vExpr: Expr[V], validateCompatibilityWithVAndTExpr: Expr[Boolean]): Expr[Option[T]] =
   import q.reflect.*
 
   // should be generated
-  // if isQuotesType22(tree, StringLiteral(typeName))
+  // if isQuotesType(tree, StringLiteral(typeName))
   //   then Option(tree.asInstanceOf[quotes.reflect.Apply])
   //   else None
 
-  val rr = TypeRepr.of[T]
-  println(s"%%% toQuotesType22  T: $rr  ${rr.show}")
-  println(s"%%% toQuotesType22  T: ${Type.show[T]}")
+  val logPrefix = s"castToTypeImpl [ ${TypeRepr.of[V]} => ${TypeRepr.of[T]} ] "
+  log.trace(s"$logPrefix")
 
-  val vTerm: Term = v.asTerm
+  // it must be constant
+  val validateCompatibilityWithVAndT: Boolean = validateCompatibilityWithVAndTExpr.valueOrAbort
+  if validateCompatibilityWithVAndT then validateCastingFromTo[V, T]()
 
-  println(s"%%% v: $v $vTerm")
+  val vTerm: Term = vExpr.asTerm
 
   //val srcInlined: Inlined = v.asTerm.asInstanceOf[Inlined]
   //val asInstanceOfMethod = Symbol.newMethod(Symbol.noSymbol, "asInstanceOf", TypeRepr.of[T])
@@ -54,58 +85,6 @@ private def toQuotesType22Impl[T](using q: Quotes)(using t: Type[T])(v: Expr[Any
   resExpr
 
 
-inline def toQuotesType33[T, T2](inline v: Any, inline t2: T2): Any =
-  println(s"%%% toQuotesType33 => t2: $t2")
-  v
-
-inline def toQuotesType34[T](inline v: Any, inline t2: Any): Any =
-  println(s"%%% toQuotesType34 => t2: $t2  ${t2.getClass.nn.getName}")
-  v
-
-inline def toQuotesType35[T](inline v: Any, inline t2: Any): Any =
-  println(s"%%% toQuotesType34 => t2: $t2  ${t2.getClass.nn.getName}")
-  v
-
-inline def toQuotesType36[T](inline v: Any, inline t2: Any): T =
-  println(s"%%% toQuotesType36 => t2: $t2  ${t2.getClass.nn.getName}")
-  v.asInstanceOf[T]
-
-private def positionToString(using q: Quotes)(p: q.reflect.Position): String =
-  s"Position { start: ${p.start}, end: ${p.end}," +
-    s" startLine: ${p.startLine}, endLine: ${p.endLine}," +
-    s" startColumn: ${p.startColumn}, endColumn: ${p.endColumn}," +
-    s" sourceFile: ${p.sourceFile}, sourceCode: ${p.sourceCode}" +
-    s" }"
-
-
-def applyInstanceOf[T](using q: Quotes)(using Type[T])(expr: q.reflect.Term): q.reflect.Term =
-  import q.reflect.{ Symbol, TypeTree, Select, TypeRepr, TypeApply }
-  val asInstanceOfMethod = Symbol.newMethod(Symbol.noSymbol, "asInstanceOf", TypeRepr.of[T])
-  val fun = Select(expr, asInstanceOfMethod)
-  val typeApply = TypeApply(fun, List(TypeTree.of[T]))
-  typeApply
-
-// [scala.Option.apply[java.lang.String](v)], as term
-// Apply(
-//    TypeApply(
-//      Select( Ident(Option), apply ),
-//      List( TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String)] )
-//    ),
-//    List( Ident(v) )
-//  )
-//
-def applyOption[T](using q: Quotes)(using Type[T])(expr: q.reflect.Term): q.reflect.Term =
-  import q.reflect.*
-  val scalaPackageIdent = Ident(Symbol.requiredPackage("scala").termRef)
-  val optionApplySelect = Select.unique(Select.unique(scalaPackageIdent, "Option"), "apply")
-  val typeApply = TypeApply(optionApplySelect, List(TypeTree.of[T]))
-  Apply(typeApply, List(expr))
-
-
-def noneOption(using q: Quotes): q.reflect.Term =
-  import q.reflect.{ Ident, Symbol, Select }
-  Select.unique(Ident(Symbol.requiredPackage("scala").termRef), "None")
-
 
 // Apply(
 //   Select(Select(Select(Select(Select(Ident(org),mvv),scala),quotes),quotesTypesStuff$package),isQuotesType),
@@ -122,8 +101,9 @@ def applyIsQuotesType(using q: Quotes)(el: q.reflect.Term, quoteTypeName: String
   val funPackage = Select.unique(Select.unique(Select.unique(Select.unique(rootPackageIdent, "mvv"), "scala"), "quotes"),
     "quotesTypesStuff$package")
   val methodType = MethodType(List("el", "typeName"))
-    (paramInfosExp => List[TypeRepr](TypeRepr.of[Any], TypeRepr.of[String]), resultTypeExp => TypeRepr.of[Boolean])
-  val fun = Symbol.newMethod(Symbol.noSymbol, "isQuotesType", methodType)
+    (_ => List[TypeRepr](TypeRepr.of[Any], TypeRepr.of[String]), _ => TypeRepr.of[Boolean])
+  val fun = Symbol.newMethod(Symbol.noSymbol, "isQuotesTypeByName", methodType)
   val funSelect = Select(funPackage, fun)
   val apply = Apply(funSelect, List(el, Literal(StringConstant(quoteTypeName))))
   apply
+
