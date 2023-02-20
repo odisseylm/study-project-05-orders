@@ -38,6 +38,7 @@ def getTypeApplyClassName(using quotes: Quotes)(typeApply: quotes.reflect.TypeAp
     }
 
 
+
 // returns (or should return) className (without generics types)
 def getTypeApplyClassNameBySelect(using quotes: Quotes)(typeApply: quotes.reflect.Select): String =
   import quotes.reflect.TypeRepr

@@ -21,6 +21,8 @@ def extractCustomEnumMappingTuplesExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnu
     inlinedExpr, enumMappingTuple2Extractor
   )
 
+
+
 def extractCustomEnumMappingTupleExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (using q: Quotes)(using Type[EnumFrom], Type[EnumTo])
   (inlinedExpr: Expr[(EnumFrom, EnumTo)])
@@ -38,6 +40,7 @@ private def enumMappingTuple2Extractor[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnu
   val enumFromValueTerm = tupleTerms._1
   val enumToValueTerm   = tupleTerms._2
   (extractSimpleName(enumFromValueTerm), extractSimpleName(enumToValueTerm))
+
 
 
 // Select(Ident(TestEnum1),TestEnumValue4)

@@ -15,7 +15,7 @@ import org.mvv.scala.mapstruct.isImplClass
 
 
 // TODO: how to ge current package name
-private val log = Logger("org.mvv.scala.quotes.quotesTypes")
+private val log: Logger = Logger("org.mvv.scala.quotes.quotesTypes")
 
 
 /*
@@ -27,9 +27,9 @@ inline def toQuotesTreeType (using q: Quotes)
 */
 
 
-extension (using q: Quotes) (inline v: q.reflect.Tree)
-  inline def toQuotesTypeOf[T <: q.reflect.Tree]: Option[T] = toQuotesTreeType[q.reflect.Tree, T](v)
-  inline def isQuotesTypeOf[T <: q.reflect.Tree]: Boolean = v.toQuotesTypeOf[T].isDefined
+extension (using q: Quotes) (inline el: q.reflect.Tree)
+  inline def toQuotesTypeOf[T <: q.reflect.Tree]: Option[T] = toQuotesTreeType[q.reflect.Tree, T](el)
+  inline def isQuotesTypeOf[T <: q.reflect.Tree]: Boolean = el.toQuotesTypeOf[T].isDefined
 
 
 // scala does not allow using (v: q.reflect.Tree) directly in macros inline redirection function
@@ -37,8 +37,8 @@ extension (using q: Quotes) (inline v: q.reflect.Tree)
 
 //noinspection ScalaUnusedSymbol
 // scala does not allow using (v: q.reflect.Tree) directly in macros inline redirection function
-private inline def toQuotesTreeType[V, T] (inline v: V): Option[T] =
-  ${ castToTypeImpl[V,T]('v, '{ true }) }
+private inline def toQuotesTreeType[V, T] (inline el: V): Option[T] =
+  ${ castToTypeImpl[V,T]('el, '{ true }) }
 
 
 /**
@@ -50,7 +50,7 @@ private inline def toQuotesTreeType[V, T] (inline v: V): Option[T] =
  *                                            (during macros expansion). ??Probably it always should be true??
  */
 private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
-                                (vExpr: Expr[V], validateCompatibilityWithVAndTExpr: Expr[Boolean]): Expr[Option[T]] =
+                                (elExpr: Expr[V], validateCompatibilityWithVAndTExpr: Expr[Boolean]): Expr[Option[T]] =
   import q.reflect.*
 
   // should be generated
@@ -59,13 +59,13 @@ private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
   //   else None
 
   val logPrefix = s"castToTypeImpl [ ${TypeRepr.of[V]} => ${TypeRepr.of[T]} ] "
-  log.trace(s"$logPrefix")
+  //log.trace(s"$logPrefix") // ?throws compilation error probably because 'log' is not created yet?
 
   // it must be constant
   val validateCompatibilityWithVAndT: Boolean = validateCompatibilityWithVAndTExpr.valueOrAbort
   if validateCompatibilityWithVAndT then validateCastingFromTo[V, T]()
 
-  val vTerm: Term = vExpr.asTerm
+  val vTerm: Term = elExpr.asTerm
 
   //val srcInlined: Inlined = v.asTerm.asInstanceOf[Inlined]
   //val asInstanceOfMethod = Symbol.newMethod(Symbol.noSymbol, "asInstanceOf", TypeRepr.of[T])
@@ -106,4 +106,3 @@ def applyIsQuotesType(using q: Quotes)(el: q.reflect.Term, quoteTypeName: String
   val funSelect = Select(funPackage, fun)
   val apply = Apply(funSelect, List(el, Literal(StringConstant(quoteTypeName))))
   apply
-
