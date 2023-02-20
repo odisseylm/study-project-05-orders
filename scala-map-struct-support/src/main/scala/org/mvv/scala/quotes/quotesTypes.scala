@@ -15,7 +15,7 @@ import org.mvv.scala.mapstruct.isImplClass
 
 
 // TODO: how to ge current package name
-private val log: Logger = Logger("org.mvv.scala.quotes.quotesTypes")
+//private val log: Logger = Logger("org.mvv.scala.quotes.quotesTypes")
 
 
 /*
@@ -58,12 +58,12 @@ private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
   //   then Option(tree.asInstanceOf[quotes.reflect.Apply])
   //   else None
 
-  val logPrefix = s"castToTypeImpl [ ${TypeRepr.of[V]} => ${TypeRepr.of[T]} ] "
+  //val logPrefix = s"castToTypeImpl [ ${TypeRepr.of[V]} => ${TypeRepr.of[T]} ] "
   //log.trace(s"$logPrefix") // ?throws compilation error probably because 'log' is not created yet?
 
   // it must be constant
   val validateCompatibilityWithVAndT: Boolean = validateCompatibilityWithVAndTExpr.valueOrAbort
-  if validateCompatibilityWithVAndT then validateCastingFromTo[V, T]()
+  if validateCompatibilityWithVAndT then qValidateCastingFromTo[V, T]()
 
   val vTerm: Term = elExpr.asTerm
 
@@ -75,8 +75,8 @@ private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
   //resInlined.asExprOf[T]
 
   val condIsQuotesType = applyIsQuotesType(vTerm, Type.show[T])
-  val _applyOption = applyOption[T](applyInstanceOf[T](vTerm))
-  val _noneOption = noneOption
+  val _applyOption = qOption[T](qInstanceOf[T](vTerm))
+  val _noneOption = qOptionNone
 
   val _if = If(condIsQuotesType, _applyOption, _noneOption)
 

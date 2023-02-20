@@ -7,7 +7,7 @@ import org.mvv.scala.mapstruct.{ Logger, lastAfter, isOneOf, getByReflection, un
 // for debug only
 import org.mvv.scala.mapstruct.debug.dump.{ isImplClass, activeFlags, activeFlagEntries, dumpSymbol }
 import org.mvv.scala.mapstruct.debug.printFields
-import org.mvv.scala.quotes.{ EnumValueSelectMode, enumValue, valueOrAbort, enumValueNames }
+import org.mvv.scala.quotes.{ ClassSelectMode, enumValue, valueOrAbort, enumValueNames }
 
 
 private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.enumMappers")
@@ -21,33 +21,33 @@ Parameters may only be:
 */
 
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum](): EnumFrom => EnumTo =
-  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( '{ EnumValueSelectMode.ByEnumFullClassName }, '{ Nil } ) }
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( '{ ClassSelectMode.ByFullClassName }, '{ Nil } ) }
 
 
 
 //noinspection ScalaUnusedSymbol
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (inline selectEnumMode: EnumValueSelectMode): EnumFrom => EnumTo =
-  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( 'selectEnumMode, '{ Nil } ) }
+  (inline classSelectMode: ClassSelectMode): EnumFrom => EnumTo =
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( 'classSelectMode, '{ Nil } ) }
 
 
 
 //noinspection ScalaUnusedSymbol
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (inline selectEnumMode: EnumValueSelectMode, inline customMappings: (EnumFrom, EnumTo)*): EnumFrom => EnumTo =
-  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( 'selectEnumMode, 'customMappings ) }
+  (inline classSelectMode: ClassSelectMode, inline customMappings: (EnumFrom, EnumTo)*): EnumFrom => EnumTo =
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( 'classSelectMode, 'customMappings ) }
 
 
 
 def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (enumValueSelectModeExpr: Expr[EnumValueSelectMode], customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
-  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo], Type[EnumValueSelectMode])
+  (classSelectModeExpr: Expr[ClassSelectMode], customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
+  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo], Type[ClassSelectMode])
   : Expr[EnumFrom => EnumTo] =
 
   import quotes.reflect.*
 
   // unfortunately standard scala Expr.valueOrAbort  does not work (for complex types)
-  val enumValueSelectMode = enumValueSelectModeExpr.valueOrAbort
+  val enumValueSelectMode = classSelectModeExpr.valueOrAbort
 
   val enumFromClassName: String = Type.show[EnumFrom]
   val enumToClassName:   String = Type.show[EnumTo]

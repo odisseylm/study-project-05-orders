@@ -7,15 +7,6 @@ import java.lang.reflect.Method as JavaMethod
 import org.mvv.scala.mapstruct.lastAfter
 
 
-
-enum EnumValueSelectMode :
-  case
-    /** Recursive quotes 'Select' is used for every part of package/className/enumValue. */
-    ByEnumFullClassName
-    /** Tricky but interesting approach :-) */
-  , ByEnumClassThisType
-
-
 /**
  * If using it as extension methods causes problems (and you need to pass all implicits manually)
  * use it as non-extension like ' valueOrAbort[EnumValueSelectMode](enumValueSelectModeExpr) '
@@ -34,10 +25,13 @@ extension [EnumType <: ScalaEnum](enumExpr: Expr[EnumType])
 
 
 def enumValueNames[EnumType <: ScalaEnum]
-  (using q: Quotes)(using Type[EnumType]): List[String] =
+  (using q: Quotes) (using Type[EnumType]): List[String] =
+
   import q.reflect.Symbol
+
   val classSymbol: Symbol = Symbol.classSymbol(Type.show[EnumType]) // Symbol.requiredClass(typeNameStr)
   val children: List[Symbol] = classSymbol.children
+
   // maybe with complex enums we need to filter out non-enum items
   val enumNames: List[String] = children.map(_.name)
   enumNames
@@ -46,16 +40,18 @@ def enumValueNames[EnumType <: ScalaEnum]
 
 //noinspection ScalaUnusedSymbol
 def enumValueEntries[EnumType <: ScalaEnum]
-  (using q: Quotes)(using Type[EnumType]): List[(String, q.reflect.Term)] =
+  (using q: Quotes) (using Type[EnumType]): List[(String, q.reflect.Term)] =
+
   import q.reflect.Symbol
   val enumNames: List[String] = enumValueNames[EnumType]
   val enumValues = enumNames.map(enumValueName => (enumValueName, enumValue[EnumType](enumValueName)))
   enumValues
 
 
+
 //noinspection ScalaUnusedSymbol
 def enumValues[EnumType <: ScalaEnum]
-  (using q: Quotes)(using Type[EnumType]): List[q.reflect.Term] =
+  (using q: Quotes) (using Type[EnumType]): List[q.reflect.Term] =
   val enumValues: List[q.reflect.Term] = enumValueEntries[EnumType].map(_._2)
   enumValues
 
@@ -63,15 +59,23 @@ def enumValues[EnumType <: ScalaEnum]
 
 //noinspection ScalaUnusedSymbol , NoTailRecursionAnnotation // there is no recursion at all
 def enumValue[EnumType <: ScalaEnum]
-  (using q: Quotes)(using Type[EnumType])
-  (enumValueName: String): q.reflect.Term = enumValue[EnumType](enumValueName, EnumValueSelectMode.ByEnumFullClassName)
+  (using q: Quotes) (using Type[EnumType])
+  (enumValueName: String): q.reflect.Term =
+  enumValue[EnumType](enumValueName, ClassSelectMode.ByFullClassName)
 
 def enumValue[EnumType <: ScalaEnum]
-  (using q: Quotes)(using Type[EnumType])
-  (enumValueName: String, enumValueSelectMode: EnumValueSelectMode): q.reflect.Term =
-  enumValueSelectMode match
-    case EnumValueSelectMode.ByEnumFullClassName => enumValueUsingFullClassName[EnumType](enumValueName)
-    case EnumValueSelectMode.ByEnumClassThisType => enumValueUsingSimpleClassNameAndEnumClassThisScope[EnumType](enumValueName)
+  (using q: Quotes) (using Type[EnumType])
+  (enumValueName: String, classSelectMode: ClassSelectMode): q.reflect.Term =
+
+  // This simple/logical approach does not work... as usual/expected with scala3 macros :-(
+  //val classSymbol: Symbol = TypeRepr.of[T].classSymbol.get // typeRepr.typeSymbol
+  //return Select.unique(Ident(classSymbol.termRef), enumValueName)
+  //
+  // It also does not work
+  //return Select.unique(Ref.term(TypeRepr.of[T].termSymbol.termRef), enumValueName)
+
+  val classSelect = qClassNameOf[EnumType](classSelectMode)
+  q.reflect.Select.unique(classSelect, enumValueName)
 
 
 
@@ -94,7 +98,10 @@ def enumValue[EnumType <: ScalaEnum]
  * These enums should be located in proper independent source files
  * to be pre-compiled before macros expansion (which uses these enums).
  */
-private def extractEnumValueName[EnumType <: scala.reflect.Enum](using q: Quotes)(using Type[EnumType])(enumExpr: Expr[EnumType]): String =
+private def extractEnumValueName[EnumType <: ScalaEnum]
+  (using q: Quotes) (using Type[EnumType])
+  (enumExpr: Expr[EnumType]): String =
+
   import q.reflect.{ Term, TypeRepr, report }
 
   val _enumValues: List[(String, Term)] = enumValueEntries[EnumType]
@@ -106,65 +113,24 @@ private def extractEnumValueName[EnumType <: scala.reflect.Enum](using q: Quotes
   _enumValueName
 
 
-private def extractEnumValue[EnumType <: scala.reflect.Enum](using q: Quotes)(using Type[EnumType])(enumExpr: Expr[EnumType]): EnumType =
-  import q.reflect.{ Term, TypeRepr, report }
 
+//noinspection ScalaUnusedSymbol
+private def extractEnumValue[EnumType <: ScalaEnum]
+  (using Quotes, Type[EnumType])
+  (enumExpr: Expr[EnumType]): EnumType =
   val _enumName = extractEnumValueName[EnumType](enumExpr)
-  val enumClassName = TypeRepr.of[EnumType].show
+  enumValueOfMethod[EnumType](_enumName)
 
+
+
+//noinspection ScalaUnnecessaryParentheses
+def enumValueOfMethod[EnumType <: ScalaEnum]
+  (using q: Quotes)(using Type[EnumType])
+  : (String => EnumType) =
+
+  val enumClassName = q.reflect.TypeRepr.of[EnumType].show
   val valueOfMethod: JavaMethod =
     try Class.forName(enumClassName).nn.getMethod("valueOf", classOf[String]).nn
     catch case _: Exception => Class.forName(enumClassName + "$").nn.getMethod("valueOf", classOf[String]).nn
-  valueOfMethod.invoke(null, _enumName).nn.asInstanceOf[EnumType]
 
-
-
-private def enumValueUsingFullClassName[T <: ScalaEnum]
-  (using quotes: Quotes)(using enumType: Type[T])
-  (enumValueName: String): quotes.reflect.Term =
-  import quotes.reflect.*
-
-  // This simple/logical approach does not work... as usual/expected with scala3 macros :-(
-  //val classSymbol: Symbol = TypeRepr.of[T].classSymbol.get // typeRepr.typeSymbol
-  //return Select.unique(Ident(classSymbol.termRef), enumValueName)
-  //
-  // It also does not work
-  //return Select.unique(Ref.term(TypeRepr.of[T].termSymbol.termRef), enumValueName)
-
-  val fullClassName: String = TypeRepr.of[T].widen.show
-
-  val parts: List[String] = fullClassName.split('.').toList
-  require(parts.nonEmpty, s"Invalid enum class [$fullClassName].")
-
-  if parts.sizeIs == 1 then
-    // defn.RootPackage/_root_/<root> does not work for it.
-    // Scala uses special 'empty' package for this purpose.
-    // See some details in a bit deprecated scala-reflect-2.13.8-sources.jar!/scala/reflect/internal/StdNames.scala
-    val emptyPackageIdent = Ident(Symbol.requiredPackage("<empty>").termRef)
-    val classSelect = Select.unique(emptyPackageIdent, fullClassName)
-    return Select.unique(classSelect, enumValueName)
-
-  val rootPackageIdentCom = Ident(Symbol.requiredPackage(parts.head).termRef)
-  val resultingFullClassNameSelect = parts.tail.tail.foldLeft
-    ( Select.unique(rootPackageIdentCom, parts.tail.head) )
-    ( (preSelect, nextPart) => Select.unique(preSelect, nextPart) )
-  val enumValueSelect = Select.unique(resultingFullClassNameSelect, enumValueName)
-  enumValueSelect
-
-
-
-private def enumValueUsingSimpleClassNameAndEnumClassThisScope[T <: ScalaEnum]
-  (using quotes: Quotes)(using enumType: Type[T])
-  (enumValueName: String): quotes.reflect.Term =
-
-  import quotes.reflect.{ Symbol, TypeRepr, TermRef, Ident, Select }
-
-  val typeRepr: TypeRepr = TypeRepr.of[T]
-  val classSymbol: Symbol = typeRepr.typeSymbol // typeRepr.classSymbol.get
-
-  val scopeTypRepr: TypeRepr = findClassThisScopeTypeRepr(classSymbol).get
-  val fullEnumClassName = typeRepr.show
-  val simpleEnumClassName = fullEnumClassName.lastAfter('.').getOrElse(fullEnumClassName)
-  val classTerm = TermRef(scopeTypRepr, simpleEnumClassName)
-  val enumValueSelect = Select.unique(Ident(classTerm), enumValueName)
-  enumValueSelect
+  (_enumName: String) => valueOfMethod.invoke(null, _enumName).nn.asInstanceOf[EnumType]

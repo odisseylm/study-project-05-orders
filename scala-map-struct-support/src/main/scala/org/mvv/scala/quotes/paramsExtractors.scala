@@ -62,7 +62,7 @@ private def extractTreesTuple2Entries[T1, T2]
       try
         log.trace(s"$traverseLogPrefix")
 
-        val tuple: Option[(Tree, Tree)] = toTreesTuple2[T1, T2](tree)
+        val tuple: Option[(Tree, Tree)] = qToTreesTuple2[T1, T2](tree)
         tuple.foreach(t => tuples.addOne(t))
 
         log.trace(s"$traverseLogPrefix => tuple: $tuple")

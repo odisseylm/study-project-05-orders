@@ -31,12 +31,12 @@ private val log: Logger = Logger("org.mvv.scala.quotes.tuples")
     )
   )
 */
-def toValuesTuple2[T1, T2, TC1, TC2]
+def qToValuesTuple2[T1, T2, TC1, TC2]
   (using q: Quotes)(using Type[T1], Type[T2])
   (el: q.reflect.Tree, tupleExtractor: ValuesTuple2Extractor[q.reflect.Tree, TC1, TC2])
   : Option[(TC1, TC2)] =
   import q.reflect.Tree
-  val treesTuple: Option[(Tree, Tree)] = toTreesTuple2[T1, T2](el)
+  val treesTuple: Option[(Tree, Tree)] = qToTreesTuple2[T1, T2](el)
   val valuesTuple = treesTuple.map(t => tupleExtractor(t))
   valuesTuple
 
@@ -45,7 +45,7 @@ def toValuesTuple2[T1, T2, TC1, TC2]
 /**
  * Types T1/T2 are used to filter tuples out with improper types (T1,T2).
  */
-def toTreesTuple2[T1, T2]
+def qToTreesTuple2[T1, T2]
   (using q: Quotes)(using Type[T1], Type[T2])
   (el: q.reflect.Tree): Option[(q.reflect.Tree, q.reflect.Tree)] =
 
@@ -72,7 +72,7 @@ private def isTypeApplyOfTuple2[T1, T2]
   val logPrefix = s"isTypeApplyOfTuple2[${TypeRepr.of[T1]}, ${TypeRepr.of[T2]}] "
 
   tree.toQuotesTypeOf[TypeApply]
-    .filter { typeApply => getTypeApplyClassName(typeApply).isTuple2 }
+    .filter { typeApply => getTypeApplyClassName(typeApply).isTuple2Type }
     .filter { typeApply =>
       val arg1TypeRepr = typeApply.args.head.tpe
       val arg2TypeRepr = typeApply.args.tail.head.tpe

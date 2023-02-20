@@ -17,9 +17,7 @@ def extractCustomEnumMappingTuplesExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnu
   : List[(String, String)] =
 
   import q.reflect.{ Inlined, asTerm }
-  extractTuple2EntriesFromSeqExpr[EnumFrom, EnumTo, String, String](
-    inlinedExpr, enumMappingTuple2Extractor
-  )
+  extractTuple2EntriesFromSeqExpr[EnumFrom, EnumTo, String, String]( inlinedExpr, enumMappingTuple2Extractor )
 
 
 
@@ -29,9 +27,7 @@ def extractCustomEnumMappingTupleExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum
   : (String, String) =
 
   import q.reflect.{ Inlined, asTerm }
-  extractTuple2EntryFromExpr[EnumFrom, EnumTo, String, String](
-    inlinedExpr, enumMappingTuple2Extractor
-  )
+  extractTuple2EntryFromExpr[EnumFrom, EnumTo, String, String]( inlinedExpr, enumMappingTuple2Extractor )
 
 
 
