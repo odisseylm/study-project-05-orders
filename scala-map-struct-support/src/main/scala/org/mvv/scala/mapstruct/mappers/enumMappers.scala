@@ -7,7 +7,7 @@ import org.mvv.scala.tools.{ Logger, lastAfter, isOneOf, getByReflection, unwrap
 // for debug only
 import org.mvv.scala.mapstruct.debug.dump.{ isImplClass, activeFlags, activeFlagEntries, dumpSymbol }
 import org.mvv.scala.mapstruct.debug.printFields
-import org.mvv.scala.quotes.{ ClassSelectMode, enumValue, valueOrAbort, enumValueNames }
+import org.mvv.scala.tools.quotes.{ ClassSelectMode, enumValue, valueOrAbort, enumValueNames }
 
 
 private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.enumMappers")

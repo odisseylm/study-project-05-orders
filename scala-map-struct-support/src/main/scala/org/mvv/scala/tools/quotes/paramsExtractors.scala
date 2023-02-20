@@ -1,9 +1,9 @@
-package org.mvv.scala.quotes
+package org.mvv.scala.tools.quotes
 
 import scala.quoted.{Expr, Quotes, Type}
 import scala.collection.mutable
 //
-import org.mvv.scala.quotes.toQuotesTypeOf
+import org.mvv.scala.tools.quotes.toQuotesTypeOf
 import org.mvv.scala.tools.{ Logger, lastAfter, isOneOf, getByReflection, unwrapOption }
 
 

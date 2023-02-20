@@ -1,4 +1,4 @@
-package org.mvv.scala.quotes
+package org.mvv.scala.tools.quotes
 
 import scala.annotation.targetName
 import scala.quoted.*
@@ -95,7 +95,8 @@ def applyIsQuotesType(using q: Quotes)(el: q.reflect.Term, quoteTypeName: String
   //
   // to call/apply function org.mvv.scala.quotes.isQuotesType
   val rootPackageIdent = Ident(Symbol.requiredPackage("org").termRef)
-  val funPackage = Select.unique(Select.unique(Select.unique(Select.unique(rootPackageIdent, "mvv"), "scala"), "quotes"),
+  // TODO: try to use qPackage
+  val funPackage = Select.unique(Select.unique(Select.unique(Select.unique(Select.unique(rootPackageIdent, "mvv"), "scala"), "tools"), "quotes"),
     "quotesTypesStuff$package")
   val methodType = MethodType(List("el", "typeName"))
     (_ => List[TypeRepr](TypeRepr.of[Any], TypeRepr.of[String]), _ => TypeRepr.of[Boolean])

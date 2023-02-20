@@ -1,4 +1,4 @@
-package org.mvv.scala.quotes
+package org.mvv.scala.tools.quotes
 
 import scala.quoted.Quotes
 //
@@ -6,7 +6,7 @@ import org.mvv.scala.tools.Logger
 
 
 
-private val log = Logger("org.mvv.scala.mapstruct.mappers.classUtils")
+private val log = Logger("org.mvv.scala.tools.classUtils")
 
 def findClassThisScopeTypeRepr(using q: Quotes)(symbol: q.reflect.Symbol): Option[q.reflect.TypeRepr] =
   import q.reflect.*

@@ -4,7 +4,7 @@ import scala.language.unsafeNulls
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
-import org.mvv.scala.quotes.ClassSelectMode
+import org.mvv.scala.tools.quotes.ClassSelectMode
 import org.mvv.scala.mapstruct.mappers.enumMappingFunc
 
 

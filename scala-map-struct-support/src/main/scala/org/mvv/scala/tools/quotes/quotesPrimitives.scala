@@ -1,4 +1,4 @@
-package org.mvv.scala.quotes
+package org.mvv.scala.tools.quotes
 
 import scala.quoted.*
 //
