@@ -42,7 +42,7 @@ private def enumMappingTuple2Extractor[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnu
 // Select(Ident(TestEnum1),TestEnumValue4)
 // Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1)
 //
-private def extractSimpleName(using quotes: Quotes)(tree: quotes.reflect.Tree): String =
-  import quotes.reflect.*
+private def extractSimpleName(using q: Quotes)(tree: q.reflect.Tree): String =
+  import q.reflect.*
   val rawName: String = tree.symbol.name
   rawName.lastAfter('.').getOrElse(rawName)

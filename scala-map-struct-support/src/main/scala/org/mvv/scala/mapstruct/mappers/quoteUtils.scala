@@ -8,7 +8,7 @@ import org.mvv.scala.mapstruct.{ Logger, isImplClass }
 
 
 //noinspection ScalaUnusedSymbol // TODO: move to other package
-extension (using quotes: Quotes)(el: quotes.reflect.Tree)
+extension (using q: Quotes)(el: q.reflect.Tree)
   def isTyped: Boolean = el.isImplClass("Typed")
   def isApply: Boolean = el.isImplClass("Apply")
   def isSelect: Boolean = el.isImplClass("Select")

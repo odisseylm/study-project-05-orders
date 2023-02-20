@@ -3,9 +3,9 @@ package org.mvv.scala.mapstruct.mappers
 
 /*
 private def parseCustomEnumMappingTuples[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo])
-  (inlined: quotes.reflect.Inlined): List[(String, String)] =
-  import quotes.reflect.*
+  (using q: Quotes)(using Type[EnumFrom], Type[EnumTo])
+  (inlined: q.reflect.Inlined): List[(String, String)] =
+  import q.reflect.*
 
   /*
   val traverser = new TreeTraverser {
@@ -63,23 +63,23 @@ private def parseCustomEnumMappingTuples[EnumFrom <: ScalaEnum, EnumTo <: ScalaE
 
 
 // probably not ideal solution
-def typeReprFullClassName(using quotes: Quotes)(typeRepr: quotes.reflect.TypeRepr): String =
+def typeReprFullClassName(using q: Quotes)(typeRepr: q.reflect.TypeRepr): String =
   val rawClassFullName = typeRepr.classSymbol.map(_.fullName.stripSuffix("$"))
     .getOrElse(typeRepr.show)
   rawClassFullName
 
-private def getElements(using quotes: Quotes)(tree: quotes.reflect.Tree): List[quotes.reflect.Tree] =
-  import quotes.reflect.Tree
+private def getElements(using q: Quotes)(tree: q.reflect.Tree): List[q.reflect.Tree] =
+  import q.reflect.Tree
   tree match
     case el if el.isSeqLiteral => getByReflection(el, "elems", "elements", "items").unwrapOption.asInstanceOf[List[Tree]]
     case other => throw IllegalStateException(s"Getting elements from ${other.getClass.nn.getName} is not supported yet.")
 
 
 private def parseApplyWithTypeApplyCustomEnumMappingTuple[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo])
-  (applyWithTypeApply: quotes.reflect.Apply): (String, String) =
+  (using q: Quotes)(using Type[EnumFrom], Type[EnumTo])
+  (applyWithTypeApply: q.reflect.Apply): (String, String) =
 
-  import quotes.reflect.*
+  import q.reflect.*
 
   val logPrefix = s"parseApplyWithTypeApplyCustomEnumMappingTuple [ ${Type.show[EnumFrom]} => ${Type.show[EnumTo]} ], "
 
@@ -116,8 +116,8 @@ private def parseApplyWithTypeApplyCustomEnumMappingTuple[EnumFrom <: ScalaEnum,
 // Select(Ident(TestEnum1),TestEnumValue4)
 // Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1)
 //
-private def extractName(using quotes: Quotes)(term: quotes.reflect.Tree): String =
-  import quotes.reflect.*
+private def extractName(using q: Quotes)(term: q.reflect.Tree): String =
+  import q.reflect.*
   term match
     case el if el.isBind  => el.asInstanceOf[Bind].name
     case el if el.isIdent  => el.asInstanceOf[Ident].name

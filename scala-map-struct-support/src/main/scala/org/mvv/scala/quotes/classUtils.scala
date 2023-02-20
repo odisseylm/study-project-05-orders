@@ -8,8 +8,8 @@ import org.mvv.scala.mapstruct.Logger
 
 private val log = Logger("org.mvv.scala.mapstruct.mappers.classUtils")
 
-def findClassThisScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symbol): Option[quotes.reflect.TypeRepr] =
-  import quotes.reflect.*
+def findClassThisScopeTypeRepr(using q: Quotes)(symbol: q.reflect.Symbol): Option[q.reflect.TypeRepr] =
+  import q.reflect.*
 
   val typeRepr : Option[TypeRepr] = symbol match
     case td if td.isTypeDef || td.isClassDef =>
@@ -26,8 +26,8 @@ def findClassThisScopeTypeRepr(using quotes: Quotes)(symbol: quotes.reflect.Symb
 
 
 // returns (or should return) className (without generics types)
-def getTypeApplyClassName(using quotes: Quotes)(typeApply: quotes.reflect.TypeApply): String =
-  import quotes.reflect.*
+def getTypeApplyClassName(using q: Quotes)(typeApply: q.reflect.TypeApply): String =
+  import q.reflect.*
 
   typeApply.fun.toQuotesTypeOf[Select]
     .map(typeApply => getTypeApplyClassNameBySelect(typeApply))
@@ -40,8 +40,8 @@ def getTypeApplyClassName(using quotes: Quotes)(typeApply: quotes.reflect.TypeAp
 
 
 // returns (or should return) className (without generics types)
-def getTypeApplyClassNameBySelect(using quotes: Quotes)(typeApply: quotes.reflect.Select): String =
-  import quotes.reflect.TypeRepr
+def getTypeApplyClassNameBySelect(using q: Quotes)(typeApply: q.reflect.Select): String =
+  import q.reflect.TypeRepr
   val tpe: TypeRepr = typeApply.tpe
   val qualifierTpe: TypeRepr = typeApply.qualifier.tpe
   val resultingTpe = if tpe.classSymbol.isDefined then tpe else qualifierTpe

@@ -25,11 +25,10 @@ def extractTuple2EntriesFromSeqExpr[T1, T2, TC1, TC2]
  * For that reason you can only return some representation of this constants
  * (in case of enum it will be String - name of enum filed/val/constant) */
 def extractTuple2EntryFromExpr[T1, T2, TC1, TC2]
-  (using quotes: Quotes)(using Type[T1], Type[T2])
-  (inlinedExpr: Expr[(T1, T2)],
-   tupleExtractor: ValuesTuple2Extractor[quotes.reflect.Tree, TC1, TC2]): (TC1, TC2) =
+  (using q: Quotes)(using Type[T1], Type[T2])
+  (inlinedExpr: Expr[(T1, T2)], tupleExtractor: ValuesTuple2Extractor[q.reflect.Tree, TC1, TC2]): (TC1, TC2) =
 
-  import quotes.reflect.{ asTerm, Inlined }
+  import q.reflect.{ asTerm, Inlined }
   extractValuesTuple2Entries[T1, T2, TC1, TC2](
     inlinedExpr.asTerm.asInstanceOf[Inlined], tupleExtractor
   ).head
@@ -82,10 +81,10 @@ private def extractTreesTuple2Entries[T1, T2]
 
 /*
 private def parseTuple2Entries[T1, T2, TC1, TC2]
-  (using quotes: Quotes)(using Type[T1], Type[T2], Type[TC1], Type[TC2])
-  (inlined: quotes.reflect.Inlined,
-   tupleExtractor: ValuesTuple2Extractor[quotes.reflect.Tree, TC1, TC2]): List[(TC1, TC2)] =
-  import quotes.reflect.*
+  (using q: Quotes)(using Type[T1], Type[T2], Type[TC1], Type[TC2])
+  (inlined: q.reflect.Inlined,
+   tupleExtractor: ValuesTuple2Extractor[q.reflect.Tree, TC1, TC2]): List[(TC1, TC2)] =
+  import q.reflect.*
 
   parseTuple2Entries_new[T1, T2, TC1, TC2](inlined, tupleExtractor)
 
@@ -121,8 +120,8 @@ private def parseTuple2Entries[T1, T2, TC1, TC2]
   tuples
 
 
-private def getElements(using quotes: Quotes)(tree: quotes.reflect.Tree): List[quotes.reflect.Tree] =
-  import quotes.reflect.Tree
+private def getElements(using q: Quotes)(tree: q.reflect.Tree): List[q.reflect.Tree] =
+  import q.reflect.Tree
   tree match
     case el if el.isSeqLiteral => getByReflection(el, "elems", "elements", "items").unwrapOption.asInstanceOf[List[Tree]]
     case other => throw IllegalStateException(s"Getting elements from ${other.getClass.nn.getName} is not supported yet.")

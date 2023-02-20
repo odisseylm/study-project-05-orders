@@ -41,10 +41,10 @@ inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
 
 def enumMappingFuncImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (classSelectModeExpr: Expr[ClassSelectMode], customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
-  (using quotes: Quotes)(using Type[EnumFrom], Type[EnumTo], Type[ClassSelectMode])
+  (using q: Quotes)(using Type[EnumFrom], Type[EnumTo], Type[ClassSelectMode])
   : Expr[EnumFrom => EnumTo] =
 
-  import quotes.reflect.*
+  import q.reflect.*
 
   // unfortunately standard scala Expr.valueOrAbort  does not work (for complex types)
   val enumValueSelectMode = classSelectModeExpr.valueOrAbort

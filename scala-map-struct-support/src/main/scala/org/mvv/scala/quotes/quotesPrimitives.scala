@@ -48,10 +48,20 @@ def getFullClassName(using Quotes)(typeName: String) =
 
 
 
-def qPackage (using quotes: Quotes) (_package: String): quotes.reflect.Term =
-  import quotes.reflect.{ Symbol, Ident, Select }
+def qScalaPackage (using q: Quotes): q.reflect.Term =
+  import q.reflect.{ defn, Ident }
+  val scalaPackageSymbol = defn.ScalaPackage // or Symbol.requiredPackage("scala")
+  Ident(scalaPackageSymbol.termRef)
 
-  val parts: List[String] = _package.split('.').toList
+
+
+def qPackage (using q: Quotes) (_package: String): q.reflect.Term =
+  import q.reflect.{ Symbol, Ident, Select }
+
+  val parts: List[String] = _package.split('.')
+    // scala splits "" to 1 item !!??
+    .filter(_.nonEmpty)
+    .toList
 
   if parts.isEmpty then
     // defn.RootPackage/_root_/<root> does not work for it.
@@ -147,16 +157,14 @@ def qInstanceOf[T](using q: Quotes)(using Type[T])(expr: q.reflect.Term): q.refl
 //
 def qOption[T](using q: Quotes)(using Type[T])(expr: q.reflect.Term): q.reflect.Term =
   import q.reflect.*
-  val scalaPackageIdent = Ident(Symbol.requiredPackage("scala").termRef)
-  val optionApplySelect = Select.unique(Select.unique(scalaPackageIdent, "Option"), "apply")
+  val optionApplySelect = Select.unique(Select.unique(qScalaPackage, "Option"), "apply")
   val typeApply = TypeApply(optionApplySelect, List(TypeTree.of[T]))
   Apply(typeApply, List(expr))
 
 
 
 def qOptionNone(using q: Quotes): q.reflect.Term =
-  import q.reflect.{ Ident, Symbol, Select }
-  Select.unique(Ident(Symbol.requiredPackage("scala").termRef), "None")
+  q.reflect.Select.unique(qScalaPackage, "None")
 
 
 
