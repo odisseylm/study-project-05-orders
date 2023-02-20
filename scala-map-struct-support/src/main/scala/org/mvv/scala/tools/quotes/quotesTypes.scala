@@ -78,7 +78,6 @@ private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
   val _if = If(condIsQuotesType, _applyOption, _noneOption)
 
   val resExpr = _if.asExprOf[Option[T]]
-  println(s"resExpr: ${resExpr.show}")
   resExpr
 
 
@@ -93,14 +92,9 @@ def applyIsQuotesType(using q: Quotes)(el: q.reflect.Term, quoteTypeName: String
   // TODO: try to find and call/use specified method isQuotesXXX (for example isQuotesApply)
   // if it exists (it will allow to override behavior for some quotes tags)
   //
-  // to call/apply function org.mvv.scala.quotes.isQuotesType
-  val rootPackageIdent = Ident(Symbol.requiredPackage("org").termRef)
-  // TODO: try to use qPackage
-  val funPackage = Select.unique(Select.unique(Select.unique(Select.unique(Select.unique(rootPackageIdent, "mvv"), "scala"), "tools"), "quotes"),
-    "quotesTypesStuff$package")
-  val methodType = MethodType(List("el", "typeName"))
-    (_ => List[TypeRepr](TypeRepr.of[Any], TypeRepr.of[String]), _ => TypeRepr.of[Boolean])
-  val fun = Symbol.newMethod(Symbol.noSymbol, "isQuotesTypeByName", methodType)
-  val funSelect = Select(funPackage, fun)
-  val apply = Apply(funSelect, List(el, Literal(StringConstant(quoteTypeName))))
+  val funTerm = qFunction
+    ("org.mvv.scala.tools.quotes.quotesTypesStuff$package.isQuotesTypeByName")
+    ( Param("el", TypeRepr.of[Any]), Param("typeName", TypeRepr.of[String]) )
+    ( TypeRepr.of[Boolean] )
+  val apply = Apply(funTerm, List(el, Literal(StringConstant(quoteTypeName))))
   apply
