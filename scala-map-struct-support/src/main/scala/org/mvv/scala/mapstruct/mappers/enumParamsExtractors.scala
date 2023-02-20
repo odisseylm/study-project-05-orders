@@ -4,7 +4,7 @@ import scala.quoted.{Expr, Quotes, Type}
 import scala.reflect.Enum as ScalaEnum
 //
 import org.mvv.scala.quotes.{ extractTuple2EntryFromExpr, extractTuple2EntriesFromSeqExpr }
-import org.mvv.scala.mapstruct.{ Logger, lastAfter }
+import org.mvv.scala.tools.{ Logger, lastAfter }
 // for debug only
 
 

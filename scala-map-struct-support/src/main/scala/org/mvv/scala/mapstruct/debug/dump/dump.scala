@@ -2,7 +2,7 @@ package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.{Expr, Quotes, Type}
 //
-import org.mvv.scala.mapstruct.Logger
+import org.mvv.scala.tools.Logger
 
 
 private val log: Logger = Logger("org.mvv.scala.mapstruct.debug.dump")

@@ -2,7 +2,7 @@ package org.mvv.scala.quotes
 
 import scala.quoted.*
 //
-import org.mvv.scala.mapstruct.lastAfter
+import org.mvv.scala.tools.lastAfter
 
 
 

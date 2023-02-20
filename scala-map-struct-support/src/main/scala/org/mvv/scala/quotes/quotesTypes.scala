@@ -1,17 +1,14 @@
 package org.mvv.scala.quotes
 
-import org.mvv.scala.mapstruct.Logger
-
 import scala.annotation.targetName
-
-// import scala.language.existentials // it does not help :-(
 import scala.quoted.*
 import scala.reflect.ClassTag
 import scala.reflect.Manifest
 import scala.reflect.ClassManifest
 //
-import org.mvv.scala.mapstruct.lastAfter
-import org.mvv.scala.mapstruct.isImplClass
+import org.mvv.scala.tools.Logger
+import org.mvv.scala.tools.lastAfter
+import org.mvv.scala.tools.isImplClass
 
 
 // TODO: how to ge current package name

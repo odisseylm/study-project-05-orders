@@ -2,19 +2,19 @@ package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.*
 //
-import org.mvv.scala.mapstruct.{ unwrapOption, getByReflection }
+import org.mvv.scala.tools.{ unwrapOption, getByReflection }
 
 
 extension (el: Any)
   def isImplClass(className: String): Boolean =
-    org.mvv.scala.mapstruct.isImplClass(el)(className)
+    org.mvv.scala.tools.isImplClass(el)(className)
   def isOneOfImplClasses(className: String, otherClassNames: String*): Boolean =
-    org.mvv.scala.mapstruct.isOneOfImplClasses(el)(className, otherClassNames*)
+    org.mvv.scala.tools.isOneOfImplClasses(el)(className, otherClassNames*)
 
 
 extension (using quotes: Quotes)(el: quotes.reflect.Tree)
 
-  def toSymbol: Option[quotes.reflect.Symbol] = org.mvv.scala.mapstruct.toSymbol(el)
+  def toSymbol: Option[quotes.reflect.Symbol] = org.mvv.scala.tools.toSymbol(el)
   //def toTypRepr: Option[quotes.reflect.TypeRepr] = org.mvv.scala.mapstruct.toTypRepr(el)
   def toTypRepr: Option[quotes.reflect.TypeRepr] =
     import quotes.reflect.*
@@ -27,22 +27,22 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
       case _ => None
 
 
-  def isTerm: Boolean = org.mvv.scala.mapstruct.isTerm(el)
+  def isTerm: Boolean = org.mvv.scala.tools.isTerm(el)
 
-  def isNoSymbol: Boolean = org.mvv.scala.mapstruct.isNoSymbol(el)
+  def isNoSymbol: Boolean = org.mvv.scala.tools.isNoSymbol(el)
 
-  def isClassDef: Boolean = org.mvv.scala.mapstruct.isClassDef(el)
-  def isValDef: Boolean = org.mvv.scala.mapstruct.isValDef(el)
-  def isDefDef: Boolean = org.mvv.scala.mapstruct.isDefDef(el)
-  def isTypeDef: Boolean = org.mvv.scala.mapstruct.isTypeDef(el)
-  def isDefinition: Boolean = org.mvv.scala.mapstruct.isDefinition(el)
-  def isTemplate: Boolean = org.mvv.scala.mapstruct.isTemplate(el)
+  def isClassDef: Boolean = org.mvv.scala.tools.isClassDef(el)
+  def isValDef: Boolean = org.mvv.scala.tools.isValDef(el)
+  def isDefDef: Boolean = org.mvv.scala.tools.isDefDef(el)
+  def isTypeDef: Boolean = org.mvv.scala.tools.isTypeDef(el)
+  def isDefinition: Boolean = org.mvv.scala.tools.isDefinition(el)
+  def isTemplate: Boolean = org.mvv.scala.tools.isTemplate(el)
   def isInferredTypeTree: Boolean = el.getClass.nn.getSimpleName.nn == "InferredTypeTree"
   //def isMemberDef: Boolean = el.getClass.nn.getSimpleName.nn == "MemberDef"
 
-  def isPackageClause: Boolean = org.mvv.scala.mapstruct.isPackageDef(el)
+  def isPackageClause: Boolean = org.mvv.scala.tools.isPackageDef(el)
     && el.isOneOfImplClasses("PackageClause", "PackageDef")
-  def isImport: Boolean = org.mvv.scala.mapstruct.isImport(el)
+  def isImport: Boolean = org.mvv.scala.tools.isImport(el)
   def isExport: Boolean =
     if !el.isValDef then return false
     el.toSymbol.map(_.name == "<export>").getOrElse(false) || el.isImplClass("Export")
@@ -69,12 +69,12 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
   def isSummonFrom: Boolean = el.isImplClass("SummonFrom")
   def isRepeated: Boolean = el.isImplClass("Repeated")
 
-  def isIf: Boolean = org.mvv.scala.mapstruct.isIf(el)
-  def isMatch: Boolean = org.mvv.scala.mapstruct.isMatch(el)
-  def isWhile: Boolean = org.mvv.scala.mapstruct.isWhile(el)
-  def isTry: Boolean = org.mvv.scala.mapstruct.isTry(el)
+  def isIf: Boolean = org.mvv.scala.tools.isIf(el)
+  def isMatch: Boolean = org.mvv.scala.tools.isMatch(el)
+  def isWhile: Boolean = org.mvv.scala.tools.isWhile(el)
+  def isTry: Boolean = org.mvv.scala.tools.isTry(el)
 
-  def isLiteral: Boolean = org.mvv.scala.mapstruct.isLiteral(el)
+  def isLiteral: Boolean = org.mvv.scala.tools.isLiteral(el)
 
   def isReturn: Boolean = el.isTerm && el.isImplClass("Return")
   def isInlined: Boolean = el.isTerm && el.isImplClass("Inlined")
@@ -165,7 +165,7 @@ extension (el: AnyRef)
   def isUnitConstant: Boolean = el.isImplClass("UnitConstant")
   def isNullConstant: Boolean = el.isImplClass("NullConstant")
   def isClassOfConstant: Boolean = el.isImplClass("ClassOfConstant")
-  def isConstant: Boolean = org.mvv.scala.mapstruct.isConstant(el)
+  def isConstant: Boolean = org.mvv.scala.tools.isConstant(el)
 
   def isImplicitSearchSuccess: Boolean = el.isImplClass("ImplicitSearchSuccess")
   def isDivergingImplicit: Boolean = el.isImplClass("DivergingImplicit")

@@ -1,7 +1,7 @@
 package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.Quotes
-import org.mvv.scala.mapstruct. { getByReflection, tryDo, unwrapOption, isOneOf, endsWithOneOf }
+import org.mvv.scala.tools. { getByReflection, tryDo, unwrapOption, isOneOf, endsWithOneOf }
 
 
 // type TypeRepr

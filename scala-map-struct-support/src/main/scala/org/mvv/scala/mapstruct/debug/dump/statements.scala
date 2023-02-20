@@ -1,7 +1,7 @@
 package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.Quotes
-import org.mvv.scala.mapstruct.{ tryDo, getByReflection, unwrapOption, isNull }
+import org.mvv.scala.tools.{ tryDo, getByReflection, unwrapOption, isNull }
 
 
 

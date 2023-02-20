@@ -2,7 +2,7 @@ package org.mvv.scala.mapstruct.debug
 
 import scala.quoted.Quotes
 //
-import org.mvv.scala.mapstruct.Logger
+import org.mvv.scala.tools.Logger
 
 
 private val log = Logger("org.mvv.scala.mapstruct.debug")
@@ -50,7 +50,7 @@ def getProp(obj: Any, method: String): Any = {
 
 
 def printTreeSymbolInfo(using quotes: Quotes)(tree: quotes.reflect.Tree): Unit =
-  org.mvv.scala.mapstruct.toSymbol(tree).foreach(s => printSymbolInfo(s))
+  org.mvv.scala.tools.toSymbol(tree).foreach(s => printSymbolInfo(s))
 
 def printSymbolInfo(using quotes: Quotes)(symbol: Option[quotes.reflect.Symbol]): Unit =
   symbol.foreach(s => printSymbolInfo(s))

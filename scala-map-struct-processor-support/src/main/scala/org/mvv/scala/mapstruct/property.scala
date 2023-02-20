@@ -4,7 +4,8 @@ import scala.collection.mutable
 //
 import java.lang.reflect.Method as JavaMethod
 //
-import CollectionsOps.containsOneOf
+import org.mvv.scala.tools.CollectionsOps.containsOneOf
+import org.mvv.scala.tools.{ Logger, nnArray, isNull }
 
 
 private val log = Logger(classOf[BeanProperties])

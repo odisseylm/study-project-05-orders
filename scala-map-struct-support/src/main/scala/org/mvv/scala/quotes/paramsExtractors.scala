@@ -4,7 +4,7 @@ import scala.quoted.{Expr, Quotes, Type}
 import scala.collection.mutable
 //
 import org.mvv.scala.quotes.toQuotesTypeOf
-import org.mvv.scala.mapstruct.{ Logger, lastAfter, isOneOf, getByReflection, unwrapOption }
+import org.mvv.scala.tools.{ Logger, lastAfter, isOneOf, getByReflection, unwrapOption }
 
 
 

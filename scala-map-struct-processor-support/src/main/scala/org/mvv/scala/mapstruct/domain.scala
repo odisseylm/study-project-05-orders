@@ -10,7 +10,8 @@ import java.lang.reflect.Field as JavaField
 import java.lang.reflect.Method as JavaMethod
 //
 import org.mvv.scala.mapstruct._Type.toPortableType
-import CollectionsOps.containsOneOf
+import org.mvv.scala.tools.CollectionsOps.containsOneOf
+import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray }
 
 
 
@@ -47,7 +48,7 @@ object ClassKind :
 
 class _Class (val runtimeClass: Class[?], val classKind: ClassKind, val classSource: ClassSource, val _package: String, val simpleName: String)
              (inspector: ScalaBeansInspector) :
-  def fullName: String = org.mvv.scala.mapstruct.fullName(_package, simpleName)
+  def fullName: String = org.mvv.scala.tools.fullName(_package, simpleName)
   // with current impl it possibly can have duplicates
   var parentTypeNames: List[_Type] = Nil
   // with current impl it possibly can have duplicates

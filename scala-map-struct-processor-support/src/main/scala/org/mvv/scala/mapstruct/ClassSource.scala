@@ -1,8 +1,10 @@
 package org.mvv.scala.mapstruct
 
+import scala.annotation.tailrec
 import java.net.URL
 import java.nio.file.Path
-import scala.annotation.tailrec
+//
+import org.mvv.scala.tools.{ checkNotNull, tryDo, isNotNull }
 
 
 sealed class ClassSource

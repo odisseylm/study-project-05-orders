@@ -9,6 +9,10 @@ import ClassKind.classKind
 import org.mvv.scala.mapstruct.debug.printFields
 import org.mvv.scala.mapstruct.debug.printSymbolInfo
 import org.mvv.scala.mapstruct.debug.printTreeSymbolInfo
+import org.mvv.scala.tools.{ Logger, replaceSuffix, toSymbol,fullName,  extractName, extractClassName, tryDo }
+import org.mvv.scala.tools.{ isPackageDef, isClassDef, isTypeDef, isImport, isExprStatement, isValDef }
+import org.mvv.scala.tools.{ isSingletonDef, isApply, isDefDef, isTemplate }
+import org.mvv.scala.tools.{ getClassMembers, getClassDefParents }
 //
 import java.net.{ URI, URL, URLClassLoader }
 import java.nio.file.Path

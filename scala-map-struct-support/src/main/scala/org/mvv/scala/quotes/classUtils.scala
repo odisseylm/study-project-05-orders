@@ -2,7 +2,7 @@ package org.mvv.scala.quotes
 
 import scala.quoted.Quotes
 //
-import org.mvv.scala.mapstruct.Logger
+import org.mvv.scala.tools.Logger
 
 
 

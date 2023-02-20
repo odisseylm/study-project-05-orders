@@ -2,7 +2,7 @@ package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.*
 //
-import org.mvv.scala.mapstruct.{ getByReflection, unwrapOption }
+import org.mvv.scala.tools.{ getByReflection, unwrapOption }
 
 
 // Definition <: Statement <: Tree

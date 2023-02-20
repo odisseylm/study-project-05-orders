@@ -1,6 +1,6 @@
 package org.mvv.scala.quotes
 
-import org.mvv.scala.mapstruct.isOneOf
+import org.mvv.scala.tools.isOneOf
 
 
 extension (typeName: String)

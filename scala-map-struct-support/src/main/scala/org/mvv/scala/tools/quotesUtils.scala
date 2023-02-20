@@ -1,4 +1,4 @@
-package org.mvv.scala.mapstruct
+package org.mvv.scala.tools
 
 import scala.annotation.nowarn
 import scala.collection.mutable

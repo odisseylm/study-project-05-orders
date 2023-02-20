@@ -1,4 +1,4 @@
-package org.mvv.scala.mapstruct
+package org.mvv.scala.tools
 
 import java.nio.file.{Files, Path}
 import scala.annotation.{nowarn, targetName}

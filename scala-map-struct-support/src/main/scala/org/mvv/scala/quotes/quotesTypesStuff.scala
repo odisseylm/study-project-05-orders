@@ -6,8 +6,7 @@ import scala.reflect.ClassTag
 import scala.reflect.Manifest
 import scala.reflect.ClassManifest
 //
-import org.mvv.scala.mapstruct.lastAfter
-import org.mvv.scala.mapstruct.isImplClass
+import org.mvv.scala.tools.{ lastAfter, isImplClass }
 
 
 
