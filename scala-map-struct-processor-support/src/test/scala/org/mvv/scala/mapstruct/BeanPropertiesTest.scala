@@ -1,5 +1,6 @@
 package org.mvv.scala.mapstruct
 
+import scala.language.unsafeNulls
 //
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat

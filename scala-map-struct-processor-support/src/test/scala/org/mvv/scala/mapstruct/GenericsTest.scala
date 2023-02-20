@@ -6,6 +6,8 @@ import scala.jdk.CollectionConverters.*
 import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
 import org.mvv.scala.mapstruct.testclasses.{GenericClass2, JGenericClass2}
+import org.mvv.scala.tools.nnArray
+
 
 class GenericsTest {
 

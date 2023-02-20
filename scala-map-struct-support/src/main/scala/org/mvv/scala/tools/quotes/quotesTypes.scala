@@ -23,8 +23,8 @@ inline def toQuotesTreeType (using q: Quotes)
 
 
 extension (using q: Quotes) (inline el: q.reflect.Tree)
-  inline def toQuotesTypeOf[@specialized T <: q.reflect.Tree]: Option[T] = toQuotesTreeType[q.reflect.Tree, T](el)
-  inline def isQuotesTypeOf[@specialized T <: q.reflect.Tree]: Boolean   = toQuotesTreeType[q.reflect.Tree, T](el).isDefined
+  inline def toQuotesTypeOf[T <: q.reflect.Tree]: Option[T] = toQuotesTreeType[q.reflect.Tree, T](el)
+  inline def isQuotesTypeOf[T <: q.reflect.Tree]: Boolean   = toQuotesTreeType[q.reflect.Tree, T](el).isDefined
 
   /*
   ?? Seems it does not work ?? => Ambiguous overload. The overloaded alternatives

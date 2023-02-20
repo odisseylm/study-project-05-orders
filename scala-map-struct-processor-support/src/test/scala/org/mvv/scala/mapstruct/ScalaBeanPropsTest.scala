@@ -8,6 +8,7 @@ import java.beans.PropertyDescriptor
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
+import org.mvv.scala.tools.nnArray
 import org.mvv.scala.mapstruct.testclasses.InheritedFromJavaClass2
 
 
