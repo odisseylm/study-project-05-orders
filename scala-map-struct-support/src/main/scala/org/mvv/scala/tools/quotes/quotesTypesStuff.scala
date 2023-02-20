@@ -6,12 +6,26 @@ import scala.reflect.ClassTag
 import scala.reflect.Manifest
 import scala.reflect.ClassManifest
 //
-import org.mvv.scala.tools.{ lastAfter, isImplClass }
+import org.mvv.scala.tools.{ isNotNull, lastAfter, isImplClass, isOneOfImplClasses }
 
 
 
 //noinspection ScalaUnusedSymbol , // it is used in macros by name
 def isQuotesTypeByName(el: Any, typeName: String): Boolean =
   val shortTypeName = typeName.lastAfter('.').getOrElse(typeName)
-  //el.isOneOfImplClasses(shortTypeName)
-  el.isImplClass(shortTypeName)
+  shortTypeName match
+    case "Constant" => isConstantByClassName(el)
+    // Example of overriding behavior for some types
+    //case "Apply" => el.isOneOfImplClasses("Apply0", "Apply1", "Apply2")
+    case _ => el.isImplClass(shortTypeName)
+
+
+def isConstantByClassName(el: Any): Boolean = el.isNotNull && el.isOneOfImplClasses(
+  "Constant",
+  "BooleanConstant", "CharConstant",
+  "ByteConstant", "ShortConstant", "IntConstant", "LongConstant",
+  "FloatConstant", "DoubleConstant",
+  "CharConstant", "StringConstant",
+  "UnitConstant", "NullConstant",
+  "ClassOfConstant",
+)

@@ -6,9 +6,7 @@ import scala.reflect.ClassTag
 import scala.reflect.Manifest
 import scala.reflect.ClassManifest
 //
-import org.mvv.scala.tools.Logger
-import org.mvv.scala.tools.lastAfter
-import org.mvv.scala.tools.isImplClass
+import org.mvv.scala.tools.{ Logger, lastAfter, isImplClass, isOneOfImplClasses }
 
 
 // TODO: how to ge current package name
@@ -20,13 +18,38 @@ Existential types are no longer supported - use a wildcard or dependent type ins
 inline def toQuotesTreeType (using q: Quotes)
   (inline v: QTreeType forSome { type QTreeType <: q.reflect.Tree } )
   : Option[T] forSome { type T <: q.reflect.Tree } =
-  ${ toQuotesTreeTypeImpl[T]('v) }
+  ${ toQuotesTreeTypeImp?? l[T]('v) }
 */
 
 
 extension (using q: Quotes) (inline el: q.reflect.Tree)
-  inline def toQuotesTypeOf[T <: q.reflect.Tree]: Option[T] = toQuotesTreeType[q.reflect.Tree, T](el)
-  inline def isQuotesTypeOf[T <: q.reflect.Tree]: Boolean = el.toQuotesTypeOf[T].isDefined
+  inline def toQuotesTypeOf[@specialized T <: q.reflect.Tree]: Option[T] = toQuotesTreeType[q.reflect.Tree, T](el)
+  inline def isQuotesTypeOf[@specialized T <: q.reflect.Tree]: Boolean   = toQuotesTreeType[q.reflect.Tree, T](el).isDefined
+
+  /*
+  ?? Seems it does not work ?? => Ambiguous overload. The overloaded alternatives
+  @@specialized does not help in this case
+  // example of overriding
+  @targetName("toQuotesTypeOfApply")
+  inline def toQuotesTypeOf[T <: q.reflect.Apply]: Option[T] =
+    if isApply(el) then Option(el.asInstanceOf[T]) else None
+  @targetName("isQuotesTypeOfApply")
+  inline def isQuotesTypeOf[T <: q.reflect.Apply]: Boolean = isApply(el)
+  */
+
+// example of overriding
+private inline def isApply(using q: Quotes)(el: q.reflect.Tree): Boolean =
+  el.isOneOfImplClasses("Apply", "Apply345")
+
+
+// example of overriding
+//extension (using q: Quotes) (inline el: q.reflect.Tree)
+//  @targetName("toQuotesTypeOfApply")
+//  inline def toQuotesTypeOf[T <: q.reflect.Apply]: Option[T] =
+//    if el.isOneOfImplClasses("Apply", "Apply345") then el.asInstanceOf[q.reflect.Apply] else None
+//  @targetName("isQuotesTypeOfApply")
+//  inline def isQuotesTypeOf[T <: q.reflect.Apply]: Boolean = el.toQuotesTypeOf[T].isDefined
+
 
 
 // scala does not allow using (v: q.reflect.Tree) directly in macros inline redirection function
@@ -39,6 +62,16 @@ private inline def toQuotesTreeType[V, T] (inline el: V): Option[T] =
 
 
 /**
+ * It generates the following scala code
+ *   if isQuotesType(tree, StringLiteral(typeName))
+ *     then Option(tree.asInstanceOf[type])
+ *     else None
+ *
+ * For example
+ *   if isQuotesType(tree, StringLiteral("quotes.reflect.Apply"))
+ *     then Option(tree.asInstanceOf[quotes.reflect.Apply])
+ *     else None
+ *
  * @param validateCompatibilityWithVAndTExpr  Now scala does not allow using path-dependent types in generics type
  *                                            for usual functions because generic type parameter is defined before
  *                                            any declarations of implicits/usings (partially possible for extension function) and
@@ -50,26 +83,11 @@ private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
                                 (elExpr: Expr[V], validateCompatibilityWithVAndTExpr: Expr[Boolean]): Expr[Option[T]] =
   import q.reflect.*
 
-  // should be generated
-  // if isQuotesType(tree, StringLiteral(typeName))
-  //   then Option(tree.asInstanceOf[quotes.reflect.Apply])
-  //   else None
-
-  //val logPrefix = s"castToTypeImpl [ ${TypeRepr.of[V]} => ${TypeRepr.of[T]} ] "
-  //log.trace(s"$logPrefix") // ?throws compilation error probably because 'log' is not created yet?
-
   // it must be constant
   val validateCompatibilityWithVAndT: Boolean = validateCompatibilityWithVAndTExpr.valueOrAbort
   if validateCompatibilityWithVAndT then qValidateCastingFromTo[V, T]()
 
   val vTerm: Term = elExpr.asTerm
-
-  //val srcInlined: Inlined = v.asTerm.asInstanceOf[Inlined]
-  //val asInstanceOfMethod = Symbol.newMethod(Symbol.noSymbol, "asInstanceOf", TypeRepr.of[T])
-  //val fun = Select(srcInlined.body, asInstanceOfMethod)
-  //val typeApply = TypeApply(fun, List(TypeTree.of[T]))
-  //val resInlined = Inlined(srcInlined.call, srcInlined.bindings, typeApply)
-  //resInlined.asExprOf[T]
 
   val condIsQuotesType = applyIsQuotesType(vTerm, Type.show[T])
   val _applyOption = qOption[T](qInstanceOf[T](vTerm))

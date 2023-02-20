@@ -140,15 +140,7 @@ end extension
 
 
 extension (el: AnyRef)
-  def isConstant: Boolean = el.isNotNull && el.isOneOfImplClasses(
-    "Constant",
-    "BooleanConstant", "CharConstant",
-    "ByteConstant", "ShortConstant", "IntConstant", "LongConstant",
-    "FloatConstant", "DoubleConstant",
-    "CharConstant", "StringConstant",
-    "UnitConstant", "NullConstant",
-    "ClassOfConstant",
-  )
+  def isConstant: Boolean = org.mvv.scala.tools.quotes.isConstantByClassName(el)
 
 
 def getByReflection(obj: Any, propName: String*): Any =
