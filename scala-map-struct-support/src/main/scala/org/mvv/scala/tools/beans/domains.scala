@@ -10,7 +10,7 @@ import java.lang.reflect.Field as JavaField
 import java.lang.reflect.Method as JavaMethod
 //
 import org.mvv.scala.tools.CollectionsOps.containsOneOf
-import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray }
+import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, beforeLast }
 import org.mvv.scala.tools.beans._Type.toPortableType
 
 
@@ -47,14 +47,15 @@ object ClassKind :
 
 
 
-class _Class (val runtimeClass: Option[Class[?]], val classKind: ClassKind, val classSource: ClassSource, val _package: String, val simpleName: String)
+class _Class (val runtimeClass: Option[Class[?]], val classKind: ClassKind, val classSource: Option[ClassSource],
+              val _package: String, val simpleName: String)
              (inspector: ScalaBeansInspector) :
   def fullName: String = org.mvv.scala.tools.fullName(_package, simpleName)
   // with current impl it possibly can have duplicates
-  var parentTypeNames: List[_Type] = Nil
+  var parentTypeNames: List[_Type] = Nil // TODO: rename
   // with current impl it possibly can have duplicates
-  var parents: List[_Class] = Nil
-  var declaredTypeParams: List[_TypeParam] = Nil
+  var parents: List[_Class] = Nil // TODO: make optional and rename
+  var declaredTypeParams: List[_TypeParam] = Nil // TODO: ???
   var declaredFields: Map[_FieldKey, _Field] = Map()
   var declaredMethods: Map[_MethodKey, _Method] = Map()
   // TODO: remove runtimeClass.get
@@ -62,7 +63,7 @@ class _Class (val runtimeClass: Option[Class[?]], val classKind: ClassKind, val 
   // TODO: remove runtimeClass.get
   lazy val methods: Map[_MethodKey, _Method] = { fillParentsClasses(); mergeAllMethods(runtimeClass.get, this.declaredMethods, parents) }
   private def fillParentsClasses(): Unit =
-    if parents.size != parentTypeNames.size then
+    if parents.sizeIs != parentTypeNames.size then
       parents = parentTypeNames.map(_type => inspector.classDescr(_type.className).get)
 
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
@@ -74,32 +75,38 @@ case class _TypeParam (name: String) :
   override def toString: String = name
 
 
+def typeNameToRuntimeClassName(typeName: String): String =
+  // if it is generics
+  typeName.beforeLast('[').getOrElse(typeName)
+
 
 class _Type (
   val declaredTypeName: String,
-  val runtimeTypeName: Option[String] = None,
+  val runtimeTypeName: String,
   ) extends Equals derives CanEqual :
 
+  def this(declaredTypeName: String) = this(declaredTypeName, typeNameToRuntimeClassName(declaredTypeName))
+
   @deprecated // TODO: temporary
-  def this(runtimeClass: Class[?]) = { this(runtimeClass.getName.nn, Option(runtimeClass.getName.nn)) }
+  def this(runtimeClass: Class[?]) = this(runtimeClass.getName.nn, runtimeClass.getName.nn)
 
 
   // if typeName contains (in the future generics/type parameters) we need to extract only class name
-  def className: String = runtimeTypeName.getOrElse(declaredTypeName)
+  // TODO: seems I've created duplicates
+  def className: String = runtimeTypeName
   // TODO: use alternative approach if at this time java class is not accessible yet
-  def toRuntimeClass: Class[?] = Class.forName(className).nn
-  def withRuntimeType(newRuntimeTypeName: String): _Type = _Type(this.declaredTypeName, Option(newRuntimeTypeName))
+  def toRuntimeClass: Class[?] = Class.forName(runtimeTypeName).nn
+  def withRuntimeType(newRuntimeTypeName: String): _Type = _Type(this.declaredTypeName, newRuntimeTypeName)
   def withRuntimeType(newRuntimeType: Class[?]): _Type = withRuntimeType(newRuntimeType.getName.nn)
   override def toString: String =
-    runtimeTypeName
-      .filter(_ != declaredTypeName)
-      .map(declaredTypeName + "/" + _)
-      .getOrElse(declaredTypeName)
+    if runtimeTypeName != declaredTypeName then s"$declaredTypeName/$runtimeTypeName" else declaredTypeName
+
   override def hashCode: Int =
     val portable = this.toPortableType
     31 * portable.declaredTypeName.hashCode + portable.runtimeTypeName.hashCode
   override def canEqual(other: Any): Boolean = other.isInstanceOf[_Type]
-  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
+
+  // in scala3 it causes warning "pattern selector should be an instance of Matchable"
   //override def equals(other: Any): Boolean = other match
   //  case that: _Type => that.canEqual(this) && toPortableType(this.typeName) == toPortableType(that.typeName)
   //  case _ => false
@@ -107,7 +114,7 @@ class _Type (
     // 'equalImpl' is inlined and have resulting byte code similar to code with 'match'
     equalImpl(this, other) { (v1, v2) =>
       v1.toPortableType.declaredTypeName == v2.toPortableType.declaredTypeName &&
-      v1.toPortableType.runtimeTypeName == v2.toPortableType.runtimeTypeName
+      v1.toPortableType.runtimeTypeName  == v2.toPortableType.runtimeTypeName
     }
 end _Type
 
@@ -131,7 +138,7 @@ object _Type :
   //def apply(runtimeClass: Class[?]): _Type = new _Type(runtimeClass.getName.nn, Option(runtimeClass.getName.nn))
 
   extension (t: _Type)
-    private def toTypeName: String = t.runtimeTypeName.getOrElse(t.declaredTypeName)
+    private def toTypeName: String = t.runtimeTypeName //.getOrElse(t.declaredTypeName)
 
     def toPortableType: _Type = t.declaredTypeName match
       case VoidTypeName => UnitType

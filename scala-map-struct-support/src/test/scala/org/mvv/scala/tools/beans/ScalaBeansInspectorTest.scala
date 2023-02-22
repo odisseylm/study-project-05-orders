@@ -1,4 +1,4 @@
-package org.mvv.scala.tools.beans;
+package org.mvv.scala.tools.beans
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.{Disabled, Test};

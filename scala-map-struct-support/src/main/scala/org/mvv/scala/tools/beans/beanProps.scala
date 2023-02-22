@@ -17,7 +17,9 @@ private val log = Logger(classOf[BeanProperties])
 class BeanProperty (
   val name: String,
   val propertyType: _Type,
-  val owner: _Class,
+  val owner: _Class, // TODO: use Option[Class[?]]
+
+  // TODO: add or replace with runtimeOwnerClass:Option[Class[?] and ownerType:_Type
 
   // These fields will be surely available after scala compilation
   // but if this class is used during macros expansion

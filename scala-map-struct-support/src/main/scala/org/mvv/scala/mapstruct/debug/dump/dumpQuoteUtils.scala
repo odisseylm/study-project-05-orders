@@ -14,7 +14,7 @@ extension (el: Any)
 
 extension (using quotes: Quotes)(el: quotes.reflect.Tree)
 
-  def toSymbol: Option[quotes.reflect.Symbol] = org.mvv.scala.tools.toSymbol(el)
+  def toSymbol: Option[quotes.reflect.Symbol] = Option(el.symbol)
   //def toTypRepr: Option[quotes.reflect.TypeRepr] = org.mvv.scala.mapstruct.toTypRepr(el)
   def toTypRepr: Option[quotes.reflect.TypeRepr] =
     import quotes.reflect.*
@@ -29,23 +29,21 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
 
   def isTerm: Boolean = org.mvv.scala.tools.isTerm(el)
 
-  def isNoSymbol: Boolean = org.mvv.scala.tools.isNoSymbol(el)
+  def isNoSymbol: Boolean = el.symbol.isNoSymbol
 
-  def isClassDef: Boolean = org.mvv.scala.tools.isClassDef(el)
-  def isValDef: Boolean = org.mvv.scala.tools.isValDef(el)
-  def isDefDef: Boolean = org.mvv.scala.tools.isDefDef(el)
-  def isTypeDef: Boolean = org.mvv.scala.tools.isTypeDef(el)
-  def isDefinition: Boolean = org.mvv.scala.tools.isDefinition(el)
-  def isTemplate: Boolean = org.mvv.scala.tools.isTemplate(el)
+  def isClassDef: Boolean = el.symbol.isClassDef
+  def isValDef: Boolean = el.symbol.isValDef
+  def isDefDef: Boolean = el.symbol.isDefDef
+  def isTypeDef: Boolean = el.symbol.isTypeDef
+  def isDefinition: Boolean = el.isInstanceOf[Product] && el.asInstanceOf[Product].productPrefix == "Definition"
+  def isTemplate: Boolean = el.isInstanceOf[Product] && el.asInstanceOf[Product].productPrefix == "Template"
   def isInferredTypeTree: Boolean = el.getClass.nn.getSimpleName.nn == "InferredTypeTree"
   //def isMemberDef: Boolean = el.getClass.nn.getSimpleName.nn == "MemberDef"
 
-  def isPackageClause: Boolean = org.mvv.scala.tools.isPackageDef(el)
+  def isPackageClause: Boolean = el.symbol.isPackageDef
     && el.isOneOfImplClasses("PackageClause", "PackageDef")
-  def isImport: Boolean = org.mvv.scala.tools.isImport(el)
-  def isExport: Boolean =
-    if !el.isValDef then return false
-    el.toSymbol.map(_.name == "<export>").getOrElse(false) || el.isImplClass("Export")
+  def isImport: Boolean = (!el.isValDef && el.symbol.name == "<import>") || el.isImplClass("Import")
+  def isExport: Boolean = (!el.isValDef && el.symbol.name == "<export>") || el.isImplClass("Export")
 
   def isWildcard: Boolean = el.isImplClass("Wildcard")
   def isIdent: Boolean = el.isImplClass("Ident")
@@ -69,12 +67,12 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
   def isSummonFrom: Boolean = el.isImplClass("SummonFrom")
   def isRepeated: Boolean = el.isImplClass("Repeated")
 
-  def isIf: Boolean = org.mvv.scala.tools.isIf(el)
-  def isMatch: Boolean = org.mvv.scala.tools.isMatch(el)
-  def isWhile: Boolean = org.mvv.scala.tools.isWhile(el)
-  def isTry: Boolean = org.mvv.scala.tools.isTry(el)
-
-  def isLiteral: Boolean = org.mvv.scala.tools.isLiteral(el)
+  def isIf: Boolean = el.isTerm && el.isImplClass("If")
+  def isTry: Boolean = el.isTerm && el.isImplClass("Try")
+  def isMatch: Boolean = el.isTerm && el.isImplClass("Match")
+  def isWhile: Boolean = el.isTerm &&
+    el.isOneOfImplClasses("While", "WhileDo", "DoWhile")
+  def isLiteral: Boolean = el.isTerm && el.isImplClass("Literal")
 
   def isReturn: Boolean = el.isTerm && el.isImplClass("Return")
   def isInlined: Boolean = el.isTerm && el.isImplClass("Inlined")
@@ -165,7 +163,7 @@ extension (el: AnyRef)
   def isUnitConstant: Boolean = el.isImplClass("UnitConstant")
   def isNullConstant: Boolean = el.isImplClass("NullConstant")
   def isClassOfConstant: Boolean = el.isImplClass("ClassOfConstant")
-  def isConstant: Boolean = org.mvv.scala.tools.isConstant(el)
+  def isConstant: Boolean = org.mvv.scala.tools.quotes.isConstantByClassName(el)
 
   def isImplicitSearchSuccess: Boolean = el.isImplClass("ImplicitSearchSuccess")
   def isDivergingImplicit: Boolean = el.isImplClass("DivergingImplicit")

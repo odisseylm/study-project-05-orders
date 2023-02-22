@@ -50,7 +50,7 @@ def getProp(obj: Any, method: String): Any = {
 
 
 def printTreeSymbolInfo(using quotes: Quotes)(tree: quotes.reflect.Tree): Unit =
-  org.mvv.scala.tools.toSymbol(tree).foreach(s => printSymbolInfo(s))
+  printSymbolInfo(tree.symbol)
 
 def printSymbolInfo(using quotes: Quotes)(symbol: Option[quotes.reflect.Symbol]): Unit =
   symbol.foreach(s => printSymbolInfo(s))

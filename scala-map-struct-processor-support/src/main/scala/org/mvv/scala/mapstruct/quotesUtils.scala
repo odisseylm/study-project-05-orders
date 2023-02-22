@@ -1,41 +1,15 @@
-package org.mvv.scala.tools
+package org.mvv.scala.mapstruct
 
 import scala.annotation.nowarn
 import scala.collection.mutable
 import scala.quoted.*
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
-
 import java.nio.file.Path
-
-
-def fullName(parentName: String, name: String) =
-  if parentName == "" || parentName == "<empty>" then name else s"$parentName.$name"
-
-
-extension (el: Any)
-  // internal
-  def isImplClass( className: String): Boolean =
-    el.isInstanceOf[Product] &&
-    (el.asInstanceOf[Product].productPrefix == className || el.getClass.nn.getSimpleName == className)
-
-  // internal
-  def isOneOfImplClasses(className: String, otherClassNames: String*): Boolean =
-    el.isImplClass(className) || otherClassNames.exists(clName => el.isImplClass(clName))
+//
+import org.mvv.scala.tools.{ Logger, endsWithOneOf }
 
 
 
-extension (using quotes: Quotes)(el: quotes.reflect.Tree)
-  def isTerm: Boolean =
-    // It is unclear how to implement this properly...
-    val isTermSymbol = el.symbol.isTerm
-    val isTerm = if isTermSymbol then isTermSymbol
-      else try unwrapOption(getByReflection(el, "isTerm")).asInstanceOf[Boolean]
-           catch case _: Exception => false
-    isTerm
-
-
-
-/*
 //noinspection ScalaUnusedSymbol
 //private val _templateArgs = List("constr", "preParentsOrDerived", "self", "preBody")
 private val log: Logger = Logger("org.mvv.scala.mapstruct.quoteUtils")
@@ -168,7 +142,6 @@ end extension
 
 extension (el: AnyRef)
   def isConstant: Boolean = org.mvv.scala.tools.quotes.isConstantByClassName(el)
-*/
 
 
 def getByReflection(obj: Any, propName: String*): Any =
