@@ -17,8 +17,8 @@ class GenericsTest {
     val inspector = ScalaBeansInspector()
     val _class =  inspector.inspectClass(classOf[GenericClass2])
 
-    println(_class.parents.dump("Parents"))
-    println(_class.parentTypeNames.dump("Parent type names"))
+    println(_class.parentClasses.dump("Parents"))
+    println(_class.parentTypes.dump("Parent type names"))
     println(_class.fields.keys.dump("Fields"))
     println(_class.methods.keys.dump("Methods"))
 

@@ -97,8 +97,8 @@ val StandardTypes = Set(
 )
 
 def typeExists(_type: _Type): Boolean =
-  if StandardTypes.contains(_type.className) then return true
-  try { loadClass(_type.className); true }
+  if StandardTypes.contains(_type.runtimeTypeName) then return true
+  try { loadClass(_type.runtimeTypeName); true }
   catch case _: Exception => false
 
 

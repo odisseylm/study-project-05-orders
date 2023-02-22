@@ -241,10 +241,10 @@ class ScalaBeansInspector extends Inspector :
       }
 
       val runtimeClass: Option[Class[?]] = tryDo(loadClass(_fullClassName))
-      val _class = _Class(
-        runtimeClass, ClassKind.Scala3, runtimeClass.map(cls => ClassSource.of(cls)),
-        _package.fullName, _simpleClassName) (this)
-      _class.parentTypeNames = parents
+      val _class = _Class( _package.fullName, _simpleClassName,
+        ClassKind.Scala3, runtimeClass.map(cls => ClassSource.of(cls)), runtimeClass,
+        ) (this)
+      _class.parentTypes = parents
       _class.declaredFields = declaredFields.map(f => (f.toKey, f)).toMap
       _class.declaredMethods = declaredMethods.map(m => (m.toKey, m)).toMap
       _class
@@ -303,7 +303,7 @@ class ScalaBeansInspector extends Inspector :
         processedTastyFiles.put( tastyPath.replaceSuffix(".tasty", ".class"), processedClasses )
     end for
 
-    val allParentRuntimeFullClassNames = allProcessedClasses.flatMap(_.parentTypeNames).map(_.runtimeTypeName).distinct
+    val allParentRuntimeFullClassNames = allProcessedClasses.flatMap(_.parentTypes).map(_.runtimeTypeName).distinct
     allParentRuntimeFullClassNames
       .filter(className => !classesByFullName.contains(className))
       .foreach { parentClassFullName =>
@@ -469,14 +469,14 @@ class ScalaBeansInspector extends Inspector :
   private def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
     import ReflectionHelper.*
 
-    val _class: _Class = _Class(
-      Option(_cls), ClassKind.Java, Option(ClassSource.of(_cls)),
-      _cls.getPackageName.nn, _cls.getSimpleName.nn)(scalaBeansInspector)
+    val _class: _Class = _Class( _cls.getPackageName.nn, _cls.getSimpleName.nn,
+      ClassKind.Java, Option(ClassSource.of(_cls)), Option(_cls),
+      )(scalaBeansInspector)
 
     val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
 
     val parentClassFullNames = classChain.map(_.getName.nn)
-    _class.parentTypeNames = parentClassFullNames.map(_Type(_))
+    _class.parentTypes = parentClassFullNames.map(_Type(_))
 
     classChain.foreach { c =>
       if toInspectParentClass(c) then

@@ -15,56 +15,26 @@ import org.mvv.scala.tools.beans._Type.toPortableType
 
 
 
-enum _Visibility :
-  case Private, Package, Protected, Public, Other
 
-
-enum _Modifier :
-  case ScalaStandardFieldAccessor, ScalaCustomFieldAccessor, JavaPropertyAccessor,
-       // not really used now
-       ParamAccessor, ExtensionMethod, Transparent, Macro, Static
-
-
-enum ClassKind :
-  case
-      /** Inspected by reflection (any java class can be inspected separately even in jar file) */
-      Java
-      /** Inspection is done by inspecting tasty file.
-       *  In case of jar only all files can be processed, it is impossible
-       *  to analyze specific files separately (for that reason ALL files are processed and sub-classes
-       *  merged in lazy way.) */
-    , Scala3
-      /** Now are not supported, But can be analyzed by scala scala-reflect API. */
-    , Scala2
-
-
-object ClassKind :
-  extension (cls: Class[?])
-    def classKind: ClassKind = cls match
-      case scala2Class if isScala2Class(scala2Class) => ClassKind.Scala2
-      case scala3Class if isScala3Class(scala3Class) => ClassKind.Scala3
-      case _ => ClassKind.Java
-
-
-
-class _Class (val runtimeClass: Option[Class[?]], val classKind: ClassKind, val classSource: Option[ClassSource],
-              val _package: String, val simpleName: String)
-             (inspector: ScalaBeansInspector) :
+class _Class (val _package: String, val simpleName: String,
+              val classKind: ClassKind, val classSource: Option[ClassSource],
+              val runtimeClass: Option[Class[?]],
+              ) (inspector: ScalaBeansInspector) :
   def fullName: String = org.mvv.scala.tools.fullName(_package, simpleName)
   // with current impl it possibly can have duplicates
-  var parentTypeNames: List[_Type] = Nil // TODO: rename
+  var parentTypes: List[_Type] = Nil
   // with current impl it possibly can have duplicates
-  var parents: List[_Class] = Nil // TODO: make optional and rename
-  var declaredTypeParams: List[_TypeParam] = Nil // TODO: ???
+  var parentClasses: List[_Class] = Nil
+
   var declaredFields: Map[_FieldKey, _Field] = Map()
   var declaredMethods: Map[_MethodKey, _Method] = Map()
-  // TODO: remove runtimeClass.get
-  lazy val fields: Map[_FieldKey, _Field] = { fillParentsClasses(); mergeAllFields(runtimeClass.get, this.declaredFields, parents) }
-  // TODO: remove runtimeClass.get
-  lazy val methods: Map[_MethodKey, _Method] = { fillParentsClasses(); mergeAllMethods(runtimeClass.get, this.declaredMethods, parents) }
+
+  lazy val fields:  Map[_FieldKey, _Field]   = { fillParentsClasses(); mergeAllFields(runtimeClass.get,  this.declaredFields,  parentClasses) }
+  lazy val methods: Map[_MethodKey, _Method] = { fillParentsClasses(); mergeAllMethods(runtimeClass.get, this.declaredMethods, parentClasses) }
+
   private def fillParentsClasses(): Unit =
-    if parents.sizeIs != parentTypeNames.size then
-      parents = parentTypeNames.map(_type => inspector.classDescr(_type.className).get)
+    if parentClasses.sizeIs != parentTypes.size then
+      parentClasses = parentTypes.map(_type => inspector.classDescr(_type.runtimeTypeName).get)
 
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
                                   s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
@@ -91,9 +61,6 @@ class _Type (
   def this(runtimeClass: Class[?]) = this(runtimeClass.getName.nn, runtimeClass.getName.nn)
 
 
-  // if typeName contains (in the future generics/type parameters) we need to extract only class name
-  // TODO: seems I've created duplicates
-  def className: String = runtimeTypeName
   // TODO: use alternative approach if at this time java class is not accessible yet
   def toRuntimeClass: Class[?] = Class.forName(runtimeTypeName).nn
   def withRuntimeType(newRuntimeTypeName: String): _Type = _Type(this.declaredTypeName, newRuntimeTypeName)
