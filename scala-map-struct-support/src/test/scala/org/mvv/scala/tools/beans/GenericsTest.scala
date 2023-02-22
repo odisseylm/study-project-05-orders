@@ -24,11 +24,22 @@ class GenericsTest {
 
     val a = SoftAssertions()
 
+    /*
+    // with runtime types
     a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "baseClass1Var1: GenericBaseClass1.this.C/java.lang.Object",
       "class2Var: java.lang.String",
       "bVal: java.time.LocalTime",
       "aVar: GenericTrait1.this.A/java.lang.Object",
+      "cVal: java.lang.String",
+    )
+    */
+
+    a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+      "baseClass1Var1: GenericBaseClass1.this.C",
+      "class2Var: java.lang.String",
+      "bVal: java.time.LocalTime",
+      "aVar: GenericTrait1.this.A",
       "cVal: java.lang.String",
     )
 
@@ -40,9 +51,16 @@ class GenericsTest {
       "cVal: java.lang.String",
     )
 
+    /*
+    // with runtime types
     a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "baseClass1Var1_=(GenericBaseClass1.this.C/java.lang.Object)",
       "aVar_=(GenericTrait1.this.A/java.lang.Object)",
+    )
+    */
+    a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+      "baseClass1Var1_=(GenericBaseClass1.this.C)",
+      "aVar_=(GenericTrait1.this.A)",
     )
 
     a.assertAll()

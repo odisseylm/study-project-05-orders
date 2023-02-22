@@ -241,12 +241,16 @@ class ScalaBeansInspector extends Inspector :
       }
 
       val runtimeClass: Option[Class[?]] = tryDo(loadClass(_fullClassName))
-      val _class = _Class( _package.fullName, _simpleClassName,
-        ClassKind.Scala3, runtimeClass.map(cls => ClassSource.of(cls)), runtimeClass,
+
+
+      val _class = _Class(
+        _package.fullName, _simpleClassName,
+        ClassKind.Scala3, runtimeClass.map(cls => ClassSource.of(cls)),
+        runtimeClass,
+        parents,
+        declaredFields.map(f => (f.toKey, f)).toMap,
+        declaredMethods.map(m => (m.toKey, m)).toMap,
         ) (this)
-      _class.parentTypes = parents
-      _class.declaredFields = declaredFields.map(f => (f.toKey, f)).toMap
-      _class.declaredMethods = declaredMethods.map(m => (m.toKey, m)).toMap
       _class
 
     end processClassDef
@@ -469,26 +473,21 @@ class ScalaBeansInspector extends Inspector :
   private def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
     import ReflectionHelper.*
 
-    val _class: _Class = _Class( _cls.getPackageName.nn, _cls.getSimpleName.nn,
-      ClassKind.Java, Option(ClassSource.of(_cls)), Option(_cls),
-      )(scalaBeansInspector)
-
     val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
-
-    val parentClassFullNames = classChain.map(_.getName.nn)
-    _class.parentTypes = parentClassFullNames.map(_Type(_))
+    val parentTypes = classChain.map(_.getName.nn).map(_Type(_))
 
     classChain.foreach { c =>
       if toInspectParentClass(c) then
         scalaBeansInspector.inspectClass(c)
     }
 
-    _class.declaredFields = _cls.getDeclaredFields.nn.map { f =>
-      val _f = toField(f.nn);  (_f.toKey, _f)
-    }.toMap
-    _class.declaredMethods = _cls.getDeclaredMethods.nn.map { m =>
-      val _m = toMethod(m.nn);  (_m.toKey, _m)
-    }.toMap
+    val declaredFields  = _cls.getDeclaredFields.nn.map  { f => val _f = toField(f.nn);   (_f.toKey, _f) }.toMap
+    val declaredMethods = _cls.getDeclaredMethods.nn.map { m => val _m = toMethod(m.nn);  (_m.toKey, _m) }.toMap
+
+    val _class: _Class = _Class(_cls.getPackageName.nn, _cls.getSimpleName.nn,
+      ClassKind.Java, Option(ClassSource.of(_cls)), Option(_cls),
+      parentTypes, declaredFields, declaredMethods,
+    )(scalaBeansInspector)
 
     _class
   end inspectJavaClass

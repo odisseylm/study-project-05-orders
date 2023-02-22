@@ -10,7 +10,7 @@ import java.lang.reflect.Field as JavaField
 import java.lang.reflect.Method as JavaMethod
 //
 import org.mvv.scala.tools.CollectionsOps.containsOneOf
-import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, beforeLast }
+import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, beforeLast, beforeFirst }
 import org.mvv.scala.tools.beans._Type.toPortableType
 
 
@@ -19,22 +19,22 @@ import org.mvv.scala.tools.beans._Type.toPortableType
 class _Class (val _package: String, val simpleName: String,
               val classKind: ClassKind, val classSource: Option[ClassSource],
               val runtimeClass: Option[Class[?]],
-              ) (inspector: ScalaBeansInspector) :
+              // with current impl it possibly can have duplicates
+              val parentTypes: List[_Type] = Nil,
+              val declaredFields: Map[_FieldKey, _Field] = Map(),
+              val declaredMethods: Map[_MethodKey, _Method] = Map(),
+             ) (inspector: ScalaBeansInspector) :
   def fullName: String = org.mvv.scala.tools.fullName(_package, simpleName)
+
   // with current impl it possibly can have duplicates
-  var parentTypes: List[_Type] = Nil
-  // with current impl it possibly can have duplicates
-  var parentClasses: List[_Class] = Nil
+  private var _parentClasses: List[_Class] = Nil
+  lazy val parentClasses: List[_Class] =
+    if _parentClasses.sizeIs != parentTypes.size then
+      _parentClasses = parentTypes.map(_type => inspector.classDescr(_type.runtimeTypeName).get)
+    _parentClasses
 
-  var declaredFields: Map[_FieldKey, _Field] = Map()
-  var declaredMethods: Map[_MethodKey, _Method] = Map()
-
-  lazy val fields:  Map[_FieldKey, _Field]   = { fillParentsClasses(); mergeAllFields(runtimeClass.get,  this.declaredFields,  parentClasses) }
-  lazy val methods: Map[_MethodKey, _Method] = { fillParentsClasses(); mergeAllMethods(runtimeClass.get, this.declaredMethods, parentClasses) }
-
-  private def fillParentsClasses(): Unit =
-    if parentClasses.sizeIs != parentTypes.size then
-      parentClasses = parentTypes.map(_type => inspector.classDescr(_type.runtimeTypeName).get)
+  lazy val fields:  Map[_FieldKey, _Field]   = { mergeAllFields(this,  this.declaredFields,  parentClasses) }
+  lazy val methods: Map[_MethodKey, _Method] = { mergeAllMethods(this, this.declaredMethods, parentClasses) }
 
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
                                   s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
@@ -47,7 +47,8 @@ case class _TypeParam (name: String) :
 
 def typeNameToRuntimeClassName(typeName: String): String =
   // if it is generics
-  typeName.beforeLast('[').getOrElse(typeName)
+  typeName.beforeFirst('[').getOrElse(typeName)
+
 
 
 class _Type (
@@ -57,12 +58,8 @@ class _Type (
 
   def this(declaredTypeName: String) = this(declaredTypeName, typeNameToRuntimeClassName(declaredTypeName))
 
-  @deprecated // TODO: temporary
-  def this(runtimeClass: Class[?]) = this(runtimeClass.getName.nn, runtimeClass.getName.nn)
-
-
   // TODO: use alternative approach if at this time java class is not accessible yet
-  def toRuntimeClass: Class[?] = Class.forName(runtimeTypeName).nn
+  //def toRuntimeClass: Class[?] = Class.forName(runtimeTypeName).nn
   def withRuntimeType(newRuntimeTypeName: String): _Type = _Type(this.declaredTypeName, newRuntimeTypeName)
   def withRuntimeType(newRuntimeType: Class[?]): _Type = withRuntimeType(newRuntimeType.getName.nn)
   override def toString: String =
@@ -101,9 +98,6 @@ object Types :
 object _Type :
   import Types.*
 
-  //@deprecated // TODO: temporary
-  //def apply(runtimeClass: Class[?]): _Type = new _Type(runtimeClass.getName.nn, Option(runtimeClass.getName.nn))
-
   extension (t: _Type)
     private def toTypeName: String = t.runtimeTypeName //.getOrElse(t.declaredTypeName)
 
@@ -126,7 +120,7 @@ sealed trait _ClassMember :
   def toKey: AnyRef
   // it is used for replacing generic type name (like A, T, etc) with runtime type
   // (in most cases it will be java.lang.Object)
-  def fixResultingType(resultingClass: Class[?]): _ClassMember
+  //def fixResultingType(resultingClass: Class[?]): _ClassMember
 
 
 case class _Field (
@@ -142,20 +136,18 @@ case class _Field (
   def withAddedModifiers(newModifiers: _Modifier*): _Field =
     this.copy(modifiers = this.modifiers ++ newModifiers)(internalValue)
   override def toKey: _FieldKey = _FieldKey(this)
-  override def fixResultingType(resultingClass: Class[?]): _Field = fixFieldType(resultingClass, this)
+  //override def fixResultingType(resultingClass: Class[?]): _Field = fixFieldType(resultingClass, this)
 
 
 
 case class _FieldKey(fieldName: String)(field: Option[_Field] = None) :
   override def toString: String =
-    val resultTypeStr = field.map(f => s": ${f._type}").getOrElse("")
+    val resultTypeStr = field .map(s": ${_._type}") .getOrElse("")
     s"$fieldName$resultTypeStr"
 
 object _FieldKey :
-  def apply(field: _Field): _FieldKey =
-    new _FieldKey(field.name)(Option(field))
-  def apply(fieldName: String): _FieldKey =
-    new _FieldKey(fieldName)(None)
+  def apply(field: _Field): _FieldKey = new _FieldKey(field.name)(Option(field))
+  def apply(fieldName: String): _FieldKey = new _FieldKey(fieldName)(None)
 
 
 case class _Method (
@@ -171,8 +163,10 @@ case class _Method (
   val internalValue: Any
   ) extends _ClassMember :
 
+  // TODO: seems it is duplicated
   val isScalaPropertyAccessor: Boolean = modifiers.containsOneOf(_Modifier.ScalaStandardFieldAccessor, _Modifier.ScalaCustomFieldAccessor)
   //noinspection ScalaWeakerAccess
+  // TODO: seems it is duplicated
   val isPropertyAccessor: Boolean = isScalaPropertyAccessor || modifiers.contains(_Modifier.JavaPropertyAccessor)
 
   validate()
@@ -189,7 +183,7 @@ case class _Method (
   def withAddedModifiers(newModifiers: _Modifier*): _Method =
     this.copy(modifiers = this.modifiers ++ newModifiers)(internalValue)
   override def toKey: _MethodKey = _MethodKey(this)
-  override def fixResultingType(resultingClass: Class[?]): _Method = fixMethodType(resultingClass, this)
+  //override def fixResultingType(resultingClass: Class[?]): _Method = fixMethodType(resultingClass, this)
 
 
 
@@ -201,7 +195,7 @@ case class _MethodKey (methodName: String, params: List[_Type], hasExtraScalaPar
 
     val extraSuffix = if hasExtraScalaParams then " ( hasExParams )" else ""
     val paramsStr = if isScalaPropertyAccessor && params.isEmpty then "" else s"(${params.mkString(",")})"
-    val resultTypeStr = if returnType.isVoid then "" else s": ${returnType.toString}"
+    val resultTypeStr = if returnType.isVoid then "" else s": $returnType"
     s"$methodName$paramsStr$resultTypeStr$extraSuffix"
 
 object _MethodKey :
@@ -216,13 +210,13 @@ object _MethodKey :
 
 
 
-def mergeAllFields(thisClass: Class[?], thisDeclaredFields: BaseMap[_FieldKey,_Field], parents: List[_Class]): Map[_FieldKey,_Field] =
+def mergeAllFields(thisClass: _Class, thisDeclaredFields: BaseMap[_FieldKey,_Field], parents: List[_Class]): Map[_FieldKey,_Field] =
   val merged = mutable.Map[_FieldKey,_Field]()
   parents.distinct.reverse.foreach( p => mergeMembers(thisClass, merged, p.fields) )
   mergeMembers(thisClass, merged, thisDeclaredFields)
   Map.from(merged)
 
-def mergeAllMethods(thisClass: Class[?], thisDeclaredMethods: BaseMap[_MethodKey,_Method], parents: List[_Class]): Map[_MethodKey,_Method] =
+def mergeAllMethods(thisClass: _Class, thisDeclaredMethods: BaseMap[_MethodKey,_Method], parents: List[_Class]): Map[_MethodKey,_Method] =
   val merged = mutable.Map[_MethodKey,_Method]()
   parents.distinct.reverse.foreach( p => mergeMembers(thisClass, merged, p.methods) )
   mergeMembers(thisClass, merged, thisDeclaredMethods)
@@ -230,7 +224,7 @@ def mergeAllMethods(thisClass: Class[?], thisDeclaredMethods: BaseMap[_MethodKey
 
 
 private def mergeMembers[K,M <: _ClassMember](
-            thisClass: Class[?], targetMembers: mutable.Map[K,M], toAddOrUpdate: BaseMap[K,M] ): Unit =
+            thisClass: _Class, targetMembers: mutable.Map[K,M], toAddOrUpdate: BaseMap[K,M] ): Unit =
   toAddOrUpdate.foreach { (k, v) =>
     // replacing key is needed for having proper optional key metadata (it is optional but really helps debugging & testing)
     val removed: Option[M] = targetMembers.remove(k)
@@ -240,12 +234,14 @@ private def mergeMembers[K,M <: _ClassMember](
         if parentDeclaredMember.modifiers.contains(_Modifier.JavaPropertyAccessor)
           then v.withAddedModifiers(_Modifier.JavaPropertyAccessor).asInstanceOf[M] else v }
       .getOrElse(v)
-    val fixed = newMember.fixResultingType(thisClass).asInstanceOf[M]
+    //val fixed = newMember.fixResultingType(thisClass).asInstanceOf[M]
+    val fixed = newMember
     targetMembers.put(fixed.toKey.asInstanceOf[K], fixed)
   }
 
 
-private def fixFieldType(cls: Class[?], field: _Field): _Field =
+/*
+private def fixFieldType(cls: _Class, field: _Field): _Field =
   if typeExists(field._type) then return field
   // no sense to process private fields in scope of 'java beans' (at least now)
   //if field.visibility == _Visibility.Private then field
@@ -299,4 +295,5 @@ private def changeFirstParamType(method: _Method, jm: JavaMethod): _Method =
   require(method.mainParams.size == 1 && jm.getParameterCount == 1)
   val paramTypes = jm.getParameterTypes.nnArray
   method.copy(mainParams = List(method.mainParams.head.withRuntimeType(paramTypes(0))))(method.internalValue)
+*/
 

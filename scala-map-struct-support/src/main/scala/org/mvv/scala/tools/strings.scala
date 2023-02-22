@@ -15,6 +15,10 @@ extension (s: String)
     val lastIndex = s.lastIndexOf(delimiter)
     if lastIndex == -1 then None else Option(s.substring(lastIndex + 1).nn)
 
+  def beforeFirst(delimiter: Char): Option[String] =
+    val firstIndex = s.indexOf(delimiter)
+    if firstIndex == -1 then None else Option(s.substring(0, firstIndex).nn)
+
   def beforeLast(delimiter: Char): Option[String] =
     val lastIndex = s.lastIndexOf(delimiter)
     if lastIndex == -1 then None else Option(s.substring(0, lastIndex).nn)
@@ -25,3 +29,8 @@ extension (s: String)
 
   def ifBlank(alternativeValue: => String): String =
     if s.isBlank then alternativeValue else s
+
+  def uncapitalize: String =
+    if s.isNull || s.isEmpty || !s.charAt(0).isUpper then s
+    else s"${s.charAt(0).toLower}${s.substring(1)}"
+

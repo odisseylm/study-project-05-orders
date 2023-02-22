@@ -17,3 +17,9 @@ object CollectionsOps :
     inline def isListNullOrEmpty(list: List[?] | Null): Boolean =
       import scala.language.unsafeNulls
       list == null || list.isEmpty
+
+  //extension[T] (collection: scala.collection.List[T])
+  //  def containsOneOf(v: T, values: T*): Boolean =
+  //    if collection.contains(v) then return true
+  //    values.exists(vv => collection.contains(vv))
+

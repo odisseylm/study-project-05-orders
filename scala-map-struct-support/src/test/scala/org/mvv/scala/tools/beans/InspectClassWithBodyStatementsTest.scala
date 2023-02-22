@@ -78,9 +78,16 @@ class InspectClassWithBodyStatementsTest {
     val cls: _Class = ScalaBeansInspector().inspectClass(classOf[ClassWithBodyStatements])
     val beanProps = cls.beanProperties
 
+    /*
+    // with runtime types
     assertThat(cls.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "lazyProp: java.lang.String",
       "Temp: ClassWithBodyStatements.this.Temp/org.mvv.scala.tools.beans.ClassWithBodyStatements$Temp$"
+    )
+    */
+    assertThat(cls.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+      "lazyProp: java.lang.String",
+      "Temp: ClassWithBodyStatements.this.Temp"
     )
     assertThat(cls.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "<init>(java.lang.String)",

@@ -14,7 +14,7 @@ import testclasses.InheritedFromJavaClass2
 class ScalaBeanPropsTest {
 
   @Test
-  def createScalaBeanProperties(): Unit = {
+  def createScalaBeanProperties_usingTastyOnly(): Unit = {
     val inspector = ScalaBeansInspector()
     val _class: _Class = inspector.inspectClass(classOf[InheritedFromJavaClass2])
     val beanProps = _class.beanProperties
@@ -24,12 +24,37 @@ class ScalaBeanPropsTest {
 
     a.assertThat(p.name).isEqualTo("trait1Var")
     a.assertThat(p.propertyType).isEqualTo(Types.StringType)
-    a.assertThat(p.owner).isEqualTo(_class)
+    a.assertThat(p.ownerClass).isEqualTo(_class)
+    a.assertThat(p.ownerClass).isEqualTo(_class)
 
-    a.assertThat(p.ownerClass).isEqualTo(Option(classOf[InheritedFromJavaClass2]))
-    a.assertThat(p.javaPropertyType).isEqualTo(Option(classOf[String]))
-    a.assertThat(p.javaGetMethods.get.asJava).hasSize(1)
-    a.assertThat(p.javaSetMethods.get.asJava).hasSize(1)
+    a.assertThat(p.runtimePropertyType).isEqualTo(None)
+    a.assertThat(p.runtimeOwnerClass).isEqualTo(None)
+    a.assertThat(p.runtimeField).isEqualTo(None)
+    a.assertThat(p.runtimeGetMethods).isEqualTo(None)
+    a.assertThat(p.runtimeSetMethods).isEqualTo(None)
+
+    a.assertAll()
+  }
+
+  @Test
+  def createScalaBeanProperties_usingJavaReflectionToo(): Unit = {
+    val inspector = ScalaBeansInspector()
+    val _class: _Class = inspector.inspectClass(classOf[InheritedFromJavaClass2])
+    val beanProps = _class.beanProperties(true)
+
+    val p: BeanProperty = beanProps.beanProps("trait1Var")
+    val a = SoftAssertions()
+
+    a.assertThat(p.name).isEqualTo("trait1Var")
+    a.assertThat(p.propertyType).isEqualTo(Types.StringType)
+    a.assertThat(p.ownerClass).isEqualTo(_class)
+    a.assertThat(p.ownerClass).isEqualTo(_class)
+    a.assertThat(p.ownerClass.simpleName).isEqualTo("InheritedFromJavaClass2")
+
+    a.assertThat(p.runtimeOwnerClass).isEqualTo(Option(classOf[InheritedFromJavaClass2]))
+    a.assertThat(p.runtimePropertyType).isEqualTo(Option(classOf[String]))
+    a.assertThat(p.runtimeGetMethods.get.asJava).hasSize(1)
+    a.assertThat(p.runtimeSetMethods.get.asJava).hasSize(1)
 
     a.assertAll()
   }

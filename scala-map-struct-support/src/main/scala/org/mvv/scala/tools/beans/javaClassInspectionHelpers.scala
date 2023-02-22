@@ -70,6 +70,7 @@ private def generalModifiers(member: java.lang.reflect.Member): Set[_Modifier] =
 
 
 
+// TODO: try to rewrite using recursion
 private def getClassesAndInterfacesImpl(cls: Class[?], interfaces: Array[Class[?]]): List[Class[?]] =
   val all = mutable.ArrayBuffer[Class[?]]()
   import scala.language.unsafeNulls
@@ -114,7 +115,7 @@ def findJavaField(cls: Class[?], name: String): Option[java.lang.reflect.Field] 
 
 
 def findJavaMethod(cls: Class[?], name: String): Option[java.lang.reflect.Method] =
-  findJavaMethodImpl(cls, name) .orElse( findJavaMethodImpl(cls, scalaMethodNameToJava(name)))
+  findJavaMethodImpl(cls, name) .orElse( findJavaMethodImpl(cls, name.toJavaMethodName))
 
 
 private def findJavaMethodImpl(cls: Class[?], name: String): Option[java.lang.reflect.Method] =
@@ -130,7 +131,7 @@ private def findJavaMethodImpl(cls: Class[?], name: String): Option[java.lang.re
 
 def findJavaMethodWithOneParam(cls: Class[?], name: String): Option[java.lang.reflect.Method] =
   findJavaMethodWithOneParamImpl(cls, name)
-    .orElse(findJavaMethodWithOneParamImpl(cls, scalaMethodNameToJava(name)))
+    .orElse(findJavaMethodWithOneParamImpl(cls, name.toJavaMethodName))
 
 private def findJavaMethodWithOneParamImpl(cls: Class[?], name: String): Option[java.lang.reflect.Method] =
   var m = findMethodWithOneParamFrom(cls.getMethods, name)
@@ -154,5 +155,5 @@ private def findMethodWithOneParamFrom(methods: Array[java.lang.reflect.Method|N
   else None
 
 
-def scalaMethodNameToJava(methodName: String): String =
-  methodName.replace("_=", "_$eq").nn
+extension (methodName: String)
+  def toJavaMethodName: String = methodName.replace("_=", "_$eq").nn
