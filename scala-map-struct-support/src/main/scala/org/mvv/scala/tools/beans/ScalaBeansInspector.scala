@@ -6,7 +6,6 @@ import scala.quoted.Quotes
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 //
 import org.mvv.scala.tools.replaceSuffix
-import org.mvv.scala.tools.quotes.toQuotesTypeOf
 
 import scala.annotation.nowarn
 import scala.collection.mutable
@@ -15,11 +14,8 @@ import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 //
 import ClassKind.classKind
 import org.mvv.scala.mapstruct.debug.{ printFields, printSymbolInfo, printTreeSymbolInfo }
-import org.mvv.scala.tools.{ Logger, replaceSuffix, fullName, tryDo, ifBlank, lastAfter }
+import org.mvv.scala.tools.{ Logger, replaceSuffix, fullName, tryDo, ifBlank, afterLast }
 import org.mvv.scala.tools.beans._Quotes.extractType
-//import org.mvv.scala.tools.{ isPackageDef, isClassDef, isTypeDef, isImport, isExprStatement, isValDef }
-//import org.mvv.scala.tools.{ isSingletonDef, isApply, isDefDef, isTemplate }
-//import org.mvv.scala.tools.{ getClassMembers, getClassDefParents }
 //
 import java.net.{ URI, URL, URLClassLoader }
 import java.nio.file.Path
@@ -30,7 +26,6 @@ private val log: Logger = Logger(classOf[ScalaBeansInspector])
 
 
 class ScalaBeansInspector extends Inspector :
-  //import QuotesHelper.*
 
   // it contains ONLY 'normal' classes from input tasty file
   private val classesByFullName:  mutable.Map[String, _Class] = mutable.HashMap()
@@ -78,6 +73,7 @@ class ScalaBeansInspector extends Inspector :
       import scala.language.unsafeNulls
       classLoaders += (jarPath.toString, URLClassLoader(Array(jarPath.toUri.toURL)))
 
+  // TODO: use them
   private def addClassLoaders(classLoaders: ClassLoader*): Unit =
     classLoaders.foreach { cl =>
       val alreadyAdded = this.classLoaders.values.exists(_ == cl)
@@ -261,7 +257,7 @@ class ScalaBeansInspector extends Inspector :
     def visitTree(el: Tree): List[_Package] =
       var processed: List[_Package] = Nil
 
-      val traverser = new TreeTraverser {
+        val traverser = new TreeTraverser {
         override def traverseTree(tree: Tree)(owner: Symbol): Unit =
           val logPrefix = s"${this.simpleClassName}: "
           try
@@ -505,7 +501,7 @@ class TastyFileNotFoundException protected (message: String, cause: Option[Throw
 // TODO: rename, since it not real package
 private class _Package (val fullName: String) :
   val classes: mutable.Map[String, _Class] = mutable.HashMap()
-  def simpleName: String = fullName.lastAfter('.').getOrElse(fullName)
+  def simpleName: String = fullName.afterLast('.').getOrElse(fullName)
   override def toString: String = s"package $fullName \n${ classes.values.mkString("\n") }"
   def withSubPackage(subPackageName: String): _Package = _Package(s"$fullName.$subPackageName")
 

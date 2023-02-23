@@ -2,7 +2,7 @@ package org.mvv.scala.tools.quotes
 
 import scala.quoted.*
 //
-import org.mvv.scala.tools.lastAfter
+import org.mvv.scala.tools.afterLast
 
 
 case class Param[T] (paramName: String, paramType: T)

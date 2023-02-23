@@ -10,10 +10,17 @@ extension (s: String)
   def endsWithOneOf(suffix: String, otherSuffixes: String*): Boolean =
     s.endsWith(suffix) || otherSuffixes.exists(s.endsWith)
 
-  // TODO: rename to afterLast (to sync with name beforeLast)
-  def lastAfter(delimiter: Char): Option[String] =
+  def afterLast(delimiter: Char): Option[String] =
     val lastIndex = s.lastIndexOf(delimiter)
     if lastIndex == -1 then None else Option(s.substring(lastIndex + 1).nn)
+
+  def afterLast(delimiter: String): Option[String] =
+    val lastIndex = s.lastIndexOf(delimiter)
+    if lastIndex == -1 then None else Option(s.substring(lastIndex + delimiter.length).nn)
+
+  def afterFirst(delimiter: String): Option[String] =
+    val firstIndex = s.indexOf(delimiter)
+    if firstIndex == -1 then None else Option(s.substring(firstIndex + delimiter.length).nn)
 
   def beforeFirst(delimiter: Char): Option[String] =
     val firstIndex = s.indexOf(delimiter)

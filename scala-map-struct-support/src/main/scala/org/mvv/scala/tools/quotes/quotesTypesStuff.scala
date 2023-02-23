@@ -6,13 +6,17 @@ import scala.reflect.ClassTag
 import scala.reflect.Manifest
 import scala.reflect.ClassManifest
 //
-import org.mvv.scala.tools.{ isNotNull, lastAfter, isImplClass, isOneOfImplClasses }
+import org.mvv.scala.tools.{ isNotNull, afterLast, isImplClass, isOneOfImplClasses }
+
+/**
+ * This all is deprecated. It was designed when matching with Quotes types did not work for me (by my mistake).
+ */
 
 
 
 //noinspection ScalaUnusedSymbol , // it is used in macros by name
 def isQuotesTypeByName(el: Any, typeName: String): Boolean =
-  val shortTypeName = typeName.lastAfter('.').getOrElse(typeName)
+  val shortTypeName = typeName.afterLast('.').getOrElse(typeName)
   shortTypeName match
     case "Constant" => isConstantByClassName(el)
     // case "ClassDef" => ??? TODO: impl it, there is no class ClassDef (in scala3-compiler_3-3.2.2-sources.jar!/dotty/tools/dotc/ast/Trees.scala)

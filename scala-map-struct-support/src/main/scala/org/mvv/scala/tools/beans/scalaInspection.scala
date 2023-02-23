@@ -4,8 +4,7 @@ import scala.collection.mutable
 import scala.annotation.nowarn
 import scala.quoted.Quotes
 //
-import org.mvv.scala.tools.{ tryDo }
-import org.mvv.scala.tools.quotes.{ isQuotesTypeOf, toQuotesTypeOf }
+import org.mvv.scala.tools.tryDo
 import _Quotes.extractType
 
 
@@ -105,14 +104,11 @@ private def isListDeeplyEmpty(using q: Quotes)(paramsOfParams: List[q.reflect.Pa
 
 private def paramToType(using q: Quotes)(p: q.reflect.ValDef | q.reflect.TypeDef): _Type =
   import q.reflect.*
-  val symbol = p.symbol
   p match
-    case v if v.isQuotesTypeOf[ValDef] => // TODO: try to use only toQuotesTypeOf[]
-      v.toQuotesTypeOf[ValDef].map(vd => extractType(vd.tpt)).get
-    case t if t.isQuotesTypeOf[TypeDef] =>
-      // T O D O: probably it is not tested
-      t.toQuotesTypeOf[TypeDef].map(td => extractType(td)).get
-    case _ => throw IllegalStateException(s"Unexpected param definition [$p].")
+    case vd: ValDef => extractType(vd.tpt)
+    case td: TypeDef => extractType(td) // T O D O: probably it is not tested
+    case _ =>
+      throw IllegalStateException(s"Unexpected param definition [$p].")
 
 def paramssToTypes(using q: Quotes)(paramss: List[q.reflect.ParamClause]): List[_Type] =
   if paramss.sizeIs == 1 && paramss.head.params.isEmpty

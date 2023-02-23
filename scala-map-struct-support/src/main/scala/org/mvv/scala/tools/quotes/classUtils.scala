@@ -27,15 +27,12 @@ def findClassThisScopeTypeRepr(using q: Quotes)(symbol: q.reflect.Symbol): Optio
 
 // returns (or should return) className (without generics types)
 def getTypeApplyClassName(using q: Quotes)(typeApply: q.reflect.TypeApply): String =
-  import q.reflect.*
+  import q.reflect.Select
 
-  typeApply.fun.toQuotesTypeOf[Select]
-    .map(typeApply => getTypeApplyClassNameBySelect(typeApply))
-    .getOrElse {
-      val tpe: TypeRepr = typeApply.tpe
-      val resultingClassName: String = tpe.show
-      resultingClassName
-    }
+  val className = typeApply.fun match
+    case typeApplySelect: Select => getTypeApplyClassNameBySelect(typeApplySelect)
+    case _ => typeApply.tpe.show
+  className
 
 
 

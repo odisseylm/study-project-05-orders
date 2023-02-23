@@ -2,7 +2,7 @@ package org.mvv.scala.tools.quotes
 
 import scala.quoted.*
 //
-import org.mvv.scala.tools.lastAfter
+import org.mvv.scala.tools.afterLast
 
 
 def qInstanceOf[T](using q: Quotes)(using Type[T])(expr: q.reflect.Term): q.reflect.Term =

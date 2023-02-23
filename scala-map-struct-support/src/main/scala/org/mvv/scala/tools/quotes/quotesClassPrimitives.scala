@@ -2,7 +2,7 @@ package org.mvv.scala.tools.quotes
 
 import scala.quoted.*
 //
-import org.mvv.scala.tools.lastAfter
+import org.mvv.scala.tools.afterLast
 
 
 
@@ -138,6 +138,6 @@ private def qClassName_usingSimpleClassNameAndEnumClassThisScope[T]
 
   val scopeTypRepr: TypeRepr = findClassThisScopeTypeRepr(classSymbol).get
   val fullEnumClassName = qFullClassNameOf[T]
-  val simpleEnumClassName = fullEnumClassName.lastAfter('.').getOrElse(fullEnumClassName)
+  val simpleEnumClassName = fullEnumClassName.afterLast('.').getOrElse(fullEnumClassName)
   val classTerm = TermRef(scopeTypRepr, simpleEnumClassName)
   Ident(classTerm)

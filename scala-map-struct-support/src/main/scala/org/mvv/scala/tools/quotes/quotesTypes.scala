@@ -6,7 +6,11 @@ import scala.reflect.ClassTag
 import scala.reflect.Manifest
 import scala.reflect.ClassManifest
 //
-import org.mvv.scala.tools.{ Logger, lastAfter, isImplClass, isOneOfImplClasses }
+import org.mvv.scala.tools.{ Logger, afterLast, isImplClass, isOneOfImplClasses }
+
+/**
+ * This all is deprecated. It was designed when matching with Quotes types did not work for me (by my mistake).
+ */
 
 
 // TODO: how to ge current package name

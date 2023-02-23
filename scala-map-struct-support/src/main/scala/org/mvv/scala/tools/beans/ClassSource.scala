@@ -2,20 +2,22 @@ package org.mvv.scala.tools.beans
 
 import scala.annotation.tailrec
 import java.net.URL
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 //
-import org.mvv.scala.tools.{ checkNotNull, tryDo, isNotNull }
+import org.mvv.scala.tools.{ checkNotNull, tryDo, isNotNull, afterFirst }
+
 
 
 sealed class ClassSource
 object ClassSource :
   def of(cls: Class[?]): ClassSource =
     val classUrl = getClassLocationUrl(cls)
-    classUrl match
-      case _ if classUrl.getProtocol == "file" => DirectoryClassSource(cls)
-      case _ if classUrl.getProtocol == "jar"  => JarClassSource(cls)
-      case _ if classUrl.getProtocol == "jrt"  => SystemClassSource(cls) // system classloader
+    classUrl.getProtocol match
+      case "file" => DirectoryClassSource(cls)
+      case "jar"  => JarClassSource(cls)
+      case "jrt"  => SystemClassSource(cls) // system classloader
       case _ => throw IllegalArgumentException(s"Unsupported url [$classUrl].")
+
 
 
 case class DirectoryClassSource (directoryPath: Path) extends ClassSource
@@ -24,9 +26,11 @@ object DirectoryClassSource :
     val classUrl = getClassLocationUrl(cls)
     val classPath = fileUrlToPath(classUrl).toString.nn
     val packageAndClassAsPath = s"${cls.getName}".replace('.', java.io.File.separatorChar).nn + ".class"
+
     require(classPath.endsWith(packageAndClassAsPath))
     val dirPathStr = classPath.stripSuffix(packageAndClassAsPath).stripSuffix(java.io.File.separator.nn)
     new DirectoryClassSource(Path.of(dirPathStr).nn)
+
 
 
 case class JarClassSource (jarPath: Path) extends ClassSource
@@ -36,9 +40,11 @@ object JarClassSource :
     new JarClassSource(jarUrlToJarPath(classUrl))
 
 
+
 case class SystemClassSource (classSource: URL) extends ClassSource
 object SystemClassSource :
   def apply(cls: Class[?]): SystemClassSource = new SystemClassSource(getClassLocationUrl(cls))
+
 
 
 //noinspection NoTailRecursionAnnotation (there is no recursion)
@@ -71,59 +77,23 @@ def fileUrlToPath(url: String): Path =
   existentPath.getOrElse(Path.of(asFile).nn)
 
 
-def getClassLocationUrl(fullClassName: String, classLoaders: ClassLoader*): URL =
-  val cls = loadClass(fullClassName, classLoaders)
-  getClassLocationUrl(cls)
+private inline def fileExists(f: String) = Files.exists(Path.of(f))
 
 
-private def getClassLocationUrl(cls: Class[?]): URL =
-  var asResource = s"${cls.nn.getSimpleName}.class"
-  var thisClassUrl = cls.getResource(asResource)
-  if thisClassUrl == null then // for local/member classes
-    asResource = s"${cls.nn.getName.nn.stripPrefix(cls.getPackageName.nn).stripPrefix(".")}.class"
-    thisClassUrl = cls.getResource(asResource)
-  checkNotNull(thisClassUrl, s"Location of class [${cls.getName}] is not found.")
 
-
-def tryToLoadClass(fullClassName: String, classLoaders: Iterable[ClassLoader]): Option[Class[?]] =
-  try Option(loadClass(fullClassName, classLoaders)) catch case _: Exception => None
-
-
-def loadClass(fullClassName: String): Class[?] = loadClass(fullClassName, Nil)
-def loadClass(fullClassName: String, classLoaders: Iterable[ClassLoader]): Class[?] =
-  val cls: Class[?] = classLoaders.view
-    .flatMap(cl => tryDo(loadClassImpl(fullClassName, Option(cl)).nn))
-    .headOption
-    .getOrElse(loadClassImpl(fullClassName, None).nn)
-  cls
-
-private def loadClassImpl(fullClassName: String, classLoader: Option[ClassLoader]): Class[?] =
-  try  classLoader.map(cl => Class.forName(fullClassName, false, cl).nn).getOrElse(Class.forName(fullClassName).nn)
-  catch case _: Exception =>
-    val fixedName = fixInternalClassName(fullClassName)
-    classLoader.map(cl => Class.forName(fixedName, false, cl).nn).getOrElse(Class.forName(fixedName).nn)
-
-private def fixInternalClassName(fullClassName: String) =
-  val classParts = fullClassName.split('.')
-  classParts
-    .map(p => if p.charAt(0).isUpper then p + '$' else p + '.' )
-    .mkString("")
-    .stripSuffix(".")
-    .stripSuffix("$")
-
-
-def tastyFileUrl(cls: Class[?]): URL|Null =
-  var tastyAsResourceUrl = cls.getResource(s"${cls.getSimpleName}.tasty")
+def tastyFileUrl(cls: Class[?]): Option[URL] =
+  var tastyAsResourceUrl: URL|Null = cls.getResource(s"${cls.getSimpleName}.tasty")
   if tastyAsResourceUrl == null then // for local/member classes
-    val asResource = s"${cls.nn.getName.nn.stripPrefix(cls.getPackageName.nn).stripPrefix(".")}.tasty"
+    val fullClassName = cls.nn.getName.nn
+    val packageName = cls.getPackageName.nn
+    val asResource = fullClassName.stripPrefix(packageName).stripPrefix(".") + ".tasty"
     tastyAsResourceUrl = cls.getResource(asResource)
-  tastyAsResourceUrl
+  if tastyAsResourceUrl == null then None else Option(tastyAsResourceUrl)
 
-def tastyFileExists(cls: Class[?]): Boolean = tastyFileUrl(cls) != null
+def tastyFileExists(cls: Class[?]): Boolean = tastyFileUrl(cls).isDefined
 //noinspection ScalaUnusedSymbol
 def tastyFileExists(fullClassName: String, classLoaders: ClassLoader*): Boolean =
-  val cls = loadClass(fullClassName, classLoaders)
-  tastyFileExists(cls)
+  tastyFileExists(loadClass(fullClassName, classLoaders))
 
 
 def isScala3Class(cls: Class[?]): Boolean = tastyFileExists(cls)

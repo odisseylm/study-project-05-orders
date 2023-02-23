@@ -3,8 +3,7 @@ package org.mvv.scala.tools.quotes
 import scala.quoted.{Expr, Quotes, Type}
 import scala.collection.mutable
 //
-import org.mvv.scala.tools.quotes.toQuotesTypeOf
-import org.mvv.scala.tools.{ Logger, lastAfter, isOneOf, getByReflection, unwrapOption }
+import org.mvv.scala.tools.{ Logger, afterLast, isOneOf, getByReflection, unwrapOption }
 
 
 
@@ -52,15 +51,20 @@ def qToTreesTuple2[T1, T2]
   import q.reflect.*
   val logPrefix = "toTreesTuple2"
 
-  el.toQuotesTypeOf[Apply]
-    .filter ( _.args.sizeIs == 2 )
-    .filter ( _.fun.toQuotesTypeOf[TypeApply]
-      .exists(typeApply => isTypeApplyOfTuple2[T1, T2](typeApply)) )
-    .map { apply =>
-      val treesTuple = (apply.args.head, apply.args.tail.head)
-      log.trace(s"$logPrefix treesTuple: $treesTuple")
-      treesTuple
-    }
+  el match
+    case apply: Apply =>
+      Option(apply)
+        .filter ( _.args.sizeIs == 2 )
+        .filter { _.fun match
+            case typeApply: TypeApply => isTypeApplyOfTuple2[T1, T2](typeApply)
+            case _ => false
+        }
+        .map { apply =>
+          val treesTuple = (apply.args.head, apply.args.tail.head)
+          log.trace(s"$logPrefix treesTuple: $treesTuple")
+          treesTuple
+        }
+    case _ => None
 
 
 
@@ -71,13 +75,16 @@ private def isTypeApplyOfTuple2[T1, T2]
   import q.reflect.*
   val logPrefix = s"isTypeApplyOfTuple2[${TypeRepr.of[T1]}, ${TypeRepr.of[T2]}] "
 
-  tree.toQuotesTypeOf[TypeApply]
-    .filter { typeApply => getTypeApplyClassName(typeApply).isTuple2Type }
-    .filter { typeApply =>
-      val arg1TypeRepr = typeApply.args.head.tpe
-      val arg2TypeRepr = typeApply.args.tail.head.tpe
-      log.trace(s"$logPrefix TypeApply(${arg1TypeRepr.show}, ${arg2TypeRepr.show})")
+  tree match
+    case typeApply: TypeApply =>
+      Option(typeApply)
+        .filter { typeApply => getTypeApplyClassName(typeApply).isTuple2Type }
+        .filter { typeApply =>
+          val arg1TypeRepr = typeApply.args.head.tpe
+          val arg2TypeRepr = typeApply.args.tail.head.tpe
+          log.trace(s"$logPrefix TypeApply(${arg1TypeRepr.show}, ${arg2TypeRepr.show})")
 
-      (arg1TypeRepr <:< TypeRepr.of[T1]) && (arg2TypeRepr <:< TypeRepr.of[T2])
-    }
-    .isDefined
+          (arg1TypeRepr <:< TypeRepr.of[T1]) && (arg2TypeRepr <:< TypeRepr.of[T2])
+        }
+        .isDefined
+    case _ => false

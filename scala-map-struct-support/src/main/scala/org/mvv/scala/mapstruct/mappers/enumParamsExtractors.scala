@@ -4,7 +4,7 @@ import scala.quoted.{Expr, Quotes, Type}
 import scala.reflect.Enum as ScalaEnum
 //
 import org.mvv.scala.tools.quotes.{ extractTuple2EntryFromExpr, extractTuple2EntriesFromSeqExpr }
-import org.mvv.scala.tools.{ Logger, lastAfter }
+import org.mvv.scala.tools.{ Logger, afterLast }
 // for debug only
 
 
@@ -45,4 +45,4 @@ private def enumMappingTuple2Extractor[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnu
 private def extractSimpleName(using q: Quotes)(tree: q.reflect.Tree): String =
   import q.reflect.*
   val rawName: String = tree.symbol.name
-  rawName.lastAfter('.').getOrElse(rawName)
+  rawName.afterLast('.').getOrElse(rawName)

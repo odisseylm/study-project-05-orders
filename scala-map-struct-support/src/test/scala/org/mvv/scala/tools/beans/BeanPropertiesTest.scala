@@ -17,7 +17,7 @@ class BeanPropertiesTest {
 
         val cls = inspector.inspectClass(classOf[InheritedFromJavaClass2])
 
-        val aa: BeanProperties = cls.beanProperties
+        val aa: BeanProperties = cls.toBeanProperties
         assertThat(aa).isNotNull
     }
 }

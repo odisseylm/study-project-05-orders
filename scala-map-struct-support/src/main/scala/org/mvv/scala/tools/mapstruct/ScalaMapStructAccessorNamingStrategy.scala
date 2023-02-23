@@ -1,16 +1,19 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.mapstruct
 
-/*
 //
 import javax.lang.model.`type`.TypeMirror
 import javax.lang.model.element.{ExecutableElement, TypeElement, VariableElement}
 //
+import org.mapstruct.ap.spi.DefaultAccessorNamingStrategy
 import org.mapstruct.ap.spi.MapStructProcessingEnvironment
 //
 import org.mvv.scala.tools.Logger
+import org.mvv.scala.tools.beans.{ _Class, BeanProperties, ScalaBeansInspector, toBeanProperties }
 
 
-class ScalaMapStructAccessorNamingStrategy extends org.mapstruct.ap.spi.DefaultAccessorNamingStrategy {
+
+
+class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy {
 
   private val log = Logger(classOf[ScalaMapStructAccessorNamingStrategy])
   private val scalaBeansInspector = ScalaBeansInspector()
@@ -62,24 +65,26 @@ class ScalaMapStructAccessorNamingStrategy extends org.mapstruct.ap.spi.DefaultA
 
   private def getBeanPropertiesOfEnclosingClass(method: ExecutableElement): BeanProperties =
     val _class: _Class = scalaBeansInspector.inspectClass(method.enclosingClassFullName)
-    _class.beanProperties
+    _class.toBeanProperties
 }
+
 
 
 // to avoid warning about code duplication
 extension (method: ExecutableElement)
   def paramCount: Int = method.getParameters.nn.size
+
   def enclosingClassFullName: String =
     method.getEnclosingElement.asInstanceOf[TypeElement].getQualifiedName.nn.toString.nn
-  def methodName: String =
-    method.getSimpleName.nn.toString.nn
-  def firstParamTypeAsString: String =
-    method.getParameters.nn.get(0).nn.typeAsString
-  def asDump: AnyRef =
-    s"enclosing: ${method.getEnclosingElement}, method: $method }"
+
+  def methodName: String = method.getSimpleName.nn.toString.nn
+
+  def firstParamTypeAsString: String = method.getParameters.nn.get(0).nn.typeAsString
+
+  def asDump: AnyRef = s"enclosing: ${method.getEnclosingElement}, method: $method }"
+
+
 
 extension [P <: VariableElement](param: P)
   //noinspection ScalaUnusedSymbol
   def typeAsString: String = param.asType.nn.toString
-
-*/
