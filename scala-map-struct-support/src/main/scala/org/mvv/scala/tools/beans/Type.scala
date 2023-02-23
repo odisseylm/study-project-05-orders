@@ -61,6 +61,11 @@ object Types :
   val ObjectType: _Type = _Type("java.lang.Object")
   val StringType: _Type = _Type("java.lang.String")
 
+  extension (_type: Class[?])
+    def isBool: Boolean = _type.isOneOf(classOf[Boolean], java.lang.Boolean.TYPE, classOf[java.lang.Boolean])
+    def isVoid: Boolean = _type.isOneOf(Void.TYPE, classOf[Unit])
+
+
 
 
 object _Type :

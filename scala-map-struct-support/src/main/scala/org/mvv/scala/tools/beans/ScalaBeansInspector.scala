@@ -467,7 +467,7 @@ class ScalaBeansInspector extends Inspector :
   end inspect
 
   private def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
-    import ReflectionHelper.*
+    import JavaInspectionHelper.*
 
     val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
     val parentTypes = classChain.map(_.getName.nn).map(_Type(_))

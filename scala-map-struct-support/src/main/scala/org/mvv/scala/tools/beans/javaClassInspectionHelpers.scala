@@ -6,6 +6,7 @@ import scala.collection.mutable
 import java.lang.reflect.{ Field, Member, Method }
 //
 import org.mvv.scala.tools.{ isNotNull, nnArray }
+import org.mvv.scala.tools.beans.Types.{ isBool, isVoid }
 import ClassKind.classKind
 
 
@@ -27,33 +28,31 @@ def fieldModifiers(field: Field): Set[_Modifier] =
   generalModifiers(field)
 
 def methodModifiers(m: Method): Set[_Modifier] =
-  val mod: mutable.Set[_Modifier] = mutable.Set.from(generalModifiers(m))
-  val mName = m.getName.nn
+  import JavaInspectionHelper.nameHasPrefix
+
+  var mod: Set[_Modifier] = generalModifiers(m)
   val paramCount = m.getParameterCount
-  val returnType = m.getReturnType
+  val returnType = m.getReturnType.nn
 
-  val isGetAccessor = mName.startsWith("get") && mName.length > 3
-    && paramCount == 0
-    && returnType != Void.TYPE && returnType != classOf[Unit]
+  val isGetAccessor = m.nameHasPrefix("get") && paramCount == 0 && !returnType.isVoid
+  val isIsAccessor  = m.nameHasPrefix("is")  && paramCount == 0 && returnType.isBool
+  val isSetAccessor = m.nameHasPrefix("set") && paramCount == 1 && returnType.isVoid
 
-  val isIsAccessor = mName.startsWith("is") && mName.length > 2 && paramCount == 0
-    && (returnType == Boolean || returnType == classOf[Boolean]
-    || returnType == java.lang.Boolean.TYPE || returnType == classOf[java.lang.Boolean])
-  val isSetAccessor = mName.startsWith("set") && mName.length> 3 && paramCount == 1
-    && (returnType == Void.TYPE && returnType == classOf[Unit])
-
-  if isGetAccessor || isIsAccessor || isSetAccessor then mod.add(_Modifier.JavaPropertyAccessor)
-
-  mod.toSet
-end methodModifiers
+  if isGetAccessor || isIsAccessor || isSetAccessor then mod += _Modifier.JavaPropertyAccessor
+  mod
 
 
-object ReflectionHelper :
+object JavaInspectionHelper :
   extension (m: Method)
     @targetName("toMethodFromReflection")
     def toMethod: _Method =
-      val paramTypes = m.getParameterTypes.nn.map(_.nn.getName.nn).map(_Type(_)).toList
-      _Method(m.getName.nn, visibilityOf(m), methodModifiers(m), _Type(m.getReturnType.nn.getName.nn), paramTypes, false)(m)
+      import scala.language.unsafeNulls
+      val paramTypes = m.getParameterTypes.map(_.getName).map(_Type(_)).toList
+      _Method(m.getName, visibilityOf(m), methodModifiers(m), _Type(m.getReturnType.getName), paramTypes, false)(m)
+
+    def nameHasPrefix(prefix: String): Boolean =
+      val methodName = m.getName.nn
+      methodName.startsWith(prefix) && methodName.length > prefix.length
 
 
   extension (f: Field)
@@ -70,7 +69,7 @@ private def generalModifiers(member: java.lang.reflect.Member): Set[_Modifier] =
 
 
 
-// TODO: try to rewrite using recursion
+// T O D O: try to rewrite using recursion
 private def getClassesAndInterfacesImpl(cls: Class[?], interfaces: Array[Class[?]]): List[Class[?]] =
   val all = mutable.ArrayBuffer[Class[?]]()
   import scala.language.unsafeNulls
@@ -137,7 +136,7 @@ private def findJavaMethodWithOneParamImpl(cls: Class[?], name: String): Option[
   var m = findMethodWithOneParamFrom(cls.getMethods, name)
   if m.isDefined then return m
 
-  var c: Class[?] | Null = cls
+  var c: Class[?]|Null = cls
   while m.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
     m = findMethodWithOneParamFrom(cls.getDeclaredMethods, name)
     c = c.nn.getSuperclass
