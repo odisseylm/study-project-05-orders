@@ -11,7 +11,6 @@ import _Quotes.extractType
 
 object _Quotes :
 
-  // TODO: fdfd
   def typeFromString(typeName: String): _Type =
     //val runtimeClassOption = tryDo { loadClass(typeName).getName.nn }
     _Type(typeName) // , runtimeClassOption)

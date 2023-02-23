@@ -111,7 +111,7 @@ def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: StringBuilder
     // ?
 
     // ???
-    // TODO: use lambda
+    // T O D O: use lambda
     //case el if el.isLambda => dumpLambda(el.asInstanceOf[Lambda], str, nextPadLength)
     // If <: Term
     case el if el.isIf => dumpIf(el.asInstanceOf[If], str, nextPadLength)
@@ -193,7 +193,7 @@ private def dumpParam(using quotes: Quotes)(param: quotes.reflect.ParamClause, s
   //noinspection TypeCheckCanBeMatch
   if param.isInstanceOf[List[?]] then
     val paramsList: List[Tree] = param.asInstanceOf[List[Tree]]
-    // TODO: refactor/improve
+    // T O D O: refactor/improve
     paramsList.foreach { pp => dumpTree(pp, str, padLength) }
     { return }
 

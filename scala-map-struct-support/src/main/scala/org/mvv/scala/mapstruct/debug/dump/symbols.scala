@@ -9,7 +9,7 @@ import org.mvv.scala.tools. { isSingleItemList, tryDo }
 def dumpSymbol(using quotes: Quotes)(symbol: quotes.reflect.Symbol, str: StringBuilder, padLength: Int): Unit =
   import quotes.reflect.*
   str.addTagName("<Symbol>", padLength)
-    // TODO: add impl in dump format
+    // T O D O: add impl in dump format
     str.addChildTagName("ALL", symbolToString(symbol), padLength)
   str.addTagName("</Symbol>", padLength)
 
@@ -136,7 +136,7 @@ def symbolToString(using quotes: Quotes)(symbol: quotes.reflect.Symbol, details:
     if children.nonEmpty then str.append(", children: ").append(children.map(_.name))
   end if
 
-  // TODO: impl
+  // T O D O: impl
   val primaryConstructor: Symbol = symbol.primaryConstructor
   val signature: Signature = symbol.signature
   val moduleClass: Symbol = symbol.moduleClass
@@ -144,7 +144,7 @@ def symbolToString(using quotes: Quotes)(symbol: quotes.reflect.Symbol, details:
   val companionModule: Symbol = symbol.companionModule
 
   if details.contains(SymbolDetails.Tree) then
-    // TODO: impl
+    // T O D O: impl
     val tree: Tree = symbol.tree
     val typeRef: TypeRef = symbol.typeRef
     val termRef: TermRef = symbol.termRef

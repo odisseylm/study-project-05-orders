@@ -6,7 +6,7 @@ import org.mvv.scala.tools.{ Logger, isImplClass }
 
 
 
-//noinspection ScalaUnusedSymbol // TODO: move to other package
+//noinspection ScalaUnusedSymbol // T O D O: move to other package
 extension (using q: Quotes)(el: q.reflect.Tree)
   def isTyped: Boolean = el.isImplClass("Typed")
   def isApply: Boolean = el.isImplClass("Apply")

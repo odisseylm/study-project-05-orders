@@ -123,7 +123,7 @@ extension (using quotes: Quotes)(el: quotes.reflect.TypeRepr)
     catch case _: Exception => false)
     isTermRef
 
-  def isTypeRef: Boolean = el.isImplClass("TypeRef") // TODO: try to impl better
+  def isTypeRef: Boolean = el.isImplClass("TypeRef") // T O D O: try to impl better
 
   def isNamedType: Boolean = el.isImplClass("NamedType")
   def isSuperType: Boolean = el.isImplClass("SuperType")
@@ -146,7 +146,7 @@ extension (using quotes: Quotes)(el: quotes.reflect.TypeRepr)
   def isLambdaType: Boolean = el.isImplClass("LambdaType")
   def isMatchCase: Boolean = el.isImplClass("MatchCase")
   def isTypeBounds: Boolean = el.isImplClass("TypeBounds")
-  def isNoPrefix: Boolean = el.isImplClass("NoPrefix") // TODO: try better
+  def isNoPrefix: Boolean = el.isImplClass("NoPrefix") // T O D O: try better
   def isTypeRepr: Boolean = el.isImplClass("TypeRepr")
 
 

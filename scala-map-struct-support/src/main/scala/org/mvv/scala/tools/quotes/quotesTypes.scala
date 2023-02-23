@@ -13,9 +13,6 @@ import org.mvv.scala.tools.{ Logger, afterLast, isImplClass, isOneOfImplClasses 
  */
 
 
-// TODO: how to ge current package name
-//private val log: Logger = Logger("org.mvv.scala.quotes.quotesTypes")
-
 
 /*
 Existential types are no longer supported - use a wildcard or dependent type instead
@@ -111,7 +108,7 @@ private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
 // )
 def applyIsQuotesType(using q: Quotes)(el: q.reflect.Term, quoteTypeName: String): q.reflect.Term =
   import q.reflect.{ Apply, Literal, StringConstant, TypeRepr }
-  // TODO: try to find and call/use specified method isQuotesXXX (for example isQuotesApply)
+  // T O D O: try to find and call/use specified method isQuotesXXX (for example isQuotesApply)
   // if it exists (it will allow to override behavior for some quotes tags)
   //
   val funTerm = qFunction

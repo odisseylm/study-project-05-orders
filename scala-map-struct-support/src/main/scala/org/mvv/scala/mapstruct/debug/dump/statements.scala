@@ -513,7 +513,7 @@ def dumpLambda(using quotes: Quotes)(tree: quotes.reflect.Block, str: StringBuil
 
 def treeName(using quotes: Quotes)(tree: quotes.reflect.Tree): String =
   import quotes.reflect.*
-  // TODO: use also
+  // T O D O: use also
   // Definition.name:
   // Select.name:
   // NamedArg.name:

@@ -73,7 +73,7 @@ extension (el: Any)
 extension (using quotes: Quotes)(el: quotes.reflect.Tree)
 
   def toSymbol: Option[quotes.reflect.Symbol] =
-    // TODO: try to remove risky asInstanceOf[Symbol]
+    // T O D O: try to remove risky asInstanceOf[Symbol]
     //if el.symbol.isInstanceOf[Symbol] then Option(el.symbol.asInstanceOf[Symbol]) else None
     Option(el.symbol.asInstanceOf[quotes.reflect.Symbol])
 
