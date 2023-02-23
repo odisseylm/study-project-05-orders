@@ -17,7 +17,7 @@ class AaaTest {
 
 
 def aaa(using q: Quotes)(): Unit = {
-  import q.reflect.*
+  import q.reflect.{ Apply, Tree }
 
   val el: Tree = ???
   val el2: Apply = ???

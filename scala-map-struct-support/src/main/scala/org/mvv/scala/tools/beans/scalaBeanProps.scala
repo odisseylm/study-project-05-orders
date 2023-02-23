@@ -9,7 +9,7 @@ import org.mvv.scala.tools.OptionOps.allAreDefined
 
 
 class ScalaBeanProps private (_class: _Class) extends java.beans.BeanInfo :
-  private val beanProps: BeanProperties = _class.toBeanProperties(TypesLoadMode.All)
+  private val beanProps: BeanProperties = _class.toBeanProperties(InspectMode.AllSources)
   private val propertyDescriptors: List[PropertyDescriptor] = beanProps.toPropertyDescriptors
 
   override def getBeanDescriptor: BeanDescriptor = BeanDescriptor(_class.runtimeClass.get)

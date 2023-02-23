@@ -48,7 +48,7 @@ def qToTreesTuple2[T1, T2]
   (using q: Quotes)(using Type[T1], Type[T2])
   (el: q.reflect.Tree): Option[(q.reflect.Tree, q.reflect.Tree)] =
 
-  import q.reflect.*
+  import q.reflect.{ Apply, TypeApply }
   val logPrefix = "toTreesTuple2"
 
   el match
@@ -72,7 +72,7 @@ private def isTypeApplyOfTuple2[T1, T2]
   (using q: Quotes)(using Type[T1], Type[T2])
   (tree: q.reflect.Tree): Boolean =
 
-  import q.reflect.*
+  import q.reflect.{ TypeApply, TypeRepr }
   val logPrefix = s"isTypeApplyOfTuple2[${TypeRepr.of[T1]}, ${TypeRepr.of[T2]}] "
 
   tree match

@@ -9,7 +9,7 @@ import org.mvv.scala.tools.Logger
 private val log = Logger("org.mvv.scala.tools.classUtils")
 
 def findClassThisScopeTypeRepr(using q: Quotes)(symbol: q.reflect.Symbol): Option[q.reflect.TypeRepr] =
-  import q.reflect.*
+  import q.reflect.{ TypeRepr, TypeRef }
 
   val typeRepr : Option[TypeRepr] = symbol match
     case td if td.isTypeDef || td.isClassDef =>

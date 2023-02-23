@@ -1,6 +1,5 @@
 package org.mvv.scala.tools.mapstruct
 
-//
 import javax.lang.model.`type`.TypeMirror
 import javax.lang.model.element.{ExecutableElement, TypeElement, VariableElement}
 //
@@ -8,7 +7,7 @@ import org.mapstruct.ap.spi.DefaultAccessorNamingStrategy
 import org.mapstruct.ap.spi.MapStructProcessingEnvironment
 //
 import org.mvv.scala.tools.Logger
-import org.mvv.scala.tools.beans.{ _Class, BeanProperties, ScalaBeansInspector, toBeanProperties }
+import org.mvv.scala.tools.beans.{ _Class, BeanProperties, ScalaBeansInspector, toBeanProperties, InspectMode }
 
 
 
@@ -65,7 +64,7 @@ class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy
 
   private def getBeanPropertiesOfEnclosingClass(method: ExecutableElement): BeanProperties =
     val _class: _Class = scalaBeansInspector.inspectClass(method.enclosingClassFullName)
-    _class.toBeanProperties
+    _class.toBeanProperties(InspectMode.AllSources)
 }
 
 

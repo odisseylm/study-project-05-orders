@@ -15,19 +15,32 @@ import org.mvv.scala.tools.beans._Type.toPortableType
 
 
 
-class _Class (val _package: String, val simpleName: String,
-              val classKind: ClassKind, val classSource: Option[ClassSource],
-              val runtimeClass: Option[Class[?]],
-              // with current impl it possibly can have duplicates
-              val parentTypes: List[_Type] = Nil,
-              val declaredFields:  Map[_FieldKey,  _Field]  = Map(),
-              val declaredMethods: Map[_MethodKey, _Method] = Map(),
-             ) (inspector: ScalaBeansInspector) :
+// it is case class only to have possibility to create copy of it
+case class _Class (
+  _package: String,
+  simpleName: String,
+  classKind: ClassKind,
+  classSource: Option[ClassSource],
+  // with current impl it possibly can have duplicates
+  parentTypes: List[_Type] = Nil,
+
+  // with current impl it possibly can have duplicates
+  declaredFields:  Map[_FieldKey,  _Field]  = Map(),
+  declaredMethods: Map[_MethodKey, _Method] = Map(),
+
+  // optional runtime types
+  runtimeClass: Option[Class[?]] = None,
+
+  ) (inspector: Option[ScalaBeansInspector]) :
+
   def fullName: String = org.mvv.scala.tools.fullName(_package, simpleName)
 
   // with current impl it possibly can have duplicates
   lazy val parentClasses: List[_Class] =
-     parentTypes.map(_type => inspector.classDescr(_type.runtimeTypeName).get)
+     parentTypes.map(_type => inspector
+       .getOrElse(throw IllegalStateException("Inspector is not set"))
+       .classDescr(_type.runtimeTypeName)
+       .getOrElse(throw IllegalStateException(s"Class [$_type] is not found/pre-loaded.")))
 
   lazy val fields:  Map[_FieldKey, _Field]   = { mergeAllMembers(this.declaredFields,  parentClasses, cls => cls.fields) }
   lazy val methods: Map[_MethodKey, _Method] = { mergeAllMembers(this.declaredMethods, parentClasses, cls => cls.methods) }

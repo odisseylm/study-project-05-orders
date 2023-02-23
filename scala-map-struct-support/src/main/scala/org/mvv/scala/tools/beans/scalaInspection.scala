@@ -4,7 +4,7 @@ import scala.collection.mutable
 import scala.annotation.nowarn
 import scala.quoted.Quotes
 //
-import org.mvv.scala.tools.tryDo
+import org.mvv.scala.tools.{ tryDo, endsWithOneOf }
 import _Quotes.extractType
 
 
@@ -57,7 +57,7 @@ object _Quotes :
 
   extension (using q: Quotes) (valDef: q.reflect.ValDef)
     def toField: _Field =
-      import q.reflect.*
+      //import q.reflect.
       val valName = valDef.name
       val mod: Set[_Modifier] = generalModifiers(valDef.symbol)
       val fieldType = extractType(valDef.tpt)
@@ -66,7 +66,7 @@ object _Quotes :
 
   extension (using q: Quotes) (defDef: q.reflect.DefDef)
     def toMethod: _Method =
-      import q.reflect.*
+      //import q.reflect.??
 
       try defDef.name catch case _: Exception =>
         println(s"Bad element $defDef")
@@ -89,7 +89,7 @@ object _Quotes :
       var modifiers: Set[_Modifier] = generalModifiers(defDef.symbol)
       if !modifiers.contains(_Modifier.ScalaStandardFieldAccessor) && !hasExtraParams then
         val isCustomGetter = defDef.paramss.isEmpty && returnType != Types.UnitType
-        val isCustomSetter = paramTypes.size == 1 && (methodName.endsWith("_=") && methodName.endsWith("_$eq"))
+        val isCustomSetter = paramTypes.sizeIs == 1 && methodName.endsWithOneOf("_=", "_$eq")
         if isCustomGetter || isCustomSetter then modifiers += _Modifier.ScalaCustomFieldAccessor
 
       _Method(methodName, visibility(defDef), Set.from(modifiers), returnType, paramTypes, hasExtraParams)(defDef)
@@ -103,12 +103,11 @@ private def isListDeeplyEmpty(using q: Quotes)(paramsOfParams: List[q.reflect.Pa
   paramsOfParams.flatMap(_.params).isEmpty
 
 private def paramToType(using q: Quotes)(p: q.reflect.ValDef | q.reflect.TypeDef): _Type =
-  import q.reflect.*
+  import q.reflect.{ TypeDef, ValDef }
   p match
-    case vd: ValDef => extractType(vd.tpt)
+    case vd: ValDef  => extractType(vd.tpt)
     case td: TypeDef => extractType(td) // T O D O: probably it is not tested
-    case _ =>
-      throw IllegalStateException(s"Unexpected param definition [$p].")
+    case _ => throw IllegalStateException(s"Unexpected param definition [$p].")
 
 def paramssToTypes(using q: Quotes)(paramss: List[q.reflect.ParamClause]): List[_Type] =
   if paramss.sizeIs == 1 && paramss.head.params.isEmpty

@@ -85,7 +85,7 @@ private inline def toQuotesTreeType[V, T] (inline el: V): Option[T] =
  */
 private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
                                 (elExpr: Expr[V], validateCompatibilityWithVAndTExpr: Expr[Boolean]): Expr[Option[T]] =
-  import q.reflect.*
+  import q.reflect.{ If, Term, asTerm }
 
   // it must be constant
   val validateCompatibilityWithVAndT: Boolean = validateCompatibilityWithVAndTExpr.valueOrAbort
@@ -110,7 +110,7 @@ private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
 //   Literal(Constant(Apply))))
 // )
 def applyIsQuotesType(using q: Quotes)(el: q.reflect.Term, quoteTypeName: String): q.reflect.Term =
-  import q.reflect.*
+  import q.reflect.{ Apply, Literal, StringConstant, TypeRepr }
   // TODO: try to find and call/use specified method isQuotesXXX (for example isQuotesApply)
   // if it exists (it will allow to override behavior for some quotes tags)
   //

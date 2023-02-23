@@ -1,7 +1,5 @@
 package org.mvv.scala.tools.beans
 
-import org.mvv.scala.tools.Logger
-
 import scala.quoted.Quotes
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 //
@@ -9,16 +7,18 @@ import org.mvv.scala.tools.replaceSuffix
 
 import scala.annotation.nowarn
 import scala.collection.mutable
-import scala.quoted.*
-import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
+import scala.quoted.Quotes
+import scala.tasty.inspector.{ Inspector, Tasty, TastyInspector }
+import java.net.{ URI, URL, URLClassLoader }
+import java.nio.file.Path
 //
 import ClassKind.classKind
+import org.mvv.scala.tools.Logger
 import org.mvv.scala.mapstruct.debug.{ printFields, printSymbolInfo, printTreeSymbolInfo }
 import org.mvv.scala.tools.{ Logger, replaceSuffix, fullName, tryDo, ifBlank, afterLast }
 import org.mvv.scala.tools.beans._Quotes.extractType
-//
-import java.net.{ URI, URL, URLClassLoader }
-import java.nio.file.Path
+import org.mvv.scala.tools.quotes.{ fullPackageName, refName}
+
 
 
 private val classesToIgnore: Set[_Type] = Set(Types.ObjectType, _Type("java.lang.Comparable"))
@@ -83,7 +83,7 @@ class ScalaBeansInspector extends Inspector :
 
   private def getJarClassFullNames(jarPath: Path, classCount: Int): List[String] =
     import scala.language.unsafeNulls
-    import scala.jdk.CollectionConverters.*
+    import scala.jdk.CollectionConverters.ListHasAsScala
 
     val jarFile: java.util.jar.JarFile = java.util.jar.JarFile(jarPath.toFile.nn, false)
     val classList: java.util.List[String] = jarFile.stream()
@@ -116,11 +116,9 @@ class ScalaBeansInspector extends Inspector :
 
   override def inspect(using q: Quotes)(beanType: List[Tasty[q.type]]): Unit =
     import q.reflect.*
-    //import org.mvv.scala.tools.safeSubString as substring
     import org.mvv.scala.tools.safeSubString
 
     val dependenciesJars = mutable.Set[Path]()
-
     var allProcessedClasses: List[_Class] = Nil
 
     def logUnexpectedTreeEl(processor: TreeTraverser|String, treeEl: Tree): Unit =
@@ -131,20 +129,20 @@ class ScalaBeansInspector extends Inspector :
         s" Please explicitly process or ignore element: $treeEl")
 
 
-    def processTypeDef(typeDef: TypeDef, _package: _Package): Unit =
+    def processTypeDef(typeDef: TypeDef, _package: FilePackageContainer): Unit =
       // TODO: impl
       logUnexpectedTreeEl("processTypeDef", typeDef)
 
 
     class PackageTreeTraverser (
       val packageClause: PackageClause,
-      val parentPackage: Option[_Package],
+      val parentPackage: Option[FilePackageContainer],
       ) extends TreeTraverser {
 
       //val _package: _Package = parentPackage
       //  .map(parentPack => parentPack.withSubPackage(refName(packageClause.pid)))
       //  .getOrElse(_Package(fullPackageName(refName(packageClause.pid))))
-      val _package: _Package = _Package(fullPackageName(packageClause))
+      val _package: FilePackageContainer = FilePackageContainer(fullPackageName(packageClause))
 
       override def traverseTree(tree: Tree)(owner: Symbol): Unit =
         val logPrefix = s"${this.simpleClassName}: "
@@ -166,14 +164,13 @@ class ScalaBeansInspector extends Inspector :
 
             case cd @ ClassDef(classDefName: String, _, _, _, _) =>
               log.info(s"$logPrefix It is ClassDef ($classDefName): ${tree.shortContent}")
-              //ClassDefTreeTraverser(cd, _package).traverseTree(cd)(cd.symbol)
-              val _class = processClassDef(cd, _package)
-              //classesByFullName.put(_class.fullName, _class)
+
+              val _class = processClassDef(cd, _package, InspectMode.AllSources)
+                .copy()(Option(ScalaBeansInspector.this))
               _package.classes.put(_class.fullName, _class)
 
             case td @ TypeDef(typeDefName: String, _) =>
               log.info(s"$logPrefix It is TypeDefClause ($typeDefName): ${tree.shortContent}")
-              //TypeDefTreeTraverser(td, _package).traverseTree(td)(td.symbol)
               processTypeDef(td, _package)
 
             case _ =>
@@ -186,76 +183,10 @@ class ScalaBeansInspector extends Inspector :
           case ex: (Exception | AssertionError) => log.error(s"Unexpected error $ex", ex)
     }
 
-    def processClassDef(classDef: ClassDef, _package: _Package): _Class =
-
-      val _simpleClassName: String = classDef.name
-      val _fullClassName: String = s"${_package.fullName}.$_simpleClassName"
-      val parents: List[_Type] = classDef.parents
-        .map(parentTree => extractType(parentTree))
-        .filter(_type => !classesToIgnore.contains(_type))
-
-      //val declaredFields = scala.collection.mutable.ArrayBuffer[_Fields]
-      val declaredFields = mutable.ArrayBuffer[_Field]()
-      val declaredMethods = mutable.ArrayBuffer[_Method]()
-
-      val body: List[Statement] = classDef.body
-
-      body.foreach { (tree: Tree) =>
-        import org.mvv.scala.tools.beans._Quotes.{extractType, toField, toMethod}
-
-        val logPrefix = s"${this.simpleClassName}: "
-
-        try
-          tree match
-            case PackageClause(pid: Ref, _) => // hm... is it possible??
-              log.warn(s"$logPrefix Unexpected package definition [${refName(pid)}] inside class [$_fullClassName].")
-
-            case ClassDef(internalClassName: String, _, _, _, _) =>
-              log.info(s"$logPrefix Internal class [$_fullClassName#$internalClassName] is ignored" +
-                s" because there is no sense to process such this-dependent classes.")
-
-            case td @ TypeDef(typeName: String, rhs: Tree) =>
-              processTypeDef(td, _package)
-
-            case vd @ ValDef(name: String, tpt: TypeTree, rhs: Option[Term]) =>
-              val f: _Field = vd.toField
-              log.info(s"$logPrefix field: $f")
-              declaredFields.addOne(f)
-
-            // functions/methods
-            case dd @ DefDef(name: String, paramss: List[ParamClause], tpt: TypeTree, rhs: Option[Term]) =>
-              val m: _Method = dd.toMethod
-              log.info(s"$logPrefix method: $m")
-              declaredMethods.addOne(m)
-
-            case _ =>
-              logUnexpectedTreeEl("processClassDef", tree)
-        catch
-          // There is AssertionError because it can be thrown by scala compiler?!
-          //noinspection ScalaUnnecessaryParentheses => braces are really needed there!!!
-          case ex: (Exception | AssertionError) => log.error(s"$logPrefix Unexpected error $ex", ex)
-      }
-
-      val runtimeClass: Option[Class[?]] = tryDo(loadClass(_fullClassName))
 
 
-      val _class = _Class(
-        _package.fullName, _simpleClassName,
-        ClassKind.Scala3, runtimeClass.map(cls => ClassSource.of(cls)),
-        runtimeClass,
-        parents,
-        declaredFields.map(f => (f.toKey, f)).toMap,
-        declaredMethods.map(m => (m.toKey, m)).toMap,
-        ) (this)
-      _class
-
-    end processClassDef
-
-
-
-
-    def visitTree(el: Tree): List[_Package] =
-      var processed: List[_Package] = Nil
+    def visitTree(el: Tree): List[FilePackageContainer] =
+      var processed: List[FilePackageContainer] = Nil
 
         val traverser = new TreeTraverser {
         override def traverseTree(tree: Tree)(owner: Symbol): Unit =
@@ -320,150 +251,6 @@ class ScalaBeansInspector extends Inspector :
       if !processedJars.contains(jarPath) then inspectJar(jarPath)
     }
 
-
-  /*
-    // TypeDef(name: String, constr: DefDef, parents: List[Tree /* Term | TypeTree */], selfOpt: Option[ValDef], body: List[Statement])
-    class TypeDefTreeTraverser(val typeDef: TypeDef, val _package: _Package) extends TreeTraverser {
-      val _typeName: String = typeDef.name
-
-      override def traverseTree(tree: Tree)(owner: Symbol): Unit =
-        import org.mvv.scala.tools.beans._Quotes.{ extractType, toField, toMethod }
-        val logPrefix = s"${this.simpleClassName}: "
-        try
-          tree match
-            case td @ TypeDef(_, _) => if td != this.typeDef then TypeDefTreeTraverser(td, _package)
-
-            case PackageClause(pid: Ref, _) => // hm... is it possible??
-              log.warn(s"$logPrefix Unexpected package [${refName(pid)}] definition inside type definition [$_typeName].")
-
-            case cd @ ClassDef(internalClassName: String, _, _, _, _) =>
-              ClassDefTreeTraverser(cd, _package)
-
-            case v @ ValDef(_, _, _) =>
-              val f: _Field = v.toField
-              log.info(s"$logPrefix field: $f")
-
-            // functions/methods
-            case defDef @ DefDef(_, _, _, _) =>
-              val m: _Method = defDef.toMethod
-              log.info(s"$logPrefix method: $m")
-
-            case _ =>
-              logUnexpectedTreeEl(this, tree)
-              super.traverseTree(tree)(owner)
-        catch
-          // There is AssertionError because it can be thrown by scala compiler?!
-          //case ex: (Exception | AssertionError) => log.warn(s"$traverseLogPrefix => Unexpected error $ex", ex)
-          //noinspection ScalaUnnecessaryParentheses => braces are really needed there!!!
-          case ex: (Exception | AssertionError) => log.error(s"Unexpected error $ex", ex)
-    }
-    */
-
-
-
-  /*
-    def visitTree(el: Tree): Option[_Package] =
-      el match
-        case p if p.isPackageDef => Option(visitPackageTag(p.asInstanceOf[PackageClause]))
-        case _ => None
-
-
-    def visitPackageTag(packageClause: PackageClause): _Package =
-      val PackageClause(_, children) = packageClause
-
-      val tastyPackageName = packageClause.toSymbol.get.fullName
-      val realPackageName = if tastyPackageName == "<empty>" then "" else tastyPackageName
-      val _package = _Package(realPackageName)
-      children.foreach(
-        visitPackageEl(_package, _)
-          .foreach(cls => _package.classes.put(cls.simpleName, cls) ))
-      _package
-
-
-    def visitPackageEl(_package: _Package, el: Tree): Option[_Class] = el match
-      // usual pattern matching does not work for path-dependent types (starting from scala 2.12)
-      case td if td.isTypeDef => Some(visitTypeDef(_package, td.asInstanceOf[TypeDef]))
-      case _ => None // currently we need only classes
-
-
-    def visitTypeDef(_package: _Package, typeDef: TypeDef): _Class =
-
-      val TypeDef(typeName, rhs) = typeDef
-      val alreadyProcessed = classesByFullName.get(fullName(_package.name, typeName))
-      if alreadyProcessed.isDefined then return alreadyProcessed.get
-
-      //printFields(s"${_package.name}.$typeName  typeDef", typeDef)
-
-      val cls = loadClass(fullName(_package.name, typeName), classLoaders.values)
-      val _class = _Class(
-        Option(cls), ClassKind.Scala3, ClassSource.of(cls),
-        _package.name, typeName)(this)
-
-      visitParentTypeDefs(_class, rhs)
-      visitTypeDefEl(_class, rhs)
-
-      _class.parents.foreach { parentCls =>
-        val clsSrc = ClassSource.of(parentCls.runtimeClass.get)
-        clsSrc match
-          case JarClassSource(jarPath) => dependenciesJars.addOne(jarPath)
-          case _ =>
-      }
-
-      _class
-
-
-    def visitParentTypeDefs(_class: _Class, rhs: Tree): Unit = rhs match
-      case cd if cd.isClassDef || cd.isTemplate =>
-        val parents = getClassDefParents(cd).asInstanceOf[List[Tree]]
-
-        val parentFullClassNames = parents
-          .map(extractJavaClass(_))
-          .filterNot( classesToIgnore.contains(_) )
-        _class.parentTypeNames = parentFullClassNames
-
-        parentFullClassNames
-          .foreach { parentClassFullName =>
-            val parentClass = loadClass(parentClassFullName.className, classLoaders.values)
-            val toInspectParent: Boolean = toInspectParentClass(parentClass)
-
-            if (!classesByFullName.contains(parentClassFullName.className) && toInspectParent)
-              inspectClass(parentClass)
-          }
-
-      case _ =>
-
-
-    def visitTypeDefEl(_class: _Class, rhs: Tree): Unit = rhs match
-      case s if s.isSingletonDef => // nothing important and it has unexpected format
-      case cd if cd.isClassDef || cd.isTemplate => visitClassEls(_class, getClassMembers(cd))
-      case _ =>
-
-
-    def visitClassEls(_class: _Class, classEls: List[Tree]): Unit =
-      val declaredFields = mutable.Map[_FieldKey, _Field]()
-      val declaredMethods = mutable.Map[_MethodKey, _Method]()
-      val declaredTypeParams = mutable.ArrayBuffer[_TypeParam]()
-      classEls.foreach (
-        _ match
-          case el if el.isImport => // it is also ValDef... need to skip
-          //case el if el.isEnumValueDef => // skipping now
-          case el if el.isExprStatement => // skipping now
-          case el if el.isValDef => val f = el.toField;  declaredFields.addOne(f.toKey, f)
-          case el if el.isApply =>  // some instructions inside class definition
-          case el if el.isDefDef => val m = el.toMethod; declaredMethods.put(m.toKey, m)
-          case el if el.isTypeDef || el.isTemplate => val typeParamName = extractName(el);  declaredTypeParams.addOne(_TypeParam(typeParamName))
-          case el =>
-            printFields(s"Unexpected member class", el)
-              printTreeSymbolInfo(el)
-              log.warn(s"Unexpected member class [$el]. Please add explicit its processing or skipping (similar to <import>).")
-        // uncomment to fix warnings
-        //throw IllegalStateException(s"Unexpected class element: [$el].") // fir deeper testing
-      )
-      _class.declaredTypeParams = List.from(declaredTypeParams)
-      _class.declaredFields = Map.from(declaredFields)
-      _class.declaredMethods = Map.from(declaredMethods)
-      */
-
   end inspect
 
   private def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
@@ -480,10 +267,13 @@ class ScalaBeansInspector extends Inspector :
     val declaredFields  = _cls.getDeclaredFields.nn.map  { f => val _f = toField(f.nn);   (_f.toKey, _f) }.toMap
     val declaredMethods = _cls.getDeclaredMethods.nn.map { m => val _m = toMethod(m.nn);  (_m.toKey, _m) }.toMap
 
-    val _class: _Class = _Class(_cls.getPackageName.nn, _cls.getSimpleName.nn,
-      ClassKind.Java, Option(ClassSource.of(_cls)), Option(_cls),
-      parentTypes, declaredFields, declaredMethods,
-    )(scalaBeansInspector)
+    val _class: _Class = _Class(
+      _cls.getPackageName.nn, _cls.getSimpleName.nn,
+      ClassKind.Java, Option(ClassSource.of(_cls)),
+      parentTypes,
+      declaredFields, declaredMethods,
+      Option(_cls),
+    )(Option(scalaBeansInspector))
 
     _class
   end inspectJavaClass
@@ -498,12 +288,13 @@ class TastyFileNotFoundException protected (message: String, cause: Option[Throw
   def this(message: String) = this(message, None)
 
 
-// TODO: rename, since it not real package
-private class _Package (val fullName: String) :
+
+private class FilePackageContainer (val fullName: String) :
   val classes: mutable.Map[String, _Class] = mutable.HashMap()
   def simpleName: String = fullName.afterLast('.').getOrElse(fullName)
   override def toString: String = s"package $fullName \n${ classes.values.mkString("\n") }"
-  def withSubPackage(subPackageName: String): _Package = _Package(s"$fullName.$subPackageName")
+  def withSubPackage(subPackageName: String): FilePackageContainer = FilePackageContainer(s"$fullName.$subPackageName")
+
 
 
 def toInspectParentClass(_class: Class[?]): Boolean =
@@ -512,21 +303,6 @@ def toInspectParentClass(_class: Class[?]): Boolean =
     case ClassKind.Scala2 => true
     case ClassKind.Scala3 => getClassLocationUrl(_class).getProtocol != "jar"
 
-
-
-private def refName(using q: Quotes)(ref: q.reflect.Ref): String =
-  import q.reflect.Ident
-  ref match
-    case Ident(name: String) => name
-    case _ =>
-      log.warn(s"Ref is not Ident and name is taken by symbol name." +
-        s" It may be unexpected behavior which should be better treated in proper non-default way (ref: $ref).")
-      ref.symbol.name
-
-
-private def fullPackageName(using q: Quotes)(packageClause: q.reflect.PackageClause): String =
-  val fullPackageName = packageClause.symbol.fullName
-  if fullPackageName == "<empty>" then "" else fullPackageName
 
 
 extension (obj: AnyRef)

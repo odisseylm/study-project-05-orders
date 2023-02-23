@@ -44,10 +44,10 @@ class BeanProperties (
 
 
 extension (_class: _Class)
-  def toBeanProperties: BeanProperties =
-    toBeanProperties(TypesLoadMode.ScalaAST)
+  //def toBeanProperties: BeanProperties =
+  //  toBeanProperties(InspectMode.AllSources)
 
-  def toBeanProperties(typesLoadMode: TypesLoadMode): BeanProperties =
+  def toBeanProperties(inspectMode: InspectMode): BeanProperties =
     val propFields: Iterable[(String, _Field)]   = _class.fields.view.values
       .filter(_.isPublic)
       .map(f => (f.name, f))
@@ -60,7 +60,7 @@ extension (_class: _Class)
     val propAccessorsMap: Map[String, Iterable[_Field|_Method]] = propAccessors.groupMap(v => v._1)(v => v._2)
 
     var beanProps = propAccessorsMap.map(p => toBeanProperty(_class, p))
-    if typesLoadMode == TypesLoadMode.All then
+    if inspectMode == InspectMode.AllSources then
       beanProps = beanProps.map(p => p.withFilledRuntimeTypes)
 
     val beanPropsMap: Map[String, BeanProperty] = beanProps.map(bp => (bp.name, bp)).toMap

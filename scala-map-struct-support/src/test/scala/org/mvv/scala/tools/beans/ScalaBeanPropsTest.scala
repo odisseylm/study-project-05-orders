@@ -17,7 +17,7 @@ class ScalaBeanPropsTest {
   def createScalaBeanProperties_usingTastyOnly(): Unit = {
     val inspector = ScalaBeansInspector()
     val _class: _Class = inspector.inspectClass(classOf[InheritedFromJavaClass2])
-    val beanProps = _class.toBeanProperties
+    val beanProps = _class.toBeanProperties(InspectMode.ScalaAST)
 
     val p: BeanProperty = beanProps.beanProps("trait1Var")
     val a = SoftAssertions()
@@ -40,7 +40,7 @@ class ScalaBeanPropsTest {
   def createScalaBeanProperties_usingJavaReflectionToo(): Unit = {
     val inspector = ScalaBeansInspector()
     val _class: _Class = inspector.inspectClass(classOf[InheritedFromJavaClass2])
-    val beanProps = _class.toBeanProperties(TypesLoadMode.All)
+    val beanProps = _class.toBeanProperties(InspectMode.AllSources)
 
     val p: BeanProperty = beanProps.beanProps("trait1Var")
     val a = SoftAssertions()

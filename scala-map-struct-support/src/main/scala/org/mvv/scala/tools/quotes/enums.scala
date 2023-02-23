@@ -114,6 +114,13 @@ private def extractEnumValueName[EnumType <: ScalaEnum]
 
 
 
+/**
+ * Getting real enum value (or enum value name) of some enums is not always possible.
+ * This enum should be already compiled or be internal, which is used inside macros.
+ * Mainly is designed for working with internal enums which are used in macros.
+ * These enums should be located in proper independent source files
+ * to be pre-compiled before macros expansion (which uses these enums).
+ */
 //noinspection ScalaUnusedSymbol
 private def extractEnumValue[EnumType <: ScalaEnum]
   (using Quotes, Type[EnumType])

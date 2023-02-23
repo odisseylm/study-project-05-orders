@@ -24,7 +24,8 @@ def qInstanceOf[T](using q: Quotes)(using Type[T])(expr: q.reflect.Term): q.refl
 //  )
 //
 def qOption[T](using q: Quotes)(using Type[T])(expr: q.reflect.Term): q.reflect.Term =
-  import q.reflect.*
+  import q.reflect.{ Apply, Select, TypeApply, TypeTree }
+
   val optionApplySelect = Select.unique(Select.unique(qScalaPackage, "Option"), "apply")
   val typeApply = TypeApply(optionApplySelect, List(TypeTree.of[T]))
   Apply(typeApply, List(expr))

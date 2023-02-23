@@ -49,14 +49,14 @@ def getProp(obj: Any, method: String): Any = {
 }
 
 
-def printTreeSymbolInfo(using quotes: Quotes)(tree: quotes.reflect.Tree): Unit =
+def printTreeSymbolInfo(using q: Quotes)(tree: q.reflect.Tree): Unit =
   printSymbolInfo(tree.symbol)
 
-def printSymbolInfo(using quotes: Quotes)(symbol: Option[quotes.reflect.Symbol]): Unit =
+def printSymbolInfo(using q: Quotes)(symbol: Option[q.reflect.Symbol]): Unit =
   symbol.foreach(s => printSymbolInfo(s))
 
-def printSymbolInfo(using quotes: Quotes)(symbol: quotes.reflect.Symbol): Unit =
-  import quotes.reflect.*
+def printSymbolInfo(using q: Quotes)(symbol: q.reflect.Symbol): Unit =
+  import q.reflect.Symbol
 
   var str = ""
   str += s"name: ${symbol.name}\n"

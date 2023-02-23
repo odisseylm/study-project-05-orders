@@ -22,7 +22,7 @@ def _internalTestCustomMappingsAsRepeatedParamsImpl[EnumFrom <: ScalaEnum, EnumT
   (customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
   (using q: Quotes)(using Type[EnumFrom], Type[EnumTo]): Expr[Any] =
 
-  import q.reflect.*
+  import q.reflect.asTerm
 
   val logPrefix = s"_internalTestCustomMappingsAsRepeatedParamsImpl [ ${Type.show[EnumFrom]} => ${Type.show[EnumTo]} ], "
   log.trace(s"$logPrefix customMappingsRepetaed: ${customMappings.asTerm}")
@@ -44,7 +44,7 @@ def _internalTestCustomMappingsAsListParamImpl[EnumFrom <: ScalaEnum, EnumTo <: 
   (customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
   (using q: Quotes)(using Type[EnumFrom], Type[EnumTo]): Expr[Any] =
 
-  import q.reflect.*
+  import q.reflect.asTerm
 
   val logPrefix = s"_internalTestCustomMappingsAsListParamsImpl [ ${Type.show[EnumFrom]} => ${Type.show[EnumTo]} ], "
   log.trace(s"$logPrefix customMappingsList: ${customMappings.asTerm}")
@@ -66,7 +66,7 @@ def _internalTestCustomMappingsAsSingleParamImpl[EnumFrom <: ScalaEnum, EnumTo <
   (customMapping: Expr[(EnumFrom, EnumTo)])
   (using q: Quotes)(using Type[EnumFrom], Type[EnumTo]): Expr[Any] =
 
-  import q.reflect.*
+  import q.reflect.asTerm
 
   val logPrefix = s"_internalTestCustomMappingsAsSingleParamsImpl [ ${Type.show[EnumFrom]} => ${Type.show[EnumTo]} ], "
   log.trace(s"$logPrefix customMappingsSingleParam: ${customMapping.asTerm}")

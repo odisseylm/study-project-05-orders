@@ -76,7 +76,7 @@ class InspectClassWithBodyStatementsTest {
   @Test
   def testClassWithExpressionsInClassBody(): Unit = {
     val cls: _Class = ScalaBeansInspector().inspectClass(classOf[ClassWithBodyStatements])
-    val beanProps = cls.toBeanProperties
+    val beanProps = cls.toBeanProperties(InspectMode.AllSources)
 
     /*
     // with runtime types

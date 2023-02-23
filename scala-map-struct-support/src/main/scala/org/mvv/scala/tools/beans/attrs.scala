@@ -50,9 +50,14 @@ object ClassKind :
 
 
 
-enum TypesLoadMode :
-  case ScalaAST // Runtime types will be unavailable (if they generics)
-     , All      // Scala AST/Tasty + Java reflection (runtime types will be loaded)
+enum InspectMode :
+  case
+       /** Scala AST/Tasty + Java reflection (runtime types/classes will be inspected) */
+       AllSources
+       /** Only AST tree, Use it if runtime types are unavailable
+        *  (but full resulting runtime type names may be unavailable in case of using generics)
+        */
+     , ScalaAST
 
 
 

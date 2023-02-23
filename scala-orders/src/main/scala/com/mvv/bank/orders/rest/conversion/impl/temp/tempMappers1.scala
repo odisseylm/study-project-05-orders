@@ -25,10 +25,11 @@ class DomainOrder1 :
 
 @main
 def aaa(): Unit = {
-  import org.mvv.scala.mapstruct.beanProperties
-  def i = org.mvv.scala.mapstruct.ScalaBeansInspector()
-  val cls: org.mvv.scala.mapstruct._Class = i.inspectClass(classOf[DomainOrder1])
-  val bp = cls.beanProperties
+  import org.mvv.scala.tools.beans.{ _Class, ScalaBeansInspector, toBeanProperties, InspectMode }
+
+  def i = ScalaBeansInspector()
+  val cls: _Class = i.inspectClass(classOf[DomainOrder1])
+  val bp = cls.toBeanProperties(InspectMode.AllSources)
   println(bp)
 }
 

@@ -38,7 +38,7 @@ private def extractValuesTuple2Entries[T1, T2, TC1, TC2]
   (using q: Quotes)(using Type[T1], Type[T2])
   ( tree: q.reflect.Tree, tupleExtractor: ValuesTuple2Extractor[q.reflect.Tree, TC1, TC2])
   : List[(TC1, TC2)] =
-  import q.reflect.*
+  import q.reflect.Tree
   val treesTuples: List[(Tree, Tree)] = extractTreesTuple2Entries[T1, T2](tree)
   treesTuples.map(t => tupleExtractor(t))
 
@@ -49,7 +49,7 @@ private def extractTreesTuple2Entries[T1, T2]
   (tree: q.reflect.Tree)
   : List[(q.reflect.Tree, q.reflect.Tree)] =
 
-  import q.reflect.*
+  import q.reflect.{ Tree, TreeTraverser, Symbol }
   val logPrefix = "parseTuple2Entries"
 
   val tuples: mutable.ArrayBuffer[(Tree, Tree)] = mutable.ArrayBuffer()
