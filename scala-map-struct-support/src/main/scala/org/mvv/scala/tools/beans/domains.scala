@@ -142,7 +142,7 @@ case class _Field (
 
 case class _FieldKey(fieldName: String)(field: Option[_Field] = None) :
   override def toString: String =
-    val resultTypeStr = field .map(s": ${_._type}") .getOrElse("")
+    val resultTypeStr = field .map(f => s": ${f._type}") .getOrElse("")
     s"$fieldName$resultTypeStr"
 
 object _FieldKey :
