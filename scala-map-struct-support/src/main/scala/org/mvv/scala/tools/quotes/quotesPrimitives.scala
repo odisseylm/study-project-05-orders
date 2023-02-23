@@ -5,12 +5,36 @@ import scala.quoted.*
 import org.mvv.scala.tools.afterLast
 
 
+
+enum QResult :
+  case AsIs, AsInlined
+
+
+
+def qStringLiteral(using q: Quotes)(value: => String, qResult: QResult = QResult.AsIs): q.reflect.Term =
+  import q.reflect.{ Literal, StringConstant }
+  val resTerm = wrapQResult(Literal(StringConstant(value)), qResult)
+  resTerm
+
+
+//noinspection ScalaUnusedSymbol
+def qStringLiteralExpr(using Quotes)(value: => String): Expr[String] =
+  qStringLiteral(value, QResult.AsInlined).asExprOf[String]
+
+
+
 def qInstanceOf[T](using q: Quotes)(using Type[T])(expr: q.reflect.Term): q.reflect.Term =
   import q.reflect.{ Symbol, TypeTree, Select, TypeRepr, TypeApply }
   val asInstanceOfMethod = Symbol.newMethod(Symbol.noSymbol, "asInstanceOf", TypeRepr.of[T])
   val fun = Select(expr, asInstanceOfMethod)
   val typeApply = TypeApply(fun, List(TypeTree.of[T]))
   typeApply
+
+
+
+def wrapQResult(using q: Quotes)(v: q.reflect.Term, qResult: QResult): q.reflect.Term = qResult match
+  case QResult.AsInlined => q.reflect.Inlined(None, Nil, v)
+  case QResult.AsIs => v
 
 
 

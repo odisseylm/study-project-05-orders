@@ -107,7 +107,6 @@ private def paramToType(using q: Quotes)(p: q.reflect.ValDef | q.reflect.TypeDef
   p match
     case vd: ValDef  => extractType(vd.tpt)
     case td: TypeDef => extractType(td) // T O D O: probably it is not tested
-    case _ => throw IllegalStateException(s"Unexpected param definition [$p].")
 
 def paramssToTypes(using q: Quotes)(paramss: List[q.reflect.ParamClause]): List[_Type] =
   if paramss.sizeIs == 1 && paramss.head.params.isEmpty

@@ -2,7 +2,7 @@ package org.mvv.scala.tools.quotes
 
 import scala.quoted.*
 //
-import org.mvv.scala.tools.afterLast
+import org.mvv.scala.tools.{ afterLast, beforeFirst, tryDo }
 
 
 
@@ -21,6 +21,40 @@ def extractFullClassNameComponents (classFullName: String): (String, String) =
   val index = classFullName.lastIndexOf('.')
   if index == -1 then ("", classFullName)
   else (classFullName.substring(0, index).nn, classFullName.substring(index + 1).nn)
+
+
+
+def macrosSource(using q: Quotes): Any =
+  import q.reflect.Symbol
+  tryDo { Symbol.spliceOwner.owner.tree }.getOrElse(Symbol.spliceOwner.owner.pos)
+
+
+
+def qCurrentExprPackage(using q: Quotes): String =
+  import q.reflect.{ Symbol, report }
+
+  var s = Symbol.spliceOwner
+  while s != Symbol.noSymbol && !s.isPackageDef do
+    s = s.maybeOwner
+
+  if s.isPackageDef
+    then s.fullName
+    else report.errorAndAbort(s"Cannot find package of expr $macrosSource.")
+
+
+
+def qTopClassOrModuleFullName(using q: Quotes): String =
+  import q.reflect.Symbol
+
+  var lastNonPackageFullName = ""
+
+  var s = Symbol.spliceOwner
+  while s != Symbol.noSymbol && !s.isPackageDef do
+    if s.isClassDef || s.isTypeDef then lastNonPackageFullName = s.fullName
+    s = s.maybeOwner
+
+  val topClassOrModuleFullName = lastNonPackageFullName.beforeFirst('$') .getOrElse(lastNonPackageFullName)
+  topClassOrModuleFullName
 
 
 
