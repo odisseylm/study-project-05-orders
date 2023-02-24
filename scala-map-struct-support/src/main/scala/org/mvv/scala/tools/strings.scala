@@ -26,6 +26,11 @@ extension (s: String)
     val firstIndex = s.indexOf(delimiter)
     if firstIndex == -1 then None else Option(s.substring(0, firstIndex).nn)
 
+  // TODO: find better name
+  def beforeFirstOrOriginal(delimiter: Char): String =
+    val firstIndex = s.indexOf(delimiter)
+    if firstIndex == -1 then s else s.substring(0, firstIndex).nn
+
   def beforeLast(delimiter: Char): Option[String] =
     val lastIndex = s.lastIndexOf(delimiter)
     if lastIndex == -1 then None else Option(s.substring(0, lastIndex).nn)

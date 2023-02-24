@@ -2,7 +2,7 @@ package org.mvv.scala.tools.quotes
 
 import scala.quoted.*
 //
-import org.mvv.scala.tools.{ afterLast, beforeFirst, tryDo }
+import org.mvv.scala.tools.{ afterLast, beforeFirst, beforeFirstOrOriginal, tryDo }
 
 
 
@@ -73,13 +73,12 @@ def qFullClassNameOf[T]
   fullClassName
 
 
-// TODO: cover with unit tests
 /** This logic moved to separate method because probably it should be fixed
  * for generics/anonymous/etc */
 //noinspection ScalaUnusedSymbol
-def getFullClassName(using Quotes)(typeName: String) =
-  // T O D O: impl if needed for generics/anonymous/etc
-  typeName
+def getFullClassName(typeName: String) =
+  val fullClassName = typeName.beforeFirstOrOriginal('[')
+  fullClassName
 
 
 

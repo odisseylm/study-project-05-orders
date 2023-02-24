@@ -388,3 +388,25 @@ Apply(
         ),
       quotes
     ),quotesTypes$package),isQuotesType),List(Ident(tree), Literal(Constant(Apply)))))
+
+
+Inlined(
+  EmptyTree,
+  List(),
+  Apply(
+    TypeApply(
+      Select(
+        Select(
+          Select(Select(Select(Select(Ident(org),mvv),scala),tools),props), // package
+          NamedValue // object
+        ),
+        apply
+      ),
+      List(Ident(Int))
+    ),
+    List(
+      Literal(Constant(prop1)),
+      Literal(Constant(123))
+    )
+  )
+)
