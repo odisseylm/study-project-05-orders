@@ -7,6 +7,8 @@ import org.mvv.scala.mapstruct.debug.dump.dumpExpr
 //noinspection ScalaUnnecessaryParentheses
 class DumpTest {
 
+  // commented to avoid a lot of console output
+  /*
   @Test
   def testDump1(): Unit = {
     val v222: (TestEnum1 => TestEnum2) = dumpExpr( vvvv => vvvv match
@@ -22,4 +24,5 @@ class DumpTest {
     //noinspection ScalaUnusedSymbol
     val opt: Option[String] = dumpExpr( Option(v) )
   }
+  */
 }

@@ -6,7 +6,7 @@ import scala.collection.mutable
 //
 import org.mvv.scala.tools.beans._Quotes.extractType
 import org.mvv.scala.tools.tryDo
-import org.mvv.scala.tools.quotes.refName
+import org.mvv.scala.tools.quotes.{ refName, isExprStatement }
 
 
 
@@ -21,8 +21,9 @@ def logUnexpectedTreeEl(using q: Quotes)(processor: q.reflect.TreeTraverser|Stri
 
 
 def processTypeDef(using q: Quotes)(typeDef: q.reflect.TypeDef, _package: FilePackageContainer): Unit =
-  // TODO: impl
-  logUnexpectedTreeEl("processTypeDef", typeDef)
+  // seems now nothing useful there
+  //logUnexpectedTreeEl("processTypeDef", typeDef)
+  log.debug(s"processTypeDef => typedefs are ignored now: $typeDef")
 
 
 
@@ -65,26 +66,32 @@ def processClassDef(using q: Quotes)(
         case PackageClause(pid: Ref, _) => // hm... is it possible??
           log.warn(s"$logPrefix Unexpected package definition [${refName(pid)}] inside class [$_fullClassName].")
 
-        case ClassDef(internalClassName: String, _, _, _, _) =>
-          log.info(s"$logPrefix Internal class [$_fullClassName#$internalClassName] is ignored" +
+        case cd: ClassDef =>
+          // TODO: there not only this-dependent classes but also classes located in objects, we need to process
+          //       them too
+          log.info(s"$logPrefix Internal class [$_fullClassName#${cd.name}] is ignored" +
             s" because there is no sense to process such this-dependent classes.")
 
-        case td@TypeDef(typeName: String, rhs: Tree) =>
-          processTypeDef(td, _package)
+        case td: TypeDef => processTypeDef(td, _package)
 
-        case vd@ValDef(name: String, tpt: TypeTree, rhs: Option[Term]) =>
+        case vd: ValDef =>
           val f: _Field = vd.toField
-          log.info(s"$logPrefix field: $f")
+          log.debug(s"$logPrefix field: $f")
           declaredFields.addOne(f)
 
         // functions/methods
-        case dd@DefDef(name: String, paramss: List[ParamClause], tpt: TypeTree, rhs: Option[Term]) =>
+        case dd: DefDef =>
           val m: _Method = dd.toMethod
-          log.info(s"$logPrefix method: $m")
+          log.debug(s"$logPrefix method: $m")
           declaredMethods.addOne(m)
 
+        case _: Import => // ignore
+        // statements
+        // some instructions inside class definition
+
         case _ =>
-          logUnexpectedTreeEl("processClassDef", tree)
+          if !tree.isExprStatement then
+            logUnexpectedTreeEl("processClassDef", tree)
     catch
       // There is AssertionError because it can be thrown by scala compiler?!
       //noinspection ScalaUnnecessaryParentheses => braces are really needed there!!!
@@ -93,8 +100,6 @@ def processClassDef(using q: Quotes)(
 
   val runtimeClass: Option[Class[?]] = if inspectMode == InspectMode.AllSources
                                        then tryDo(loadClass(_fullClassName)) else None
-
-  println(s"%%% runtimeClass: $runtimeClass")
 
   val _class = _Class(
     _package.fullName, _simpleClassName,

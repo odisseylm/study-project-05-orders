@@ -129,11 +129,6 @@ class ScalaBeansInspector extends Inspector :
         s" Please explicitly process or ignore element: $treeEl")
 
 
-    def processTypeDef(typeDef: TypeDef, _package: FilePackageContainer): Unit =
-      // TODO: impl
-      logUnexpectedTreeEl("processTypeDef", typeDef)
-
-
     class PackageTreeTraverser (
       val packageClause: PackageClause,
       val parentPackage: Option[FilePackageContainer],
@@ -159,19 +154,22 @@ class ScalaBeansInspector extends Inspector :
               super.traverseTree(tree)(owner)
 
             case p @ PackageClause(pid: Ref, _) => // hm... is it possible?? I think in scala, yes!
-              log.info(s"$logPrefix It is PackageClause ($pid): ${tree.shortContent}")
+              log.debug(s"$logPrefix It is PackageClause ($pid): ${tree.shortContent}")
               PackageTreeTraverser(p, parentPackage).traverseTree(p)(p.symbol)
 
             case cd @ ClassDef(classDefName: String, _, _, _, _) =>
-              log.info(s"$logPrefix It is ClassDef ($classDefName): ${tree.shortContent}")
+              log.debug(s"$logPrefix It is ClassDef ($classDefName): ${tree.shortContent}")
 
               val _class = processClassDef(cd, _package, InspectMode.AllSources)
                 .copy()(Option(ScalaBeansInspector.this))
               _package.classes.put(_class.fullName, _class)
 
             case td @ TypeDef(typeDefName: String, _) =>
-              log.info(s"$logPrefix It is TypeDefClause ($typeDefName): ${tree.shortContent}")
+              log.debug(s"$logPrefix It is TypeDefClause ($typeDefName): ${tree.shortContent}")
               processTypeDef(td, _package)
+
+            case _: Import => // ignore
+            case _: ValDef => // ignore
 
             case _ =>
               logUnexpectedTreeEl(this, tree)
@@ -194,7 +192,7 @@ class ScalaBeansInspector extends Inspector :
           try
             tree match
               case p @ PackageClause(pid: Ref, stats: List[Tree]) =>
-                log.info(s"$logPrefix It is PackageClause ($pid): ${tree.shortContent}")
+                log.debug(s"$logPrefix It is PackageClause ($pid): ${tree.shortContent}")
                 val packageTreeTraverser = PackageTreeTraverser(p, None)
                 packageTreeTraverser.traverseTree(p)(p.symbol)
                 processed ::= packageTreeTraverser._package
