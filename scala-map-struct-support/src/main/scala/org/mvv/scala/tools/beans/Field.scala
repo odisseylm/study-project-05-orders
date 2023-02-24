@@ -25,7 +25,7 @@ case class _Field (
   // noinspection ScalaUnusedSymbol , for debugging only
   val internalValue: Any
   ) extends _ClassMember :
-  override def toString: String = s"Field '$name' : $_type (modifiers: $modifiers)"
+  override def toString: String = s"Field '$name' : $_type$modifiersAsString"
   def withAddedModifiers(newModifiers: _Modifier*): _Field =
     this.copy(modifiers = this.modifiers ++ newModifiers)(internalValue)
   override def toKey: _FieldKey = _FieldKey(this)

@@ -26,6 +26,16 @@ def processTypeDef(using q: Quotes)(typeDef: q.reflect.TypeDef, _package: FilePa
 
 
 
+//noinspection NoTailRecursionAnnotation , // there is no recursion at all
+def processClassDef2(using q: Quotes)(
+  classDef: q.reflect.ClassDef,
+  inspectMode: InspectMode,
+  ): _Class =
+  val _package = FilePackageContainer("fdfdfd")
+  processClassDef(classDef, _package, inspectMode)
+
+
+
 def processClassDef(using q: Quotes)(
   classDef: q.reflect.ClassDef,
   _package: FilePackageContainer,
@@ -83,6 +93,8 @@ def processClassDef(using q: Quotes)(
 
   val runtimeClass: Option[Class[?]] = if inspectMode == InspectMode.AllSources
                                        then tryDo(loadClass(_fullClassName)) else None
+
+  println(s"%%% runtimeClass: $runtimeClass")
 
   val _class = _Class(
     _package.fullName, _simpleClassName,

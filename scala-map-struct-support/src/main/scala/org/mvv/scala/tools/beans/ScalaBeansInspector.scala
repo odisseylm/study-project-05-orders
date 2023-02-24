@@ -142,7 +142,7 @@ class ScalaBeansInspector extends Inspector :
       //val _package: _Package = parentPackage
       //  .map(parentPack => parentPack.withSubPackage(refName(packageClause.pid)))
       //  .getOrElse(_Package(fullPackageName(refName(packageClause.pid))))
-      val _package: FilePackageContainer = FilePackageContainer(fullPackageName(packageClause))
+      val _package = FilePackageContainer(fullPackageName(packageClause))
 
       override def traverseTree(tree: Tree)(owner: Symbol): Unit =
         val logPrefix = s"${this.simpleClassName}: "
@@ -289,7 +289,7 @@ class TastyFileNotFoundException protected (message: String, cause: Option[Throw
 
 
 
-private class FilePackageContainer (val fullName: String) :
+class FilePackageContainer (val fullName: String) :
   val classes: mutable.Map[String, _Class] = mutable.HashMap()
   def simpleName: String = fullName.afterLast('.').getOrElse(fullName)
   override def toString: String = s"package $fullName \n${ classes.values.mkString("\n") }"

@@ -45,6 +45,7 @@ case class _Class (
   lazy val fields:  Map[_FieldKey, _Field]   = { mergeAllMembers(this.declaredFields,  parentClasses, cls => cls.fields) }
   lazy val methods: Map[_MethodKey, _Method] = { mergeAllMembers(this.declaredMethods, parentClasses, cls => cls.methods) }
 
+  // TODO: ??? do not use lazy fields/methods in
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
                                   s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
 
