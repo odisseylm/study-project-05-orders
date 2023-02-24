@@ -15,7 +15,7 @@ import java.nio.file.Path
 import ClassKind.classKind
 import org.mvv.scala.tools.Logger
 import org.mvv.scala.mapstruct.debug.{ printFields, printSymbolInfo, printTreeSymbolInfo }
-import org.mvv.scala.tools.{ Logger, replaceSuffix, fullName, tryDo, ifBlank, afterLastOr }
+import org.mvv.scala.tools.{ Logger, replaceSuffix, fullName, tryDo, ifBlank, afterLastOr, afterLastOfAnyCharsOr }
 import org.mvv.scala.tools.beans._Quotes.extractType
 import org.mvv.scala.tools.quotes.{ fullPackageName, refName}
 
@@ -160,9 +160,9 @@ class ScalaBeansInspector extends Inspector :
             case cd @ ClassDef(classDefName: String, _, _, _, _) =>
               log.debug(s"$logPrefix It is ClassDef ($classDefName): ${tree.shortContent}")
 
-              val _class = processClassDef(cd, _package, InspectMode.AllSources)
-                .copy()(Option(ScalaBeansInspector.this))
-              _package.classes.put(_class.fullName, _class)
+              val _classes = processClassDef(cd, _package, InspectMode.AllSources)
+                .map( _.copy()(Option(ScalaBeansInspector.this)) )
+              _package.classes.addAll( _classes.map(cls => (cls.fullName, cls)) )
 
             case td @ TypeDef(typeDefName: String, _) =>
               log.debug(s"$logPrefix It is TypeDefClause ($typeDefName): ${tree.shortContent}")
@@ -265,8 +265,13 @@ class ScalaBeansInspector extends Inspector :
     val declaredFields  = _cls.getDeclaredFields.nn.map  { f => val _f = toField(f.nn);   (_f.toKey, _f) }.toMap
     val declaredMethods = _cls.getDeclaredMethods.nn.map { m => val _m = toMethod(m.nn);  (_m.toKey, _m) }.toMap
 
+    val javaClassSimpleName = _cls.getSimpleName.nn
+    val scalaClassSimpleName = javaClassSimpleName.afterLastOfAnyCharsOr(".$", javaClassSimpleName)
+
     val _class: _Class = _Class(
-      _cls.getPackageName.nn, _cls.getSimpleName.nn,
+      _cls.getName.nn,
+      _cls.getPackageName.nn,
+      scalaClassSimpleName,
       ClassKind.Java, Option(ClassSource.of(_cls)),
       parentTypes,
       declaredFields, declaredMethods,
@@ -289,7 +294,7 @@ class TastyFileNotFoundException protected (message: String, cause: Option[Throw
 
 class FilePackageContainer (val fullName: String) :
   val classes: mutable.Map[String, _Class] = mutable.HashMap()
-  def simpleName: String = fullName.afterLastOr('.').getOrElse(fullName)
+  def simpleName: String = fullName.afterLastOr(".", fullName)
   override def toString: String = s"package $fullName \n${ classes.values.mkString("\n") }"
   def withSubPackage(subPackageName: String): FilePackageContainer = FilePackageContainer(s"$fullName.$subPackageName")
 

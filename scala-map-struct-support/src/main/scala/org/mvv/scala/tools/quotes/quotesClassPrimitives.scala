@@ -16,7 +16,7 @@ enum ClassSelectMode :
 
 
 
-/** Returns tuple with package and simple class name */
+/** Returns tuple with 'path' (package for top classes) and simple class name */
 //noinspection DuplicatedCode
 def extractFullClassNameComponents (classFullName: String): (String, String) =
   val index = classFullName.lastIndexOf('.')
@@ -172,6 +172,6 @@ private def qClassName_usingSimpleClassNameAndEnumClassThisScope[T]
 
   val scopeTypRepr: TypeRepr = findClassThisScopeTypeRepr(classSymbol).get
   val fullEnumClassName = qFullClassNameOf[T]
-  val simpleEnumClassName = fullEnumClassName.afterLastOr('.').getOrElse(fullEnumClassName)
+  val simpleEnumClassName = fullEnumClassName.afterLastOr(".", fullEnumClassName)
   val classTerm = TermRef(scopeTypRepr, simpleEnumClassName)
   Ident(classTerm)

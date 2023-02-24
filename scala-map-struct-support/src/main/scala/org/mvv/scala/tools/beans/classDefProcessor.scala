@@ -20,6 +20,7 @@ def logUnexpectedTreeEl(using q: Quotes)(processor: q.reflect.TreeTraverser|Stri
 
 
 
+//noinspection ScalaUnusedSymbol
 def processTypeDef(using q: Quotes)(typeDef: q.reflect.TypeDef, _package: FilePackageContainer): Unit =
   // seems now nothing useful there
   //logUnexpectedTreeEl("processTypeDef", typeDef)
@@ -31,7 +32,7 @@ def processTypeDef(using q: Quotes)(typeDef: q.reflect.TypeDef, _package: FilePa
 def processClassDef2(using q: Quotes)(
   classDef: q.reflect.ClassDef,
   inspectMode: InspectMode,
-  ): _Class =
+  ): List[_Class] =
   val _package = FilePackageContainer("fdfdfd")
   processClassDef(classDef, _package, inspectMode)
 
@@ -41,7 +42,7 @@ def processClassDef(using q: Quotes)(
   classDef: q.reflect.ClassDef,
   _package: FilePackageContainer,
   inspectMode: InspectMode,
-  ): _Class =
+  ): List[_Class] =
   import q.reflect.*
 
   val _simpleClassName: String = classDef.name
@@ -50,7 +51,8 @@ def processClassDef(using q: Quotes)(
     .map(parentTree => extractType(parentTree))
     .filter(_type => !classesToIgnore.contains(_type))
 
-  //val declaredFields = scala.collection.mutable.ArrayBuffer[_Fields]
+  var internalClasses: List[_Class] = Nil
+
   val declaredFields = mutable.ArrayBuffer[_Field]()
   val declaredMethods = mutable.ArrayBuffer[_Method]()
 
@@ -67,10 +69,7 @@ def processClassDef(using q: Quotes)(
           log.warn(s"$logPrefix Unexpected package definition [${refName(pid)}] inside class [$_fullClassName].")
 
         case cd: ClassDef =>
-          // TODO: there not only this-dependent classes but also classes located in objects, we need to process
-          //       them too
-          log.info(s"$logPrefix Internal class [$_fullClassName#${cd.name}] is ignored" +
-            s" because there is no sense to process such this-dependent classes.")
+          internalClasses ++= processClassDef(cd, _package, inspectMode)
 
         case td: TypeDef => processTypeDef(td, _package)
 
@@ -101,14 +100,20 @@ def processClassDef(using q: Quotes)(
   val runtimeClass: Option[Class[?]] = if inspectMode == InspectMode.AllSources
                                        then tryDo(loadClass(_fullClassName)) else None
 
+  val classFullName = classDef.symbol.fullName
+
   val _class = _Class(
-    _package.fullName, _simpleClassName,
+    classFullName,
+    _package.fullName,
+    _simpleClassName,
     ClassKind.Scala3, runtimeClass.map(cls => ClassSource.of(cls)),
     parents,
     declaredFields.map(f => (f.toKey, f)).toMap,
     declaredMethods.map(m => (m.toKey, m)).toMap,
     runtimeClass,
   )(None)
-  _class
+
+  val allClasses = _class :: internalClasses
+  allClasses
 
 end processClassDef

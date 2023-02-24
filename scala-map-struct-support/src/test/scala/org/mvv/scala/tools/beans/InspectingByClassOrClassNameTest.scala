@@ -1,10 +1,14 @@
 package org.mvv.scala.tools.beans
 
+import org.junit.jupiter.api.Disabled
+
+import scala.language.unsafeNulls
 import scala.compiletime.uninitialized
 import scala.jdk.CollectionConverters.*
 import java.nio.file.Path
 //
 import org.junit.jupiter.api.Test
+import org.assertj.core.api.AbstractBooleanAssert
 import org.assertj.core.api.Assertions.assertThat
 //
 import testclasses.ClassSampleInProductionSources
@@ -89,7 +93,11 @@ class InspectingByClassOrClassNameTest {
 
     val rootProjectDir = "/home/vmelnykov/projects/study-project-05-orders/"
 
-    ScalaBeansInspector()
+    // com.mvv.scala.temp.tests.enums.Eastwood$#Good
+    // com.mvv.scala.temp.tests.Trading$#BuyOrder
+
+    val scala01jarInspector = ScalaBeansInspector()
+    scala01jarInspector
       .inspectJar(Path.of(s"$rootProjectDir/hello-world-samples/scala01/target/scala01-1.0-SNAPSHOT.jar"))
 
     // to have it successful we need to add child dependencies to classpath
@@ -104,6 +112,18 @@ class InspectingByClassOrClassNameTest {
 
     ScalaBeansInspector()
       .inspectJar(Path.of(s"$rootProjectDir/kotlin-orders/kotlin-orders-dto/target/kotlin-bank-orders-dto.jar"))
+
+    val internalClass = "com.mvv.scala.temp.tests.Trading$.BuyOrder"
+    //val allInspectedClasses = scala01jarInspector.classesDescr.keys.toList.sorted
+
+    assertThat(scala01jarInspector.classDescr(internalClass).isDefined)
+      //.describedAs(s"scala-01.jar " +
+      //  s"${allInspectedClasses.mkString("\n", "\n", "\n")}" +
+      //  s" does not contain internal class [$internalClass]."
+      //)
+      //// some strange scala behavior
+      //.asInstanceOf[org.assertj.core.api.AbstractBooleanAssert[?]]
+      .isTrue
 
 
   @Test

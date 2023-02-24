@@ -16,7 +16,7 @@ import org.mvv.scala.tools.{ isNotNull, afterLastOr, isImplClass, isOneOfImplCla
 
 //noinspection ScalaUnusedSymbol , // it is used in macros by name
 def isQuotesTypeByName(el: Any, typeName: String): Boolean =
-  val shortTypeName = typeName.afterLastOr('.').getOrElse(typeName)
+  val shortTypeName = typeName.afterLastOr(".").getOrElse(typeName)
   shortTypeName match
     case "Constant" => isConstantByClassName(el)
     // case "ClassDef" => ??? T O D O: impl it, there is no class ClassDef (in scala3-compiler_3-3.2.2-sources.jar!/dotty/tools/dotc/ast/Trees.scala)

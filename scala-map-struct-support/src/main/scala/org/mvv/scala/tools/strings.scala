@@ -14,16 +14,17 @@ extension (s: String)
   def endsWithOneOf(suffix: String, otherSuffixes: String*): Boolean =
     s.endsWith(suffix) || otherSuffixes.exists(s.endsWith)
 
-
-  def afterLastOr(delimiter: Char): Option[String] =
-    val lastIndex = s.lastIndexOf(delimiter)
-    if lastIndex == -1 then None else Option(s.substring(lastIndex + 1).nn)
-
-
   def afterLastOr(delimiter: String): Option[String] =
     val lastIndex = s.lastIndexOf(delimiter)
     if lastIndex == -1 then None else Option(s.substring(lastIndex + delimiter.length).nn)
+  def afterLastOr(delimiter: String, altStr: String): String =
+    s.afterLastOr(delimiter).getOrElse(altStr)
 
+  def afterLastOfAnyCharsOr(delimiterChars: String): Option[String] =
+    val lastIndex = s.lastIndexWhere(ch => delimiterChars.contains(ch))
+    if lastIndex == -1 then None else Option(s.substring(lastIndex + 1).nn)
+  def afterLastOfAnyCharsOr(delimiterChars: String, altStr: String): String =
+    afterLastOfAnyCharsOr(delimiterChars).getOrElse(altStr)
 
   def afterFirstOr(delimiter: String): Option[String] =
     val firstIndex = s.indexOf(delimiter)

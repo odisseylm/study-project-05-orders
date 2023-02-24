@@ -18,8 +18,12 @@ import org.mvv.scala.tools.beans._Type.toPortableType
 
 // it is case class only to have possibility to create copy of it
 case class _Class (
+  // for internal classes fullName is not equal package + simpleName because
+  // fullName also contains owner classes
+  fullName: String,
   _package: String,
   simpleName: String,
+
   classKind: ClassKind,
   classSource: Option[ClassSource],
   // with current impl it possibly can have duplicates
@@ -34,8 +38,6 @@ case class _Class (
 
   ) (inspector: Option[ScalaBeansInspector]) :
 
-  def fullName: String = org.mvv.scala.tools.fullName(_package, simpleName)
-
   // with current impl it possibly can have duplicates
   lazy val parentClasses: List[_Class] =
      parentTypes.map(_type => inspector
@@ -47,8 +49,8 @@ case class _Class (
   lazy val methods: Map[_MethodKey, _Method] = { mergeAllMembers(this.declaredMethods, parentClasses, cls => cls.methods) }
 
   // TODO: ??? do not use lazy fields/methods in
-  override def toString: String = s"Class $fullName (kind: $classKind, $classSource), " +
-                                  s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
+  override def toString: String = s"Class $fullName (kind: $classKind, $classSource)"
+                                  //s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
 
 
 
