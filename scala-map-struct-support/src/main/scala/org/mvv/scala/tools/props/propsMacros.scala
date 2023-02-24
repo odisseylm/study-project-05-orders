@@ -1,7 +1,6 @@
 package org.mvv.scala.tools.props
 
 import scala.quoted.{ Expr, Type, Quotes }
-import org.mvv.scala.tools.{ beforeFirst, beforeFirstOrOriginal }
 import org.mvv.scala.tools.quotes.qClassNameOf
 
 

@@ -15,7 +15,7 @@ import java.nio.file.Path
 import ClassKind.classKind
 import org.mvv.scala.tools.Logger
 import org.mvv.scala.mapstruct.debug.{ printFields, printSymbolInfo, printTreeSymbolInfo }
-import org.mvv.scala.tools.{ Logger, replaceSuffix, fullName, tryDo, ifBlank, afterLast }
+import org.mvv.scala.tools.{ Logger, replaceSuffix, fullName, tryDo, ifBlank, afterLastOr }
 import org.mvv.scala.tools.beans._Quotes.extractType
 import org.mvv.scala.tools.quotes.{ fullPackageName, refName}
 
@@ -142,7 +142,7 @@ class ScalaBeansInspector extends Inspector :
       //val _package: _Package = parentPackage
       //  .map(parentPack => parentPack.withSubPackage(refName(packageClause.pid)))
       //  .getOrElse(_Package(fullPackageName(refName(packageClause.pid))))
-      val _package = FilePackageContainer(fullPackageName(packageClause))
+      val _package: FilePackageContainer = FilePackageContainer(fullPackageName(packageClause))
 
       override def traverseTree(tree: Tree)(owner: Symbol): Unit =
         val logPrefix = s"${this.simpleClassName}: "
@@ -291,7 +291,7 @@ class TastyFileNotFoundException protected (message: String, cause: Option[Throw
 
 class FilePackageContainer (val fullName: String) :
   val classes: mutable.Map[String, _Class] = mutable.HashMap()
-  def simpleName: String = fullName.afterLast('.').getOrElse(fullName)
+  def simpleName: String = fullName.afterLastOr('.').getOrElse(fullName)
   override def toString: String = s"package $fullName \n${ classes.values.mkString("\n") }"
   def withSubPackage(subPackageName: String): FilePackageContainer = FilePackageContainer(s"$fullName.$subPackageName")
 

@@ -2,7 +2,8 @@ package org.mvv.scala.tools.quotes
 
 import scala.quoted.*
 //
-import org.mvv.scala.tools.{ afterLast, beforeFirst, beforeFirstOrOriginal, tryDo }
+import org.mvv.scala.tools.{ afterLastOr, stripAfter, tryDo }
+import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
 
 
 
@@ -53,7 +54,7 @@ def qTopClassOrModuleFullName(using q: Quotes): String =
     if s.isClassDef || s.isTypeDef then lastNonPackageFullName = s.fullName
     s = s.maybeOwner
 
-  val topClassOrModuleFullName = lastNonPackageFullName.beforeFirst('$') .getOrElse(lastNonPackageFullName)
+  val topClassOrModuleFullName = lastNonPackageFullName.stripAfter("$", ExcludeDelimiter)
   topClassOrModuleFullName
 
 
@@ -77,7 +78,7 @@ def qFullClassNameOf[T]
  * for generics/anonymous/etc */
 //noinspection ScalaUnusedSymbol
 def getFullClassName(typeName: String) =
-  val fullClassName = typeName.beforeFirstOrOriginal('[')
+  val fullClassName = typeName.stripAfter("[", ExcludeDelimiter)
   fullClassName
 
 
@@ -171,6 +172,6 @@ private def qClassName_usingSimpleClassNameAndEnumClassThisScope[T]
 
   val scopeTypRepr: TypeRepr = findClassThisScopeTypeRepr(classSymbol).get
   val fullEnumClassName = qFullClassNameOf[T]
-  val simpleEnumClassName = fullEnumClassName.afterLast('.').getOrElse(fullEnumClassName)
+  val simpleEnumClassName = fullEnumClassName.afterLastOr('.').getOrElse(fullEnumClassName)
   val classTerm = TermRef(scopeTypRepr, simpleEnumClassName)
   Ident(classTerm)

@@ -3,7 +3,7 @@ package org.mvv.scala.tools.quotes
 import scala.quoted.{Expr, Quotes, Type}
 import scala.collection.mutable
 //
-import org.mvv.scala.tools.{ Logger, afterLast, isOneOf, getByReflection, unwrapOption }
+import org.mvv.scala.tools.{ Logger, afterLastOr, isOneOf, getByReflection, unwrapOption }
 
 
 

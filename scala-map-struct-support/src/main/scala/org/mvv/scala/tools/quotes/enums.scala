@@ -4,7 +4,7 @@ import scala.quoted.{Quotes, Type, Expr }
 import scala.reflect.Enum as ScalaEnum
 import java.lang.reflect.Method as JavaMethod
 //
-import org.mvv.scala.tools.afterLast
+import org.mvv.scala.tools.afterLastOr
 
 
 /**

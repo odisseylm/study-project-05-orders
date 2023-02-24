@@ -2,7 +2,7 @@ package org.mvv.scala.tools.quotes
 
 import scala.quoted.*
 //
-import org.mvv.scala.tools.afterLast
+import org.mvv.scala.tools.afterLastOr
 
 
 

@@ -10,7 +10,8 @@ import java.lang.reflect.Field as JavaField
 import java.lang.reflect.Method as JavaMethod
 //
 import org.mvv.scala.tools.CollectionsOps.containsOneOf
-import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, beforeLast, beforeFirst }
+import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, stripAfter }
+import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
 import org.mvv.scala.tools.beans._Type.toPortableType
 
 

@@ -1,5 +1,7 @@
 package org.mvv.scala.tools.beans
 
+import org.mvv.scala.tools.KeepDelimiter
+
 import scala.annotation.{nowarn, tailrec}
 import scala.compiletime.uninitialized
 import scala.collection.mutable
@@ -10,14 +12,15 @@ import java.lang.reflect.Field as JavaField
 import java.lang.reflect.Method as JavaMethod
 //
 import org.mvv.scala.tools.CollectionsOps.containsOneOf
-import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, beforeLast, beforeFirst }
+import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, stripAfter }
+import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
 import org.mvv.scala.tools.beans._Type.toPortableType
 
 
 
 def typeNameToRuntimeClassName(typeName: String): String =
   // if it is generics
-  typeName.beforeFirst('[').getOrElse(typeName)
+  typeName.stripAfter("[", ExcludeDelimiter)
 
 
 

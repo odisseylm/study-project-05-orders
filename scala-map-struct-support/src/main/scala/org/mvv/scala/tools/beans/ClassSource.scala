@@ -4,7 +4,7 @@ import scala.annotation.tailrec
 import java.net.URL
 import java.nio.file.{Files, Path}
 //
-import org.mvv.scala.tools.{ checkNotNull, tryDo, isNotNull, afterFirst }
+import org.mvv.scala.tools.{ checkNotNull, tryDo, isNotNull, afterFirstOr }
 
 
 
