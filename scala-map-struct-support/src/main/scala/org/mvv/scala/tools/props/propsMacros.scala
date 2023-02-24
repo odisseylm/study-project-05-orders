@@ -8,6 +8,9 @@ import org.mvv.scala.tools.quotes.qClassNameOf
 inline def namedValue[T](inline valueWithName: T): NamedValue[T] =
   NamedValue[T](valueExprName(valueWithName), valueWithName)
 
+inline def readOnlyProp[T](inline valueWithName: T): NamedValue[T] =
+  ReadOnlyProp[T](valueExprName(valueWithName), valueWithName)
+
 
 inline def valueExprName[T](inline valueWithName: T): String =
   ${ valueExprNameImpl[T]('valueWithName) }

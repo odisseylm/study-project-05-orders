@@ -8,11 +8,28 @@ trait NamedValue[T] :
 
 
 object NamedValue:
-  def apply[T](name: String, value: T): NamedValue[T] = new SimpleNamedValue[T](name, value)
+  def apply[T](name: String, value: T): NamedValue[T] = new NamedStaticValue[T](name, value)
 
 
-private case class SimpleNamedValue[T] (
+private case class NamedStaticValue[T] (
   name: String,
   value: T,
   ) extends NamedValue[T] :
+  override def toString: String = s"name=$value"
+
+
+
+
+trait ReadOnlyProp[T] extends NamedValue[T]
+
+object ReadOnlyProp :
+  def apply[T](name: String, value: => T): ReadOnlyProp[T] = NamedCallableValue(name, value)
+
+
+
+private class NamedCallableValue[T] (
+  val name: String,
+  _value: => T,
+  ) extends ReadOnlyProp[T], NamedValue[T] :
+  override def value: T = _value
   override def toString: String = s"name=$value"
