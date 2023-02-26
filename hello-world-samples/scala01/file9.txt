@@ -410,3 +410,136 @@ Inlined(
     )
   )
 )
+
+
+val fff: List[(String, ()=>Boolean)] =  org.mvv.scala.mapstruct.debug.dump.dumpExpr(
+  List(
+    ("val1", () => isInitialized(val1)),
+    ("val2", () => isInitialized(val2)),
+  )
+)
+
+scala.List.apply[scala.Tuple2[java.lang.String, scala.Function0[scala.Boolean]]](
+  scala.Tuple2.apply[java.lang.String, scala.Function0[scala.Boolean]]
+    ("val1",
+     (() => org.mvv.scala.tools.props.LateInitPropsTest$package.isInitialized(LateInitPropsTest.this.val1))),
+  scala.Tuple2.apply[java.lang.String, scala.Function0[scala.Boolean]]
+    ("val2",
+     (() => org.mvv.scala.tools.props.LateInitPropsTest$package.isInitialized(LateInitPropsTest.this.val2)))
+)
+
+Inlined(
+  EmptyTree,
+  List(),
+  Apply(
+    TypeApply(
+      Select(Ident(List),apply),
+      List(
+        TypeTree[
+          AppliedType(
+            TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),
+            List(
+              TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String),
+              AppliedType(
+                TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),trait Function0),
+                List(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),class Boolean))
+              )
+            )
+          )
+        ]
+      )
+    ),
+    List(
+      Typed(
+        SeqLiteral(
+          List(
+            Apply(
+              TypeApply(
+                Select(Ident(Tuple2),apply),
+                List(
+                  TypeTree[ TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String) ],
+                      TypeTree[
+                        AppliedType(
+                          TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),trait Function0),
+                          List(
+                            TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),class Boolean)
+                          )
+                        )
+                      ]
+                    )
+                  ),
+                  List(
+                    Literal(Constant(val1)),
+                    Block(
+                      List(
+                        DefDef(
+                          $anonfun,List(List()),
+                          TypeTree[
+                            TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),class Boolean)
+                          ],
+                          Apply(
+                            Ident(isInitialized),
+                            List(
+                              Select(
+                                This(
+                                  Ident(LateInitPropsTest)
+                                ),
+                                val1
+                              )
+                            )
+                          )
+                        )
+                      ),
+                      Closure(List(),Ident($anonfun),EmptyTree))
+                  )
+                ),
+                Apply(TypeApply(Select(Ident(Tuple2),apply),List(TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String)], TypeTree[AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),trait Function0),List(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),class Boolean)))])),List(Literal(Constant(val2)), Block(List(DefDef($anonfun,List(List()),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),class Boolean)],Apply(Ident(isInitialized),List(Select(This(Ident(LateInitPropsTest)),val2))))),Closure(List(),Ident($anonfun),EmptyTree)))
+              )
+            ),
+            TypeTree[
+              AppliedType(
+                TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),
+                List(TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String), AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),trait Function0),List(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),class Boolean)))
+              )
+            )
+          ]
+        ),
+    TypeTree[
+      AppliedType(
+        TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class <repeated>),
+        List(
+          AppliedType(
+            TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),class Tuple2),
+            List(TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String), AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)),trait Function0),List(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),class Boolean)))
+          )
+        )
+      )
+    )
+  ]
+)
+)))
+
+
+
+scala.Tuple2.apply[java.lang.String, scala.Function0[scala.Boolean]]("1", (() => true))
+
+Inlined(
+  EmptyTree,
+  List(),
+  Apply(
+    TypeApply(
+      Select(
+        Ident(Tuple2),apply
+      ),
+      List(
+        TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class lang)),class String)],
+        TypeTree[AppliedType(TypeRef(ThisType(TypeRef(NoPrefix,module class scala)), trait Function0),
+          List(TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),class Boolean)))]
+      )
+    ),
+    List(
+      Literal(Constant(1)),
+       Block(List(DefDef($anonfun,List(List()),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),class Boolean)],Literal(Constant(true)))),Closure(List(),Ident($anonfun),EmptyTree)))))
+
+
+

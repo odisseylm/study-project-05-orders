@@ -85,6 +85,8 @@ def dumpTree(using quotes: Quotes)(tree: quotes.reflect.Tree, str: StringBuilder
 
     // Literal <: Term
     case el if el.isLiteral => dumpLiteral(el.asInstanceOf[Literal], str, nextPadLength)
+    // SeqLiteral <: Term
+    //case el if el.isSeqLiteral => dumpLiteral(el.asInstanceOf[Literal], str, nextPadLength)
     // This <: Term
     case el if el.isThis => dumpThis(el.asInstanceOf[This], str, nextPadLength)
     // New <: Term

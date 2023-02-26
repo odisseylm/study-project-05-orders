@@ -39,7 +39,7 @@ class InternalClassesInspectionTest {
 
     val a = SoftAssertions()
 
-    a.assertThat(allClassesFromValues).isEqualTo(allClassesFromValues)
+    a.assertThat(allClassesFromValues.toList.asJava).isEqualTo(allClassesFromKeys.toList.asJava)
 
     a.assertThat(inspectedClasses.keys.asJava).containsExactlyInAnyOrder(
       "org.mvv.scala.tools.beans.TopClass",

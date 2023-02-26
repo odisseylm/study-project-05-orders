@@ -25,6 +25,7 @@ def extractFullClassNameComponents (classFullName: String): (String, String) =
 
 
 
+// only for showing in error message
 def macrosSource(using q: Quotes): Any =
   import q.reflect.Symbol
   tryDo { Symbol.spliceOwner.owner.tree }.getOrElse(Symbol.spliceOwner.owner.pos)
@@ -59,6 +60,38 @@ def qTopClassOrModuleFullName(using q: Quotes): String =
 
 
 
+def qScalaPackage (using q: Quotes): q.reflect.Term =
+  import q.reflect.{ defn, Ident }
+  val scalaPackageSymbol = defn.ScalaPackage // or Symbol.requiredPackage("scala")
+  Ident(scalaPackageSymbol.termRef)
+
+
+
+def qPackage (using q: Quotes) (_package: String): q.reflect.Term =
+  import q.reflect.{ Symbol, Ident, Select }
+
+  val parts: List[String] = _package.split('.')
+    // scala splits "" to 1 item !!??
+    .filter(_.nonEmpty)
+    .toList
+
+  if parts.isEmpty then
+    // defn.RootPackage/_root_/<root> does not work for it.
+    // Scala uses special 'empty' package for this purpose.
+    // See some details in a bit deprecated scala-reflect-2.13.8-sources.jar!/scala/reflect/internal/StdNames.scala
+    return Ident(Symbol.requiredPackage("<empty>").termRef)
+
+  if parts.sizeIs == 1 then return Ident(Symbol.requiredPackage(parts.head).termRef)
+
+  val rootPackageIdentCom = Ident(Symbol.requiredPackage(parts.head).termRef)
+  val resultingPackageSelect = parts.tail.tail.foldLeft
+    ( Select.unique(rootPackageIdentCom, parts.tail.head) )
+    ( (preSelect, nextPart) => Select.unique(preSelect, nextPart) )
+  resultingPackageSelect
+
+
+
+// TODO: rename, remove 'q' prefix since it does not return Term
 // TODO: cover with unit tests
 /** This logic moved to separate method because probably it should be fixed
  * for generics/anonymous/etc */
@@ -83,38 +116,8 @@ def getFullClassName(typeName: String) =
 
 
 
-def qScalaPackage (using q: Quotes): q.reflect.Term =
-  import q.reflect.{ defn, Ident }
-  val scalaPackageSymbol = defn.ScalaPackage // or Symbol.requiredPackage("scala")
-  Ident(scalaPackageSymbol.termRef)
-
-
-
-def qPackage (using q: Quotes) (_package: String): q.reflect.Term =
-  import q.reflect.{ Symbol, Ident, Select }
-
-  val parts: List[String] = _package.split('.')
-    // scala splits "" to 1 item !!??
-    .filter(_.nonEmpty)
-    .toList
-
-  if parts.isEmpty then
-    // defn.RootPackage/_root_/<root> does not work for it.
-    // Scala uses special 'empty' package for this purpose.
-    // See some details in a bit deprecated scala-reflect-2.13.8-sources.jar!/scala/reflect/internal/StdNames.scala
-    return Ident(Symbol.requiredPackage("<empty>").termRef)
-
-  val rootPackageIdentCom = Ident(Symbol.requiredPackage(parts.head).termRef)
-  val resultingPackageSelect = parts.tail.tail.foldLeft
-    ( Select.unique(rootPackageIdentCom, parts.tail.head) )
-    ( (preSelect, nextPart) => Select.unique(preSelect, nextPart) )
-  resultingPackageSelect
-
-
-
 //noinspection ScalaUnusedSymbol , NoTailRecursionAnnotation // there is no recursion at all
-def qClassNameOf[T](using q: Quotes) (using Type[T])
-  : q.reflect.Term =
+def qClassNameOf[T](using q: Quotes) (using Type[T]): q.reflect.Term =
   qClassNameOf[T](ClassSelectMode.ByFullClassName)
 
 
@@ -122,6 +125,12 @@ def qClassNameOf[T](using q: Quotes) (using Type[T])
 //noinspection ScalaUnusedSymbol
 def qClassName(using q: Quotes) (fullClassName: String): q.reflect.Term =
   qClassName_byClassFullNameSelect(fullClassName)
+
+
+
+//noinspection ScalaUnusedSymbol
+def qClassName(using q: Quotes) (cls: Class[?]): q.reflect.Term =
+  qClassName_byClassFullNameSelect(cls.getName.nn)
 
 
 

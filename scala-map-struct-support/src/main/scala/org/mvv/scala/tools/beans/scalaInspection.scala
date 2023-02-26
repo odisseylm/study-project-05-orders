@@ -65,33 +65,19 @@ object _Quotes :
 
   extension (using q: Quotes) (defDef: q.reflect.DefDef)
     def toMethod: _Method =
-      //import q.reflect.??
-
-      try defDef.name catch case _: Exception =>
-        println(s"Bad element $defDef")
-        //printTreeSymbolInfo(el)
-        //printFields("Bad element", el)
-
-      // 'name' cam throw error?!
       val methodName: String = tryDo(defDef.name) .getOrElse(defDef.symbol.name)
       val returnType = extractType(defDef.returnTpt)
 
       val paramTypes: List[_Type] = paramssToTypes(defDef.paramss)
-      val trailingParamTypes: List[_Type] = paramssToTypes(defDef.trailingParamss)
-      val termParamsTypes: List[_Type] = paramssToTypes(defDef.termParamss)
-
-      val hasExtraParams =
-             (!isListDeeplyEmpty(defDef.trailingParamss) && trailingParamTypes != paramTypes)
-          || (!isListDeeplyEmpty(defDef.termParamss) && termParamsTypes != paramTypes)
-          || defDef.leadingTypeParams.nonEmpty
+      val _hasExtraParams = hasExtraParams(defDef)
 
       var modifiers: Set[_Modifier] = generalModifiers(defDef.symbol)
-      if !modifiers.contains(_Modifier.ScalaStandardFieldAccessor) && !hasExtraParams then
+      if !modifiers.contains(_Modifier.ScalaStandardFieldAccessor) && !_hasExtraParams then
         val isCustomGetter = defDef.paramss.isEmpty && returnType != Types.UnitType
         val isCustomSetter = paramTypes.sizeIs == 1 && methodName.endsWithOneOf("_=", "_$eq")
         if isCustomGetter || isCustomSetter then modifiers += _Modifier.ScalaCustomFieldAccessor
 
-      _Method(methodName, visibility(defDef), Set.from(modifiers), returnType, paramTypes, hasExtraParams)(defDef)
+      _Method(methodName, visibility(defDef), Set.from(modifiers), returnType, paramTypes, _hasExtraParams)(defDef)
 
   end extension
 
@@ -111,3 +97,16 @@ def paramssToTypes(using q: Quotes)(paramss: List[q.reflect.ParamClause]): List[
   if paramss.sizeIs == 1 && paramss.head.params.isEmpty
     then Nil // case with non field-accessor but without params
     else paramss .map(_.params.map(paramToType) .mkString("|")) .map(v => _Type(v))
+
+
+def hasExtraParams(using q: Quotes)(defDef: q.reflect.DefDef): Boolean =
+
+  val paramTypes: List[_Type] = paramssToTypes(defDef.paramss)
+  val trailingParamTypes: List[_Type] = paramssToTypes(defDef.trailingParamss)
+  val termParamsTypes: List[_Type] = paramssToTypes(defDef.termParamss)
+
+  val _hasExtraParams =
+    (!isListDeeplyEmpty(defDef.trailingParamss) && trailingParamTypes != paramTypes)
+      || (!isListDeeplyEmpty(defDef.termParamss) && termParamsTypes != paramTypes)
+      || defDef.leadingTypeParams.nonEmpty
+  _hasExtraParams
