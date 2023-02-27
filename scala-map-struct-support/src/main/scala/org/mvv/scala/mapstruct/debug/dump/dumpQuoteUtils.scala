@@ -163,6 +163,7 @@ extension (el: AnyRef)
   def isUnitConstant: Boolean = el.isImplClass("UnitConstant")
   def isNullConstant: Boolean = el.isImplClass("NullConstant")
   def isClassOfConstant: Boolean = el.isImplClass("ClassOfConstant")
+  //noinspection ScalaDeprecation
   def isConstant: Boolean = org.mvv.scala.tools.quotes.isConstantByClassName(el)
 
   def isImplicitSearchSuccess: Boolean = el.isImplClass("ImplicitSearchSuccess")

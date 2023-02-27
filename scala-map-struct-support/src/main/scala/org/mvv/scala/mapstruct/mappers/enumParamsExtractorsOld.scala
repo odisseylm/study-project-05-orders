@@ -1,7 +1,7 @@
+/*
 package org.mvv.scala.mapstruct.mappers
 
 
-/*
 private def parseCustomEnumMappingTuples[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (using q: Quotes)(using Type[EnumFrom], Type[EnumTo])
   (inlined: q.reflect.Inlined): List[(String, String)] =

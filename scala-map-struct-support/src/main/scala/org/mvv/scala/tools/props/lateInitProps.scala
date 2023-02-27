@@ -7,7 +7,7 @@ import scala.quoted.{ Expr, Quotes, Type, Varargs }
 //
 import org.mvv.scala.tools.{ Logger, tryDo }
 import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName, qClassNameOfCompiled }
-import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, qStringLiteral, findClassThisScopeTypeRepr }
+import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, qStringLiteral, getClassThisScopeTypeRepr }
 
 
 /**
@@ -104,9 +104,7 @@ private def termIsInitTupleEntry(using q: Quotes)(classFullName: String, valDef:
   val classSymbol = Symbol.classSymbol(classFullName)
   val valSelect = Select.unique(This(classSymbol), valDef.name)
 
-  // TODO: rename findClassThisScopeTypeRepr to findClassThisScopeTypeReprOr with Option result
-  // and findClassThisScopeTypeRepr without Option
-  val scopeTypRepr: TypeRepr = findClassThisScopeTypeRepr(classSymbol).get
+  val scopeTypRepr: TypeRepr = getClassThisScopeTypeRepr(classSymbol)
   val isInitializedTerRef = TermRef(scopeTypRepr, "isInitialized")
   val isInitializedIdentTerm = Ident(isInitializedTerRef)
 

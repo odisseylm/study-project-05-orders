@@ -2,11 +2,18 @@ package org.mvv.scala.tools.quotes
 
 import scala.quoted.Quotes
 //
-import org.mvv.scala.tools.Logger
+import org.mvv.scala.tools.{ Logger, tryDo }
 
 
 
 private val log = Logger("org.mvv.scala.tools.classUtils")
+
+def getClassThisScopeTypeRepr(using q: Quotes)(symbol: q.reflect.Symbol): q.reflect.TypeRepr =
+  findClassThisScopeTypeRepr(symbol)
+    .getOrElse {
+      val sourceSymbolStr = tryDo { symbol.toString }
+      throw IllegalStateException(s"Error of getting ClassThisScopeTypeRepr of $sourceSymbolStr.") }
+
 
 def findClassThisScopeTypeRepr(using q: Quotes)(symbol: q.reflect.Symbol): Option[q.reflect.TypeRepr] =
   import q.reflect.{ TypeRepr, TypeRef }

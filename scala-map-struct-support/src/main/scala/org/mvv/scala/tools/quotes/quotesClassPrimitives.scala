@@ -115,7 +115,7 @@ private def qClassName_usingSimpleClassNameAndEnumClassThisScope[T]
   val typeRepr: TypeRepr = TypeRepr.of[T]
   val classSymbol: Symbol = typeRepr.typeSymbol // typeRepr.classSymbol.get
 
-  val scopeTypRepr: TypeRepr = findClassThisScopeTypeRepr(classSymbol).get
+  val scopeTypRepr: TypeRepr = getClassThisScopeTypeRepr(classSymbol)
   val fullEnumClassName = fullClassNameOf[T]
   val simpleEnumClassName = fullEnumClassName.afterLastOr(".", fullEnumClassName)
   val classTerm = TermRef(scopeTypRepr, simpleEnumClassName)
