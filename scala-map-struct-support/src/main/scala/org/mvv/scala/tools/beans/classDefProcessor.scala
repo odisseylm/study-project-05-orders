@@ -75,7 +75,14 @@ def processClassDef(using q: Quotes)(
 
         case vd: ValDef =>
           val f: _Field = vd.toField
+          /*
           log.debug(s"$logPrefix field: $f")
+          log.info(s"$logPrefix field: $f, vd: $vd")
+          log.info(s"$logPrefix field: $f, vd.name: ${vd.name}")
+          log.info(s"$logPrefix field: $f, vd.tpt:  ${vd.tpt}")
+          log.info(s"$logPrefix field: $f, vd.rhs:  ${vd.rhs}")
+          log.info(s"$logPrefix field: $f, vd.rhs:  ${vd.symbol.annotations}")
+          */
           declaredFields.addOne(f)
 
         // functions/methods

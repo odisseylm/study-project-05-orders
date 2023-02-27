@@ -63,10 +63,7 @@ class ClassWithLateInitProps :
 
 
 
-// we can use method like
-// lateInitProps(classDef): List[ReadOnlyProps]
 
-//val ttt = lateInitProps2[ClassWithLateInitProps]
 
 def isInitialized(v: AnyRef): Boolean =
   import scala.language.unsafeNulls

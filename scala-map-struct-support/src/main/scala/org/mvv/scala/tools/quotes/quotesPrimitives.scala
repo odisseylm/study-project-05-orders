@@ -13,7 +13,10 @@ enum QResult :
 
 def qStringLiteral(using q: Quotes)(value: => String, qResult: QResult = QResult.AsIs): q.reflect.Term =
   import q.reflect.{ Literal, StringConstant }
-  val resTerm = wrapQResult(Literal(StringConstant(value)), qResult)
+  //val resTerm = wrapQResult(Literal(StringConstant(value)), qResult)
+  val constant = StringConstant(value)
+  val literal = Literal(constant)
+  val resTerm = wrapQResult(literal, qResult)
   resTerm
 
 
