@@ -1,19 +1,28 @@
 package org.mvv.scala.tools.quotes
 
 import scala.quoted.Quotes
+//
+import org.mvv.scala.tools.{ tryDo, stripAfter }
+import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
 
 
 
-def refName(using q: Quotes)(ref: q.reflect.Ref): String =
-  import q.reflect.Ident
-  ref match
-    case Ident(name: String) => name
-    case _ =>
-      log.warn(s"Ref is not Ident and name is taken by symbol name." +
-        s" It may be unexpected behavior which should be better treated in proper non-default way (ref: $ref).")
-      ref.symbol.name
+// only for showing in error message
+def macrosSource(using q: Quotes): Any =
+  import q.reflect.Symbol
+  tryDo { Symbol.spliceOwner.owner.tree }.getOrElse(Symbol.spliceOwner.owner.pos)
 
 
-def fullPackageName(using q: Quotes)(packageClause: q.reflect.PackageClause): String =
-  val fullPackageName = packageClause.symbol.fullName
-  if fullPackageName == "<empty>" then "" else fullPackageName
+
+def qTopClassOrModuleFullName(using q: Quotes): String =
+  import q.reflect.Symbol
+
+  var lastNonPackageFullName = ""
+
+  var s = Symbol.spliceOwner
+  while s != Symbol.noSymbol && !s.isPackageDef do
+    if s.isClassDef || s.isTypeDef then lastNonPackageFullName = s.fullName
+    s = s.maybeOwner
+
+  val topClassOrModuleFullName = lastNonPackageFullName.stripAfter("$", ExcludeDelimiter)
+  topClassOrModuleFullName

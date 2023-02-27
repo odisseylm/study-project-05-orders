@@ -1,6 +1,7 @@
 package org.mvv.scala.tools.quotes
 
 import scala.quoted.*
+import scala.reflect.ClassTag
 //
 import org.mvv.scala.tools.{ afterLastOr, stripAfter, tryDo }
 import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
@@ -18,84 +19,16 @@ enum ClassSelectMode :
 
 /** Returns tuple with 'path' (package for top classes) and simple class name */
 //noinspection DuplicatedCode
-def extractFullClassNameComponents (classFullName: String): (String, String) =
+private def extractFullClassNameComponents (classFullName: String): (String, String) =
   val index = classFullName.lastIndexOf('.')
   if index == -1 then ("", classFullName)
   else (classFullName.substring(0, index).nn, classFullName.substring(index + 1).nn)
 
 
 
-// only for showing in error message
-def macrosSource(using q: Quotes): Any =
-  import q.reflect.Symbol
-  tryDo { Symbol.spliceOwner.owner.tree }.getOrElse(Symbol.spliceOwner.owner.pos)
-
-
-
-def qCurrentExprPackage(using q: Quotes): String =
-  import q.reflect.{ Symbol, report }
-
-  var s = Symbol.spliceOwner
-  while s != Symbol.noSymbol && !s.isPackageDef do
-    s = s.maybeOwner
-
-  if s.isPackageDef
-    then s.fullName
-    else report.errorAndAbort(s"Cannot find package of expr $macrosSource.")
-
-
-
-def qTopClassOrModuleFullName(using q: Quotes): String =
-  import q.reflect.Symbol
-
-  var lastNonPackageFullName = ""
-
-  var s = Symbol.spliceOwner
-  while s != Symbol.noSymbol && !s.isPackageDef do
-    if s.isClassDef || s.isTypeDef then lastNonPackageFullName = s.fullName
-    s = s.maybeOwner
-
-  val topClassOrModuleFullName = lastNonPackageFullName.stripAfter("$", ExcludeDelimiter)
-  topClassOrModuleFullName
-
-
-
-def qScalaPackage (using q: Quotes): q.reflect.Term =
-  import q.reflect.{ defn, Ident }
-  val scalaPackageSymbol = defn.ScalaPackage // or Symbol.requiredPackage("scala")
-  Ident(scalaPackageSymbol.termRef)
-
-
-
-def qPackage (using q: Quotes) (_package: String): q.reflect.Term =
-  import q.reflect.{ Symbol, Ident, Select }
-
-  val parts: List[String] = _package.split('.')
-    // scala splits "" to 1 item !!??
-    .filter(_.nonEmpty)
-    .toList
-
-  if parts.isEmpty then
-    // defn.RootPackage/_root_/<root> does not work for it.
-    // Scala uses special 'empty' package for this purpose.
-    // See some details in a bit deprecated scala-reflect-2.13.8-sources.jar!/scala/reflect/internal/StdNames.scala
-    return Ident(Symbol.requiredPackage("<empty>").termRef)
-
-  if parts.sizeIs == 1 then return Ident(Symbol.requiredPackage(parts.head).termRef)
-
-  val rootPackageIdentCom = Ident(Symbol.requiredPackage(parts.head).termRef)
-  val resultingPackageSelect = parts.tail.tail.foldLeft
-    ( Select.unique(rootPackageIdentCom, parts.tail.head) )
-    ( (preSelect, nextPart) => Select.unique(preSelect, nextPart) )
-  resultingPackageSelect
-
-
-
-// TODO: rename, remove 'q' prefix since it does not return Term
-// TODO: cover with unit tests
 /** This logic moved to separate method because probably it should be fixed
  * for generics/anonymous/etc */
-def qFullClassNameOf[T]
+def fullClassNameOf[T]
   (using q: Quotes) (using Type[T])
   : String =
 
@@ -115,10 +48,20 @@ def getFullClassName(typeName: String) =
   fullClassName
 
 
-
+/**
+ * Use it to get class term of class which is already passed as generic param (with 'using Type[T]').
+ */
 //noinspection ScalaUnusedSymbol , NoTailRecursionAnnotation // there is no recursion at all
 def qClassNameOf[T](using q: Quotes) (using Type[T]): q.reflect.Term =
   qClassNameOf[T](ClassSelectMode.ByFullClassName)
+
+
+/**
+ * Use it for already compiled class (for example scala classes or classes from dependencies).
+ */
+//noinspection ScalaUnusedSymbol , NoTailRecursionAnnotation // there is no recursion at all
+def qClassNameOfCompiled[T](using q: Quotes) (implicit classTag: ClassTag[T]): q.reflect.Term =
+  qClassName(classTag.runtimeClass.getName.nn)
 
 
 
@@ -147,16 +90,9 @@ def qClassNameOf[T](using q: Quotes)(using Type[T])
 
   import q.reflect.{ Select, TypeRepr }
   if classSelectMode == ClassSelectMode.ByFullClassName
-    then qClassName_byClassFullNameSelect[T]
+    then qClassName_byClassFullNameSelect(fullClassNameOf[T])
     else qClassName_usingSimpleClassNameAndEnumClassThisScope[T]
 
-
-
-//noinspection ScalaUnusedSymbol , NoTailRecursionAnnotation // there is no recursion at all
-private def qClassName_byClassFullNameSelect[T]
-  (using q: Quotes) (using Type[T])
-  : q.reflect.Term =
-  qClassName_byClassFullNameSelect(qFullClassNameOf[T])
 
 
 private def qClassName_byClassFullNameSelect (using q: Quotes)
@@ -180,7 +116,7 @@ private def qClassName_usingSimpleClassNameAndEnumClassThisScope[T]
   val classSymbol: Symbol = typeRepr.typeSymbol // typeRepr.classSymbol.get
 
   val scopeTypRepr: TypeRepr = findClassThisScopeTypeRepr(classSymbol).get
-  val fullEnumClassName = qFullClassNameOf[T]
+  val fullEnumClassName = fullClassNameOf[T]
   val simpleEnumClassName = fullEnumClassName.afterLastOr(".", fullEnumClassName)
   val classTerm = TermRef(scopeTypRepr, simpleEnumClassName)
   Ident(classTerm)

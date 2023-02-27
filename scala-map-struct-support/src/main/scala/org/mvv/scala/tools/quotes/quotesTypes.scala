@@ -24,7 +24,9 @@ inline def toQuotesTreeType (using q: Quotes)
 
 
 extension (using q: Quotes) (inline el: q.reflect.Tree)
+  @deprecated("use scala matching")
   inline def toQuotesTypeOf[T <: q.reflect.Tree]: Option[T] = toQuotesTreeType[q.reflect.Tree, T](el)
+  @deprecated("use scala matching")
   inline def isQuotesTypeOf[T <: q.reflect.Tree]: Boolean   = toQuotesTreeType[q.reflect.Tree, T](el).isDefined
 
   /*
@@ -106,7 +108,7 @@ private def castToTypeImpl[V, T](using q: Quotes)(using Type[V], Type[T])
 //   List(Ident(tree),
 //   Literal(Constant(Apply))))
 // )
-def applyIsQuotesType(using q: Quotes)(el: q.reflect.Term, quoteTypeName: String): q.reflect.Term =
+private def applyIsQuotesType(using q: Quotes)(el: q.reflect.Term, quoteTypeName: String): q.reflect.Term =
   import q.reflect.{ Apply, Literal, StringConstant, TypeRepr }
   // T O D O: try to find and call/use specified method isQuotesXXX (for example isQuotesApply)
   // if it exists (it will allow to override behavior for some quotes tags)

@@ -13,7 +13,7 @@ import org.mvv.scala.tools.{ isNotNull, afterLastOr, isImplClass, isOneOfImplCla
  */
 
 
-
+@deprecated("use scala matching")
 //noinspection ScalaUnusedSymbol , // it is used in macros by name
 def isQuotesTypeByName(el: Any, typeName: String): Boolean =
   val shortTypeName = typeName.afterLastOr(".").getOrElse(typeName)
@@ -26,6 +26,7 @@ def isQuotesTypeByName(el: Any, typeName: String): Boolean =
     case _ => el.isImplClass(shortTypeName)
 
 
+@deprecated("use scala matching")
 def isConstantByClassName(el: Any): Boolean = el.isNotNull && el.isOneOfImplClasses(
   "Constant",
   "BooleanConstant", "CharConstant",

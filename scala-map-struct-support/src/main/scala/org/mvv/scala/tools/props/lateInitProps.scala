@@ -6,7 +6,7 @@ import scala.compiletime.uninitialized
 import scala.quoted.{ Expr, Quotes, Type, Varargs }
 //
 import org.mvv.scala.tools.{ Logger, tryDo }
-import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName }
+import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName, qClassNameOfCompiled }
 import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, qStringLiteral, findClassThisScopeTypeRepr }
 
 
@@ -41,9 +41,7 @@ inline def currentClassIsInitializedProps: IsInitializedProps =
 def currentClassIsInitializedPropsImpl(using q: Quotes): Expr[IsInitializedProps] =
   import q.reflect.*
 
-  //val log = Logger(topClassOrModuleFullName) // java.lang.NoClassDefFoundError: org/mvv/scala/tools/quotes/quotesPrimitives$package$
-  //        at org.mvv.scala.tools.quotes.baseMacros$package$.topClassOrModuleFullNameImpl(baseMacros.scala:19)
-  val log = Logger("fsdfdsfdf") // TODO: dfdf
+  val log = Logger(topClassOrModuleFullName)
 
   val classDef: ClassDef = find1stOwnerClass().get
   val body: List[Statement] = classDef.body
@@ -61,6 +59,8 @@ def currentClassIsInitializedPropsImpl(using q: Quotes): Expr[IsInitializedProps
   val tuplesExprs = tuples.map(_.asExprOf[(String,()=>Boolean)])
   val exprOfTupleList = Expr.ofList(tuplesExprs)
 
+  log.trace(s"currentClassIsInitializedProps: ${exprOfTupleList.show}\n$exprOfTupleList")
+
   exprOfTupleList
 
 
@@ -74,8 +74,7 @@ def toCheckInitState(using q: Quotes)(valDef: q.reflect.ValDef): Boolean =
 
 def qTuple2(using q: Quotes)(v1: q.reflect.Term, v2: q.reflect.Term): q.reflect.Term =
   import q.reflect.*
-  //val tuple2ClassTerm: Term = qClassNameOf[Tuple2] // TODO: try to impl this approach
-  val tuple2ClassTerm: Term = qClassName(classOf[Tuple2[Any,Any]])
+  val tuple2ClassTerm: Term = qClassNameOfCompiled[Tuple2[Any,Any]]
   val tuple2ApplySelect = Select.unique(tuple2ClassTerm, "apply")
   val tuple2TypeApply = TypeApply(tuple2ApplySelect, List(TypeTree.of[String], TypeTree.of[()=>Boolean]))
   val tupleApply = Apply(tuple2TypeApply, List(v1, v2))

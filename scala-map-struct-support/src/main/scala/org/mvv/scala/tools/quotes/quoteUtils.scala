@@ -4,6 +4,17 @@ import scala.quoted.{ Quotes, Type }
 
 
 
+def refName(using q: Quotes)(ref: q.reflect.Ref): String =
+  import q.reflect.Ident
+  ref match
+    case Ident(name: String) => name
+    case _ =>
+      log.warn(s"Ref is not Ident and name is taken by symbol name." +
+        s" It may be unexpected behavior which should be better treated in proper non-default way (ref: $ref).")
+      ref.symbol.name
+
+
+
 extension (using q: Quotes)(el: q.reflect.Tree)
   inline def isExprStatement: Boolean =
     import q.reflect.*
