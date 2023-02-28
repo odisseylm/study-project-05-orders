@@ -254,7 +254,9 @@
                 <arg>-source</arg><arg>future</arg>
                 <arg>-feature</arg>
                 <arg>-deprecation</arg>
-                <!--<arg>-Ydebug</arg>-->
+                <!-- Uncomment it for detailed macros stack-trace -->
+                <arg>-Ydebug</arg>
+
                 <!--<arg>-Ymacro</arg>-->
                 <!--<arg>-Yissue</arg>-->
                 <!--<arg>-explaintypes</arg>-->

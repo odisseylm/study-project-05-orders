@@ -20,6 +20,19 @@ class LateInit34 extends scala.annotation.StaticAnnotation
 case class CustomStringLateInit(var v: String|Null = null) extends LateInitMarkerInterface :
   def safeValue: String = v.nn
 
+
+class ClassWithLateInitPropsShort :
+  // standard scala late-init props
+  var currencyNotInitialized: String = uninitialized
+
+  def validateLateInitProps(): Unit =
+    val vv = 2
+    val _lateInitProps22: List[(String, () => Boolean)] = currentClassIsInitializedProps
+    println(s"lateInitProps22: $_lateInitProps22")
+    _lateInitProps22.foreach { a => println(s"^^^ ${a._1} initialized = ${a._2()}") }
+
+
+
 class ClassWithLateInitProps :
   // standard scala late-init props
   var amountNotInitialized: BigDecimal = uninitialized
@@ -49,25 +62,33 @@ class ClassWithLateInitProps :
   def label3_= (v: String): Unit = _label3.set(v)
 
   def validateLateInitProps(): Unit =
-    //val _lateInitProps: List[ReadOnlyProp[AnyRef]] = lateInitProps
-    //println(s"lateInitProps: $_lateInitProps")
-
-    //val _lateInitProps20: List[(String, Any)] = List( ("amountNotInitialized", () => isInitialized(amountNotInitialized)) )
-    //println(s"lateInitProps20: $_lateInitProps20")
-
     val vv = 2
     val _lateInitProps22: List[(String, ()=>Boolean)] = currentClassIsInitializedProps
     println(s"lateInitProps22: $_lateInitProps22")
 
     _lateInitProps22.foreach { a => println(s"^^^ ${a._1} initialized = ${a._2()}") }
+    return
 
 
+  //def isInitialized(v: AnyRef): Boolean =
+  //  import scala.language.unsafeNulls
+  //  v != null
 
 
+object IsInitialized :
+  def isInitialized(v: AnyRef): Boolean =
+    import scala.language.unsafeNulls
+    v != null
+  def isInitialized(v: String): Boolean =
+    import scala.language.unsafeNulls
+    v != null && v.nonEmpty
+  def isInitialized(v: CustomStringLateInit): Boolean =
+    import scala.language.unsafeNulls
+    v.v != null
+  def isInitialized(v: Option[Any]): Boolean =
+    v.isDefined
 
-def isInitialized(v: AnyRef): Boolean =
-  import scala.language.unsafeNulls
-  v != null
+
 
 class LateInitPropsTest {
 

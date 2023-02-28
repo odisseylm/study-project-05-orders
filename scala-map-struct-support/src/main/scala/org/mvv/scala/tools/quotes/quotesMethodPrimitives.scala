@@ -32,7 +32,9 @@ def qMethodType(using q: Quotes)
   methodType
 
 
-
+/**
+ * @param functionFullName FULL name, for example org.mvv.scala.tools.props.LateInitPropsTest$package.isInitialized
+ */
 // for global functions (not methods)
 def qFunction(using q: Quotes)
   (functionFullName: String)
