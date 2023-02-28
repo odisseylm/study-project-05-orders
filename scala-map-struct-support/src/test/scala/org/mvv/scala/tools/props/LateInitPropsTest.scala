@@ -26,7 +26,8 @@ class ClassWithLateInitPropsShort :
   var currencyNotInitialized: String = uninitialized
 
   def validateLateInitProps(): Unit =
-    val vv = 2
+    //noinspection ScalaUnusedSymbol
+    val vv = 4 // to enforce recompilation
     val _lateInitProps22: List[(String, () => Boolean)] = currentClassIsInitializedProps
     println(s"lateInitProps22: $_lateInitProps22")
     _lateInitProps22.foreach { a => println(s"^^^ ${a._1} initialized = ${a._2()}") }
@@ -62,12 +63,12 @@ class ClassWithLateInitProps :
   def label3_= (v: String): Unit = _label3.set(v)
 
   def validateLateInitProps(): Unit =
-    val vv = 2
+    //noinspection ScalaUnusedSymbol
+    val vv = 2 // to enforce recompilation
     val _lateInitProps22: List[(String, ()=>Boolean)] = currentClassIsInitializedProps
     println(s"lateInitProps22: $_lateInitProps22")
 
     _lateInitProps22.foreach { a => println(s"^^^ ${a._1} initialized = ${a._2()}") }
-    return
 
 
   //def isInitialized(v: AnyRef): Boolean =

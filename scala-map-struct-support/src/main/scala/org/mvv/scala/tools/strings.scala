@@ -17,8 +17,10 @@ extension (s: String)
   def afterLastOr(delimiter: String): Option[String] =
     val lastIndex = s.lastIndexOf(delimiter)
     if lastIndex == -1 then None else Option(s.substring(lastIndex + delimiter.length).nn)
-  def afterLastOr(delimiter: String, altStr: String): String =
+  inline def afterLastOr(delimiter: String, altStr: String): String =
     s.afterLastOr(delimiter).getOrElse(altStr)
+  inline def afterLastOrOrigin(delimiter: String): String =
+    s.afterLastOr(delimiter, s)
 
   def afterLastOfAnyCharsOr(delimiterChars: String): Option[String] =
     val lastIndex = s.lastIndexWhere(ch => delimiterChars.contains(ch))

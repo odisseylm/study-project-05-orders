@@ -1,5 +1,7 @@
 package org.mvv.scala.tools.quotes
 
+import org.mvv.scala.tools.Logger
+
 import scala.quoted.Quotes
 //
 import org.mvv.scala.tools.{ tryDo, isSingleItemList, getByReflection }
@@ -17,9 +19,24 @@ extension (using quotes: Quotes)(symbol: quotes.reflect.Symbol)
 
 
 
+def classSymbolDetails(using q: Quotes)(fullClassName: String): String =
+  import q.reflect.Symbol
+  try
+    // strange... requesting non-existent class by Symbol.classSymbol/requiredClass
+    // causes compilation error even if it is wrapped by try/catch
+    // for that reason we need to verify that this class exists
+    val classSymbol = if classExists(fullClassName) then Symbol.classSymbol(fullClassName) else Symbol.noSymbol
+    symbolDetailsToString(classSymbol)
+  catch case _: Throwable =>
+    s"$fullClassName => no symbol"
 
-def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol): String =
+
+
+def symbolBaseToString(using q: Quotes)(symbol: q.reflect.Symbol): String =
   symbolToString(using q)(symbol, SymbolDetails.Base)
+
+def symbolDetailsToString(using q: Quotes)(symbol: q.reflect.Symbol): String =
+  symbolToString(using q)(symbol, SymbolDetails.Base, SymbolDetails.List, SymbolDetails.Tree)
 
 //noinspection ScalaUnusedSymbol
 def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDetails*): String =
@@ -88,7 +105,7 @@ def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDet
     docstring.foreach(ds => str.append(", docstring: ").append(ds) )
 
     val flagsList = activeFlagEntries(symbol)
-    if isFlagsEmpty(flagsList) then str.append(", flags: ").append(flagsToString(flagsList))
+    if !isFlagsEmpty(flagsList) then str.append(", flags: ").append(flagsToString(flagsList))
 
     privateWithin.foreach( p => str.append(", privateWithin: ").append(p) )
     protectedWithin.foreach( p => str.append(", protectedWithin: ").append(p) )
@@ -110,17 +127,17 @@ def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDet
     val caseFields: List[Symbol] = tryDo{ symbol.caseFields }.getOrElse(Nil)
     val children: List[Symbol] = tryDo{ symbol.children }.getOrElse(Nil)
 
-    if declaredFields.nonEmpty then str.append(", declaredFields: ").append(declaredFields.map(_.name))
-    if fieldMembers.nonEmpty then str.append(", fieldMembers: ").append(fieldMembers.map(_.name))
-    if declaredMethods.nonEmpty then str.append(", declaredMethods: ").append(declaredMethods.map(_.name))
-    if methodMembers.nonEmpty then str.append(", methodMembers: ").append(methodMembers.map(_.name))
-    if declaredTypes.nonEmpty then str.append(", declaredTypes: ").append(declaredTypes.map(_.name))
-    if typeMembers.nonEmpty then str.append(", declaredFields: ").append(typeMembers.map(_.name))
-    if declarations.nonEmpty then str.append(", declarations: ").append(declarations.map(_.name))
-    if paramSymss.nonEmpty then str.append(", paramSymss: ").append(paramSymss.flatten.map(_.name))
-    if allOverriddenSymbols.nonEmpty then str.append(", allOverriddenSymbols: ").append(allOverriddenSymbols.map(_.name))
-    if caseFields.nonEmpty then str.append(", caseFields: ").append(caseFields.map(_.name))
-    if children.nonEmpty then str.append(", children: ").append(children.map(_.name))
+    if declaredFields.nonEmpty then str.append(",\n declaredFields: ").append(declaredFields.map(_.name))
+    if fieldMembers.nonEmpty then str.append(",\n fieldMembers: ").append(fieldMembers.map(_.name))
+    if declaredMethods.nonEmpty then str.append(",\n declaredMethods: ").append(declaredMethods.map(_.name))
+    if methodMembers.nonEmpty then str.append(",\n methodMembers: ").append(methodMembers.map(_.name))
+    if declaredTypes.nonEmpty then str.append(",\n declaredTypes: ").append(declaredTypes.map(_.name))
+    if typeMembers.nonEmpty then str.append(",\n declaredFields: ").append(typeMembers.map(_.name))
+    if declarations.nonEmpty then str.append(",\n declarations: ").append(declarations.map(_.name))
+    if paramSymss.nonEmpty then str.append(",\n paramSymss: ").append(paramSymss.flatten.map(_.name))
+    if allOverriddenSymbols.nonEmpty then str.append(",\n allOverriddenSymbols: ").append(allOverriddenSymbols.map(_.name))
+    if caseFields.nonEmpty then str.append(",\n caseFields: ").append(caseFields.map(_.name))
+    if children.nonEmpty then str.append(",\n children: ").append(children.map(_.name))
   end if
 
   // T O D O: impl
@@ -136,9 +153,9 @@ def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDet
     val typeRef: Option[TypeRef] = tryDo{ symbol.typeRef }
     val termRef: Option[TermRef] = tryDo{ symbol.termRef }
 
-    tree.foreach(t => str.append(", tree: ").append(t))
-    typeRef.foreach(t => str.append(", typeRef: ").append(t))
-    termRef.foreach(t => str.append(", termRef: ").append(t))
+    tree.foreach(t => str.append(",\n tree: ").append(t))
+    typeRef.foreach(t => str.append(",\n typeRef: ").append(t))
+    termRef.foreach(t => str.append(",\n termRef: ").append(t))
   end if
 
   str.toString()

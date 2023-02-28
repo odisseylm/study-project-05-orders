@@ -6,8 +6,9 @@ import scala.compiletime.uninitialized
 import scala.quoted.{ Expr, Quotes, Type, Varargs }
 //
 import org.mvv.scala.tools.{ Logger, tryDo }
-import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName, qClassNameOfCompiled, qFunction, Param }
-import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, qStringLiteral, getClassThisScopeTypeRepr }
+import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, topMethodFullName, topMethodSimpleName }
+import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName, classExists, qClassNameOfCompiled, qFunction, Param }
+import org.mvv.scala.tools.quotes.{ qStringLiteral, getClassThisScopeTypeRepr }
 
 
 /**
@@ -41,7 +42,7 @@ inline def currentClassIsInitializedProps: IsInitializedProps =
 def currentClassIsInitializedPropsImpl(using q: Quotes): Expr[IsInitializedProps] =
   import q.reflect.*
 
-  val log = Logger(topClassOrModuleFullName)
+  val log = Logger(topMethodFullName)
 
   val classDef: ClassDef = find1stOwnerClass().get
   val body: List[Statement] = classDef.body
@@ -55,11 +56,14 @@ def currentClassIsInitializedPropsImpl(using q: Quotes): Expr[IsInitializedProps
 
   val ownerFullClassName = classDef.symbol.fullName
 
-  val tuples: List[Term] = valDefs.map(vd => termIsInitTupleEntry(ownerFullClassName, vd))
+  val tuples: List[Term] = valDefs.map { vd =>
+    termIsInitTupleEntry (ownerFullClassName, vd) ("isInitialized", "org.mvv.scala.tools.props.IsInitialized")
+  }
+
   val tuplesExprs = tuples.map(_.asExprOf[(String,()=>Boolean)])
   val exprOfTupleList = Expr.ofList(tuplesExprs)
 
-  log.info(s"currentClassIsInitializedProps: ${exprOfTupleList.show}\n$exprOfTupleList")
+  log.info(s"$topMethodSimpleName: ${exprOfTupleList.show}\n$exprOfTupleList")
 
   exprOfTupleList
 
@@ -98,73 +102,70 @@ private def find1stOwnerClass(using q: Quotes)(): Option[q.reflect.ClassDef] =
 
 
 
-def qFunction22(using q: Quotes)
+def findIsInitializedFunction(using q: Quotes)
   (thisType: q.reflect.TypeRepr)
-  //(functionName: String)
-  (valueType: q.reflect.TypeRepr )
-  //(params: Param[q.reflect.TypeRepr]*)
-  //(returnType: q.reflect.TypeRepr)
+  (valDef: q.reflect.ValDef)
+  (isInitializedFuncName: String, isInitializedOwners: String*)
   : q.reflect.Term =
+
   import q.reflect.* //{ Select, Symbol }
   import org.mvv.scala.tools.quotes.{ qMethodType, getClassThisScopeTypeRepr }
-  import org.mvv.scala.tools.quotes.{ symbolToString, SymbolDetails }
+  import org.mvv.scala.tools.quotes.symbolDetailsToString
 
-  val typeTree = TypeTree.ref(thisType.typeSymbol)
+  val log = Logger(topMethodFullName)
+  val logPrefix = topMethodSimpleName
 
-  //val declaredMethods1 = thisType.typeSymbol.declaredMethods
-  //println(s"%%% thisType1: $thisType")
-  //println(s"%%% declaredMethods1: ${thisType.typeSymbol.declaredMethods}")
+  //val typeTree = TypeTree.ref(thisType.typeSymbol)
+  //val isInitializedFunctionsContainerPath = "org.mvv.scala.tools.props.IsInitialized"
+  //val isInitializedFuncName = "isInitialized"
 
-  //println(s"%%% thisType1: $thisType")
-  //println(s"%%% declaredMethods1: ${typeTree.symbol.declaredMethods}")
+  //val originalIsInitializedOwners = List("org.mvv.scala.tools.props.IsInitialized")
+  val isInitializedOwnersWithCompanions = isInitializedOwners
+    .flatMap(cls => List(cls, cls + "$"))
+    .filter(cls => classExists(cls))
 
-  //val ss = Symbol.classSymbol("org.mvv.scala.tools.props.IsInitialized")
-  //println(s"%%% 656565656: ${symbolToString(using q)(ss, SymbolDetails.Base, SymbolDetails.List, SymbolDetails.Tree )}")
-  //println(s"%%% -------------------------------------------------------------")
+  log.trace(s"$logPrefix isInitializedOwnersWithCompanions: $isInitializedOwnersWithCompanions")
 
-  val ss2 = Symbol.classSymbol("org.mvv.scala.tools.props.IsInitialized$")
-  //println(s"%%% 656565656: ${symbolToString(using q)(ss2, SymbolDetails.Base, SymbolDetails.List, SymbolDetails.Tree )}")
-  //println(s"%%% -------------------------------------------------------------")
+  val allIsInitializedMethods = gatherIsInitializedFunctions(isInitializedFuncName, isInitializedOwnersWithCompanions*)
 
-  val defDefList: List[DefDef] = ss2.methodMembers
-    .filter(_.isDefDef) .map( _.tree match { case m: DefDef => m } )
-  val allIsInitializedMethods = defDefList
-    .filter(_.name == "isInitialized")
-    .filter(defDef => isSimpleBoolMethodWithOneParamOfAnyType(defDef))
+  val theBestMethod: DefDef = findTheBestOfOverloadedMethods(allIsInitializedMethods, valDef.tpt.tpe)
+  log.trace(s"$logPrefix valDef (${valDef.name}: ${valDef.tpt.tpe.show}), theBestMethod: ${theBestMethod.name}(${firstParamType(theBestMethod).show})")
 
-  val theBestMethod: DefDef = findTheBestMethod(allIsInitializedMethods, valueType)
-  println(s"%%% valDef.type: ${valueType.show}, theBestMethod: ${theBestMethod.name}(${firstParamType(theBestMethod).show})  ${theBestMethod}")
+  val theBestMethodOwner = theBestMethod.symbol.owner.fullName
+  val funSelect = Select( qClassName(theBestMethodOwner.stripSuffix("$")), theBestMethod.symbol)
 
-
-  //println(s"%%% 656565656  m333(${allIsInitializedMethods.size}): $allIsInitializedMethods")
-
-  //println(s"%%% 656565656  m333: isDefDef = ${allIsInitializedMethods.head.isDefDef}")
-
-
-  //getClassThisScopeTypeRepr
-  //val methodType = qMethodType(params*)(returnType)
-  //TypeTree()
-
-  //Symbol.newMethod(Symbol.noSymbol, methodSimpleName, methodType)
-
-  //val (methodOwner, methodSimpleName) = extractFullMethodNameComponents(functionFullName)
-  //val funSelect = Select( qClassName(methodOwner), Symbol.newMethod(Symbol.noSymbol, methodSimpleName, methodType) )
-  //???//funSelect
-
-  val _firstParamType: TypeRepr = firstParamType(theBestMethod)
-
-  val asMethodType = qMethodType(Param("v", _firstParamType))(TypeRepr.of[Boolean])
-  val mmm444 = Symbol.newMethod(Symbol.noSymbol, theBestMethod.name, asMethodType)
-
-  //val funSelect = Select( qClassName(ss2.fullName), theBestMethod.symbol)
-  //val funSelect = Select( qClassName(ss2.fullName), mmm444)
-  //val funSelect = Select( qClassName("org.mvv.scala.tools.props.IsInitialized$"), mmm444)
-  val funSelect = Select( qClassName("org.mvv.scala.tools.props.IsInitialized"), mmm444)
-  println(s"%%% 77777 funSelect: $funSelect")
+  log.trace(s"$logPrefix funSelect: $funSelect")
   funSelect
 
 
-private def findTheBestMethod(using q: Quotes)(
+
+private def gatherIsInitializedFunctions(using q: Quotes)
+  (isInitializedFuncName: String, funcOwners: String*)
+  : List[q.reflect.DefDef] =
+  import q.reflect.*
+  import org.mvv.scala.tools.quotes.symbolDetailsToString
+
+  val log = Logger(topMethodFullName)
+  val logPrefix = topMethodSimpleName
+
+  val functions = funcOwners.distinct
+    .map(funcOwner => Symbol.classSymbol(funcOwner))
+    // I do not know how to filter/distinguish ?incorrect? object/class method owner
+    // since these incorrect symbols return isType/isClassDef/exists,
+    // only flags=EmptyFlags but it is not reliable sign
+    // for that reason I have to use there try/catch (tryDo)
+    .filter(s => !s.isNoSymbol)
+    .map { s => log.trace(s"$logPrefix funcOwner ${symbolDetailsToString(s)}"); s }
+    .flatMap(s => tryDo{ s.methodMembers } .getOrElse(Nil))
+    .filter(_.isDefDef) .map(_.tree match { case m: DefDef => m })
+    .filter(_.name == isInitializedFuncName)
+    .filter(defDef => isSimpleBoolMethodWithOneParamOfAnyType(defDef))
+    .toList
+  functions
+
+
+
+private def findTheBestOfOverloadedMethods(using q: Quotes)(
   allIsInitializedMethods: List[q.reflect.DefDef], valueType: q.reflect.TypeRepr): q.reflect.DefDef =
   import q.reflect.*
 
@@ -173,7 +174,7 @@ private def findTheBestMethod(using q: Quotes)(
   val methodsWithSuitableTypes = allIsInitializedMethods
     .filter(m =>
       val mParamType: TypeRepr = firstParamType(m)
-      val isSuitable = (valueType <:< mParamType)
+      val isSuitable = valueType <:< mParamType
       isSuitable
     )
 
@@ -189,7 +190,7 @@ private def findTheBestMethod(using q: Quotes)(
         if m1ParamType <:< m2ParamType then withSuperTypes.addOne(m2)
         if m2ParamType <:< m1ParamType then withSuperTypes.addOne(m1)
 
-  val withoutSuperTypes = (methodsWithSuitableTypes.toSet -- withSuperTypes)
+  val withoutSuperTypes = methodsWithSuitableTypes.toSet -- withSuperTypes
   require(withoutSuperTypes.nonEmpty, "Strange, all methods have type which are super-type of others...")
 
   if withoutSuperTypes.sizeIs != 1 then
@@ -201,87 +202,68 @@ private def findTheBestMethod(using q: Quotes)(
 
 
 
-// TODO: test with generics
+// T O D O: test with generics
 private def isSimpleBoolMethodWithOneParamOfAnyType(using q: Quotes)(defDef: q.reflect.DefDef): Boolean =
   import q.reflect.*
-
   import org.mvv.scala.tools.beans.hasExtraParams
-
-  println(s"%%% isSimpleBoolMethodWithOneParamOfAnyType 01  ${defDef.name}")
+  import org.mvv.scala.tools.quotes.isBool
 
   if hasExtraParams(defDef) then return false
 
-  println(s"%%% isSimpleBoolMethodWithOneParamOfAnyType 02")
-
   val returnType: TypeRepr = defDef.returnTpt.tpe
-  println(s"%%% isSimpleBoolMethodWithOneParamOfAnyType 02222   returnType: ${returnType.show}, expected: ${TypeRepr.of[Boolean].show}")
-  println(s"%%% isSimpleBoolMethodWithOneParamOfAnyType 02223   returnType == TypeRepr.of[Boolean]: ${returnType == TypeRepr.of[Boolean]}")
-  println(s"%%% isSimpleBoolMethodWithOneParamOfAnyType 02223   returnType != TypeRepr.of[Boolean]: ${returnType != TypeRepr.of[Boolean]}")
-  println(s"%%% isSimpleBoolMethodWithOneParamOfAnyType 02223   returnType =:= TypeRepr.of[Boolean]: ${returnType =:= TypeRepr.of[Boolean]}")
-
-  val isBoolReturnType = (returnType == TypeRepr.of[Boolean]) || (returnType =:= TypeRepr.of[Boolean])
-  if !isBoolReturnType then return false
-
-  println(s"%%% isSimpleBoolMethodWithOneParamOfAnyType 03")
+  if !returnType.isBool then return false
 
   val paramss: List[ParamClause] = defDef.paramss
-  val valDefOrTypeDefList: List[ValDef|TypeDef] = paramss.flatMap(_.params)
+  val valOrTypeDefList: List[ValDef|TypeDef] = paramss.flatMap(_.params)
 
-  println(s"%%% isSimpleBoolMethodWithOneParamOfAnyType 04 valDefOrTypeDefList(${valDefOrTypeDefList.size}): ${valDefOrTypeDefList}")
-
-  val valDefOList: List[ValDef] = valDefOrTypeDefList
-    .filter ( _ match { case _: ValDef => true; case _ => false} )
-    .map { case vd: ValDef => vd }
-
-  println(s"%%% isSimpleBoolMethodWithOneParamOfAnyType 05 valDefOList(${valDefOList.size}): ${valDefOList}")
+  val valDefOList: List[ValDef] = valOrTypeDefList.view
+    // mthfck... how to write it really easy??
+    .flatMap { case vd: ValDef => Option(vd); case _ => None }
+    .toList
 
   valDefOList.sizeIs == 1
 
 
+
 private def firstParamType(using q: Quotes)(defDef: q.reflect.DefDef): q.reflect.TypeRepr =
+  firstParam(defDef)._2
+
+
+private def firstParam(using q: Quotes)(defDef: q.reflect.DefDef): (String, q.reflect.TypeRepr) =
   import q.reflect.*
 
   val paramss: List[ParamClause] = defDef.paramss
-  val valDefOrTypeDefList: List[ValDef | TypeDef] = paramss.flatMap(_.params)
-  val valDefOList: List[ValDef] = valDefOrTypeDefList
-    .filter(_ match
-      case _: ValDef => true
-      case _ => false
-    )
-    .map { case vd: ValDef => vd }
+  val valDefOList: List[ValDef] = paramss.flatMap(_.params)
+    // mthfck... how to write it really easy??
+    .flatMap { case vd: ValDef => Option(vd); case _ => None }
+
   require(valDefOList.sizeIs >= 1, s"Method [${defDef.name}] has no params.")
 
+  val firstParamName = valDefOList.head.name
   val firstParamType = valDefOList.head.tpt.tpe
-  firstParamType
+  (firstParamName, firstParamType)
 
 
 
-private def termIsInitTupleEntry(using q: Quotes)(classFullName: String, valDef: q.reflect.ValDef): q.reflect.Term =
+private def termIsInitTupleEntry(using q: Quotes)
+  (classFullName: String, valDef: q.reflect.ValDef)
+  (isInitializedFuncName: String, isInitializedOwners: String*)
+  : q.reflect.Term =
   import q.reflect.*
   import org.mvv.scala.tools.quotes.{ qMethodType, getClassThisScopeTypeRepr }
 
-
   val classSymbol = Symbol.classSymbol(classFullName)
   val valSelect = Select.unique(This(classSymbol), valDef.name)
-  val valDefType = valDef.tpt.tpe
+  //val valDefType = valDef.tpt.tpe
 
-  val scopeTypRepr: TypeRepr = getClassThisScopeTypeRepr(classSymbol)
-
+  //val scopeTypRepr: TypeRepr = getClassThisScopeTypeRepr(classSymbol)
   //val isInitializedTerRef = TermRef(scopeTypRepr, "isInitialized")
   //val isInitializedIdentTerm = Ident(isInitializedTerRef)
   //val isInitializedApply = Apply(isInitializedIdentTerm, List(valSelect))
 
-  //val _this = getClassThisScopeTypeRepr(classSymbol)
-  //qFunction22(scopeTypRepr)("isInitialized")
-
-  //val isInitializedF = qFunction("org.mvv.scala.tools.props.LateInitPropsTest$package.isInitialized")
-  //  //(Param("v", TypeRepr.of[AnyVal]))(TypeRepr.of[Unit])
-  //  //(Param("v", TypeRepr.of[Option[Any]]))(TypeRepr.of[Unit])
-  //  (Param("v", valDef.tpt.tpe))(TypeRepr.of[Unit])
-
   val _this = getClassThisScopeTypeRepr(classSymbol)
-  val isInitializedF: Term = qFunction22(_this)(valDefType)//("isInitialized")
-  //val isInitializedF = TermRef( qFunction22(_this)//("isInitialized")
+  val isInitializedF: Term = findIsInitializedFunction(_this)(valDef)
+    (isInitializedFuncName, isInitializedOwners*)
 
   val isInitializedApply = Apply(isInitializedF, List(valSelect))
 
@@ -294,7 +276,3 @@ private def termIsInitTupleEntry(using q: Quotes)(classFullName: String, valDef:
 
   val tuple = qStringValueTuple2(valDef.name, isInitializedAnonFunLambda)
   tuple
-
-
-//extension (using q: Quotes)(typeRepr: q.reflect.TypeRepr)
-//  def isBool: Boolean =

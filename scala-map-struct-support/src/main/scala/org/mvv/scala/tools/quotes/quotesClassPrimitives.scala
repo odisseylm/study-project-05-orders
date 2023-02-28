@@ -40,12 +40,30 @@ def fullClassNameOf[T]
   fullClassName
 
 
+
 /** This logic moved to separate method because probably it should be fixed
  * for generics/anonymous/etc */
 //noinspection ScalaUnusedSymbol
 def getFullClassName(typeName: String) =
   val fullClassName = typeName.stripAfter("[", ExcludeDelimiter)
   fullClassName
+
+
+/** Use this method if you are not sure that class is surely exists.
+ *  It is needed because attempt to non-existent class causes compilation error
+ *  even if such code is wrapped by try/catch. */
+//noinspection ScalaUnusedSymbol
+def classExists(using Quotes)(classFullName: String): Boolean =
+  val (_package, simpleName) = extractFullClassNameComponents(classFullName)
+
+  val packageTerm = qPackage(_package)
+  val packageSymbol = packageTerm.symbol
+  if !packageSymbol.exists then return false
+
+  val declaredTypeNames = packageSymbol.declaredTypes.map(_.name)
+  val exists = declaredTypeNames.contains(simpleName)
+  exists
+
 
 
 /**
@@ -71,6 +89,7 @@ def qClassName(using q: Quotes) (fullClassName: String): q.reflect.Term =
 
 
 
+// TODO: rename to qClassNameOfRuntimeClass
 //noinspection ScalaUnusedSymbol
 def qClassName(using q: Quotes) (cls: Class[?]): q.reflect.Term =
   qClassName_byClassFullNameSelect(cls.getName.nn)
@@ -95,6 +114,7 @@ def qClassNameOf[T](using q: Quotes)(using Type[T])
 
 
 
+// TODO: rename and make more general since it creates not only class (like qPathObject)
 private def qClassName_byClassFullNameSelect (using q: Quotes)
   (classFullName: String): q.reflect.Select =
 
