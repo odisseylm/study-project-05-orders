@@ -48,7 +48,9 @@ private def validateUninitializedProps(className: String, isInitializedProps: Li
 
   val uninitializedProps: List[String] = isInitializedProps
     .filter { (_, isInitialized) => !isInitialized() }
-    .map(_._1)
+    // remove '_' which is used for internal private field
+    // when it is accessed with the method with the same name (but without '_')
+    .map(_._1.stripPrefix("_"))
     .sorted
 
   if uninitializedProps.nonEmpty then
@@ -170,11 +172,6 @@ class LateInitPropsTest {
     org.mvv.scala.tools.beans.ScalaBeansInspector().inspectClass(classOf[ClassWithLateInitProps])
   }
 
-  @Test
-  def bb(): Unit = {
-    val v = ClassWithLateInitProps()
-    v.validateLateInitProps()
-  }
 
   @Test
   @DisplayName("validateUninitializedProps")
@@ -183,7 +180,7 @@ class LateInitPropsTest {
 
     assertThatCode { () => v.validateLateInitProps(); () }
       .hasMessage("The following props in org.mvv.scala.tools.props.ClassWithLateInitProps" +
-        " are not initialized [_label1, amount, currency, optionProp2].")
+        " are not initialized [amount, currency, label1, optionProp2].")
       .isExactlyInstanceOf(classOf[IllegalStateException])
 
     v.label = "0"
@@ -196,5 +193,3 @@ class LateInitPropsTest {
   }
 
 }
-
-

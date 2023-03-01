@@ -7,8 +7,10 @@ import scala.quoted.{ Expr, Quotes, Type, Varargs }
 //
 import org.mvv.scala.tools.{ Logger, tryDo }
 import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, topMethodFullName, topMethodSimpleName }
-import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName, classExists, qClassNameOfCompiled, qFunction, Param }
-import org.mvv.scala.tools.quotes.{ qStringLiteral, getClassThisScopeTypeRepr, getSimpleClassName }
+import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName, qClassNameOfCompiled, Param }
+import org.mvv.scala.tools.quotes.{ qStringLiteral, qFunction }
+import org.mvv.scala.tools.quotes.{ classExists, getSimpleClassName }
+import org.mvv.scala.tools.quotes.{ findSpliceOwnerClass, getClassThisScopeTypeRepr }
 
 
 /**
@@ -44,18 +46,15 @@ def currentClassIsInitializedPropsImpl(using q: Quotes): Expr[IsInitializedProps
 
   val log = Logger(topMethodFullName)
 
-  val classDef: ClassDef = find1stOwnerClass().get
+  val classDef: ClassDef = findSpliceOwnerClass()
+    .getOrElse( throw IllegalStateException("Macros 'currentClassIsInitializedProps' should be placed inside class."))
   val body: List[Statement] = classDef.body
 
-  val valDefs: List[ValDef] = body.map { stat =>
-      stat match
-        case vd: ValDef => Option(vd).filter(toCheckInitState)
-        case _ => None // ignore
-    }
-    .filter(_.isDefined).map(_.get)
+  val valDefs: List[ValDef] = body
+    .flatMap { case vd: ValDef => Option(vd); case _ => None }
+    .filter(toCheckInitState)
 
   val ownerFullClassName = classDef.symbol.fullName
-
   val tuples: List[Term] = valDefs.map { vd =>
     termIsInitTupleEntry (ownerFullClassName, vd) ("isInitialized", "org.mvv.scala.tools.props.IsInitialized")
   }
@@ -88,39 +87,13 @@ def toCheckInitState(using q: Quotes)(valDef: q.reflect.ValDef): Boolean =
 
 
 
-def qTuple2(using q: Quotes)(v1: q.reflect.Term, v2: q.reflect.Term): q.reflect.Term =
-  import q.reflect.*
-  val tuple2ClassTerm: Term = qClassNameOfCompiled[Tuple2[Any,Any]]
-  val tuple2ApplySelect = Select.unique(tuple2ClassTerm, "apply")
-  val tuple2TypeApply = TypeApply(tuple2ApplySelect, List(TypeTree.of[String], TypeTree.of[()=>Boolean]))
-  val tupleApply = Apply(tuple2TypeApply, List(v1, v2))
-  tupleApply
-
-
-
-def qStringValueTuple2(using q: Quotes)(str: String, value: q.reflect.Term): q.reflect.Term =
-  qTuple2(qStringLiteral(str), value)
-
-
-
-private def find1stOwnerClass(using q: Quotes)(): Option[q.reflect.ClassDef] =
-  import q.reflect.{ Symbol, ClassDef }
-
-  var s: Symbol = Symbol.spliceOwner
-  while s != Symbol.noSymbol && !s.isClassDef do
-    s = s.maybeOwner
-
-  if s.isClassDef then tryDo { s.tree match { case cd: ClassDef => cd } } else None
-
-
-
 def findIsInitializedFunction(using q: Quotes)
   (thisType: q.reflect.TypeRepr)
   (valDef: q.reflect.ValDef)
   (isInitializedFuncName: String, isInitializedOwners: String*)
   : q.reflect.Term =
 
-  import q.reflect.* //{ Select, Symbol }
+  import q.reflect.{ Select, DefDef, TypeDef }
   import org.mvv.scala.tools.quotes.{ qMethodType, getClassThisScopeTypeRepr }
   import org.mvv.scala.tools.quotes.symbolDetailsToString
 
@@ -128,10 +101,7 @@ def findIsInitializedFunction(using q: Quotes)
   val logPrefix = topMethodSimpleName
 
   //val typeTree = TypeTree.ref(thisType.typeSymbol)
-  //val isInitializedFunctionsContainerPath = "org.mvv.scala.tools.props.IsInitialized"
-  //val isInitializedFuncName = "isInitialized"
 
-  //val originalIsInitializedOwners = List("org.mvv.scala.tools.props.IsInitialized")
   val isInitializedOwnersWithCompanions = isInitializedOwners
     .flatMap(cls => List(cls, cls + "$"))
     .filter(cls => classExists(cls))
@@ -286,5 +256,9 @@ private def termIsInitTupleEntry(using q: Quotes)
     rhsFn
   )
 
-  val tuple = qStringValueTuple2(valDef.name, isInitializedAnonFunLambda)
-  tuple
+  val stringLiteral: Term = qStringLiteral(valDef.name)
+  val funLambda: Term = isInitializedAnonFunLambda
+
+  val tupleExpr: Expr[(String, ()=>Boolean)] = Expr.ofTuple( // qStringValueTuple2(valDef.name, isInitializedAnonFunLambda)
+    (stringLiteral.asExprOf[String], funLambda.asExprOf[()=>Boolean]) )
+  tupleExpr.asTerm

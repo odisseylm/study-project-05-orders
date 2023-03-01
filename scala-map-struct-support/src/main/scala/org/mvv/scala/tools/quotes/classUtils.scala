@@ -32,6 +32,17 @@ def findClassThisScopeTypeRepr(using q: Quotes)(symbol: q.reflect.Symbol): Optio
 
 
 
+def findSpliceOwnerClass(using q: Quotes)(): Option[q.reflect.ClassDef] =
+  import q.reflect.{ Symbol, ClassDef }
+
+  var s: Symbol = Symbol.spliceOwner
+  while s != Symbol.noSymbol && !s.isClassDef do
+    s = s.maybeOwner
+
+  if s.isClassDef then tryDo { s.tree match { case cd: ClassDef => cd } } else None
+
+
+
 // returns (or should return) className (without generics types)
 def getTypeApplyClassName(using q: Quotes)(typeApply: q.reflect.TypeApply): String =
   import q.reflect.Select

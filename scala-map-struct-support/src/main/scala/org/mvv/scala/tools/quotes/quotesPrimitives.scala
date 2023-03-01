@@ -76,3 +76,31 @@ def qValidateCastingFromTo[From, To](using q: Quotes)(using Type[From], Type[To]
   if !typesAreCompatible then
     val errMsg = s"Type ${tTypeRepr.show} cannot be cast to ${vTypeRepr.show}."
     if abort then report.errorAndAbort(errMsg) else report.error(errMsg)
+
+
+
+/*
+/**
+ * Use Expr.ofTuple instead of qTuple2 for creating tuple
+ *
+ * {{{
+ *   val stringLiteral: Term = qStringLiteral(valDef.name)
+ *   val funLambda: Term = isInitializedAnonFunLambda
+ *
+ *   val tupleExpr: Expr[(String, ()=>Boolean)] = Expr.ofTuple(
+ *     (stringLiteral.asExprOf[String], funLambda.asExprOf[()=>Boolean]) )
+ *   val tupleTerm = tupleExpr.asTerm
+ * }}}
+ */
+def qTuple2(using q: Quotes)(v1: q.reflect.Term, v2: q.reflect.Term): q.reflect.Term =
+  import q.reflect.*
+  val tuple2ClassTerm: Term = qClassNameOfCompiled[Tuple2[Any,Any]]
+  val tuple2ApplySelect = Select.unique(tuple2ClassTerm, "apply")
+  val tuple2TypeApply = TypeApply(tuple2ApplySelect, List(TypeTree.of[String], TypeTree.of[()=>Boolean]))
+  val tupleApply = Apply(tuple2TypeApply, List(v1, v2))
+  tupleApply
+
+
+def qStringValueTuple2(using q: Quotes)(str: String, value: q.reflect.Term): q.reflect.Term =
+  qTuple2(qStringLiteral(str), value)
+*/
