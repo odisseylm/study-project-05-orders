@@ -9,7 +9,7 @@ import org.mvv.scala.tools.{ Logger, tryDo }
 import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, topMethodFullName, topMethodSimpleName }
 import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName, qClassNameOfCompiled, Param }
 import org.mvv.scala.tools.quotes.{ qStringLiteral, qFunction }
-import org.mvv.scala.tools.quotes.{ classExists, getSimpleClassName }
+import org.mvv.scala.tools.quotes.{ classExists, getSimpleClassName, getFullClassName, getCompanionClass }
 import org.mvv.scala.tools.quotes.{ findSpliceOwnerClass, getClassThisScopeTypeRepr }
 
 
@@ -39,9 +39,28 @@ type IsInitializedProps = List[(String, ()=>Boolean)]
 
 
 inline def currentClassIsInitializedProps: IsInitializedProps =
-  ${ currentClassIsInitializedPropsImpl }
+  ${ currentClassIsInitializedPropsImpl( '{ Nil }, '{ "isInitialized" } ) }
 
-def currentClassIsInitializedPropsImpl(using q: Quotes): Expr[IsInitializedProps] =
+
+//noinspection ScalaUnusedSymbol
+inline def currentClassIsInitializedProps(
+  inline isInitializedMethodOwners: String*
+  ): IsInitializedProps =
+  ${ currentClassIsInitializedPropsImpl('{ isInitializedMethodOwners }, '{ "isInitialized" }) }
+
+
+//noinspection ScalaUnusedSymbol
+inline def currentClassIsInitializedProps(
+  inline isInitializedMethodOwners: List[String],
+  inline isInitializedMethod: String,
+  ): IsInitializedProps =
+  ${ currentClassIsInitializedPropsImpl('{ isInitializedMethodOwners }, '{ isInitializedMethod }) }
+
+
+def currentClassIsInitializedPropsImpl(using q: Quotes)(
+  isInitializedMethodOwnersExpr: Expr[Seq[String]],
+  isInitializedMethodExpr: Expr[String],
+  ): Expr[IsInitializedProps] =
   import q.reflect.*
 
   val log = Logger(topMethodFullName)
@@ -54,9 +73,14 @@ def currentClassIsInitializedPropsImpl(using q: Quotes): Expr[IsInitializedProps
     .flatMap { case vd: ValDef => Option(vd); case _ => None }
     .filter(toCheckInitState)
 
+  val isInitializedMethodName: String = isInitializedMethodExpr.valueOrAbort //.getOrElse("isInitialized")
+  val passedIsInitializedMethodOwnerClassNames: Seq[String] = isInitializedMethodOwnersExpr.valueOrAbort
+  val allIsInitializedMethodOwnerClassNames: List[String] =
+    (passedIsInitializedMethodOwnerClassNames.toList :+ getFullClassName(classDef)).distinct
+
   val ownerFullClassName = classDef.symbol.fullName
   val tuples: List[Term] = valDefs.map { vd =>
-    termIsInitTupleEntry (ownerFullClassName, vd) ("isInitialized", "org.mvv.scala.tools.props.IsInitialized")
+    termIsInitTupleEntry (ownerFullClassName, vd) (isInitializedMethodName, allIsInitializedMethodOwnerClassNames*)
   }
 
   val tuplesExprs = tuples.map(_.asExprOf[(String,()=>Boolean)])
@@ -93,7 +117,7 @@ def findIsInitializedFunction(using q: Quotes)
   (isInitializedFuncName: String, isInitializedOwners: String*)
   : q.reflect.Term =
 
-  import q.reflect.{ Select, DefDef, TypeDef }
+  import q.reflect.{ Select, DefDef, TypeDef, Symbol }
   import org.mvv.scala.tools.quotes.{ qMethodType, getClassThisScopeTypeRepr }
   import org.mvv.scala.tools.quotes.symbolDetailsToString
 
@@ -102,15 +126,19 @@ def findIsInitializedFunction(using q: Quotes)
 
   //val typeTree = TypeTree.ref(thisType.typeSymbol)
 
-  val isInitializedOwnersWithCompanions = isInitializedOwners
-    .flatMap(cls => List(cls, cls + "$"))
+  val isInitializedOwnersWithCompanions: List[Symbol] = isInitializedOwners.view
+    .distinct
     .filter(cls => classExists(cls))
+    .map(cls => Symbol.classSymbol(cls))
+    .flatMap(clsS => List(Option(clsS), getCompanionClass(clsS)))
+    .filter(_.isDefined).map(_.get)
+    .toList
 
   log.trace(s"$logPrefix isInitializedOwnersWithCompanions: $isInitializedOwnersWithCompanions")
 
-  val allIsInitializedMethods = gatherIsInitializedFunctions(isInitializedFuncName, isInitializedOwnersWithCompanions*)
+  val allIsInitializedMethods = gatherIsInitializedFunctions(isInitializedFuncName, isInitializedOwnersWithCompanions)
 
-  val theBestMethod: DefDef = findTheBestOfOverloadedMethods(allIsInitializedMethods, valDef.tpt.tpe)
+  val theBestMethod: DefDef = findTheBestOfOverloadedMethods(allIsInitializedMethods, valDef)
   log.trace(s"$logPrefix valDef (${valDef.name}: ${valDef.tpt.tpe.show}), theBestMethod: ${theBestMethod.name}(${firstParamType(theBestMethod).show})")
 
   val theBestMethodOwner = theBestMethod.symbol.owner.fullName
@@ -122,7 +150,7 @@ def findIsInitializedFunction(using q: Quotes)
 
 
 private def gatherIsInitializedFunctions(using q: Quotes)
-  (isInitializedFuncName: String, funcOwners: String*)
+  (isInitializedFuncName: String, funcOwners: List[q.reflect.Symbol])
   : List[q.reflect.DefDef] =
   import q.reflect.*
   import org.mvv.scala.tools.quotes.symbolDetailsToString
@@ -131,7 +159,6 @@ private def gatherIsInitializedFunctions(using q: Quotes)
   val logPrefix = topMethodSimpleName
 
   val functions = funcOwners.distinct
-    .map(funcOwner => Symbol.classSymbol(funcOwner))
     // I do not know how to filter/distinguish ?incorrect? object/class method owner
     // since these incorrect symbols return isType/isClassDef/exists,
     // only flags=EmptyFlags but it is not reliable sign
@@ -148,10 +175,15 @@ private def gatherIsInitializedFunctions(using q: Quotes)
 
 
 private def findTheBestOfOverloadedMethods(using q: Quotes)(
-  allIsInitializedMethods: List[q.reflect.DefDef], valueType: q.reflect.TypeRepr): q.reflect.DefDef =
+  allIsInitializedMethods: List[q.reflect.DefDef], valDef: q.reflect.ValDef): q.reflect.DefDef =
   import q.reflect.*
 
-  require(allIsInitializedMethods.nonEmpty, "allIsInitializedMethods are empty")
+  val classOwnerName = valDef.symbol.owner.fullName
+  val valueType = valDef.tpt.tpe
+
+  require(allIsInitializedMethods.nonEmpty, "allIsInitializedMethods are empty." +
+    " Please specify isInitializedMethodOwners in 'currentClassIsInitializedProps' macros" +
+    s" or add isInitialized to $classOwnerName class or companion.")
 
   val methodsWithSuitableTypes = allIsInitializedMethods
     .filter(m =>

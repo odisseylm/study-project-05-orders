@@ -43,7 +43,7 @@ def fullClassNameOf[T]
 
 /** This logic moved to separate method because probably it should be fixed
  *  for generics/anonymous/etc */
-def getFullClassName(typeName: String) =
+def getFullClassName(typeName: String): String =
   val fullClassName = typeName.stripAfter("[", ExcludeDelimiter)
   fullClassName
 
@@ -51,9 +51,14 @@ def getFullClassName(typeName: String) =
 
 /** This logic moved to separate method because probably it should be fixed
  *  for generics/anonymous/etc */
-def getSimpleClassName(typeName: String) =
+def getSimpleClassName(typeName: String): String =
   val simpleName = getFullClassName(typeName).afterLastOrOrigin(".")
   simpleName
+
+
+def getFullClassName(using q: Quotes)(classDef: q.reflect.ClassDef): String =
+  getFullClassName(classDef.symbol.fullName)
+
 
 
 /** Use this method if you are not sure that class is surely exists.
@@ -70,6 +75,32 @@ def classExists(using Quotes)(classFullName: String): Boolean =
   val declaredTypeNames = packageSymbol.declaredTypes.map(_.name)
   val exists = declaredTypeNames.contains(simpleName)
   exists
+
+
+
+/**
+ * We have very strange situation with scala when we inspect objects/companions
+ * 1) If we define only 'object' we have 2 symbols (one with name of object and another with suffix '$').
+ *    To inspect we need to use symbol with '$' and we MUST get it as Symbol.classSymbol(fullPath$).
+ *    You canNOT use Symbol.companionClass since it returns noSymbol (but without fatal error)
+ * 2) However if you have scala class with companion you canNOT get companion as
+ *    Symbol.classSymbol(fullPath$) (error)!!! You need to use Symbol.companionClass
+ *
+ * How to distinguish these cases?? There is some hacking experimental approach.
+ */
+def getCompanionClass(using q: Quotes)(classOrPseudoClassSymbol: q.reflect.Symbol): Option[q.reflect.Symbol] =
+  import q.reflect.Symbol
+  // hacking approach :-(
+  val isNormalClass = tryDo(classOrPseudoClassSymbol.methodMembers).nonEmpty
+    && tryDo(classOrPseudoClassSymbol.tree).nonEmpty
+  val companionClass =
+    if isNormalClass then tryDo(classOrPseudoClassSymbol.companionClass)
+      else
+        val objectPath = classOrPseudoClassSymbol.fullName + "$"
+        // 'classExists' is used because requesting (even only requesting in try/catch)
+        // non-existent class may cause fatal unrecoverable error
+        if classExists(objectPath) then tryDo(Symbol.classSymbol(objectPath)) else None
+  companionClass
 
 
 

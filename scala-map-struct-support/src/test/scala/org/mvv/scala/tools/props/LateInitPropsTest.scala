@@ -34,17 +34,18 @@ case class CustomStringLateInit(var v: String|Null = null) : //extends LateInitM
 
 class ClassWithLateInitPropsShort :
   // standard scala late-init props
-  var currencyNotInitialized: String = uninitialized
+  var currency: String = uninitialized
 
   def validateLateInitProps(): Unit =
     //noinspection ScalaUnusedSymbol
     val vv = 4 // to enforce recompilation
-    val _lateInitProps22: List[(String, () => Boolean)] = currentClassIsInitializedProps
-    log.info(s"lateInitProps: $_lateInitProps22")
-    _lateInitProps22.foreach { a => println(s"^^^ ${a._1} initialized = ${a._2()}") }
+
+    val allProps: List[(String, () => Boolean)] =
+      currentClassIsInitializedProps("org.mvv.scala.tools.props.IsInitialized")
+    validateUninitializedProps(topClassOrModuleFullName, allProps)
 
 
-private def validateUninitializedProps(className: String, isInitializedProps: List[(String, ()=>Boolean)]): Unit =
+def validateUninitializedProps(className: String, isInitializedProps: List[(String, ()=>Boolean)]): Unit =
 
   val uninitializedProps: List[String] = isInitializedProps
     .filter { (_, isInitialized) => !isInitialized() }
@@ -103,7 +104,8 @@ class ClassWithLateInitProps :
   def validateLateInitProps(): Unit =
     //noinspection ScalaUnusedSymbol
     val vv = 3 // to enforce recompilation
-    val allProps: List[(String, ()=>Boolean)] = currentClassIsInitializedProps
+    val allProps: List[(String, ()=>Boolean)] =
+      currentClassIsInitializedProps(List("org.mvv.scala.tools.props.IsInitialized"), "isInitialized")
 
     log.info(s"allProps: ${allProps.map(_._1)}")
     allProps.foreach { a => log.info(s"validateLateInitProps => prop(${a._1}, initialized=${a._2()})") }
@@ -190,6 +192,18 @@ class LateInitPropsTest {
 
     assertThatCode { () => v.validateLateInitProps(); () }
       .doesNotThrowAnyException()
+  }
+
+
+  @Test
+  @DisplayName("validateUninitializedProps2")
+  def validateUninitializedPropsTest2(): Unit = {
+    val v = ClassWithLateInitPropsShort()
+
+    assertThatCode { () => v.validateLateInitProps(); () }
+      .hasMessage("The following props in org.mvv.scala.tools.props.ClassWithLateInitPropsShort" +
+        " are not initialized [currency].")
+      .isExactlyInstanceOf(classOf[IllegalStateException])
   }
 
 }
