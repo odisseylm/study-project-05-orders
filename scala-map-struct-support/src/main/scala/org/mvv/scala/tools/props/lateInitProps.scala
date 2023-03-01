@@ -8,7 +8,7 @@ import scala.quoted.{ Expr, Quotes, Type, Varargs }
 import org.mvv.scala.tools.{ Logger, tryDo }
 import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, topMethodFullName, topMethodSimpleName }
 import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName, classExists, qClassNameOfCompiled, qFunction, Param }
-import org.mvv.scala.tools.quotes.{ qStringLiteral, getClassThisScopeTypeRepr }
+import org.mvv.scala.tools.quotes.{ qStringLiteral, getClassThisScopeTypeRepr, getSimpleClassName }
 
 
 /**
@@ -69,10 +69,22 @@ def currentClassIsInitializedPropsImpl(using q: Quotes): Expr[IsInitializedProps
 
 
 
+private val SkipUninitializedCheckAnnotationNames: Set[String] = Set(
+  "SkipLateInitCheck", "SkipUninitializedCheck", "SkipInitializedCheck",
+  "skipLateInitCheck", "skipUninitializedCheck", "skipInitializedCheck",
+)
+
+
+
 def toCheckInitState(using q: Quotes)(valDef: q.reflect.ValDef): Boolean =
-  //???
-  // TODO: use annotation
-  true
+  import q.reflect.*
+
+  val annotations: List[Term] = valDef.symbol.annotations
+  val annotationNames: List[String] = annotations.map(an => getSimpleClassName(an.tpe.show))
+
+  val hasSkipAnnotation = annotationNames.exists { anName =>
+    SkipUninitializedCheckAnnotationNames.contains(anName) }
+  !hasSkipAnnotation
 
 
 
@@ -191,7 +203,7 @@ private def findTheBestOfOverloadedMethods(using q: Quotes)(
         if m2ParamType <:< m1ParamType then withSuperTypes.addOne(m1)
 
   val withoutSuperTypes = methodsWithSuitableTypes.toSet -- withSuperTypes
-  require(withoutSuperTypes.nonEmpty, "Strange, all methods have type which are super-type of others...")
+  require(withoutSuperTypes.nonEmpty, s"Strange, all methods for type ${valueType.show} have type which are super-type of others...")
 
   if withoutSuperTypes.sizeIs != 1 then
     val valStr = s"${valueType.show}"

@@ -3,7 +3,7 @@ package org.mvv.scala.tools.quotes
 import scala.quoted.*
 import scala.reflect.ClassTag
 //
-import org.mvv.scala.tools.{ afterLastOr, stripAfter, tryDo }
+import org.mvv.scala.tools.{ afterLastOr, afterLastOrOrigin, stripAfter, tryDo }
 import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
 
 
@@ -42,11 +42,18 @@ def fullClassNameOf[T]
 
 
 /** This logic moved to separate method because probably it should be fixed
- * for generics/anonymous/etc */
-//noinspection ScalaUnusedSymbol
+ *  for generics/anonymous/etc */
 def getFullClassName(typeName: String) =
   val fullClassName = typeName.stripAfter("[", ExcludeDelimiter)
   fullClassName
+
+
+
+/** This logic moved to separate method because probably it should be fixed
+ *  for generics/anonymous/etc */
+def getSimpleClassName(typeName: String) =
+  val simpleName = getFullClassName(typeName).afterLastOrOrigin(".")
+  simpleName
 
 
 /** Use this method if you are not sure that class is surely exists.
