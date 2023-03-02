@@ -4,19 +4,20 @@ import scala.quoted.{Expr, Quotes, Type}
 import scala.reflect.Enum as ScalaEnum
 //
 import org.mvv.scala.tools.{ Logger, afterLastOr, isOneOf, getByReflection, unwrapOption }
+import org.mvv.scala.tools.quotes.topClassOrModuleFullName
 // for debug only
 import org.mvv.scala.mapstruct.debug.dump.{ isImplClass, activeFlags, activeFlagEntries, dumpSymbol }
 import org.mvv.scala.mapstruct.debug.printFields
 
 
-private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.passParamTests")
+private val log: Logger = Logger(topClassOrModuleFullName)
 
 
 //noinspection ScalaUnusedSymbol
 //----------------------------------------------------------------------------------------------------------------------
 inline def _internalTestCustomMappingsAsRepeatedParams[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (inline customMappings: (EnumFrom, EnumTo)*): Any =
-  ${ _internalTestCustomMappingsAsRepeatedParamsImpl[EnumFrom, EnumTo]( 'customMappings ) }
+  ${ _internalTestCustomMappingsAsRepeatedParamsImpl[EnumFrom, EnumTo]( '{ customMappings } ) }
 
 def _internalTestCustomMappingsAsRepeatedParamsImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
@@ -38,7 +39,7 @@ def _internalTestCustomMappingsAsRepeatedParamsImpl[EnumFrom <: ScalaEnum, EnumT
 //----------------------------------------------------------------------------------------------------------------------
 inline def _internalTestCustomMappingsAsListParam[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (inline customMappings: List[(EnumFrom, EnumTo)]): Any =
-  ${ _internalTestCustomMappingsAsListParamImpl[EnumFrom, EnumTo]( 'customMappings ) }
+  ${ _internalTestCustomMappingsAsListParamImpl[EnumFrom, EnumTo]( '{ customMappings } ) }
 
 def _internalTestCustomMappingsAsListParamImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (customMappings: Expr[Seq[(EnumFrom, EnumTo)]])
@@ -60,7 +61,7 @@ def _internalTestCustomMappingsAsListParamImpl[EnumFrom <: ScalaEnum, EnumTo <: 
 //----------------------------------------------------------------------------------------------------------------------
 inline def _internalTestCustomMappingsAsSingleParam[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (inline customMapping: (EnumFrom, EnumTo)): Any =
-  ${ _internalTestCustomMappingsAsSingleParamImpl[EnumFrom, EnumTo]( 'customMapping ) }
+  ${ _internalTestCustomMappingsAsSingleParamImpl[EnumFrom, EnumTo]( '{ customMapping } ) }
 
 def _internalTestCustomMappingsAsSingleParamImpl[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (customMapping: Expr[(EnumFrom, EnumTo)])

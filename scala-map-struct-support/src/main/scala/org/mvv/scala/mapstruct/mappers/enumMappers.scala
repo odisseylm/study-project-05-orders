@@ -7,10 +7,10 @@ import org.mvv.scala.tools.{ Logger, afterLastOr, isOneOf, getByReflection, unwr
 // for debug only
 import org.mvv.scala.mapstruct.debug.dump.{ isImplClass, activeFlags, activeFlagEntries, dumpSymbol }
 import org.mvv.scala.mapstruct.debug.printFields
-import org.mvv.scala.tools.quotes.{ ClassSelectMode, enumValue, valueOrAbort, enumValueNames }
+import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, ClassSelectMode, enumValue, valueOrAbort, enumValueNames }
 
 
-private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.enumMappers")
+private val log: Logger = Logger(topClassOrModuleFullName)
 
 
 /*
@@ -28,14 +28,14 @@ inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum](): EnumFr
 //noinspection ScalaUnusedSymbol
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (inline classSelectMode: ClassSelectMode): EnumFrom => EnumTo =
-  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( 'classSelectMode, '{ Nil } ) }
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( '{ classSelectMode }, '{ Nil } ) }
 
 
 
 //noinspection ScalaUnusedSymbol
 inline def enumMappingFunc[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
   (inline classSelectMode: ClassSelectMode, inline customMappings: (EnumFrom, EnumTo)*): EnumFrom => EnumTo =
-  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( 'classSelectMode, 'customMappings ) }
+  ${ enumMappingFuncImpl[EnumFrom, EnumTo]( '{ classSelectMode }, '{ customMappings } ) }
 
 
 

@@ -6,7 +6,7 @@ import org.mvv.scala.tools.{ Logger, tryDo }
 
 
 
-private val log = Logger("org.mvv.scala.tools.classUtils")
+private val log = Logger(topClassOrModuleFullName)
 
 def getClassThisScopeTypeRepr(using q: Quotes)(symbol: q.reflect.Symbol): q.reflect.TypeRepr =
   findClassThisScopeTypeRepr(symbol)

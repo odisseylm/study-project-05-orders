@@ -11,7 +11,7 @@ import org.mvv.scala.tools.{ Logger, afterLastOr, isOneOf, getByReflection, unwr
 type ValuesTuple2Extractor[QTree, TC1, TC2] = ( (QTree, QTree) ) => (TC1, TC2)
 
 
-private val log: Logger = Logger("org.mvv.scala.quotes.tuples")
+private val log: Logger = Logger(topClassOrModuleFullName)
 
 
 //noinspection ScalaUnusedSymbol

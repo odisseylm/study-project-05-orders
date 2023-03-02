@@ -17,12 +17,12 @@ import org.mvv.scala.tools.Logger
 import org.mvv.scala.mapstruct.debug.{ printFields, printSymbolInfo, printTreeSymbolInfo }
 import org.mvv.scala.tools.{ Logger, replaceSuffix, fullName, tryDo, ifBlank, afterLastOr, afterLastOfAnyCharsOr }
 import org.mvv.scala.tools.beans._Quotes.extractType
-import org.mvv.scala.tools.quotes.{ fullPackageName, refName}
+import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, fullPackageName, refName}
 
 
 
 private val classesToIgnore: Set[_Type] = Set(Types.ObjectType, _Type("java.lang.Comparable"))
-private val log: Logger = Logger(classOf[ScalaBeansInspector])
+private val log: Logger = Logger(topClassOrModuleFullName)
 
 
 class ScalaBeansInspector extends Inspector :
