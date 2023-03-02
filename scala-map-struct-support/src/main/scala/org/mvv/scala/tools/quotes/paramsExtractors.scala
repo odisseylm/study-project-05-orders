@@ -1,3 +1,10 @@
+/**
+ * All this code is bit deprecated (over-complicated).
+ * Please see easy approach in enumParamsExtractors.scala
+ * (with using Varargs to convert from {{{Expr[Seq[(T1, T2)]]}}} to {{{Seq[Expr[(EnumFrom, EnumTo)]]}}},
+ *  and standard scala matching to extract tuple component's expressions)
+ */
+
 package org.mvv.scala.tools.quotes
 
 import scala.quoted.{Expr, Quotes, Type}
@@ -7,6 +14,12 @@ import org.mvv.scala.tools.{ Logger, afterLastOr, isOneOf, getByReflection, unwr
 
 
 
+/**
+ * All this code is bit deprecated (over-complicated).
+ * Please see easy approach in enumParamsExtractors.scala
+ * (with using Varargs to convert from {{{Expr[Seq[(T1, T2)]]}}} to {{{Seq[Expr[(EnumFrom, EnumTo)]]}}},
+ *  and standard scala matching to extract tuple component's expressions)
+ */
 def extractTuple2EntriesFromSeqExpr[T1, T2, TC1, TC2]
   (using q: Quotes)(using Type[T1], Type[T2])
   (inlinedExpr: Expr[Seq[(T1, T2)]],
@@ -19,7 +32,12 @@ def extractTuple2EntriesFromSeqExpr[T1, T2, TC1, TC2]
   )
 
 
-
+/**
+ * All this code is bit deprecated (over-complicated).
+ * Please see easy approach in enumParamsExtractors.scala
+ * (with using Varargs to convert from {{{Expr[Seq[(T1, T2)]]}}} to {{{Seq[Expr[(EnumFrom, EnumTo)]]}}},
+ *  and standard scala matching to extract tuple component's expressions)
+ */
 /** Since macros is used during compile time you cannot create real instance of T1/T2 (java class is not exist yet)
  * For that reason you can only return some representation of this constants
  * (in case of enum it will be String - name of enum filed/val/constant) */

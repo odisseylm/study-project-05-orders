@@ -1,46 +1,42 @@
-package org.mvv.scala.mapstruct.mappers.aBitOld
+package org.mvv.scala.mapstruct.mappers
 
-import scala.quoted.{Expr, Quotes, Type}
+import scala.quoted.{Expr, Quotes, Type, Varargs}
 import scala.reflect.Enum as ScalaEnum
 //
-import org.mvv.scala.tools.quotes.{ extractTuple2EntryFromExpr, extractTuple2EntriesFromSeqExpr }
+import org.mvv.scala.tools.quotes.extractEnumValueName
 import org.mvv.scala.tools.{ Logger, afterLastOr, afterLastOfAnyCharsOr }
 
 
-//private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.macroParamsExtractors")
 
-
+//noinspection ScalaUnusedSymbol
 def extractCustomEnumMappingTuplesExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (using q: Quotes)(using Type[EnumFrom], Type[EnumTo])
-  (inlinedExpr: Expr[Seq[(EnumFrom, EnumTo)]])
+  (using Quotes, Type[EnumFrom], Type[EnumTo])
+  (tuplesSeqExpr: Expr[Seq[(EnumFrom, EnumTo)]])
   : List[(String, String)] =
 
-  import q.reflect.{ Inlined, asTerm }
-  extractTuple2EntriesFromSeqExpr[EnumFrom, EnumTo, String, String]( inlinedExpr, enumMappingTuple2Extractor )
+  val asSeqOfExprs: Seq[Expr[(EnumFrom, EnumTo)]] = Varargs.unapply(tuplesSeqExpr).getOrElse(Nil)
+  val tuplesWithName: List[(String, String)] = asSeqOfExprs
+    .map(expr => extractCustomEnumMappingTupleExpr[EnumFrom, EnumTo](expr))
+    .toList
+  tuplesWithName
 
 
 
+//noinspection ScalaUnusedSymbol
 def extractCustomEnumMappingTupleExpr[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum]
-  (using q: Quotes)(using Type[EnumFrom], Type[EnumTo])
-  (inlinedExpr: Expr[(EnumFrom, EnumTo)])
+  (using Quotes, Type[EnumFrom], Type[EnumTo])
+  (tupleExpr: Expr[(EnumFrom, EnumTo)])
   : (String, String) =
-
-  import q.reflect.{ Inlined, asTerm }
-  extractTuple2EntryFromExpr[EnumFrom, EnumTo, String, String]( inlinedExpr, enumMappingTuple2Extractor )
-
-
-
-private def enumMappingTuple2Extractor[EnumFrom <: ScalaEnum, EnumTo <: ScalaEnum](using q: Quotes)
-  ( tupleTerms: (q.reflect.Tree, q.reflect.Tree) ): (String, String) =
-  val enumFromValueTerm = tupleTerms._1
-  val enumToValueTerm   = tupleTerms._2
-  (extractSimpleName(enumFromValueTerm), extractSimpleName(enumToValueTerm))
+  val tupleOfExpr: (Expr[EnumFrom], Expr[EnumTo]) = tupleOfExprToExprOfTuple[EnumFrom, EnumTo](tupleExpr)
+  val tuple: (String, String) = (extractEnumValueName[EnumFrom](tupleOfExpr._1), extractEnumValueName[EnumTo](tupleOfExpr._2))
+  tuple
 
 
 
-// Select(Ident(TestEnum1),TestEnumValue4)
-// Select(Select(Select(Select(Select(Select(Select(Ident(com),mvv),scala),temp),tests),macros2),TestEnum1)
-//
-private def extractSimpleName(using q: Quotes)(tree: q.reflect.Tree): String =
-  val rawName: String = tree.symbol.name
-  rawName.afterLastOfAnyCharsOr(".$", rawName)
+//noinspection ScalaUnusedSymbol
+def tupleOfExprToExprOfTuple[EnumFrom, EnumTo]
+  (using Quotes, Type[EnumFrom], Type[EnumTo])
+  (exprOfTuple: Expr[(EnumFrom, EnumTo)])
+  : (Expr[EnumFrom], Expr[EnumTo]) =
+  exprOfTuple match
+    case '{ ($x1: EnumFrom, $x2: EnumTo) } => (x1, x2)
