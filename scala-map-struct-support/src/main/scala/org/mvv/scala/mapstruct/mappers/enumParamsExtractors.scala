@@ -1,11 +1,10 @@
-package org.mvv.scala.mapstruct.mappers
+package org.mvv.scala.mapstruct.mappers.aBitOld
 
 import scala.quoted.{Expr, Quotes, Type}
 import scala.reflect.Enum as ScalaEnum
 //
 import org.mvv.scala.tools.quotes.{ extractTuple2EntryFromExpr, extractTuple2EntriesFromSeqExpr }
 import org.mvv.scala.tools.{ Logger, afterLastOr, afterLastOfAnyCharsOr }
-// for debug only
 
 
 //private val log: Logger = Logger("org.mvv.scala.mapstruct.mappers.macroParamsExtractors")

@@ -16,12 +16,12 @@ import org.mvv.scala.tools.afterLastOr
 extension [EnumType <: ScalaEnum](enumExpr: Expr[EnumType])
   //noinspection ScalaUnusedSymbol
   def enumNameOrAbort(using Quotes, Type[EnumType]): String = extractEnumValueName[EnumType](enumExpr)
+  //noinspection ScalaUnusedSymbol
+  def enumValueOrAbort(using Quotes, Type[EnumType]): EnumType = extractEnumValue[EnumType](enumExpr)
+  //
   // May cause 'ambiguous' problems. In this case use enumValueOrAbort
   //noinspection ScalaUnusedSymbol
   def valueOrAbort(using Quotes, Type[EnumType]): EnumType = extractEnumValue[EnumType](enumExpr)
-  //noinspection ScalaUnusedSymbol
-  def enumValueOrAbort(using Quotes, Type[EnumType]): EnumType = extractEnumValue[EnumType](enumExpr)
-
 
 
 def enumValueNames[EnumType <: ScalaEnum]
@@ -98,7 +98,7 @@ def enumValue[EnumType <: ScalaEnum]
  * These enums should be located in proper independent source files
  * to be pre-compiled before macros expansion (which uses these enums).
  */
-private def extractEnumValueName[EnumType <: ScalaEnum]
+def extractEnumValueName[EnumType <: ScalaEnum]
   (using q: Quotes) (using Type[EnumType])
   (enumExpr: Expr[EnumType]): String =
 
@@ -122,7 +122,7 @@ private def extractEnumValueName[EnumType <: ScalaEnum]
  * to be pre-compiled before macros expansion (which uses these enums).
  */
 //noinspection ScalaUnusedSymbol
-private def extractEnumValue[EnumType <: ScalaEnum]
+def extractEnumValue[EnumType <: ScalaEnum]
   (using Quotes, Type[EnumType])
   (enumExpr: Expr[EnumType]): EnumType =
   val _enumName = extractEnumValueName[EnumType](enumExpr)
@@ -131,7 +131,7 @@ private def extractEnumValue[EnumType <: ScalaEnum]
 
 
 //noinspection ScalaUnnecessaryParentheses
-def enumValueOfMethod[EnumType <: ScalaEnum]
+private def enumValueOfMethod[EnumType <: ScalaEnum]
   (using q: Quotes)(using Type[EnumType])
   : (String => EnumType) =
 
