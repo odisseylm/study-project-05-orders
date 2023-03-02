@@ -13,6 +13,20 @@ def fullPackageName(using q: Quotes)(packageClause: q.reflect.PackageClause): St
 
 
 
+def classFullPackageName(using q: Quotes)(classDef: q.reflect.ClassDef): String =
+  import q.reflect.{ Symbol, PackageClause }
+
+  var s = classDef.symbol
+  while s != Symbol.noSymbol && !s.isPackageDef do
+    s = s.maybeOwner
+
+  require(s.isPackageDef, s"Package of classDef ${classDef.symbol.fullName} is not found.")
+  // taking Symbol.tree causes error (not allowed operation)... strange
+  val _package = s.fullName
+  _package
+
+
+
 def qScalaPackage (using q: Quotes): q.reflect.Term =
   import q.reflect.{ defn, Ident }
   val scalaPackageSymbol = defn.ScalaPackage // or Symbol.requiredPackage("scala")
