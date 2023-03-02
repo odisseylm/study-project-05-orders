@@ -19,12 +19,26 @@ class BeanProperties (
   val _class: _Class,
   val beanProps: Map[String, BeanProperty],
   ) :
+  private lazy val propsByValName: Map[String, BeanProperty] =
+    beanProps.values
+      .filter(bp => bp.field.isDefined)
+      .filter(bp => bp.field.get.isPublic)
+      .map( bp => (bp.field.get.name, bp) )
+      .toMap
   private lazy val propsByGetterMethodName: Map[String, BeanProperty] =
     beanProps.values.flatMap( bp => bp.getMethods.map(m => (m.name, bp) )).toMap
   private lazy val propsBySetterMethodName: Map[String, BeanProperty] =
     beanProps.values.flatMap( bp => bp.setMethods.map(m => (m.name, bp) )).toMap
 
-  def isGetter(methodName: String): Boolean = propsByGetterMethodName.contains(methodName)
+  def isGetterOneOf(methodNames: List[String]): Boolean =
+    methodNames.exists(mName => isGetter(mName))
+
+  def isGetter(methodName: String): Boolean =
+    propsByGetterMethodName.contains(methodName) || propsByValName.contains(methodName)
+
+  //noinspection ScalaUnusedSymbol
+  def isSetterOneOf(methodNames: List[String], typeName: String): Boolean =
+    methodNames.exists(mName => isSetter(mName, typeName))
 
   //noinspection ScalaUnusedSymbol
   def isSetter(methodName: String, typeName: String): Boolean =
@@ -37,8 +51,16 @@ class BeanProperties (
 
     methodSetters.nonEmpty
 
+  def getPropertyNameByOneOfMethods(methodNames: List[String]): Option[String] =
+    methodNames.view
+      .map(mName => getPropertyNameByMethod(mName))
+      .find(_.isDefined).flatten
+
   def getPropertyNameByMethod(methodName: String): Option[String] =
-    propsByGetterMethodName.get(methodName) .orElse(propsBySetterMethodName.get(methodName)) .map(_.name)
+    propsByGetterMethodName.get(methodName)
+      .orElse(propsByValName.get(methodName))
+      .orElse(propsBySetterMethodName.get(methodName))
+      .map(_.name)
 
 
 

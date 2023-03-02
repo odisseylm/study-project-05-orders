@@ -35,16 +35,23 @@ private def isUnderSbt: Boolean =
   false
 
 
-final class ConsoleLogger (val loggerName: String) extends Logger :
-  private val logLevel: LogLevel = getSysPropOrEnvVar(s"$loggerName.logLevel")
+
+private def getLogLevel(loggerName: String): LogLevel =
+  getSysPropOrEnvVar(s"$loggerName.logLevel")
     .orElse(getSysPropOrEnvVar(s"scalaMapStruct.logLevel"))
     .map(logLevelStr => LogLevel.valueOf(logLevelStr.trim.nn.toUpperCase.nn))
     .getOrElse(LogLevel.INFO)
+
+
+
+final class ConsoleLogger (val loggerName: String, val logLevel: LogLevel) extends Logger :
+  def this(loggerName: String) = this(loggerName, getLogLevel(loggerName))
 
   private inline def isEnabled(logLevel: LogLevel): Boolean =
     logLevel.ordinal >= this.logLevel.ordinal
 
   def this(klass: Class[?]) = this(klass.getName.nn)
+  def this(klass: Class[?], logLevel: LogLevel) = this(klass.getName.nn, logLevel)
 
   // we can make them 'inline' but I do not think that it is good idea
   override def trace(msg: =>String): Unit = if isEnabled(LogLevel.TRACE) then printlnToOut(LogLevel.TRACE, msg)

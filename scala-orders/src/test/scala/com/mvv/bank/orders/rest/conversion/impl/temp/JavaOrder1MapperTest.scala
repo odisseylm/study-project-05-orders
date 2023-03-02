@@ -1,5 +1,7 @@
 package com.mvv.bank.orders.rest.conversion.impl.temp
 
+import org.assertj.core.api.SoftAssertions
+
 import scala.language.unsafeNulls
 //
 import org.mapstruct.factory.Mappers
@@ -22,11 +24,15 @@ class JavaOrder1MapperTest {
 
     val restOrder = mapper.toRestOrder1(domainOrder)
 
-    assertThat(restOrder).isNotNull
-    assertThat(restOrder.cur1).isEqualTo("USD")
-    assertThat(restOrder.cur2).isEqualTo("EUR")
-    assertThat(restOrder.amount).isEqualTo(BigDecimal("234"))
-    assertThat(restOrder.buySellType).isEqualTo(RestBuySellType1.Sell)
+    val a = SoftAssertions()
+
+    a.assertThat(restOrder).isNotNull
+    a.assertThat(restOrder.cur1).isEqualTo("USD")
+    a.assertThat(restOrder.cur2).isEqualTo("EUR")
+    a.assertThat(restOrder.amount).isEqualTo(BigDecimal("234"))
+    a.assertThat(restOrder.buySellType).isEqualTo(RestBuySellType1.Sell)
+
+    a.assertAll()
   }
 
 }
