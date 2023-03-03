@@ -24,14 +24,6 @@ extension (el: Any)
 
 
 
-extension (using quotes: Quotes)(el: quotes.reflect.Tree)
-  def isTerm: Boolean =
-    // It is unclear how to implement this properly...
-    val isTermSymbol = el.symbol.isTerm
-    val isTerm = if isTermSymbol then isTermSymbol
-      else try unwrapOption(getByReflection(el, "isTerm")).asInstanceOf[Boolean]
-           catch case _: Exception => false
-    isTerm
 
 
 

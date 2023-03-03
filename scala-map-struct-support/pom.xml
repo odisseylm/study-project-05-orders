@@ -148,7 +148,8 @@
       <groupId>com.mvv.scala.test</groupId>
       <artifactId>scala2-samples</artifactId>
       <version>1.0-SNAPSHOT</version>
-      <scope>test</scope>
+      <!-- It should be 'test' but now in this case I have some problems when build in Idea -->
+      <!--<scope>test</scope>-->
     </dependency>
     <dependency>
       <groupId>org.scala-lang.modules</groupId>

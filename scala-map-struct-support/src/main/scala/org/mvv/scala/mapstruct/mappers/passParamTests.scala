@@ -3,7 +3,7 @@ package org.mvv.scala.mapstruct.mappers
 import scala.quoted.{Expr, Quotes, Type}
 import scala.reflect.Enum as ScalaEnum
 //
-import org.mvv.scala.tools.{ Logger, afterLastOr, isOneOf, getByReflection, unwrapOption }
+import org.mvv.scala.tools.{ Logger, afterLastOr, isOneOf }
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
 // for debug only
 import org.mvv.scala.mapstruct.debug.dump.{ isImplClass, activeFlags, activeFlagEntries, dumpSymbol }

@@ -27,7 +27,14 @@ extension (using quotes: Quotes)(el: quotes.reflect.Tree)
       case _ => None
 
 
-  def isTerm: Boolean = org.mvv.scala.tools.isTerm(el)
+  def isTerm: Boolean =
+    // It is unclear how to implement this properly...
+    val isTermSymbol = el.symbol.isTerm
+    val isTerm = if isTermSymbol then isTermSymbol
+    else try unwrapOption(getByReflection(el, "isTerm")).asInstanceOf[Boolean]
+    catch case _: Exception => false
+    isTerm
+
 
   def isNoSymbol: Boolean = el.symbol.isNoSymbol
 
