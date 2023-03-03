@@ -6,7 +6,7 @@ import scala.collection.mutable
 //
 import org.mvv.scala.tools.beans._Quotes.extractType
 import org.mvv.scala.tools.tryDo
-import org.mvv.scala.tools.quotes.{ refName, isExprStatement }
+import org.mvv.scala.tools.quotes.{ refName, isExprStatement, classFullPackageName }
 
 
 
@@ -33,8 +33,8 @@ def processClassDef2(using q: Quotes)(
   classDef: q.reflect.ClassDef,
   inspectMode: InspectMode,
   ): List[_Class] =
-  val _package = FilePackageContainer("fdfdfd")
-  processClassDef(classDef, _package, inspectMode)
+  val _package = FilePackageContainer(classFullPackageName(classDef))
+  processClassDef(classDef, _package, inspectMode, ClassSource.MacroQuotes)
 
 
 
@@ -42,6 +42,7 @@ def processClassDef(using q: Quotes)(
   classDef: q.reflect.ClassDef,
   _package: FilePackageContainer,
   inspectMode: InspectMode,
+  classSource: ClassSource,
   ): List[_Class] =
   import q.reflect.*
 
@@ -69,7 +70,7 @@ def processClassDef(using q: Quotes)(
           log.warn(s"$logPrefix Unexpected package definition [${refName(pid)}] inside class [$_fullClassName].")
 
         case cd: ClassDef =>
-          internalClasses ++= processClassDef(cd, _package, inspectMode)
+          internalClasses ++= processClassDef(cd, _package, inspectMode, classSource)
 
         case td: TypeDef => processTypeDef(td, _package)
 
@@ -113,7 +114,7 @@ def processClassDef(using q: Quotes)(
     classFullName,
     _package.fullName,
     _simpleClassName,
-    ClassKind.Scala3, runtimeClass.map(cls => ClassSource.of(cls)),
+    ClassKind.Scala3, runtimeClass.map(cls => ClassSource.of(cls)).orElse(Option(classSource)),
     parents,
     declaredFields.map(f => (f.toKey, f)).toMap,
     declaredMethods.map(m => (m.toKey, m)).toMap,

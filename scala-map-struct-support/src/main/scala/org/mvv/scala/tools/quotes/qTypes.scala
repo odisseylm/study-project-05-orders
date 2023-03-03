@@ -11,3 +11,8 @@ extension (using q: Quotes)(typeRepr: q.reflect.TypeRepr)
 
     (typeRepr == scalaBoolean) || (typeRepr =:= scalaBoolean)
       || (typeRepr == javaBoolean) || (typeRepr =:= javaBoolean)
+
+  def isNull: Boolean =
+    import q.reflect.TypeRepr
+    val scalaNullType = TypeRepr.of[Null]
+    (typeRepr == scalaNullType) || (typeRepr =:= scalaNullType)

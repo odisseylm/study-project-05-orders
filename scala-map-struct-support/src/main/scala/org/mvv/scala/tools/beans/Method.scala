@@ -50,7 +50,7 @@ case class _MethodKey (methodName: String, params: List[_Type], hasExtraScalaPar
   override def toString: String =
     //noinspection MapGetOrElseBoolean
     val isScalaPropertyAccessor = method .map(_.isScalaPropertyAccessor) .getOrElse(false)
-    val returnType = method .map(_.returnType) .getOrElse(Types.UnitType)
+    val returnType = method .map(_.returnType) .getOrElse(_Type.UnitType)
 
     val extraSuffix = if hasExtraScalaParams then " ( hasExParams )" else ""
     val paramsStr = if isScalaPropertyAccessor && params.isEmpty then "" else s"(${params.mkString(",")})"

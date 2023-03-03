@@ -8,6 +8,9 @@ enum KeepDelimiter :
 
 
 extension (s: String)
+  def replacePrefix(oldPrefix: String, newPrefix: String): String =
+    if s.startsWith(oldPrefix) then newPrefix + s.stripPrefix(oldPrefix) else s
+
   def replaceSuffix(oldSuffix: String, newSuffix: String): String =
     if s.endsWith(oldSuffix) then s.stripSuffix(oldSuffix) + newSuffix else s
 

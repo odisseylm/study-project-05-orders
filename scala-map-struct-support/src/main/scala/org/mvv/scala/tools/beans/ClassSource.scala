@@ -18,6 +18,8 @@ object ClassSource :
       case "jrt"  => SystemClassSource(cls) // system classloader
       case _ => throw IllegalArgumentException(s"Unsupported url [$classUrl].")
 
+  val MacroQuotes: MacroQuotesClassSource = MacroQuotesClassSource()
+
 
 
 case class DirectoryClassSource (directoryPath: Path) extends ClassSource
@@ -44,6 +46,11 @@ object JarClassSource :
 case class SystemClassSource (classSource: URL) extends ClassSource
 object SystemClassSource :
   def apply(cls: Class[?]): SystemClassSource = new SystemClassSource(getClassLocationUrl(cls))
+
+
+
+class MacroQuotesClassSource extends ClassSource :
+  override def toString: String = "MacroQuotesClassSource"
 
 
 

@@ -23,7 +23,7 @@ class ScalaBeanPropsTest {
     val a = SoftAssertions()
 
     a.assertThat(p.name).isEqualTo("trait1Var")
-    a.assertThat(p.propertyType).isEqualTo(Types.StringType)
+    a.assertThat(p.propertyType).isEqualTo(_Type.StringType)
     a.assertThat(p.ownerClass).isEqualTo(_class)
     a.assertThat(p.ownerClass).isEqualTo(_class)
 
@@ -46,7 +46,7 @@ class ScalaBeanPropsTest {
     val a = SoftAssertions()
 
     a.assertThat(p.name).isEqualTo("trait1Var")
-    a.assertThat(p.propertyType).isEqualTo(Types.StringType)
+    a.assertThat(p.propertyType).isEqualTo(_Type.StringType)
     a.assertThat(p.ownerClass).isEqualTo(_class)
     a.assertThat(p.ownerClass).isEqualTo(_class)
     a.assertThat(p.ownerClass.simpleName).isEqualTo("InheritedFromJavaClass2")

@@ -6,7 +6,7 @@ import scala.collection.mutable
 import java.lang.reflect.{ Field, Member, Method }
 //
 import org.mvv.scala.tools.{ isNotNull, nnArray }
-import org.mvv.scala.tools.beans.Types.{ isBool, isVoid }
+import org.mvv.scala.tools.beans._Type.{ isBool, isVoid }
 import ClassKind.classKind
 
 

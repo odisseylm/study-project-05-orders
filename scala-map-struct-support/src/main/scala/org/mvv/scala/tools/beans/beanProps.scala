@@ -5,9 +5,8 @@ import scala.collection.mutable
 import java.lang.reflect.Method as JavaMethod
 import java.lang.reflect.Field  as JavaField
 //
-import org.mvv.scala.tools.CollectionsOps.containsOneOf
 import org.mvv.scala.tools.{ Logger, nnArray, isNull, uncapitalize, tryDo }
-import org.mvv.scala.tools.CollectionsOps.{ filterByType, findByType, asString }
+import org.mvv.scala.tools.CollectionsOps.{ filterByType, findByType, asString, containsOneOf }
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
 
 

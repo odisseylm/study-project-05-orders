@@ -45,12 +45,27 @@ case class _Class (
        .classDescr(_type.runtimeTypeName)
        .getOrElse(throw IllegalStateException(s"Class [$_type] is not found/pre-loaded.")))
 
-  lazy val fields:  Map[_FieldKey, _Field]   = { mergeAllMembers(this.declaredFields,  parentClasses, cls => cls.fields) }
-  lazy val methods: Map[_MethodKey, _Method] = { mergeAllMembers(this.declaredMethods, parentClasses, cls => cls.methods) }
-
   // TODO: ??? do not use lazy fields/methods in
+  lazy val methods: Map[_MethodKey, _Method] = { mergeAllMembers(this.declaredMethods, parentClasses, cls => cls.methods) }
+  lazy val fields:  Map[_FieldKey, _Field]   = { mergeAllMembers(this.declaredFields,  parentClasses, cls => cls.fields) }
+
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource)"
-                                  //s"fields: [${fields.mkString(",")}], methods: [${methods.mkString(",")}]"
+
+  private def toMultilineString(values: IterableOnce[AnyRef]): String =
+    values.iterator.mkString("\n  ", "\n  ", "")
+
+  /** It will throw error if parents are not pre-loaded. */
+  def toDetailedString: String =
+    val str = StringBuilder(s"Class $fullName, kind: $classKind, classSource: $classSource\n")
+    str.append(s"parentTypes (${parentTypes.size}): ${parentTypes.mkString(", ")}\n")
+    str.append(s"declaredFields (${declaredFields.size}): ${toMultilineString(declaredFields.keys)}\n")
+    str.append(s"declaredMethods (${declaredMethods.size}): ${toMultilineString(declaredMethods.keys)}\n")
+    str.append(s"fields (${fields.size}): ${toMultilineString(fields.keys)}\n")
+    str.append(s"methods (${methods.size}): ${toMultilineString(methods.keys)}\n")
+    val asStr = str.toString()
+    asStr
+
+
 
 
 
@@ -102,7 +117,7 @@ private def fixFieldType(cls: _Class, field: _Field): _Field =
 private def fixMethodType(cls: Class[?], method: _Method): _Method =
   // no sense to process private fields in scope of 'java beans' (at least now)
   if method.visibility == _Visibility.Private
-     || method.mainParams.isEmpty && method.returnType == Types.VoidType
+     || method.mainParams.isEmpty && method.returnType == _Type.VoidType
     then return method
 
   if method.mainParams.isEmpty && !method.returnType.isVoid && !method.hasExtraScalaParams then

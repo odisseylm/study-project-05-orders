@@ -5,6 +5,7 @@ import scala.annotation.nowarn
 import scala.quoted.Quotes
 //
 import org.mvv.scala.tools.{ tryDo, endsWithOneOf }
+import org.mvv.scala.tools.quotes.isNull
 import _Quotes.extractType
 
 
@@ -17,11 +18,48 @@ object _Quotes :
 
 
   def extractType(using q: Quotes)(el: q.reflect.Tree): _Type =
+    el match
+      case typeTree: q.reflect.TypeTree => extractTypeTreeType(typeTree)
+      case _ => extractTreeType(el)
+
+
+  private def typeReprToRuntimeType(using q: Quotes)(typeRepr: q.reflect.TypeRepr) =
+    typeRepr.dealias.widen.dealias.show
+
+  // TODO: TypeRepr.dealias.widen.show returns java type. Also need to store original scala type which is returned bt .show
+
+  private def extractTreeType(using q: Quotes)(el: q.reflect.Tree): _Type =
     val symbol = el.symbol
     val clsStr = if symbol.isType
-      then symbol.typeRef.dealias.widen.dealias.show // we also can use symbol.fullName
+      then typeReprToRuntimeType(symbol.typeRef) // we also can use symbol.fullName
       else symbol.fullName.stripSuffix(".<init>")
     typeFromString(clsStr)
+
+  private def extractTypeTreeType(using q: Quotes)(typeTree: q.reflect.TypeTree): _Type =
+    import q.reflect.*
+    extractTypeOfTypeRepr(typeTree.tpe)
+
+
+  //noinspection NoTailRecursionAnnotation // no need of tail-recursion
+  private def extractTypeOfTypeRepr(using q: Quotes)(typeRepr: q.reflect.TypeRepr): _Type =
+    import q.reflect.*
+    typeRepr match
+      case orType: OrType =>
+        val typeStr = List(orType.left, orType.right)
+          // special case of java (with explicit null) - lets ignore Null part
+          .filter(t => !t.isNull)
+          .map(t => typeReprToRuntimeType(t))
+          .mkString("|")
+        typeFromString(typeStr)
+      case andType: AndType =>
+        val typeStr = List(andType.left, andType.right)
+          .map(t => typeReprToRuntimeType(t))
+          .mkString("&")
+        typeFromString(typeStr)
+      case annotType: AnnotatedType =>
+        extractTypeOfTypeRepr(annotType.underlying)
+      case other =>
+        typeFromString(typeReprToRuntimeType(other))
 
 
   def visibility(using q: Quotes)(el: q.reflect.Tree): _Visibility =
@@ -73,7 +111,7 @@ object _Quotes :
 
       var modifiers: Set[_Modifier] = generalModifiers(defDef.symbol)
       if !modifiers.contains(_Modifier.ScalaStandardFieldAccessor) && !_hasExtraParams then
-        val isCustomGetter = defDef.paramss.isEmpty && returnType != Types.UnitType
+        val isCustomGetter = defDef.paramss.isEmpty && !returnType.isVoid
         val isCustomSetter = paramTypes.sizeIs == 1 && methodName.endsWithOneOf("_=", "_$eq")
         if isCustomGetter || isCustomSetter then modifiers += _Modifier.ScalaCustomFieldAccessor
 

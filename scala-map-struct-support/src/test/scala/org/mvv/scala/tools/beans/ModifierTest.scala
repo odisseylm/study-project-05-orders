@@ -51,12 +51,12 @@ class ModifierTest {
 
     //a.assertThat(_class.methods(_MethodKey("protectedVarField1", Nil, false)).modifiers.asJava)
     //  .contains(_Modifier.ScalaStandardFieldAccessor)
-    a.assertThat(_class.methods(_MethodKey("protectedVarField1_=", List(Types.StringType), false)).modifiers.asJava)
+    a.assertThat(_class.methods(_MethodKey("protectedVarField1_=", List(_Type.StringType), false)).modifiers.asJava)
       .contains(_Modifier.ScalaStandardFieldAccessor)
 
     //a.assertThat(_class.methods(_MethodKey("publicVarField1", Nil, false)).modifiers.asJava)
     //  .contains(_Modifier.ScalaStandardFieldAccessor)
-    a.assertThat(_class.methods(_MethodKey("publicVarField1_=", List(Types.StringType), false)).modifiers.asJava)
+    a.assertThat(_class.methods(_MethodKey("publicVarField1_=", List(_Type.StringType), false)).modifiers.asJava)
       .contains(_Modifier.ScalaStandardFieldAccessor)
 
     a.assertAll()

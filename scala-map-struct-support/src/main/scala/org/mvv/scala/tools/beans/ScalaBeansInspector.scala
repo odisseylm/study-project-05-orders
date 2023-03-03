@@ -17,11 +17,11 @@ import org.mvv.scala.tools.Logger
 import org.mvv.scala.mapstruct.debug.{ printFields, printSymbolInfo, printTreeSymbolInfo }
 import org.mvv.scala.tools.{ Logger, replaceSuffix, fullName, tryDo, ifBlank, afterLastOr, afterLastOfAnyCharsOr }
 import org.mvv.scala.tools.beans._Quotes.extractType
-import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, fullPackageName, refName}
+import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, fullPackageName, getFullClassName, refName, classExists, classFullPackageName }
 
 
 
-private val classesToIgnore: Set[_Type] = Set(Types.ObjectType, _Type("java.lang.Comparable"))
+private val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang.Comparable"))
 private val log: Logger = Logger(topClassOrModuleFullName)
 
 
@@ -42,6 +42,31 @@ class ScalaBeansInspector extends Inspector :
   def inspectClass(fullClassName: String, classLoaders: ClassLoader*): _Class =
     addClassLoaders(classLoaders*)
     inspectClass(loadClass(fullClassName, this.classLoaders.values))
+
+  def inspectClassDef(using q: Quotes)(fullClassName: String): _Class =
+    import q.reflect.*
+
+    val alreadyProcessed = classesByFullName.get(fullClassName)
+    if alreadyProcessed.isDefined then return alreadyProcessed.get
+
+    require(classExists(fullClassName), s"Class [$fullClassName] is not found.")
+
+    val clsSymbol = Symbol.classSymbol(fullClassName)
+    val classDef = clsSymbol.tree.asInstanceOf[ClassDef]
+    val classDefPackageName = classFullPackageName(classDef)
+    val _package = FilePackageContainer(classDefPackageName)
+
+    val clsList: List[_Class] = inspectClassDefImpl(classDef, _package, InspectMode.ScalaAST, ClassSource.MacroQuotes)
+    clsList.foreach { cls => classesByFullName.put(cls.fullName, cls) }
+
+    val thisCls = clsList.find(cls => cls.fullName == fullClassName).get
+
+    val allParentRuntimeFullClassNames = clsList.flatMap(_.parentTypes).map(_.runtimeTypeName).distinct
+    allParentRuntimeFullClassNames
+      .foreach { parentClassFullName => inspectClassDef(parentClassFullName) }
+
+    thisCls
+
 
   def inspectClass(cls: Class[?]): _Class =
     cls.classKind match
@@ -134,9 +159,6 @@ class ScalaBeansInspector extends Inspector :
       val parentPackage: Option[FilePackageContainer],
       ) extends TreeTraverser {
 
-      //val _package: _Package = parentPackage
-      //  .map(parentPack => parentPack.withSubPackage(refName(packageClause.pid)))
-      //  .getOrElse(_Package(fullPackageName(refName(packageClause.pid))))
       val _package: FilePackageContainer = FilePackageContainer(fullPackageName(packageClause))
 
       override def traverseTree(tree: Tree)(owner: Symbol): Unit =
@@ -159,10 +181,13 @@ class ScalaBeansInspector extends Inspector :
 
             case cd @ ClassDef(classDefName: String, _, _, _, _) =>
               log.debug(s"$logPrefix It is ClassDef ($classDefName): ${tree.shortContent}")
+              val fullClassName = getFullClassName(cd)
+              // ?? cd.symbol.fullName
+              val classSrc = tryToLoadClass(fullClassName, classLoaders.values)
+                .map(c => ClassSource.of(c))
+                .getOrElse(ClassSource.MacroQuotes)
 
-              val _classes = processClassDef(cd, _package, InspectMode.AllSources)
-                .map( _.copy()(Option(ScalaBeansInspector.this)) )
-              _package.classes.addAll( _classes.map(cls => (cls.fullName, cls)) )
+              inspectClassDefImpl(cd, _package, InspectMode.AllSources, classSrc)
 
             case td @ TypeDef(typeDefName: String, _) =>
               log.debug(s"$logPrefix It is TypeDefClause ($typeDefName): ${tree.shortContent}")
@@ -250,6 +275,14 @@ class ScalaBeansInspector extends Inspector :
     }
 
   end inspect
+
+  private def inspectClassDefImpl(using q: Quotes)
+    (classDef: q.reflect.ClassDef, _package: FilePackageContainer, inspectMode: InspectMode, classSource: ClassSource): List[_Class] =
+    val _classes = processClassDef(classDef, _package, inspectMode, classSource)
+      .map(_.copy()(Option(ScalaBeansInspector.this)))
+    _package.classes.addAll(_classes.map(cls => (cls.fullName, cls)))
+    _classes
+
 
   private def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
     import JavaInspectionHelper.*
