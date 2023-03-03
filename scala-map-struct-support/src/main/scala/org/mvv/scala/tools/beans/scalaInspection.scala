@@ -5,7 +5,7 @@ import scala.annotation.nowarn
 import scala.quoted.Quotes
 //
 import org.mvv.scala.tools.{ tryDo, endsWithOneOf }
-import org.mvv.scala.tools.quotes.isNull
+import org.mvv.scala.tools.quotes.isNullType
 import _Quotes.extractType
 
 
@@ -47,7 +47,7 @@ object _Quotes :
       case orType: OrType =>
         val typeStr = List(orType.left, orType.right)
           // special case of java (with explicit null) - lets ignore Null part
-          .filter(t => !t.isNull)
+          .filter(t => !t.isNullType)
           .map(t => typeReprToRuntimeType(t))
           .mkString("|")
         typeFromString(typeStr)

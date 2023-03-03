@@ -35,6 +35,9 @@ extension (using q: Quotes)(el: q.reflect.Tree)
       case _ => false
 
 
+
+// type Constant <: AnyRef
+extension (using q: Quotes)(el: AnyRef)
   // It does not work (even when it is inline): the type test for q.reflect.BooleanConstant cannot be checked at runtime because it refers to an abstract type member or type parameter
   inline def isConstant: Boolean =
     import q.reflect.*

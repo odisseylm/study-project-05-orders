@@ -14,6 +14,13 @@ type ValuesTuple2Extractor[QTree, TC1, TC2] = ( (QTree, QTree) ) => (TC1, TC2)
 private val log: Logger = Logger(topClassOrModuleFullName)
 
 
+/**
+ * All this code is bit deprecated (over-complicated).
+ * Please see easy approach in enumParamsExtractors.scala
+ * (with using Varargs to convert from {{{Expr[Seq[(T1, T2)]]}}} to {{{Seq[Expr[(EnumFrom, EnumTo)]]}}},
+ * and standard scala matching to extract tuple component's expressions)
+ */
+
 //noinspection ScalaUnusedSymbol
 /* Expected:
   Apply(
@@ -40,7 +47,12 @@ def qToValuesTuple2[T1, T2, TC1, TC2]
   valuesTuple
 
 
-
+/**
+ * All this code is bit deprecated (over-complicated).
+ * Please see easy approach in enumParamsExtractors.scala
+ * (with using Varargs to convert from {{{Expr[Seq[(T1, T2)]]}}} to {{{Seq[Expr[(EnumFrom, EnumTo)]]}}},
+ * and standard scala matching to extract tuple component's expressions)
+ */
 /**
  * Types T1/T2 are used to filter tuples out with improper types (T1,T2).
  */

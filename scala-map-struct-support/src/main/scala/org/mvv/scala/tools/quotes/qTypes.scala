@@ -1,6 +1,8 @@
 package org.mvv.scala.tools.quotes
 
 import scala.quoted.Quotes
+import org.mvv.scala.tools.isOneOf
+
 
 
 extension (using q: Quotes)(typeRepr: q.reflect.TypeRepr)
@@ -12,7 +14,16 @@ extension (using q: Quotes)(typeRepr: q.reflect.TypeRepr)
     (typeRepr == scalaBoolean) || (typeRepr =:= scalaBoolean)
       || (typeRepr == javaBoolean) || (typeRepr =:= javaBoolean)
 
-  def isNull: Boolean =
+  def isNullType: Boolean =
     import q.reflect.TypeRepr
     val scalaNullType = TypeRepr.of[Null]
     (typeRepr == scalaNullType) || (typeRepr =:= scalaNullType)
+
+
+
+extension (typeName: String)
+  def isTuple2Type: Boolean =
+    typeName.isOneOf("Tuple2", "scala.Tuple2")
+
+  def isNullType: Boolean =
+    typeName.isOneOf("Null", "scala.Null")

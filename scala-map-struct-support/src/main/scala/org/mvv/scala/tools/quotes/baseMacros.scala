@@ -42,7 +42,7 @@ private def topMethodSimpleNameImpl(using q: Quotes): Expr[String] =
   qStringLiteralExpr(qTopMethodFullName.afterLastOrOrigin("."))
 
 private def classNameOfImpl[T](using q: Quotes)(using Type[T]): Expr[String] =
-  // this logic is copy-pasted from quotesClassPrimitives.scala
+  // this logic is copy-pasted from qClassPrimitives.scala
   // but I do not want to have any (risky) dependencies in this very base module.
   import q.reflect.TypeRepr
   val typeRepr: TypeRepr = TypeRepr.of[T]
