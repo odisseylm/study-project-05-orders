@@ -70,9 +70,9 @@ def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDet
 
       .appendSymbol(symbol.owner, "owner")
       .appendSymbol(symbol.maybeOwner, "maybeOwner")
-      .appendAttr(symbol.docstring, "docstring")
+      .appendAttr(symbol.docstring.get, "docstring")
 
-      .appendAttr(symbol.pos, "pos")
+      .appendAttr(symbol.pos.get, "pos")
 
     tryDo { activeSymbolFlagEntries(symbol) }
       .filter(flags => !areFlagEntriesEmpty(flags))
@@ -82,7 +82,7 @@ def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDet
     str.appendTypeRepr(symbol.privateWithin.get, "privateWithin")
     str.appendTypeRepr(symbol.protectedWithin.get, "protectedWithin")
 
-    str.appendAttr(symbol.annotations.map(_.symbol.fullName).mkString(","), "annotations")
+    str.appendAttr(symbol.annotations.map(an => getSimpleClassName(an.tpe.show)).mkString(","), "annotations")
   end if
 
   if details.contains(SymbolDetails.List) then
@@ -110,9 +110,9 @@ def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDet
 
   if details.contains(SymbolDetails.Tree) then
     str
-      .appendAttr(symbol.tree, "tree")
-      .appendAttr(symbol.typeRef, "typeRef")
-      .appendAttr(symbol.termRef, "termRef")
+      .appendAttrOnNewLine(symbol.tree, "tree")
+      .appendAttrOnNewLine(symbol.typeRef, "typeRef")
+      .appendAttrOnNewLine(symbol.termRef, "termRef")
   end if
 
   str.toString()
@@ -122,8 +122,8 @@ def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDet
 extension (using q: Quotes)(str: StringBuilder)
   private def appendNonEmptyNames
     (symbols: IterableOnce[q.reflect.Symbol], label: String): StringBuilder =
-    if str.nonEmpty then str.append(",\n")
     if symbols.iterator.nonEmpty then
+      if str.nonEmpty then str.append(",\n")
       str.append(" ").append(label).append(": ").append(symbols.iterator.map(s => tryDo(s.name).getOrElse("?Unknown?")).mkString(", "))
     str
 
@@ -153,6 +153,14 @@ extension (using q: Quotes)(str: StringBuilder)
   private def appendAttr(child: => Any, label: String): StringBuilder =
     tryDo(child).foreach { ss =>
       if str.nonEmpty then str.append(", ")
+      val asStr = tryDo(child.toString).getOrElse("?Unknown?")
+      str.append(label).append(": ").append(asStr) }
+    str
+
+
+  private def appendAttrOnNewLine(child: => Any, label: String): StringBuilder =
+    tryDo(child).foreach { ss =>
+      if str.nonEmpty then str.append(",\n")
       val asStr = tryDo(child.toString).getOrElse("?Unknown?")
       str.append(label).append(": ").append(asStr) }
     str

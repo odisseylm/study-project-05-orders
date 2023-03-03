@@ -12,9 +12,7 @@ import _Quotes.extractType
 
 object _Quotes :
 
-  def typeFromString(typeName: String): _Type =
-    //val runtimeClassOption = tryDo { loadClass(typeName).getName.nn }
-    _Type(typeName) // , runtimeClassOption)
+  def typeFromString(typeName: String): _Type = _Type(typeName)
 
 
   def extractType(using q: Quotes)(el: q.reflect.Tree): _Type =

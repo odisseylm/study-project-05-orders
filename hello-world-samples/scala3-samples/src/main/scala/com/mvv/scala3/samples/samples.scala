@@ -114,3 +114,14 @@ enum Scala3TestEnum1 :
   case TestEnumValue1, TestEnumValue2
   case TestEnumValue3
 
+
+class Scala3ClassWithMethods :
+  val val1: String = "987654321"
+  var var1: String = "987654322"
+
+  def valMethod1: String = "987654323"
+  def method1: String = "987654324"
+  def methodWithMatch1(inputVar: Int): String = inputVar match
+    case 1 => "987654325_1"
+    case 2 => "987654325_2"
+    case _ => "987654325_3"

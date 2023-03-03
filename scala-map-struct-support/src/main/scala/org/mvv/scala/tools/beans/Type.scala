@@ -60,15 +60,8 @@ object _Type :
   def apply(declaredTypeName: String, runtimeTypeName: String): _Type =
     val fixedDeclaredTypeName = declaredTypeName
       .replacePrefix("_root_.scala.", "scala.")
-    //println(s"_Type($declaredTypeName, $runtimeTypeName)")
-    if runtimeTypeName.startsWith("scala.Predef.String") then
-      println(s"_Type($declaredTypeName, $runtimeTypeName)")
-      throw IllegalStateException("Test error 1.")
-    if runtimeTypeName.startsWith("_root_.scala.") then
-      println(s"_Type($declaredTypeName, $runtimeTypeName)")
-      throw IllegalStateException("Test error 2.")
     declaredTypeName match
-      //case "scala.Predef.String" | "java.lang.String" => StringType
+      case "scala.Predef.String" | "java.lang.String" => StringType
       case _ => new _Type(fixedDeclaredTypeName, runtimeTypeName)
 
   def apply(declaredTypeName: String): _Type =
@@ -76,7 +69,6 @@ object _Type :
 
 
   val VoidTypeName = "void"
-  /*private[_Type]*/
   val UnitTypeName = "scala.Unit" /*private[_Type]*/
 
   //noinspection ScalaWeakerAccess
