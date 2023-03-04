@@ -22,12 +22,12 @@ object _Quotes :
       case _ => extractTreeType(el)
 
 
-  private def typeReprToRuntimeType(using q: Quotes)(typeRepr: q.reflect.TypeRepr) =
+  def typeReprToRuntimeType(using q: Quotes)(typeRepr: q.reflect.TypeRepr): String =
     typeRepr.dealias.widen.dealias.show
 
   // TODO: TypeRepr.dealias.widen.show returns java type. Also we need to store original scala type which is returned by .show
 
-  private def extractTreeType(using q: Quotes)(el: q.reflect.Tree): _Type =
+  def extractTreeType(using q: Quotes)(el: q.reflect.Tree): _Type =
     val symbol = el.symbol
     val clsStr = if symbol.isType
       then typeReprToRuntimeType(symbol.typeRef) // we also can use symbol.fullName
@@ -117,7 +117,10 @@ object _Quotes :
 
   end extension
 
-
+  extension (using q: Quotes)(classDef: q.reflect.ClassDef)
+    def classKind: ClassKind =
+      // TODO: impl
+      ClassKind.Scala3
 
 
 private def isListDeeplyEmpty(using q: Quotes)(paramsOfParams: List[q.reflect.ParamClause]) =

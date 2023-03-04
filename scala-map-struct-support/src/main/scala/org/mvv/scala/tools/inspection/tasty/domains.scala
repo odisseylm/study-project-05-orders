@@ -1,6 +1,5 @@
 package org.mvv.scala.tools.inspection.tasty
 
-
 import scala.annotation.{ nowarn, tailrec }
 import scala.collection.{ mutable, Map as BaseMap }
 import scala.compiletime.uninitialized
@@ -47,8 +46,8 @@ case class _ClassEx (
        .getOrElse(throw IllegalStateException(s"Class [$_type] is not found/pre-loaded.")))
 
   // TODO: ??? do not use lazy fields/methods in
-  lazy val methods: Map[_MethodKey, _Method] = { mergeAllMembers(this.declaredMethods, parentClasses, cls => cls.methods) }
   lazy val fields:  Map[_FieldKey, _Field]   = { mergeAllMembers(this.declaredFields,  parentClasses, cls => cls.fields) }
+  lazy val methods: Map[_MethodKey, _Method] = { mergeAllMembers(this.declaredMethods, parentClasses, cls => cls.methods) }
 
   override def toString: String = s"Class $fullName (kind: $classKind, $classSource)"
 

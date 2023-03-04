@@ -1,16 +1,16 @@
 package org.mvv.scala.tools.inspection.tasty
 
 import scala.quoted.Quotes
-import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
-//
-import org.mvv.scala.tools.replaceSuffix
-
-import java.net.{URI, URL, URLClassLoader}
-import java.nio.file.Path
 import scala.annotation.nowarn
 import scala.collection.mutable
+import scala.collection.concurrent
 import scala.quoted.Quotes
-import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
+import scala.tasty.inspector.{ Inspector, Tasty, TastyInspector }
+//
+import java.net.{ URI, URL, URLClassLoader }
+import java.nio.file.Path
+//
+import org.mvv.scala.tools.replaceSuffix
 import org.mvv.scala.tools.{ Logger, afterLastOr, afterLastOfAnyCharsOr, ifBlank }
 import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, classExists, classFullPackageName, fullPackageName, getFullClassName }
 import org.mvv.scala.tools.inspection.tasty.ClassSource.classKind
@@ -27,11 +27,12 @@ private val log: Logger = Logger(topClassOrModuleFullName)
 class ScalaBeansInspector extends Inspector :
 
   // it contains ONLY 'normal' classes from input tasty file
-  private val classesByFullName:  mutable.Map[String, _ClassEx] = mutable.HashMap()
-  private val processedTastyFiles: mutable.Map[String, List[_ClassEx]] = mutable.Map()
-  private val processedJars: mutable.Set[Path] = mutable.Set()
+  private val classesByFullName:  concurrent.Map[String, _ClassEx] = concurrent.TrieMap()
+  private val processedTastyFiles: concurrent.Map[String, List[_ClassEx]] = concurrent.TrieMap()
+  // used as 'set'
+  private val processedJars: concurrent.TrieMap[Path, Path] = concurrent.TrieMap()
 
-  private var classLoaders: Map[String, ClassLoader] = Map()
+  private var classLoaders: concurrent.Map[String, ClassLoader] = concurrent.TrieMap()
 
   def classesDescr: Map[String, _ClassEx] = Map.from(classesByFullName)
   def classDescr(classFullName: String): Option[_ClassEx] = classesByFullName.get(classFullName)
@@ -95,14 +96,14 @@ class ScalaBeansInspector extends Inspector :
 
     if !jarClassesAreAlreadyPresentInClassLoaders then
       import scala.language.unsafeNulls
-      classLoaders += (jarPath.toString, URLClassLoader(Array(jarPath.toUri.toURL)))
+      classLoaders.put(jarPath.toString, URLClassLoader(Array(jarPath.toUri.toURL)))
 
   // TODO: use them
   private def addClassLoaders(classLoaders: ClassLoader*): Unit =
     classLoaders.foreach { cl =>
       val alreadyAdded = this.classLoaders.values.exists(_ == cl)
       if !alreadyAdded then
-        this.classLoaders += (cl.getName.nn, cl)
+        this.classLoaders.put(cl.getName.nn, cl)
     }
 
   private def getJarClassFullNames(jarPath: Path, classCount: Int): List[String] =
@@ -127,7 +128,7 @@ class ScalaBeansInspector extends Inspector :
       .map(_.toList) .getOrElse(List())
 
   def inspectJar(jarPath: Path): List[_ClassEx] =
-    processedJars.addOne(jarPath)
+    processedJars.put(jarPath, jarPath)
 
     addJarClassLoaderIfNeeded(jarPath)
 

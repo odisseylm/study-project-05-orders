@@ -543,3 +543,23 @@ Inlined(
 
 
 
+TypeDef(
+  Class123,
+  Template(
+    DefDef(<init>,List(),TypeTree[NoType],EmptyTree),
+    List(
+      TypeTree[TypeRef(ThisType(TypeRef(NoPrefix,module class beans)),class Class122)],
+      TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class tools)),object beans),Trait120)]
+    ),
+    ValDef(_,EmptyTree,EmptyTree),
+    List(
+      ValDef(val1,TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],EmptyTree),
+      ValDef(var1,TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],EmptyTree),
+      DefDef(var1_=,List(List(ValDef(x$1,TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],EmptyTree))),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Unit)],EmptyTree),
+      DefDef(valMethod986,List(),TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],EmptyTree),
+      DefDef(method987,List(List()),TypeTree[TypeRef(TermRef(TermRef(ThisType(TypeRef(NoPrefix,module class <root>)),object scala),Predef),String)],EmptyTree)
+    )
+  )
+)
+
+
