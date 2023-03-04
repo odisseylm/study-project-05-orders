@@ -3,10 +3,12 @@ package org.mvv.scala.tools.beans
 import scala.language.unsafeNulls
 import scala.jdk.CollectionConverters.*
 //
-import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
-import testclasses.{GenericClass2, JGenericClass2}
+import org.assertj.core.api.SoftAssertions
+//
+import testclasses.{ GenericClass2, JGenericClass2 }
 import org.mvv.scala.tools.nnArray
+import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 
 
 class GenericsTest {

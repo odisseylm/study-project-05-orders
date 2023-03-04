@@ -1,15 +1,15 @@
 package org.mvv.scala.tools.mapstruct
 
 import javax.lang.model.`type`.TypeMirror
-import javax.lang.model.element.{ExecutableElement, TypeElement, VariableElement}
+import javax.lang.model.element.{ ExecutableElement, TypeElement, VariableElement }
 //
-import org.mapstruct.ap.spi.DefaultAccessorNamingStrategy
-import org.mapstruct.ap.spi.MapStructProcessingEnvironment
+import org.mapstruct.ap.spi.{ DefaultAccessorNamingStrategy, MapStructProcessingEnvironment }
 //
 import org.mvv.scala.tools.{ Logger, ConsoleLogger, LogLevel, replaceSuffix }
+import org.mvv.scala.tools.beans.{ BeanProperties, toBeanProperties }
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
-import org.mvv.scala.tools.beans.{ _Class, BeanProperties, ScalaBeansInspector, toBeanProperties, InspectMode }
-
+import org.mvv.scala.tools.inspection.InspectMode
+import org.mvv.scala.tools.inspection.tasty.{ ScalaBeansInspector, _Class }
 
 
 

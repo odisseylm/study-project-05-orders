@@ -1,12 +1,13 @@
-package org.mvv.scala.tools.beans
-
+package org.mvv.scala.tools.inspection.tasty
 
 import scala.quoted.Quotes
 import scala.collection.mutable
 //
-import org.mvv.scala.tools.beans._Quotes.extractType
 import org.mvv.scala.tools.tryDo
 import org.mvv.scala.tools.quotes.{ refName, isExprStatement, classFullPackageName }
+import org.mvv.scala.tools.inspection._Quotes.extractType
+import org.mvv.scala.tools.inspection.{ ClassKind, ClassSource, InspectMode, _Field, _Method, _Type, loadClass }
+import org.mvv.scala.tools.inspection.tasty.{FilePackageContainer, _Class}
 
 
 
@@ -60,7 +61,7 @@ def processClassDef(using q: Quotes)(
   val body: List[Statement] = classDef.body
 
   body.foreach { (tree: Tree) =>
-    import org.mvv.scala.tools.beans._Quotes.{extractType, toField, toMethod}
+    import org.mvv.scala.tools.inspection._Quotes.{extractType, toField, toMethod}
 
     val logPrefix = s"${this.simpleClassName}: "
 

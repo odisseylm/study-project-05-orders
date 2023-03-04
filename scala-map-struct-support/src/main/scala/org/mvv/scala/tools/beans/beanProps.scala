@@ -2,12 +2,15 @@ package org.mvv.scala.tools.beans
 
 import scala.collection.mutable
 //
-import java.lang.reflect.Method as JavaMethod
-import java.lang.reflect.Field  as JavaField
+import java.lang.reflect.{ Method as JavaMethod, Field  as JavaField }
 //
 import org.mvv.scala.tools.{ Logger, nnArray, isNull, uncapitalize, tryDo }
 import org.mvv.scala.tools.CollectionsOps.{ filterByType, findByType, asString, containsOneOf }
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
+import org.mvv.scala.tools.inspection.{ BeanProperty, InspectMode, _Field, _Method, _Type }
+import org.mvv.scala.tools.inspection.{ isPublic, isGetterMethod, isSetterMethod, isPropertyAccessor, toPropName }
+import org.mvv.scala.tools.inspection.{ typeNameToRuntimeClassName, loadClass }
+import org.mvv.scala.tools.inspection.tasty.{ _Class, toJavaMethodName }
 
 
 //noinspection ScalaUnusedSymbol

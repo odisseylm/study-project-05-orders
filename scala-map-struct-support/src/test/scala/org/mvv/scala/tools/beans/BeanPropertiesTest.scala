@@ -1,12 +1,12 @@
 package org.mvv.scala.tools.beans
 
-import org.junit.jupiter.api.Disabled
-
 import scala.language.unsafeNulls
 //
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.{ Test, Disabled }
 import org.assertj.core.api.Assertions.assertThat
 //
+import org.mvv.scala.tools.inspection.InspectMode
+import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 import testclasses.InheritedFromJavaClass2
 
 

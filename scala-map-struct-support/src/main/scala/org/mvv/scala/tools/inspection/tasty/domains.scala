@@ -1,18 +1,19 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection.tasty
 
-import scala.annotation.{nowarn, tailrec}
+
+import scala.annotation.{ nowarn, tailrec }
+import scala.collection.{ mutable, Map as BaseMap }
 import scala.compiletime.uninitialized
-import scala.collection.mutable
 import scala.reflect.ClassTag
-import scala.collection.Map as BaseMap
 //
-import java.lang.reflect.Field as JavaField
-import java.lang.reflect.Method as JavaMethod
+import java.lang.reflect.{ Field as JavaField, Method as JavaMethod }
 //
 import org.mvv.scala.tools.CollectionsOps.containsOneOf
-import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, stripAfter }
 import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
-import org.mvv.scala.tools.beans._Type.toPortableType
+import org.mvv.scala.tools.inspection._Type.toPortableType
+import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, stripAfter }
+import org.mvv.scala.tools.inspection.{ ClassKind, ClassSource, _Type, _Modifier }
+import org.mvv.scala.tools.inspection.{ _ClassMember, _FieldKey, _Field, _MethodKey, _Method }
 
 
 

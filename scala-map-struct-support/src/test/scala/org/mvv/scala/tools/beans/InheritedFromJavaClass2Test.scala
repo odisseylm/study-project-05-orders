@@ -1,15 +1,15 @@
 package org.mvv.scala.tools.beans
 
-
-import scala.tasty.inspector.Tasty
-import scala.tasty.inspector.TastyInspector
+import scala.tasty.inspector.{ Tasty, TastyInspector }
 import scala.collection.immutable.Map
 import scala.jdk.CollectionConverters.*
 //
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
-import testclasses.{InheritedFromJavaClass2, Trait1}
+import testclasses.{ InheritedFromJavaClass2, Trait1 }
+import org.mvv.scala.tools.inspection._MethodKey
+import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
 
 
 class InheritedFromJavaClass2Test {

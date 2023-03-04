@@ -4,9 +4,10 @@ import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 import org.assertj.core.api.Assertions.assertThat
 //
-import org.mvv.scala.tools.beans._FieldKey as fk
-import org.mvv.scala.tools.beans._MethodKey as mk
-import testclasses.{AccessVisibilityTestClass, InheritedFromJavaClass2}
+import org.mvv.scala.tools.inspection.{ _Type, _Visibility }
+import org.mvv.scala.tools.inspection.{ _FieldKey as fk, _MethodKey as mk }
+import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
+import testclasses.{ AccessVisibilityTestClass, InheritedFromJavaClass2 }
 
 
 class VisibilityTest {

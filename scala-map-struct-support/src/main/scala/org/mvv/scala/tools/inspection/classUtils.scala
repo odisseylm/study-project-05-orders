@@ -1,4 +1,4 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection
 
 import java.net.{ URI, URL }
 //

@@ -1,10 +1,12 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection
 
-import scala.annotation.tailrec
+
 import java.net.URL
-import java.nio.file.{Files, Path}
+import java.nio.file.{ Files, Path }
+import scala.annotation.tailrec
 //
-import org.mvv.scala.tools.{ checkNotNull, tryDo, isNotNull, afterFirstOr }
+import org.mvv.scala.tools.{ afterFirstOr, checkNotNull, isNotNull, tryDo }
+//import org.mvv.scala.tools.beans.
 
 
 

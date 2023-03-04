@@ -1,16 +1,15 @@
 package org.mvv.scala.tools.beans
 
-
-import scala.tasty.inspector.Tasty
-import scala.tasty.inspector.TastyInspector
+import scala.tasty.inspector.{ Tasty, TastyInspector }
 import scala.collection.immutable.Map
 import scala.jdk.CollectionConverters.*
 //
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.{ Test, Disabled }
 import org.assertj.core.api.SoftAssertions
 //
 import testclasses.StandardScalaModifiersTesClass
+import org.mvv.scala.tools.inspection.{ _MethodKey, _Modifier, _Type }
+import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
 
 
 class ModifierTest {

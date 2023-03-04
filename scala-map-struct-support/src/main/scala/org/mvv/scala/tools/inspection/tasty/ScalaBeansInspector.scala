@@ -1,23 +1,22 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection.tasty
 
 import scala.quoted.Quotes
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 //
 import org.mvv.scala.tools.replaceSuffix
 
+import java.net.{URI, URL, URLClassLoader}
+import java.nio.file.Path
 import scala.annotation.nowarn
 import scala.collection.mutable
 import scala.quoted.Quotes
-import scala.tasty.inspector.{ Inspector, Tasty, TastyInspector }
-import java.net.{ URI, URL, URLClassLoader }
-import java.nio.file.Path
-//
-import ClassKind.classKind
-import org.mvv.scala.tools.Logger
-import org.mvv.scala.mapstruct.debug.{ printFields, printSymbolInfo, printTreeSymbolInfo }
-import org.mvv.scala.tools.{ Logger, replaceSuffix, fullName, tryDo, ifBlank, afterLastOr, afterLastOfAnyCharsOr }
-import org.mvv.scala.tools.beans._Quotes.extractType
-import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, fullPackageName, getFullClassName, refName, classExists, classFullPackageName }
+import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
+import org.mvv.scala.tools.{ Logger, afterLastOr, afterLastOfAnyCharsOr, ifBlank }
+import org.mvv.scala.tools.inspection.ClassKind.classKind
+import org.mvv.scala.tools.inspection._Quotes.extractType
+import org.mvv.scala.tools.inspection.{ ClassKind, ClassSource, InspectMode, _Type }
+import org.mvv.scala.tools.inspection.{ loadClass, tryToLoadClass, getClassLocationUrl, fileUrlToPath, jarUrlToJarPath }
+import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, classExists, classFullPackageName, fullPackageName, getFullClassName }
 
 
 
@@ -107,8 +106,8 @@ class ScalaBeansInspector extends Inspector :
     }
 
   private def getJarClassFullNames(jarPath: Path, classCount: Int): List[String] =
-    import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.ListHasAsScala
+    import scala.language.unsafeNulls
 
     val jarFile: java.util.jar.JarFile = java.util.jar.JarFile(jarPath.toFile.nn, false)
     val classList: java.util.List[String] = jarFile.stream()
@@ -140,8 +139,8 @@ class ScalaBeansInspector extends Inspector :
     dif.toList
 
   override def inspect(using q: Quotes)(beanType: List[Tasty[q.type]]): Unit =
-    import q.reflect.*
     import org.mvv.scala.tools.safeSubString
+    import q.reflect.*
 
     val dependenciesJars = mutable.Set[Path]()
     var allProcessedClasses: List[_Class] = Nil
@@ -285,7 +284,7 @@ class ScalaBeansInspector extends Inspector :
 
 
   private def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
-    import JavaInspectionHelper.*
+    import org.mvv.scala.tools.inspection.tasty.JavaInspectionHelper.*
 
     val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
     val parentTypes = classChain.map(_.getName.nn).map(_Type(_))

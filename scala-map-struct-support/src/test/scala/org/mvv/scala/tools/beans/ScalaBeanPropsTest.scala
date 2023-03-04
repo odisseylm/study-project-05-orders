@@ -7,8 +7,10 @@ import java.beans.PropertyDescriptor
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
-import org.mvv.scala.tools.nnArray
 import testclasses.InheritedFromJavaClass2
+import org.mvv.scala.tools.nnArray
+import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
+import org.mvv.scala.tools.inspection.{ BeanProperty, InspectMode, _Type }
 
 
 class ScalaBeanPropsTest {

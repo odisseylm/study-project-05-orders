@@ -1,12 +1,13 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection
 
-import scala.collection.mutable
 import scala.annotation.nowarn
+import scala.collection.mutable
 import scala.quoted.Quotes
 //
-import org.mvv.scala.tools.{ tryDo, endsWithOneOf }
+import org.mvv.scala.tools.{ endsWithOneOf, tryDo }
 import org.mvv.scala.tools.quotes.isNullType
-import _Quotes.extractType
+import org.mvv.scala.tools.inspection._Quotes.extractType
+import org.mvv.scala.tools.inspection.{ _Field, _Method, _Modifier, _Type, _Visibility }
 
 
 
@@ -124,7 +125,7 @@ private def isListDeeplyEmpty(using q: Quotes)(paramsOfParams: List[q.reflect.Pa
   paramsOfParams.flatMap(_.params).isEmpty
 
 private def paramToType(using q: Quotes)(p: q.reflect.ValDef | q.reflect.TypeDef): _Type =
-  import q.reflect.{ TypeDef, ValDef }
+  import q.reflect.{TypeDef, ValDef}
   p match
     case vd: ValDef  => extractType(vd.tpt)
     case td: TypeDef => extractType(td) // T O D O: probably it is not tested

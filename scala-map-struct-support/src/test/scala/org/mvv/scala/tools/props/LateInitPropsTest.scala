@@ -5,11 +5,12 @@ import scala.compiletime.uninitialized
 //
 import java.util.concurrent.atomic.AtomicReference
 //
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.{ Test, DisplayName }
 import org.assertj.core.api.Assertions.assertThatCode
+//
 import org.mvv.scala.tools.Logger
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
+import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 
 
 
@@ -171,7 +172,7 @@ class LateInitPropsTest {
 
   @Test
   def aaa(): Unit = {
-    org.mvv.scala.tools.beans.ScalaBeansInspector().inspectClass(classOf[ClassWithLateInitProps])
+    ScalaBeansInspector().inspectClass(classOf[ClassWithLateInitProps])
   }
 
 

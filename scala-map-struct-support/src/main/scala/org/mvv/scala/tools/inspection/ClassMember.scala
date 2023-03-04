@@ -1,17 +1,15 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection
 
-import scala.annotation.{nowarn, tailrec}
+import scala.annotation.{ nowarn, tailrec }
+import scala.collection.{ mutable, Map as BaseMap }
 import scala.compiletime.uninitialized
-import scala.collection.mutable
 import scala.reflect.ClassTag
-import scala.collection.Map as BaseMap
 //
-import java.lang.reflect.Field as JavaField
-import java.lang.reflect.Method as JavaMethod
+import java.lang.reflect.{ Field as JavaField, Method as JavaMethod }
 //
-import org.mvv.scala.tools.CollectionsOps.{ containsOneOf, asString }
+import org.mvv.scala.tools.CollectionsOps.{ asString, containsOneOf }
+import org.mvv.scala.tools.inspection._Type.toPortableType
 import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, stripAfter }
-import org.mvv.scala.tools.beans._Type.toPortableType
 
 
 
@@ -33,4 +31,4 @@ trait _ClassMember :
 
 
 extension (m: _ClassMember)
-  private def isPublic: Boolean = m.visibility == _Visibility.Public
+  def isPublic: Boolean = m.visibility == _Visibility.Public

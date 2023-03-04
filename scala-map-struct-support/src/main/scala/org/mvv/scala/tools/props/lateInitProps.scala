@@ -219,7 +219,7 @@ private def findTheBestOfOverloadedMethods(using q: Quotes)(
 // T O D O: test with generics
 private def isSimpleBoolMethodWithOneParamOfAnyType(using q: Quotes)(defDef: q.reflect.DefDef): Boolean =
   import q.reflect.*
-  import org.mvv.scala.tools.beans.hasExtraParams
+  import org.mvv.scala.tools.inspection.hasExtraParams
   import org.mvv.scala.tools.quotes.isBool
 
   if hasExtraParams(defDef) then return false

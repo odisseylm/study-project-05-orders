@@ -1,7 +1,8 @@
 package org.mvv.scala.tools.beans
 
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.{Disabled, Test};
+import org.junit.jupiter.api.{ Test, Disabled }
+//
+import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 
 
 

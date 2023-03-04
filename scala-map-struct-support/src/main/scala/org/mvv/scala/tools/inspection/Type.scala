@@ -1,20 +1,17 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection
 
-import org.mvv.scala.tools.KeepDelimiter
-
-import scala.annotation.{nowarn, tailrec}
+import scala.annotation.{ nowarn, tailrec }
+import scala.collection.{ mutable, Map as BaseMap }
 import scala.compiletime.uninitialized
-import scala.collection.mutable
 import scala.reflect.ClassTag
-import scala.collection.Map as BaseMap
 //
-import java.lang.reflect.Field as JavaField
-import java.lang.reflect.Method as JavaMethod
+import java.lang.reflect.{ Field as JavaField, Method as JavaMethod }
 //
+import org.mvv.scala.tools.*
 import org.mvv.scala.tools.CollectionsOps.containsOneOf
-import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, stripAfter, replacePrefix }
+import org.mvv.scala.tools.inspection._Type.toPortableType
+import org.mvv.scala.tools.KeepDelimiter
 import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
-import org.mvv.scala.tools.beans._Type.toPortableType
 
 
 

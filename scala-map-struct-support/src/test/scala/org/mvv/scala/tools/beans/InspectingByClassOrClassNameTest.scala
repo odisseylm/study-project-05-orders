@@ -1,17 +1,17 @@
 package org.mvv.scala.tools.beans
 
-import org.junit.jupiter.api.Disabled
-
 import scala.language.unsafeNulls
 import scala.compiletime.uninitialized
 import scala.jdk.CollectionConverters.*
 import java.nio.file.Path
 //
-import org.junit.jupiter.api.Test
-import org.assertj.core.api.AbstractBooleanAssert
+import org.junit.jupiter.api.{ Test, Disabled }
 import org.assertj.core.api.Assertions.assertThat
 //
 import testclasses.ClassSampleInProductionSources
+import org.mvv.scala.tools.inspection.{ JarClassSource, _MethodKey, _Modifier, _Type }
+import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
+
 
 
 class ClassInTestSource1 :

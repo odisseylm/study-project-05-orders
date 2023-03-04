@@ -3,8 +3,12 @@ package org.mvv.scala.tools.beans
 import scala.annotation.nowarn
 import scala.jdk.CollectionConverters.*
 //
-import org.assertj.core.api.Assertions.{ assertThat, assertThatCode }
 import org.junit.jupiter.api.Test
+import org.assertj.core.api.Assertions.{ assertThat, assertThatCode }
+//
+import org.mvv.scala.tools.inspection.InspectMode
+import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
+
 
 
 //noinspection ScalaUnusedExpression

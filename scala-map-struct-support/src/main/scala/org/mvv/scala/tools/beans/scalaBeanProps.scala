@@ -1,10 +1,14 @@
 package org.mvv.scala.tools.beans
 
+import org.mvv.scala.tools.inspection.tasty._Class
+import org.mvv.scala.tools.inspection.{ BeanProperty, InspectMode }
+
 import java.awt.Image
-import java.beans.{BeanDescriptor, BeanInfo, EventSetDescriptor, MethodDescriptor, PropertyDescriptor}
+import java.beans.{ BeanDescriptor, BeanInfo, EventSetDescriptor, MethodDescriptor, PropertyDescriptor }
 import java.lang.reflect.Method as JavaMethod
 //
 import org.mvv.scala.tools.OptionOps.allAreDefined
+import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 
 
 
