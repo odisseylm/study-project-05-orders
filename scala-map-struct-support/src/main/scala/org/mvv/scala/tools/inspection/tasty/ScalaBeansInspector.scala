@@ -12,11 +12,11 @@ import scala.collection.mutable
 import scala.quoted.Quotes
 import scala.tasty.inspector.{Inspector, Tasty, TastyInspector}
 import org.mvv.scala.tools.{ Logger, afterLastOr, afterLastOfAnyCharsOr, ifBlank }
-import org.mvv.scala.tools.inspection.ClassKind.classKind
-import org.mvv.scala.tools.inspection._Quotes.extractType
-import org.mvv.scala.tools.inspection.{ ClassKind, ClassSource, InspectMode, _Type }
-import org.mvv.scala.tools.inspection.{ loadClass, tryToLoadClass, getClassLocationUrl, fileUrlToPath, jarUrlToJarPath }
 import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, classExists, classFullPackageName, fullPackageName, getFullClassName }
+import org.mvv.scala.tools.inspection.tasty.ClassSource.classKind
+import org.mvv.scala.tools.inspection._Quotes.extractType
+import org.mvv.scala.tools.inspection.{ ClassKind, InspectMode, _Type }
+import org.mvv.scala.tools.inspection.tasty.{ loadClass, tryToLoadClass, getClassLocationUrl }
 
 
 
@@ -27,22 +27,22 @@ private val log: Logger = Logger(topClassOrModuleFullName)
 class ScalaBeansInspector extends Inspector :
 
   // it contains ONLY 'normal' classes from input tasty file
-  private val classesByFullName:  mutable.Map[String, _Class] = mutable.HashMap()
-  private val processedTastyFiles: mutable.Map[String, List[_Class]] = mutable.Map()
+  private val classesByFullName:  mutable.Map[String, _ClassEx] = mutable.HashMap()
+  private val processedTastyFiles: mutable.Map[String, List[_ClassEx]] = mutable.Map()
   private val processedJars: mutable.Set[Path] = mutable.Set()
 
   private var classLoaders: Map[String, ClassLoader] = Map()
 
-  def classesDescr: Map[String, _Class] = Map.from(classesByFullName)
-  def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
+  def classesDescr: Map[String, _ClassEx] = Map.from(classesByFullName)
+  def classDescr(classFullName: String): Option[_ClassEx] = classesByFullName.get(classFullName)
 
-  def inspectClass(fullClassName: String): _Class = inspectClass(fullClassName, Nil*)
+  def inspectClass(fullClassName: String): _ClassEx = inspectClass(fullClassName, Nil*)
 
-  def inspectClass(fullClassName: String, classLoaders: ClassLoader*): _Class =
+  def inspectClass(fullClassName: String, classLoaders: ClassLoader*): _ClassEx =
     addClassLoaders(classLoaders*)
     inspectClass(loadClass(fullClassName, this.classLoaders.values))
 
-  def inspectClassDef(using q: Quotes)(fullClassName: String): _Class =
+  def inspectClassDef(using q: Quotes)(fullClassName: String): _ClassEx =
     import q.reflect.*
 
     val alreadyProcessed = classesByFullName.get(fullClassName)
@@ -55,7 +55,7 @@ class ScalaBeansInspector extends Inspector :
     val classDefPackageName = classFullPackageName(classDef)
     val _package = FilePackageContainer(classDefPackageName)
 
-    val clsList: List[_Class] = inspectClassDefImpl(classDef, _package, InspectMode.ScalaAST, ClassSource.MacroQuotes)
+    val clsList: List[_ClassEx] = inspectClassDefImpl(classDef, _package, InspectMode.ScalaAST, ClassSource.MacroQuotes)
     clsList.foreach { cls => classesByFullName.put(cls.fullName, cls) }
 
     val thisCls = clsList.find(cls => cls.fullName == fullClassName).get
@@ -67,15 +67,15 @@ class ScalaBeansInspector extends Inspector :
     thisCls
 
 
-  def inspectClass(cls: Class[?]): _Class =
+  def inspectClass(cls: Class[?]): _ClassEx =
     cls.classKind match
       case ClassKind.Java =>
-        val res: _Class = inspectJavaClass(cls, this)
+        val res: _ClassEx = inspectJavaClass(cls, this)
         classesByFullName.put(cls.getName.nn, res)
         res
       case ClassKind.Scala2 =>
         log.warn(s"scala2 class ${cls.getName} is processed as java class (sine scala2 format is not supported now).")
-        val res: _Class = inspectJavaClass(cls, this)
+        val res: _ClassEx = inspectJavaClass(cls, this)
         classesByFullName.put(cls.getName.nn, res)
         res
       case ClassKind.Scala3 =>
@@ -118,7 +118,7 @@ class ScalaBeansInspector extends Inspector :
       .toList
     List.from(classList.asScala)
 
-  def inspectTastyFile(tastyOrClassFile: String): List[_Class] =
+  def inspectTastyFile(tastyOrClassFile: String): List[_ClassEx] =
     val tastyFile = if tastyOrClassFile.endsWith(".tasty")
       then tastyOrClassFile
       else tastyOrClassFile.replaceSuffix(".class", ".tasty")
@@ -126,7 +126,7 @@ class ScalaBeansInspector extends Inspector :
     this.processedTastyFiles.get(tastyFile)
       .map(_.toList) .getOrElse(List())
 
-  def inspectJar(jarPath: Path): List[_Class] =
+  def inspectJar(jarPath: Path): List[_ClassEx] =
     processedJars.addOne(jarPath)
 
     addJarClassLoaderIfNeeded(jarPath)
@@ -143,7 +143,7 @@ class ScalaBeansInspector extends Inspector :
     import q.reflect.*
 
     val dependenciesJars = mutable.Set[Path]()
-    var allProcessedClasses: List[_Class] = Nil
+    var allProcessedClasses: List[_ClassEx] = Nil
 
     def logUnexpectedTreeEl(processor: TreeTraverser|String, treeEl: Tree): Unit =
       val logPrefix: String = processor match
@@ -276,14 +276,14 @@ class ScalaBeansInspector extends Inspector :
   end inspect
 
   private def inspectClassDefImpl(using q: Quotes)
-    (classDef: q.reflect.ClassDef, _package: FilePackageContainer, inspectMode: InspectMode, classSource: ClassSource): List[_Class] =
+    (classDef: q.reflect.ClassDef, _package: FilePackageContainer, inspectMode: InspectMode, classSource: ClassSource): List[_ClassEx] =
     val _classes = processClassDef(classDef, _package, inspectMode, classSource)
       .map(_.copy()(Option(ScalaBeansInspector.this)))
     _package.classes.addAll(_classes.map(cls => (cls.fullName, cls)))
     _classes
 
 
-  private def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _Class =
+  private def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _ClassEx =
     import org.mvv.scala.tools.inspection.tasty.JavaInspectionHelper.*
 
     val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
@@ -300,7 +300,7 @@ class ScalaBeansInspector extends Inspector :
     val javaClassSimpleName = _cls.getSimpleName.nn
     val scalaClassSimpleName = javaClassSimpleName.afterLastOfAnyCharsOr(".$", javaClassSimpleName)
 
-    val _class: _Class = _Class(
+    val _class: _ClassEx = _ClassEx(
       _cls.getName.nn,
       _cls.getPackageName.nn,
       scalaClassSimpleName,
@@ -325,7 +325,7 @@ class TastyFileNotFoundException protected (message: String, cause: Option[Throw
 
 
 class FilePackageContainer (val fullName: String) :
-  val classes: mutable.Map[String, _Class] = mutable.HashMap()
+  val classes: mutable.Map[String, _ClassEx] = mutable.HashMap()
   def simpleName: String = fullName.afterLastOr(".", fullName)
   override def toString: String = s"package $fullName \n${ classes.values.mkString("\n") }"
   def withSubPackage(subPackageName: String): FilePackageContainer = FilePackageContainer(s"$fullName.$subPackageName")

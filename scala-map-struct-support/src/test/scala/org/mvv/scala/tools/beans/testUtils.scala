@@ -1,6 +1,6 @@
 package org.mvv.scala.tools.beans
 
-import org.mvv.scala.tools.inspection.tasty._Class
+import org.mvv.scala.tools.inspection._Class
 import org.mvv.scala.tools.inspection.{ _Field, _FieldKey, _Method, _MethodKey }
 
 

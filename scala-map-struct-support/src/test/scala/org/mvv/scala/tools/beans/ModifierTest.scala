@@ -9,7 +9,8 @@ import org.assertj.core.api.SoftAssertions
 //
 import testclasses.StandardScalaModifiersTesClass
 import org.mvv.scala.tools.inspection.{ _MethodKey, _Modifier, _Type }
-import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
+import org.mvv.scala.tools.inspection._Class
+import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 
 
 class ModifierTest {

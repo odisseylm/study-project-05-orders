@@ -6,7 +6,8 @@ import org.assertj.core.api.Assertions.assertThat
 //
 import org.mvv.scala.tools.inspection.{ _Type, _Visibility }
 import org.mvv.scala.tools.inspection.{ _FieldKey as fk, _MethodKey as mk }
-import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
+import org.mvv.scala.tools.inspection._Class
+import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 import testclasses.{ AccessVisibilityTestClass, InheritedFromJavaClass2 }
 
 

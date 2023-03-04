@@ -25,7 +25,7 @@ object _Quotes :
   private def typeReprToRuntimeType(using q: Quotes)(typeRepr: q.reflect.TypeRepr) =
     typeRepr.dealias.widen.dealias.show
 
-  // TODO: TypeRepr.dealias.widen.show returns java type. Also need to store original scala type which is returned bt .show
+  // TODO: TypeRepr.dealias.widen.show returns java type. Also we need to store original scala type which is returned by .show
 
   private def extractTreeType(using q: Quotes)(el: q.reflect.Tree): _Type =
     val symbol = el.symbol
@@ -93,10 +93,9 @@ object _Quotes :
 
   extension (using q: Quotes) (valDef: q.reflect.ValDef)
     def toField: _Field =
-      //import q.reflect.
       val valName = valDef.name
-      val mod: Set[_Modifier] = generalModifiers(valDef.symbol)
       val fieldType = extractType(valDef.tpt)
+      val mod: Set[_Modifier] = generalModifiers(valDef.symbol)
       _Field(valName, visibility(valDef), mod, fieldType)(valDef)
 
 

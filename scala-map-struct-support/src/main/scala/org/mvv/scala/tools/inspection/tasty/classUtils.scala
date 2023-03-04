@@ -1,4 +1,4 @@
-package org.mvv.scala.tools.inspection
+package org.mvv.scala.tools.inspection.tasty
 
 import java.net.{ URI, URL }
 //

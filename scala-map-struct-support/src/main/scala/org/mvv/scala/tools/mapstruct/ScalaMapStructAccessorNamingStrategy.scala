@@ -9,7 +9,7 @@ import org.mvv.scala.tools.{ Logger, ConsoleLogger, LogLevel, replaceSuffix }
 import org.mvv.scala.tools.beans.{ BeanProperties, toBeanProperties }
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
 import org.mvv.scala.tools.inspection.InspectMode
-import org.mvv.scala.tools.inspection.tasty.{ ScalaBeansInspector, _Class }
+import org.mvv.scala.tools.inspection.tasty.{ ScalaBeansInspector, _ClassEx }
 
 
 
@@ -80,7 +80,7 @@ class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy
   override def getElementName(adderMethod: ExecutableElement): String = super.getElementName(adderMethod).nn
 
   private def getBeanPropertiesOfEnclosingClass(method: ExecutableElement): BeanProperties =
-    val _class: _Class = scalaBeansInspector.inspectClass(method.enclosingClassFullName)
+    val _class: _ClassEx = scalaBeansInspector.inspectClass(method.enclosingClassFullName)
     _class.toBeanProperties(InspectMode.AllSources)
 }
 

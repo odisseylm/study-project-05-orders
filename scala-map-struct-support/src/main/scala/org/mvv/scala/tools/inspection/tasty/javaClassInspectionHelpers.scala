@@ -5,11 +5,12 @@ import scala.collection.mutable
 //
 import java.lang.reflect.{ Field, Member, Method }
 //
-import org.mvv.scala.tools.inspection.ClassKind.classKind
-import org.mvv.scala.tools.inspection._Type.{ isBool, isVoid }
 import org.mvv.scala.tools.{ isNotNull, nnArray }
-import org.mvv.scala.tools.inspection.{ _Modifier, _Visibility, loadClass }
+import org.mvv.scala.tools.inspection.tasty.ClassSource.classKind
+import org.mvv.scala.tools.inspection.{ _Modifier, _Visibility }
 import org.mvv.scala.tools.inspection.{ _Field, _Method, _Type }
+import org.mvv.scala.tools.inspection._Type.{ isBool, isVoid }
+import org.mvv.scala.tools.inspection.tasty.loadClass
 
 
 

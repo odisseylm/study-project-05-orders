@@ -1,11 +1,12 @@
-package org.mvv.scala.tools.inspection
+package org.mvv.scala.tools.inspection.tasty
 
+import org.mvv.scala.tools.inspection.*
 
 import java.net.URL
-import java.nio.file.{ Files, Path }
+import java.nio.file.{Files, Path}
 import scala.annotation.tailrec
 //
-import org.mvv.scala.tools.{ afterFirstOr, checkNotNull, isNotNull, tryDo }
+import org.mvv.scala.tools.{afterFirstOr, checkNotNull, isNotNull, tryDo}
 //import org.mvv.scala.tools.beans.
 
 
@@ -22,6 +23,11 @@ object ClassSource :
 
   val MacroQuotes: MacroQuotesClassSource = MacroQuotesClassSource()
 
+  extension (cls: Class[?])
+    def classKind: ClassKind = cls match
+      case scala2Class if isScala2Class(scala2Class) => ClassKind.Scala2
+      case scala3Class if isScala3Class(scala3Class) => ClassKind.Scala3
+      case _ => ClassKind.Java
 
 
 case class DirectoryClassSource (directoryPath: Path) extends ClassSource

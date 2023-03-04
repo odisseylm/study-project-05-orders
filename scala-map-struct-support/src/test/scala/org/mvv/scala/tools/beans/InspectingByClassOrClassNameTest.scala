@@ -9,8 +9,8 @@ import org.junit.jupiter.api.{ Test, Disabled }
 import org.assertj.core.api.Assertions.assertThat
 //
 import testclasses.ClassSampleInProductionSources
-import org.mvv.scala.tools.inspection.{ JarClassSource, _MethodKey, _Modifier, _Type }
-import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
+import org.mvv.scala.tools.inspection.{ _Class, _MethodKey, _Modifier, _Type }
+import org.mvv.scala.tools.inspection.tasty.{JarClassSource, ScalaBeansInspector}
 
 
 
@@ -79,11 +79,13 @@ class InspectingByClassOrClassNameTest {
 
   @Test
   def inspectByClass_loadingFromJar(): Unit =
+    import org.mvv.scala.tools.inspection.tasty._ClassEx
+
     import scala.language.unsafeNulls
     val _class: _Class = ScalaBeansInspector()
       .inspectClass(classOf[com.mvv.scala3.samples.InheritedFromJavaClass2])
     assertThat(_class).isNotNull
-    assertThat(_class.classSource.get).isInstanceOf(classOf[JarClassSource])
+    assertThat(_class.asInstanceOf[_ClassEx].classSource.get).isInstanceOf(classOf[JarClassSource])
     assertThat(_class.fields.asJava).isNotEmpty
 
 
@@ -129,12 +131,14 @@ class InspectingByClassOrClassNameTest {
   @Test
   def inspectByClassName_loadingFromJar(): Unit =
     import scala.language.unsafeNulls
+    import org.mvv.scala.tools.inspection.tasty._ClassEx
+
     val _class: _Class = ScalaBeansInspector()
       .inspectClass(classOf[com.mvv.scala3.samples.InheritedFromJavaClass2].getName)
 
     assertThat(_class).isNotNull
     // it does not make to verify this class if it loaded from file
-    assertThat(_class.classSource.get).isInstanceOf(classOf[JarClassSource])
+    assertThat(_class.asInstanceOf[_ClassEx].classSource.get).isInstanceOf(classOf[JarClassSource])
 
     assertThat(_class.fields.asJava).isNotEmpty
 

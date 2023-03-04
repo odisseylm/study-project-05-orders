@@ -8,7 +8,8 @@ import org.junit.jupiter.api.{ Test, Disabled }
 import org.assertj.core.api.SoftAssertions
 //
 import testclasses.{InheritedClass1, InheritedFromJavaClass1}
-import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
+import org.mvv.scala.tools.inspection._Class
+import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 
 
 

@@ -5,7 +5,7 @@ import scala.tasty.inspector.{ Inspector, Tasty, TastyInspector }
 //
 import org.mvv.scala.tools.isOneOf
 import org.mvv.scala.tools.quotes.classSymbolDetails
-import org.mvv.scala.tools.inspection.tasty._Class
+import org.mvv.scala.tools.inspection.tasty._ClassEx
 
 
 val temp = 22
@@ -14,8 +14,8 @@ val temp = 22
 
 class LightScalaBeanInspector extends Inspector :
 
-  def classesDescr: Map[String, _Class] = ???
-  def classDescr(classFullName: String): Option[_Class] = ???
+  def classesDescr: Map[String, _ClassEx] = ???
+  def classDescr(classFullName: String): Option[_ClassEx] = ???
 
 
   private var toInspect: String = ""

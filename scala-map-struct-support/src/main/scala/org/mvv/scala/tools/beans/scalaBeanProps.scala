@@ -1,7 +1,7 @@
 package org.mvv.scala.tools.beans
 
-import org.mvv.scala.tools.inspection.tasty._Class
-import org.mvv.scala.tools.inspection.{ BeanProperty, InspectMode }
+import org.mvv.scala.tools.inspection.tasty._ClassEx
+import org.mvv.scala.tools.inspection.{ JavaBeanProperty, InspectMode }
 
 import java.awt.Image
 import java.beans.{ BeanDescriptor, BeanInfo, EventSetDescriptor, MethodDescriptor, PropertyDescriptor }
@@ -12,7 +12,7 @@ import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 
 
 
-class ScalaBeanProps private (_class: _Class) extends java.beans.BeanInfo :
+class ScalaBeanProps private (_class: _ClassEx) extends java.beans.BeanInfo :
   private val beanProps: BeanProperties = _class.toBeanProperties(InspectMode.AllSources)
   private val propertyDescriptors: List[PropertyDescriptor] = beanProps.toPropertyDescriptors
 
@@ -46,7 +46,11 @@ object ScalaBeanProps :
 extension (beanProperties: BeanProperties)
   def toPropertyDescriptors: List[PropertyDescriptor] =
 
-    val allBeanProps: Iterable[BeanProperty] = beanProperties.beanProps.values
+    val allBeanProps: Iterable[JavaBeanProperty] = beanProperties.beanProps.values
+      .map { bp => bp match
+        case jbp: JavaBeanProperty => jbp
+        case _ => throw IllegalArgumentException(s"PropertyDescriptor requires JavaBeanProperty (source: ${bp.ownerClass.fullName}#${bp.name}).")
+      }
     validateBeanProperties(allBeanProps)
 
     val asPropDescriptors = allBeanProps
@@ -63,7 +67,7 @@ extension (beanProperties: BeanProperties)
 
 
 
-private def validateBeanProperties(props: Iterable[BeanProperty]): Unit =
+private def validateBeanProperties(props: Iterable[JavaBeanProperty]): Unit =
   props.foreach { prop =>
     val runtimeGetMethodExists = prop.runtimeGetMethods.exists(_.nonEmpty)
     if !runtimeGetMethodExists then

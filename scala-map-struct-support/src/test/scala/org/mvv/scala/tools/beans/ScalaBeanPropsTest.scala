@@ -9,14 +9,17 @@ import org.assertj.core.api.SoftAssertions
 //
 import testclasses.InheritedFromJavaClass2
 import org.mvv.scala.tools.nnArray
-import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
-import org.mvv.scala.tools.inspection.{ BeanProperty, InspectMode, _Type }
+import org.mvv.scala.tools.inspection.{ _Class, BeanProperty, JavaBeanProperty }
+import org.mvv.scala.tools.inspection.{ _Field, _Method, _Visibility }
+import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
+import org.mvv.scala.tools.inspection.{ BeanProperty, InspectMode, _Type, _Modifier }
+
 
 
 class ScalaBeanPropsTest {
 
   @Test
-  def createScalaBeanProperties_usingTastyOnly(): Unit = {
+  def createScalaBeanProperties_usingAstTreeOnly(): Unit = {
     val inspector = ScalaBeansInspector()
     val _class: _Class = inspector.inspectClass(classOf[InheritedFromJavaClass2])
     val beanProps = _class.toBeanProperties(InspectMode.ScalaAST)
@@ -27,13 +30,17 @@ class ScalaBeanPropsTest {
     a.assertThat(p.name).isEqualTo("trait1Var")
     a.assertThat(p.propertyType).isEqualTo(_Type.StringType)
     a.assertThat(p.ownerClass).isEqualTo(_class)
-    a.assertThat(p.ownerClass).isEqualTo(_class)
+    a.assertThat(p.field).isEqualTo(Option(_Field("trait1Var", _Visibility.Public, Set(), _Type.StringType)(null)))
+    a.assertThat(p.getMethods).isEqualTo(Nil)
+    a.assertThat(p.setMethods).isEqualTo(List(_Method("trait1Var_=", _Visibility.Public, Set(_Modifier.ScalaStandardFieldAccessor), _Type.UnitType, List(_Type.StringType), false)(null)))
 
+    /*
     a.assertThat(p.runtimePropertyType).isEqualTo(None)
     a.assertThat(p.runtimeOwnerClass).isEqualTo(None)
     a.assertThat(p.runtimeField).isEqualTo(None)
     a.assertThat(p.runtimeGetMethods).isEqualTo(None)
     a.assertThat(p.runtimeSetMethods).isEqualTo(None)
+    */
 
     a.assertAll()
   }
@@ -44,7 +51,7 @@ class ScalaBeanPropsTest {
     val _class: _Class = inspector.inspectClass(classOf[InheritedFromJavaClass2])
     val beanProps = _class.toBeanProperties(InspectMode.AllSources)
 
-    val p: BeanProperty = beanProps.beanProps("trait1Var")
+    val p: JavaBeanProperty = beanProps.beanProps("trait1Var").asInstanceOf[JavaBeanProperty]
     val a = SoftAssertions()
 
     a.assertThat(p.name).isEqualTo("trait1Var")

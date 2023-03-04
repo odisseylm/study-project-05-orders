@@ -22,8 +22,8 @@ case class _Method (
   // scala has to much different kinds of params, for that reason we do not collect all them
   hasExtraScalaParams: Boolean,
   )(
-  // noinspection ScalaUnusedSymbol , for debugging only
-  val internalValue: Any
+    // noinspection ScalaUnusedSymbol , for debugging only
+    val internalValue: Any|Null
   ) extends _ClassMember :
 
   validate()
@@ -55,14 +55,17 @@ case class _MethodKey (methodName: String, params: List[_Type], hasExtraScalaPar
     val resultTypeStr = if returnType.isVoid then "" else s": $returnType"
     s"$methodName$paramsStr$resultTypeStr$extraSuffix"
 
+
 object _MethodKey :
   def apply(method: _Method): _MethodKey =
     new _MethodKey(method.name, method.mainParams, method.hasExtraScalaParams)(Option(method))
   // seems default param value does not work as I expect
   def apply(methodName: String, params: List[_Type], hasExtraScalaParams: Boolean): _MethodKey =
     new _MethodKey(methodName, params, hasExtraScalaParams)(None)
-  //def getter[T](name: String)(implicit ct: ClassTag[T]): _MethodKey = apply(name, List(_Type(ct.runtimeClass.toString)), false)
+
+  // factory methods
   def getter(propName: String): _MethodKey = apply(propName, Nil, false)
+  // we can use base macros there to keep original full type name if it is needed
   def setter[T](propName: String)(implicit ct: ClassTag[T]): _MethodKey = apply(s"${propName}_=", List(_Type(ct.toString)), false)
 
 

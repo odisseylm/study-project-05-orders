@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.{ assertThat, assertThatCode }
 //
 import org.mvv.scala.tools.inspection.InspectMode
-import org.mvv.scala.tools.inspection.tasty.{ _Class, ScalaBeansInspector }
+import org.mvv.scala.tools.inspection._Class
+import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 
 
 

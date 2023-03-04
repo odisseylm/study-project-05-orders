@@ -45,8 +45,8 @@ class _Type private (
   override def equals(other: Any): Boolean =
     // 'equalImpl' is inlined and have resulting byte code similar to code with 'match'
     equalImpl(this, other) { (v1, v2) =>
-      v1.toPortableType.declaredTypeName == v2.toPortableType.declaredTypeName &&
-      v1.toPortableType.runtimeTypeName  == v2.toPortableType.runtimeTypeName
+      v1.toPortableType.declaredTypeName == v2.toPortableType.declaredTypeName
+      //&& v1.toPortableType.runtimeTypeName  == v2.toPortableType.runtimeTypeName
     }
 end _Type
 

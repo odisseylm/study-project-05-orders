@@ -6,8 +6,8 @@ import scala.collection.mutable
 import org.mvv.scala.tools.tryDo
 import org.mvv.scala.tools.quotes.{ refName, isExprStatement, classFullPackageName }
 import org.mvv.scala.tools.inspection._Quotes.extractType
-import org.mvv.scala.tools.inspection.{ ClassKind, ClassSource, InspectMode, _Field, _Method, _Type, loadClass }
-import org.mvv.scala.tools.inspection.tasty.{FilePackageContainer, _Class}
+import org.mvv.scala.tools.inspection.{ ClassKind, InspectMode, _Field, _Method, _Type }
+import org.mvv.scala.tools.inspection.tasty.{ FilePackageContainer, _ClassEx, loadClass }
 
 
 
@@ -33,7 +33,7 @@ def processTypeDef(using q: Quotes)(typeDef: q.reflect.TypeDef, _package: FilePa
 def processClassDef2(using q: Quotes)(
   classDef: q.reflect.ClassDef,
   inspectMode: InspectMode,
-  ): List[_Class] =
+  ): List[_ClassEx] =
   val _package = FilePackageContainer(classFullPackageName(classDef))
   processClassDef(classDef, _package, inspectMode, ClassSource.MacroQuotes)
 
@@ -44,7 +44,7 @@ def processClassDef(using q: Quotes)(
   _package: FilePackageContainer,
   inspectMode: InspectMode,
   classSource: ClassSource,
-  ): List[_Class] =
+  ): List[_ClassEx] =
   import q.reflect.*
 
   val _simpleClassName: String = classDef.name
@@ -53,7 +53,7 @@ def processClassDef(using q: Quotes)(
     .map(parentTree => extractType(parentTree))
     .filter(_type => !classesToIgnore.contains(_type))
 
-  var internalClasses: List[_Class] = Nil
+  var internalClasses: List[_ClassEx] = Nil
 
   val declaredFields = mutable.ArrayBuffer[_Field]()
   val declaredMethods = mutable.ArrayBuffer[_Method]()
@@ -111,7 +111,7 @@ def processClassDef(using q: Quotes)(
 
   val classFullName = classDef.symbol.fullName
 
-  val _class = _Class(
+  val _class = _ClassEx(
     classFullName,
     _package.fullName,
     _simpleClassName,

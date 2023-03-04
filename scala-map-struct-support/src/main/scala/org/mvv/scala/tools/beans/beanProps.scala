@@ -9,15 +9,17 @@ import org.mvv.scala.tools.CollectionsOps.{ filterByType, findByType, asString, 
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
 import org.mvv.scala.tools.inspection.{ BeanProperty, InspectMode, _Field, _Method, _Type }
 import org.mvv.scala.tools.inspection.{ isPublic, isGetterMethod, isSetterMethod, isPropertyAccessor, toPropName }
-import org.mvv.scala.tools.inspection.{ typeNameToRuntimeClassName, loadClass }
-import org.mvv.scala.tools.inspection.tasty.{ _Class, toJavaMethodName }
+import org.mvv.scala.tools.inspection.typeNameToRuntimeClassName
+import org.mvv.scala.tools.inspection._Class
+import org.mvv.scala.tools.inspection.{ BeanProperty, JavaBeanProperty }
+import org.mvv.scala.tools.inspection.tasty.{ _ClassEx, toJavaMethodName, loadClass }
 
 
 //noinspection ScalaUnusedSymbol
 private val log = Logger(topClassOrModuleFullName)
 
 
-
+/** It is named 'JavaXxx' because it is designed for inter */
 class BeanProperties (
   val _class: _Class,
   val beanProps: Map[String, BeanProperty],
@@ -89,8 +91,8 @@ extension (_class: _Class)
       beanProps = beanProps.map(p => p.withFilledRuntimeTypes)
 
     val beanPropsMap: Map[String, BeanProperty] = beanProps.map(bp => (bp.name, bp)).toMap
-
     BeanProperties(_class, beanPropsMap)
+
 
 
 private def toBeanProperty(_class: _Class, p: (String, Iterable[_Field|_Method])): BeanProperty =
@@ -108,7 +110,7 @@ private def toBeanProperty(_class: _Class, p: (String, Iterable[_Field|_Method])
 
 
 extension (beanProp: BeanProperty)
-  def withFilledRuntimeTypes: BeanProperty =
+  def withFilledRuntimeTypes: JavaBeanProperty =
     val runtimeOwnerClass: Class[?] = beanProp.ownerClass.runtimeClass
       .getOrElse(loadClass(typeNameToRuntimeClassName(beanProp.ownerClass.fullName)))
 
@@ -130,7 +132,14 @@ extension (beanProp: BeanProperty)
       .flatMap { method => tryDo(
         runtimeOwnerClass.getMethod(method.name.toJavaMethodName, runtimePropertyType).nn ) }
 
-    beanProp.copy(
+    JavaBeanProperty(
+      beanProp.name,
+      beanProp.propertyType,
+      beanProp.ownerClass,
+      beanProp.field,
+      beanProp.getMethods,
+      beanProp.setMethods,
+
       runtimePropertyType = Option(runtimePropertyType),
       runtimeOwnerClass = Option(runtimeOwnerClass),
       runtimeField = runtimeField,

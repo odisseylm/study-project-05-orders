@@ -12,13 +12,13 @@ import org.mvv.scala.tools.CollectionsOps.containsOneOf
 import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
 import org.mvv.scala.tools.inspection._Type.toPortableType
 import org.mvv.scala.tools.{ equalImpl, isOneOf, nnArray, stripAfter }
-import org.mvv.scala.tools.inspection.{ ClassKind, ClassSource, _Type, _Modifier }
+import org.mvv.scala.tools.inspection.{ ClassKind, _Type, _Modifier }
 import org.mvv.scala.tools.inspection.{ _ClassMember, _FieldKey, _Field, _MethodKey, _Method }
 
 
 
 // it is case class only to have possibility to create copy of it
-case class _Class (
+case class _ClassEx (
   // for internal classes fullName is not equal package + simpleName because
   // fullName also contains owner classes
   fullName: String,
@@ -37,10 +37,10 @@ case class _Class (
   // optional runtime types
   runtimeClass: Option[Class[?]] = None,
 
-  ) (inspector: Option[ScalaBeansInspector]) :
+  ) (inspector: Option[ScalaBeansInspector]) extends org.mvv.scala.tools.inspection._Class:
 
   // with current impl it possibly can have duplicates
-  lazy val parentClasses: List[_Class] =
+  lazy val parentClasses: List[_ClassEx] =
      parentTypes.map(_type => inspector
        .getOrElse(throw IllegalStateException("Inspector is not set"))
        .classDescr(_type.runtimeTypeName)
@@ -71,7 +71,7 @@ case class _Class (
 
 
 
-def mergeAllMembers[M <: _ClassMember, MK](thisDeclaredFields: BaseMap[MK,M], parents: List[_Class], membersF: _Class=>Map[MK,M]): Map[MK,M] =
+def mergeAllMembers[M <: _ClassMember, MK](thisDeclaredFields: BaseMap[MK,M], parents: List[_ClassEx], membersF: _ClassEx=>Map[MK,M]): Map[MK,M] =
   val merged = mutable.Map[MK,M]()
   parents.distinct.reverse.foreach( p => mergeWithParentMembersImpl(merged, membersF(p)) )
   mergeWithParentMembersImpl(merged, thisDeclaredFields)
