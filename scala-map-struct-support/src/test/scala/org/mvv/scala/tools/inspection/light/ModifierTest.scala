@@ -1,7 +1,7 @@
 package org.mvv.scala.tools.inspection.light
 
-
 import scala.collection.immutable.Map
+import scala.compiletime.uninitialized
 import scala.jdk.CollectionConverters.*
 import scala.tasty.inspector.{Tasty, TastyInspector}
 //
@@ -10,7 +10,7 @@ import org.assertj.core.api.SoftAssertions
 //
 import org.mvv.scala.testClassesDir
 import org.mvv.scala.tools.quotes.classNameOf
-import org.mvv.scala.tools.inspection.{ _Class, _MethodKey, _Modifier, _Type, getValOrField, getMethod }
+import org.mvv.scala.tools.inspection.{ ClassKind, _Class, _MethodKey, _Modifier, _Type, getValOrField, getMethod }
 import org.mvv.scala.tools.beans.testclasses.{ StandardScalaModifiersTesClass, InheritedFromJavaClass2 }
 
 
@@ -23,6 +23,7 @@ class ModifierTest {
     import scala.jdk.CollectionConverters.*
 
     val inspector = ScalaBeanInspector()
+
     given _class: _Class = inspector.inspectClass(classOf[StandardScalaModifiersTesClass])
 
     val a = SoftAssertions()
@@ -71,6 +72,9 @@ class ModifierTest {
 
     val _class = ScalaBeanInspector().inspectClass(classNameOf[InheritedFromJavaClass2])
 
+    val javaGetMethod = _class.methods(_MethodKey("getJavaPublicProp1", Nil, false))
+    val javaSetMethod = _class.methods(_MethodKey("setJavaPublicProp1", List(_Type("java.lang.String")), false))
+
     val overriddenJavaGetMethod = _class.methods(_MethodKey("getInterfaceValue11", Nil, false))
     val overriddenJavaSetMethod = _class.methods(_MethodKey("setInterfaceValue11", List(_Type("java.lang.String")), false))
 
@@ -81,6 +85,36 @@ class ModifierTest {
     a.assertThat(overriddenJavaSetMethod.modifiers.asJava)
       .contains(_Modifier.JavaPropertyAccessor)
       .doesNotContain(_Modifier.ScalaCustomFieldAccessor)
+
+    a.assertThat(javaGetMethod.modifiers.asJava)
+      .contains(_Modifier.JavaPropertyAccessor)
+    a.assertThat(javaSetMethod.modifiers.asJava)
+      .contains(_Modifier.JavaPropertyAccessor)
+
+    a.assertAll()
+  }
+
+  @Test
+  def classKindsTest(): Unit = {
+    import scala.jdk.CollectionConverters.*
+    import scala.language.unsafeNulls
+
+    val inspector = ScalaBeanInspector()
+    var _class: _Class = null //uninitialized
+
+    val a = SoftAssertions()
+
+    _class = inspector.inspectClass(classNameOf[org.mvv.scala.tools.beans.testclasses.EmptyTrait1])
+    a.assertThat(_class.classKind).isEqualTo(ClassKind.Scala3)
+
+    _class = inspector.inspectClass(classNameOf[org.mvv.scala.tools.beans.testclasses.JavaInterface1])
+    a.assertThat(_class.classKind).isEqualTo(ClassKind.Java)
+
+    _class = inspector.inspectClass(classNameOf[org.mvv.scala.tools.beans.testclasses.BaseJavaClass1])
+    a.assertThat(_class.classKind).isEqualTo(ClassKind.Java)
+
+    _class = inspector.inspectClass(classNameOf[com.mvv.scala2.samples.Trait1])
+    a.assertThat(_class.classKind).isEqualTo(ClassKind.Scala2)
 
     a.assertAll()
   }

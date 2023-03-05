@@ -5,7 +5,8 @@ import scala.collection.concurrent
 import scala.quoted.Quotes
 import scala.tasty.inspector.{ Inspector, Tasty, TastyInspector }
 //
-import org.mvv.scala.tools.{ isOneOf, afterLastOrOrigin, getClassLocationUrl, jarUrlToJarPath, fileUrlToPath }
+import org.mvv.scala.tools.{ isOneOf, afterLastOrOrigin, replaceSuffix }
+import org.mvv.scala.tools.{ getClassLocationUrl, jarUrlToJarPath, fileUrlToPath }
 import org.mvv.scala.tools.quotes.{ classSymbolDetails, classExists, getFullClassName, classFullPackageName }
 import org.mvv.scala.tools.quotes.{ asClassDef, asDefDef, asValDef }
 import org.mvv.scala.tools.inspection.{ _Class, _Type }
@@ -54,7 +55,8 @@ class ScalaBeanInspector :
       TastyInspector.inspectTastyFilesInJar(jarPath.toString)(invoker)
     else
       val dummyClassFilePath = fileUrlToPath(dummyClassUrl)
-      TastyInspector.inspectTastyFiles(List(dummyClassFilePath.toString))(invoker)
+      val dummyTastyFilePath = dummyClassFilePath.toString.replaceSuffix(".class", ".tasty")
+      TastyInspector.inspectTastyFiles(List(dummyTastyFilePath))(invoker)
 
     classesByFullName.getOrElse(fullClassName,
       throw ClassNotFoundException(s"Class [$fullClassName] is not found."))
@@ -85,10 +87,6 @@ class ScalaBeanInspector :
     val _package = classFullPackageName(classDef)
     val simpleName = fullClassName.afterLastOrOrigin(".")
     val classKind = classDef.classKind
-
-    //val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
-    //val parentTypes = classChain.map(_.getName.nn).map(_Type(_))
-    //val parentTypes = Nil
 
     val _class = _Class(
       fullClassName, _package, simpleName,

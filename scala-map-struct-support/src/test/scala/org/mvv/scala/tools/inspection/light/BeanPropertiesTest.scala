@@ -21,14 +21,4 @@ class BeanPropertiesTest {
         val aa: BeanProperties = cls.toBeanProperties(InspectMode.AllSources)
         assertThat(aa).isNotNull
     }
-
-    @Test
-    @Disabled // TODO: impl
-    def beanProps_withOnlyTastyAst(): Unit = {
-        val inspector = ScalaBeanInspector()
-        val cls = inspector.inspectClass(classNameOf[InheritedFromJavaClass2])
-
-        val aa: BeanProperties = cls.toBeanProperties(InspectMode.ScalaAST)
-        assertThat(aa).isNotNull
-    }
 }

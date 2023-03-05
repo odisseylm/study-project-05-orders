@@ -82,7 +82,7 @@ def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDet
     str.appendTypeRepr(symbol.privateWithin.get, "privateWithin")
     str.appendTypeRepr(symbol.protectedWithin.get, "protectedWithin")
 
-    str.appendAttr(symbol.annotations.map(an => getSimpleClassName(an.tpe.show)).mkString(","), "annotations")
+    str.appendStrAttr(symbol.annotations.map(an => getSimpleClassName(an.tpe.show)).mkString(","), "annotations")
   end if
 
   if details.contains(SymbolDetails.List) then
@@ -99,6 +99,7 @@ def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDet
       .appendNonEmptyNames(symbol.typeMembers, "typeMembers")
       .appendNonEmptyNames(symbol.children, "children")
       .appendNonEmptyNames(symbol.paramSymss.flatten, "paramSymss")
+      .append("\n")
   end if
 
   str

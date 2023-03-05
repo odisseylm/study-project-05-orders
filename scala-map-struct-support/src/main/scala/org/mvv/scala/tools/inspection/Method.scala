@@ -1,7 +1,7 @@
 package org.mvv.scala.tools.inspection
 
-import scala.annotation.{ nowarn, tailrec }
-import scala.collection.{ mutable, Map as BaseMap }
+import scala.annotation.{nowarn, tailrec, targetName}
+import scala.collection.{mutable, Map as BaseMap}
 import scala.compiletime.uninitialized
 import scala.reflect.ClassTag
 //

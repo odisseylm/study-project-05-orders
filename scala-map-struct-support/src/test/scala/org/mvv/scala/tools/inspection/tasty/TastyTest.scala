@@ -187,6 +187,9 @@ class TastyTest :
       "protectedVarField2_=(java.lang.String)",
       "publicVarField2_=(java.lang.String)",
       */
+
+      "getJavaPublicProp1(): java.lang.String",
+      "setJavaPublicProp1(java.lang.String)",
     )
 
     a.assertAll()

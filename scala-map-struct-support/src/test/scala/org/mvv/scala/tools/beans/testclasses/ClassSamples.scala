@@ -74,6 +74,8 @@ end UsualScalaClassSample
 
 
 
+trait EmptyTrait1
+
 trait Trait1 :
   val trait1Val: String = ""
   var trait1Var: String = ""

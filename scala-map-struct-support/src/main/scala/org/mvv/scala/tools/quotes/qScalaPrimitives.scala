@@ -20,9 +20,20 @@ def qStringLiteral(using q: Quotes)(value: => String, qResult: QResult = QResult
   resTerm
 
 
+
 //noinspection ScalaUnusedSymbol
 def qStringLiteralExpr(using Quotes)(value: => String): Expr[String] =
   qStringLiteral(value, QResult.AsInlined).asExprOf[String]
+
+
+
+//noinspection ScalaUnusedSymbol
+def qTuple2[T1,T2]
+  (using q: Quotes)(using Type[T1], Type[T2])
+  (t1: q.reflect.Term, t2: q.reflect.Term): q.reflect.Term =
+  import q.reflect.asTerm
+  val tupleExpr: Expr[(T1, T2)] = Expr.ofTuple( ( t1.asExprOf[T1], t2.asExprOf[T2] ) )
+  tupleExpr.asTerm
 
 
 

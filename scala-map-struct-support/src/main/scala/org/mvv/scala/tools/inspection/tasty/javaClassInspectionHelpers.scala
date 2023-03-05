@@ -6,10 +6,11 @@ import scala.collection.mutable
 import java.lang.reflect.{ Field, Member, Method }
 //
 import org.mvv.scala.tools.{ isNotNull, nnArray, loadClass }
-import org.mvv.scala.tools.inspection.tasty.ClassSource.classKind
 import org.mvv.scala.tools.inspection.{ _Modifier, _Visibility }
 import org.mvv.scala.tools.inspection.{ _Field, _Method, _Type }
+import org.mvv.scala.tools.inspection.methodIsJavaPropertyAccessor
 import org.mvv.scala.tools.inspection._Type.{ isBool, isVoid }
+import org.mvv.scala.tools.inspection.tasty.ClassSource.classKind
 
 
 
@@ -33,14 +34,11 @@ def methodModifiers(m: Method): Set[_Modifier] =
   import JavaInspectionHelper.nameHasPrefix
 
   var mod: Set[_Modifier] = generalModifiers(m)
+  val mName = m.getName.nn
   val paramCount = m.getParameterCount
-  val returnType = m.getReturnType.nn
+  val returnTypeStr = m.getReturnType.nn.getName.nn
 
-  val isGetAccessor = m.nameHasPrefix("get") && paramCount == 0 && !returnType.isVoid
-  val isIsAccessor  = m.nameHasPrefix("is")  && paramCount == 0 && returnType.isBool
-  val isSetAccessor = m.nameHasPrefix("set") && paramCount == 1 && returnType.isVoid
-
-  if isGetAccessor || isIsAccessor || isSetAccessor then mod += _Modifier.JavaPropertyAccessor
+  if methodIsJavaPropertyAccessor(mName, _Type(returnTypeStr), paramCount) then mod += _Modifier.JavaPropertyAccessor
   mod
 
 

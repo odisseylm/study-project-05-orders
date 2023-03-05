@@ -147,6 +147,9 @@ class InheritedFromJavaClass2Test {
         "setProtectedProp1(java.lang.String)",
         "getPublicProp1(): java.lang.String",
         "setPublicProp1(java.lang.String)",
+
+        "getJavaPublicProp1(): java.lang.String",
+        "setJavaPublicProp1(java.lang.String)",
       )
     }
 
@@ -243,6 +246,9 @@ class InheritedFromJavaClass2Test {
         // overriding java getters/setters
         "getInterfaceValue11: java.lang.String",
         "setInterfaceValue11(java.lang.String)",
+
+        "getJavaPublicProp1(): java.lang.String",
+        "setJavaPublicProp1(java.lang.String)",
       ) }
 
     a.assertAll()

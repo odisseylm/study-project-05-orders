@@ -168,6 +168,9 @@ class InheritedFromJavaClass2Test {
         "setProtectedProp1(java.lang.String)",
         "getPublicProp1(): java.lang.String",
         "setPublicProp1(java.lang.String)",
+
+        "getJavaPublicProp1(): java.lang.String",
+        "setJavaPublicProp1(java.lang.String)",
       )
     }
 

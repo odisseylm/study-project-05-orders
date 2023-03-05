@@ -20,4 +20,7 @@ abstract public class BaseJavaClass1 implements JavaInterface1 {
     protected void setProtectedProp1(String v) {}
     public String getPublicProp1() { return ""; }
     public void setPublicProp1(String v) {}
+
+    public String getJavaPublicProp1() { return ""; }
+    public void setJavaPublicProp1(String v) {}
 }

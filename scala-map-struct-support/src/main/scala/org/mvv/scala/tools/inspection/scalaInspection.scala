@@ -1,12 +1,13 @@
 package org.mvv.scala.tools.inspection
 
-import scala.annotation.nowarn
+import scala.annotation.{nowarn, targetName}
 import scala.collection.mutable
 import scala.quoted.Quotes
 //
 import org.mvv.scala.tools.{ endsWithOneOf, tryDo }
-import org.mvv.scala.tools.quotes.isNullType
-import org.mvv.scala.tools.inspection._Quotes.extractType
+import org.mvv.scala.tools.CollectionsOps.containsOneOf
+import org.mvv.scala.tools.quotes.{ isNullType, asClassDef, asDefDef, activeSymbolFlags }
+import org.mvv.scala.tools.inspection._Quotes.{ extractType, classKind }
 import org.mvv.scala.tools.inspection.{ _Field, _Method, _Modifier, _Type, _Visibility }
 
 
@@ -100,14 +101,45 @@ object _Quotes :
 
 
   extension (using q: Quotes) (defDef: q.reflect.DefDef)
+
+    def isOverriddenFromJava: Boolean =
+      import q.reflect.{ Symbol, Flags }
+      val allOverriddenSymbols: List[Symbol] = defDef.symbol.allOverriddenSymbols.toList
+      val javaSuperMethod: Option[Symbol] = allOverriddenSymbols.find(s => s.flags.is(Flags.JavaDefined))
+      javaSuperMethod.nonEmpty
+
+
+    def isJavaDefined: Boolean =
+      import q.reflect.Flags
+      defDef.symbol.flags.is(Flags.JavaDefined)
+
+
+    def hasExtraParams: Boolean =
+
+      val paramTypes: List[_Type] = paramssToTypes(defDef.paramss)
+      val trailingParamTypes: List[_Type] = paramssToTypes(defDef.trailingParamss)
+      val termParamsTypes: List[_Type] = paramssToTypes(defDef.termParamss)
+
+      val _hasExtraParams =
+        (!isListDeeplyEmpty(defDef.trailingParamss) && trailingParamTypes != paramTypes)
+          || (!isListDeeplyEmpty(defDef.termParamss) && termParamsTypes != paramTypes)
+          || defDef.leadingTypeParams.nonEmpty
+      _hasExtraParams
+
+
     def toMethod: _Method =
       val methodName: String = tryDo(defDef.name) .getOrElse(defDef.symbol.name)
       val returnType = extractType(defDef.returnTpt)
 
       val paramTypes: List[_Type] = paramssToTypes(defDef.paramss)
-      val _hasExtraParams = hasExtraParams(defDef)
+      val _hasExtraParams = defDef.hasExtraParams
 
       var modifiers: Set[_Modifier] = generalModifiers(defDef.symbol)
+
+      if !_hasExtraParams && methodIsJavaPropertyAccessor(methodName, returnType, paramTypes.size)
+        && (defDef.isJavaDefined || defDef.isOverriddenFromJava)
+        then modifiers += _Modifier.JavaPropertyAccessor
+
       if !modifiers.contains(_Modifier.ScalaStandardFieldAccessor) && !_hasExtraParams then
         val isCustomGetter = defDef.paramss.isEmpty && !returnType.isVoid
         val isCustomSetter = paramTypes.sizeIs == 1 && methodName.endsWithOneOf("_=", "_$eq")
@@ -119,8 +151,11 @@ object _Quotes :
 
   extension (using q: Quotes)(classDef: q.reflect.ClassDef)
     def classKind: ClassKind =
-      // TODO: impl
-      ClassKind.Scala3
+      import q.reflect.Flags
+      classDef.symbol.flags match
+        case f if f.is(Flags.JavaDefined) => ClassKind.Java
+        case f if f.is(Flags.Scala2x) => ClassKind.Scala2
+        case _  => ClassKind.Scala3
 
 
 private def isListDeeplyEmpty(using q: Quotes)(paramsOfParams: List[q.reflect.ParamClause]) =
@@ -138,14 +173,21 @@ def paramssToTypes(using q: Quotes)(paramss: List[q.reflect.ParamClause]): List[
     else paramss .map(_.params.map(paramToType) .mkString("|")) .map(v => _Type(v))
 
 
-def hasExtraParams(using q: Quotes)(defDef: q.reflect.DefDef): Boolean =
 
-  val paramTypes: List[_Type] = paramssToTypes(defDef.paramss)
-  val trailingParamTypes: List[_Type] = paramssToTypes(defDef.trailingParamss)
-  val termParamsTypes: List[_Type] = paramssToTypes(defDef.termParamss)
+def methodIsJavaGetAccessor(methodName: String, returnType: _Type, paramCount: Int) =
+  nameHasPrefix(methodName, "get") && paramCount == 0 && !returnType.isVoid
 
-  val _hasExtraParams =
-    (!isListDeeplyEmpty(defDef.trailingParamss) && trailingParamTypes != paramTypes)
-      || (!isListDeeplyEmpty(defDef.termParamss) && termParamsTypes != paramTypes)
-      || defDef.leadingTypeParams.nonEmpty
-  _hasExtraParams
+def methodIsJavaIsAccessor(methodName: String, returnType: _Type, paramCount: Int) =
+  nameHasPrefix(methodName, "is") && paramCount == 0 && returnType.isBool
+
+def methodIsJavaSetAccessor(methodName: String, returnType: _Type, paramCount: Int) =
+  nameHasPrefix(methodName, "set") && paramCount == 1 && returnType.isVoid
+
+def methodIsJavaPropertyAccessor(methodName: String, returnType: _Type, paramCount: Int) =
+  methodIsJavaGetAccessor(methodName, returnType, paramCount)
+    || methodIsJavaIsAccessor(methodName, returnType, paramCount)
+    || methodIsJavaSetAccessor(methodName, returnType, paramCount)
+
+
+def nameHasPrefix(methodName: String, prefix: String): Boolean =
+  methodName.startsWith(prefix) && methodName.length > prefix.length

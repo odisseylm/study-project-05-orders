@@ -84,6 +84,7 @@ class ScalaBeanPropsTest {
       "interfaceValue11",
       //
       "publicProp1",
+      "javaPublicProp1",
       //
       "interfaceValue1", "interfaceValue2",
       //
