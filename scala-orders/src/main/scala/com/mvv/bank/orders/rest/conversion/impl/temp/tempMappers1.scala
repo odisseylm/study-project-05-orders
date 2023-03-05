@@ -27,9 +27,9 @@ class DomainOrder1 :
 def aaa(): Unit = {
   import org.mvv.scala.tools.beans.toBeanProperties
   import org.mvv.scala.tools.inspection.{ _Class, InspectMode }
-  import org.mvv.scala.tools.inspection.tasty.{ScalaBeansInspector, _ClassEx}
+  import org.mvv.scala.tools.inspection.tasty.{ TastyScalaBeansInspector, _ClassEx}
 
-  def i = ScalaBeansInspector()
+  def i = TastyScalaBeansInspector()
   val cls: _ClassEx = i.inspectClass(classOf[DomainOrder1])
   val bp = cls.toBeanProperties(InspectMode.AllSources)
   println(bp)

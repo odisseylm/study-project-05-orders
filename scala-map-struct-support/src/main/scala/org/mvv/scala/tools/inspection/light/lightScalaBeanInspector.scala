@@ -14,7 +14,7 @@ import org.mvv.scala.tools.inspection._Quotes.{ toMethod, toField, classKind, ex
 
 
 //noinspection ScalaFileName
-class LightScalaBeanInspector :
+class ScalaBeanInspector :
   private val classesByFullName: concurrent.Map[String, _Class] = concurrent.TrieMap()
 
   private class InspectorImpl (val classFullName: String) extends Inspector :
@@ -37,6 +37,9 @@ class LightScalaBeanInspector :
 
 
   private var toInspect: String = ""
+
+  def inspectClass(cls: Class[?]): _Class =
+    inspectClass(cls.getName.nn)
 
   def inspectClass(fullClassName: String): _Class =
     toInspect = fullClassName

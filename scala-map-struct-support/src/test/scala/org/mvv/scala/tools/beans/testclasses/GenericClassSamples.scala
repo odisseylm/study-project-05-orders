@@ -18,5 +18,6 @@ abstract class GenericBaseClass1[C] extends GenericTrait2[C] :
 
 class GenericClass2 extends GenericBaseClass1[String], GenericTrait1[Long, LocalTime] :
   private var class2Var: String = uninitialized
+  //protected var class3Var: String = uninitialized
   override val bVal: LocalTime = LocalTime.now.nn
   override val cVal: String = ""

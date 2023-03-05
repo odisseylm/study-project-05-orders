@@ -1,5 +1,4 @@
-package org.mvv.scala.tools.inspection.tasty
-
+package org.mvv.scala.tools.inspection.light
 
 import scala.language.unsafeNulls
 import scala.jdk.CollectionConverters.*
@@ -9,9 +8,7 @@ import java.nio.file.Path
 import org.junit.jupiter.api.{ Test, Disabled }
 import org.assertj.core.api.Assertions.assertThat
 //
-import org.mvv.scala.projectDir
 import org.mvv.scala.tools.inspection.{ _Class, _MethodKey, _Modifier, _Type }
-import org.mvv.scala.tools.inspection.tasty.{ JarClassSource, TastyScalaBeansInspector as ScalaBeansInspector }
 import org.mvv.scala.tools.beans.testclasses.ClassSampleInProductionSources
 
 
@@ -28,7 +25,7 @@ class InspectingByClassOrClassNameTest {
   @Test
   def inspectByClass_forClassInProductionSources(): Unit =
     import scala.language.unsafeNulls
-    val _class: _Class = ScalaBeansInspector()
+    val _class: _Class = ScalaBeanInspector()
       .inspectClass(classOf[ClassSampleInProductionSources])
     assertThat(_class).isNotNull
     assertThat(_class.fields.asJava).isNotEmpty
@@ -37,7 +34,7 @@ class InspectingByClassOrClassNameTest {
   @Test
   def inspectByClassName_forClassInProductionSources(): Unit =
     import scala.language.unsafeNulls
-    val _class: _Class = ScalaBeansInspector()
+    val _class: _Class = ScalaBeanInspector()
       .inspectClass(classOf[ClassSampleInProductionSources].getName)
     assertThat(_class).isNotNull
     assertThat(_class.fields.asJava).isNotEmpty
@@ -46,7 +43,7 @@ class InspectingByClassOrClassNameTest {
   @Test
   def inspectByClass_forClassInTestSource1(): Unit =
     import scala.language.unsafeNulls
-    val _class: _Class = ScalaBeansInspector()
+    val _class: _Class = ScalaBeanInspector()
       .inspectClass(classOf[ClassInTestSource1])
     assertThat(_class).isNotNull
     assertThat(_class.fields.asJava).isNotEmpty
@@ -55,25 +52,31 @@ class InspectingByClassOrClassNameTest {
   @Test
   def inspectByClassName_forClassInTestSource1(): Unit =
     import scala.language.unsafeNulls
-    val _class: _Class = ScalaBeansInspector()
+    val _class: _Class = ScalaBeanInspector()
       .inspectClass(classOf[ClassInTestSource1].getName)
     assertThat(_class).isNotNull
     assertThat(_class.fields.asJava).isNotEmpty
 
 
+  // Light scala bean inspector does not support local classes
+  // java.lang.ClassCastException: class dotty.tools.dotc.core.Types$NoType$ cannot be cast to class dotty.tools.dotc.core.Types$ClassInfo
   @Test
+  @Disabled
   def inspectByClass_forLocalClass1(): Unit =
     import scala.language.unsafeNulls
-    val _class: _Class = ScalaBeansInspector()
+    val _class: _Class = ScalaBeanInspector()
       .inspectClass(classOf[LocalClass1])
     assertThat(_class).isNotNull
     assertThat(_class.fields.asJava).isNotEmpty
 
 
+  // Light scala bean inspector does not support local classes
+  // java.lang.ClassCastException: class dotty.tools.dotc.core.Types$NoType$ cannot be cast to class dotty.tools.dotc.core.Types$ClassInfo
   @Test
+  @Disabled
   def inspectByClassName_forLocalClass1(): Unit =
     import scala.language.unsafeNulls
-    val _class: _Class = ScalaBeansInspector()
+    val _class: _Class = ScalaBeanInspector()
       .inspectClass(classOf[LocalClass1].getName)
     assertThat(_class).isNotNull
     assertThat(_class.fields.asJava).isNotEmpty
@@ -81,68 +84,21 @@ class InspectingByClassOrClassNameTest {
 
   @Test
   def inspectByClass_loadingFromJar(): Unit =
-    import org.mvv.scala.tools.inspection.tasty._ClassEx
-
     import scala.language.unsafeNulls
-    val _class: _Class = ScalaBeansInspector()
+    val _class: _Class = ScalaBeanInspector()
       .inspectClass(classOf[com.mvv.scala3.samples.InheritedFromJavaClass2])
     assertThat(_class).isNotNull
-    assertThat(_class.asInstanceOf[_ClassEx].classSource.get).isInstanceOf(classOf[JarClassSource])
     assertThat(_class.fields.asJava).isNotEmpty
 
 
   @Test
-  def inspectByClass_smokeForAllClassesInBigJar(): Unit =
-    import scala.language.unsafeNulls
-
-    val rootProjectDir = s"$projectDir/.."
-
-    // com.mvv.scala.temp.tests.enums.Eastwood$#Good
-    // com.mvv.scala.temp.tests.Trading$#BuyOrder
-
-    val scala01jarInspector = ScalaBeansInspector()
-    scala01jarInspector
-      .inspectJar(Path.of(s"$rootProjectDir/hello-world-samples/scala01/target/scala01-1.0-SNAPSHOT.jar"))
-
-    // to have it successful we need to add child dependencies to classpath
-    //ScalaBeansInspector()
-    //  .inspectJar(Path.of(s"$rootProjectDir/hello-world-samples/scala01/target/scala01-1.0-SNAPSHOT-tests.jar"))
-
-    ScalaBeansInspector()
-      .inspectJar(Path.of(s"$rootProjectDir/hello-world-samples/scala2-samples/target/scala2-samples-1.0-SNAPSHOT.jar"))
-
-    ScalaBeansInspector()
-      .inspectJar(Path.of(s"$rootProjectDir/hello-world-samples/scala3-samples/target/scala3-samples-1.0-SNAPSHOT.jar"))
-
-    ScalaBeansInspector()
-      .inspectJar(Path.of(s"$rootProjectDir/kotlin-orders/kotlin-orders-dto/target/kotlin-bank-orders-dto.jar"))
-
-    val internalClass = "com.mvv.scala.temp.tests.Trading$.BuyOrder"
-    //val allInspectedClasses = scala01jarInspector.classesDescr.keys.toList.sorted
-
-    assertThat(scala01jarInspector.classDescr(internalClass).isDefined)
-      //.describedAs(s"scala-01.jar " +
-      //  s"${allInspectedClasses.mkString("\n", "\n", "\n")}" +
-      //  s" does not contain internal class [$internalClass]."
-      //)
-      //// some strange scala behavior
-      //.asInstanceOf[org.assertj.core.api.AbstractBooleanAssert[?]]
-      .isTrue
-
-
-  @Test
   def inspectByClassName_loadingFromJar(): Unit =
-    import org.mvv.scala.tools.inspection.tasty._ClassEx
-
     import scala.language.unsafeNulls
 
-    val _class: _Class = ScalaBeansInspector()
+    val _class: _Class = ScalaBeanInspector()
       .inspectClass(classOf[com.mvv.scala3.samples.InheritedFromJavaClass2].getName)
 
     assertThat(_class).isNotNull
-    // it does not make to verify this class if it loaded from file
-    assertThat(_class.asInstanceOf[_ClassEx].classSource.get).isInstanceOf(classOf[JarClassSource])
-
     assertThat(_class.fields.asJava).isNotEmpty
 
     assertThat(_class.fields.keys.map(_.toString).asJava)

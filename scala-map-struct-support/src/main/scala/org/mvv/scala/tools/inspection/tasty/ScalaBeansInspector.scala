@@ -24,7 +24,7 @@ private val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang
 private val log: Logger = Logger(topClassOrModuleFullName)
 
 
-class ScalaBeansInspector extends Inspector :
+class TastyScalaBeansInspector extends Inspector :
 
   // it contains ONLY 'normal' classes from input tasty file
   private val classesByFullName:  concurrent.Map[String, _ClassEx] = concurrent.TrieMap()
@@ -71,12 +71,12 @@ class ScalaBeansInspector extends Inspector :
   def inspectClass(cls: Class[?]): _ClassEx =
     cls.classKind match
       case ClassKind.Java =>
-        val res: _ClassEx = inspectJavaClass(cls, this)
+        val res: _ClassEx = inspectJavaClass(cls)
         classesByFullName.put(cls.getName.nn, res)
         res
       case ClassKind.Scala2 =>
         log.warn(s"scala2 class ${cls.getName} is processed as java class (sine scala2 format is not supported now).")
-        val res: _ClassEx = inspectJavaClass(cls, this)
+        val res: _ClassEx = inspectJavaClass(cls)
         classesByFullName.put(cls.getName.nn, res)
         res
       case ClassKind.Scala3 =>
@@ -279,12 +279,12 @@ class ScalaBeansInspector extends Inspector :
   private def inspectClassDefImpl(using q: Quotes)
     (classDef: q.reflect.ClassDef, _package: FilePackageContainer, inspectMode: InspectMode, classSource: ClassSource): List[_ClassEx] =
     val _classes = processClassDef(classDef, _package, inspectMode, classSource)
-      .map(_.copy()(Option(ScalaBeansInspector.this)))
+      .map(_.copy()(Option(TastyScalaBeansInspector.this)))
     _package.classes.addAll(_classes.map(cls => (cls.fullName, cls)))
     _classes
 
 
-  private def inspectJavaClass(_cls: Class[?], scalaBeansInspector: ScalaBeansInspector): _ClassEx =
+  private def inspectJavaClass(_cls: Class[?]): _ClassEx =
     import org.mvv.scala.tools.inspection.tasty.JavaInspectionHelper.*
 
     val classChain: List[Class[?]] = getAllSubClassesAndInterfaces(_cls)
@@ -292,7 +292,7 @@ class ScalaBeansInspector extends Inspector :
 
     classChain.foreach { c =>
       if toInspectParentClass(c) then
-        scalaBeansInspector.inspectClass(c)
+        inspectClass(c)
     }
 
     val declaredFields  = _cls.getDeclaredFields.nn.map  { f => val _f = toField(f.nn);   (_f.toKey, _f) }.toMap
@@ -309,13 +309,13 @@ class ScalaBeansInspector extends Inspector :
       parentTypes,
       declaredFields, declaredMethods,
       Option(_cls),
-    )(Option(scalaBeansInspector))
+    )(Option(TastyScalaBeansInspector.this))
 
     _class
   end inspectJavaClass
 
 
-end ScalaBeansInspector
+end TastyScalaBeansInspector
 
 
 class TastyFileNotFoundException protected (message: String, cause: Option[Throwable])

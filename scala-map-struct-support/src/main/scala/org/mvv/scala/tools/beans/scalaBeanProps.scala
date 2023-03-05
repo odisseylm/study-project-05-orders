@@ -8,7 +8,8 @@ import java.beans.{ BeanDescriptor, BeanInfo, EventSetDescriptor, MethodDescript
 import java.lang.reflect.Method as JavaMethod
 //
 import org.mvv.scala.tools.OptionOps.allAreDefined
-import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
+// TODO: use light ScalaBeansInspector
+import org.mvv.scala.tools.inspection.tasty.TastyScalaBeansInspector
 
 
 
@@ -35,7 +36,8 @@ end ScalaBeanProps
 
 
 object ScalaBeanProps :
-  private val beansInspector = ScalaBeansInspector()
+  // TODO: use light ScalaBeansInspector
+  private val beansInspector = TastyScalaBeansInspector()
 
   def apply(cls: Class[?]): ScalaBeanProps =
     val _class = beansInspector.inspectClass(cls)

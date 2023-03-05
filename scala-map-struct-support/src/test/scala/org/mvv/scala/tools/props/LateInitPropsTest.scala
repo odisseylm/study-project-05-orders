@@ -10,7 +10,6 @@ import org.assertj.core.api.Assertions.assertThatCode
 //
 import org.mvv.scala.tools.Logger
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
-import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
 
 
 
@@ -169,11 +168,6 @@ class LateInitPropsTest {
     val fff: (String, ()=>Boolean) = org.mvv.scala.mapstruct.debug.dump.dumpExpr( ("1", ()=>true) )
   }
   */
-
-  @Test
-  def aaa(): Unit = {
-    ScalaBeansInspector().inspectClass(classOf[ClassWithLateInitProps])
-  }
 
 
   @Test

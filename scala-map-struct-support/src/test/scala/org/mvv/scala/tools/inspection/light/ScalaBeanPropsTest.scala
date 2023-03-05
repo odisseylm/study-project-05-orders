@@ -1,11 +1,11 @@
-package org.mvv.scala.tools.inspection.tasty
+package org.mvv.scala.tools.inspection.light
 
 import scala.language.unsafeNulls
 import java.beans.PropertyDescriptor
 import scala.jdk.CollectionConverters.*
 //
-import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
+import org.assertj.core.api.SoftAssertions
 //
 import org.mvv.scala.tools.nnArray
 import org.mvv.scala.tools.beans.toBeanProperties
@@ -19,7 +19,7 @@ class ScalaBeanPropsTest {
 
   @Test
   def createScalaBeanProperties_usingAstTreeOnly(): Unit = {
-    val inspector = TastyScalaBeansInspector()
+    val inspector = ScalaBeanInspector()
     val _class: _Class = inspector.inspectClass(classOf[InheritedFromJavaClass2])
     val beanProps = _class.toBeanProperties(InspectMode.ScalaAST)
 
@@ -46,7 +46,7 @@ class ScalaBeanPropsTest {
 
   @Test
   def createScalaBeanProperties_usingJavaReflectionToo(): Unit = {
-    val inspector = TastyScalaBeansInspector()
+    val inspector = ScalaBeanInspector()
     val _class: _Class = inspector.inspectClass(classOf[InheritedFromJavaClass2])
     val beanProps = _class.toBeanProperties(InspectMode.AllSources)
 

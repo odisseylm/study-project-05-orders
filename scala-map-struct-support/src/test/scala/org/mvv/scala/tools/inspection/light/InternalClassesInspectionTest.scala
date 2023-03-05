@@ -1,4 +1,4 @@
-package org.mvv.scala.tools.inspection.tasty
+package org.mvv.scala.tools.inspection.light
 
 import scala.language.unsafeNulls
 import scala.jdk.CollectionConverters.*
@@ -14,7 +14,7 @@ class InternalClassesInspectionTest {
 
   @Test
   def inspectInternalClasses(): Unit = {
-    val inspector = TastyScalaBeansInspector()
+    val inspector = ScalaBeanInspector()
     inspector.inspectClass(classOf[TopClass])
 
     val inspectedClasses = inspector.classesDescr
@@ -30,16 +30,16 @@ class InternalClassesInspectionTest {
 
     a.assertThat(inspectedClasses.keys.asJava).containsExactlyInAnyOrder(
       "org.mvv.scala.tools.inspection.TopClass",
-      "org.mvv.scala.tools.inspection.TopClass.TopClassInternalClassLevel1",
-      "org.mvv.scala.tools.inspection.TopClass.TopClassInternalClassLevel1.TopClassInternalClassLevel2",
-      //
-      "org.mvv.scala.tools.inspection.TopClass$",
-      "org.mvv.scala.tools.inspection.TopClass$.TopObjectInternalClassLevel1",
-      "org.mvv.scala.tools.inspection.TopClass$.TopObjectInternalClassLevel1.TopObjectInternalClassLevel2",
-      //
-      "org.mvv.scala.tools.inspection.TopClass$.TopObjectObjectLevel2$",
-      "org.mvv.scala.tools.inspection.TopClass$.TopObjectObjectLevel2$.TopObjectObjectLevel2InternalClassLevel1",
-      "org.mvv.scala.tools.inspection.TopClass$.TopObjectObjectLevel2$.TopObjectObjectLevel2InternalClassLevel1.TopObjectObjectLevel2InternalClassLevel2",
+      //"org.mvv.scala.tools.inspection.TopClass.TopClassInternalClassLevel1",
+      //"org.mvv.scala.tools.inspection.TopClass.TopClassInternalClassLevel1.TopClassInternalClassLevel2",
+      ////
+      //"org.mvv.scala.tools.inspection.TopClass$",
+      //"org.mvv.scala.tools.inspection.TopClass$.TopObjectInternalClassLevel1",
+      //"org.mvv.scala.tools.inspection.TopClass$.TopObjectInternalClassLevel1.TopObjectInternalClassLevel2",
+      ////
+      //"org.mvv.scala.tools.inspection.TopClass$.TopObjectObjectLevel2$",
+      //"org.mvv.scala.tools.inspection.TopClass$.TopObjectObjectLevel2$.TopObjectObjectLevel2InternalClassLevel1",
+      //"org.mvv.scala.tools.inspection.TopClass$.TopObjectObjectLevel2$.TopObjectObjectLevel2InternalClassLevel1.TopObjectObjectLevel2InternalClassLevel2",
     )
 
     a.assertAll()

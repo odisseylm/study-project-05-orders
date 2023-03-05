@@ -9,7 +9,8 @@ import org.mvv.scala.tools.{ Logger, ConsoleLogger, LogLevel, replaceSuffix }
 import org.mvv.scala.tools.beans.{ BeanProperties, toBeanProperties }
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
 import org.mvv.scala.tools.inspection.InspectMode
-import org.mvv.scala.tools.inspection.tasty.{ ScalaBeansInspector, _ClassEx }
+// TODO: use light ScalaBeansInspector
+import org.mvv.scala.tools.inspection.tasty.{ TastyScalaBeansInspector, _ClassEx }
 
 
 
@@ -17,7 +18,8 @@ class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy
 
   //private val log = Logger(topClassOrModuleFullName)
   private val log = ConsoleLogger(topClassOrModuleFullName, LogLevel.TRACE)
-  private val scalaBeansInspector = ScalaBeansInspector()
+  // TODO: use light ScalaBeansInspector
+  private val scalaBeansInspector = TastyScalaBeansInspector()
 
   override def init(processingEnvironment: MapStructProcessingEnvironment): Unit = super.init(processingEnvironment)
 

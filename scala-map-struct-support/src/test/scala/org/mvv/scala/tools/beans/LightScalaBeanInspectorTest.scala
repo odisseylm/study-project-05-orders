@@ -12,7 +12,7 @@ import org.mvv.scala.tools.beans.testclasses.BaseJavaClass2
 import org.mvv.scala.tools.Logger
 import org.mvv.scala.tools.quotes.{ classNameOf, topClassOrModuleFullName }
 import org.mvv.scala.tools.inspection._Type
-import org.mvv.scala.tools.inspection.light.LightScalaBeanInspector
+import org.mvv.scala.tools.inspection.light.ScalaBeanInspector
 
 
 private val log: Logger = Logger(topClassOrModuleFullName)
@@ -34,12 +34,12 @@ class Class123 extends Class122 with Trait120:
     def method987(): String = "987654323"
 
 
-class LightScalaBeanInspectorTest {
+class ScalaBeanInspectorTest {
 
     @Test
     def inspectClass(): Unit = {
 
-        val inspector = LightScalaBeanInspector()
+        val inspector = ScalaBeanInspector()
 
         log.info("--------------------------------------------------------------------")
         inspector.inspectClass(classNameOf[Class123])
@@ -53,7 +53,7 @@ class LightScalaBeanInspectorTest {
 
     @Test
     def inspectClass2(): Unit = {
-        val inspector = LightScalaBeanInspector()
+        val inspector = ScalaBeanInspector()
 
         log.info("--------------------------------------------------------------------")
         val _class = inspector.inspectClass(classNameOf[Class123])

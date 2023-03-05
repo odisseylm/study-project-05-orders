@@ -36,7 +36,7 @@ case class _ClassEx (
   // optional runtime types
   runtimeClass: Option[Class[?]] = None,
 
-  ) (inspector: Option[ScalaBeansInspector]) extends org.mvv.scala.tools.inspection._Class:
+  ) (inspector: Option[TastyScalaBeansInspector]) extends org.mvv.scala.tools.inspection._Class:
 
   // with current impl it possibly can have duplicates
   lazy val parentClasses: List[_ClassEx] =

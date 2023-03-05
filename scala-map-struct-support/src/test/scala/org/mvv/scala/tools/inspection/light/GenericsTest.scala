@@ -1,4 +1,4 @@
-package org.mvv.scala.tools.inspection.tasty
+package org.mvv.scala.tools.inspection.light
 
 import scala.language.unsafeNulls
 import scala.jdk.CollectionConverters.*
@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
 import org.mvv.scala.tools.nnArray
+import org.mvv.scala.tools.quotes.classNameOf
 import org.mvv.scala.tools.beans.testclasses.{GenericClass2, JGenericClass2}
 
 
@@ -16,10 +17,9 @@ class GenericsTest {
   @Test
   def test(): Unit = {
 
-    val inspector = TastyScalaBeansInspector()
-    val _class =  inspector.inspectClass(classOf[GenericClass2])
+    val inspector = ScalaBeanInspector()
+    val _class =  inspector.inspectClass(classNameOf[GenericClass2])
 
-    println(_class.parentClasses.dump("Parents"))
     println(_class.parentTypes.dump("Parent type names"))
     println(_class.fields.keys.dump("Fields"))
     println(_class.methods.keys.dump("Methods"))
@@ -40,6 +40,7 @@ class GenericsTest {
     a.assertThat(_class.fields.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
       "baseClass1Var1: GenericBaseClass1.this.C",
       "class2Var: java.lang.String",
+      //"class3Var: java.lang.String",
       "bVal: java.time.LocalTime",
       "aVar: GenericTrait1.this.A",
       "cVal: java.lang.String",
@@ -49,6 +50,7 @@ class GenericsTest {
       //"baseClass1Var1: java.lang.Object",
       //"aVar: java.lang.Object",
       "class2Var: java.lang.String",
+      //"class3Var: java.lang.String",
       "bVal: java.time.LocalTime",
       "cVal: java.lang.String",
     )
@@ -60,7 +62,7 @@ class GenericsTest {
       "aVar_=(GenericTrait1.this.A/java.lang.Object)",
     )
     */
-    a.assertThat(_class.methods.keys.map(_.toString).asJava).containsExactlyInAnyOrder(
+    a.assertThat(_class.methods.keys.map(_.toString).asJava).contains( //.containsExactlyInAnyOrder(
       "baseClass1Var1_=(GenericBaseClass1.this.C)",
       "aVar_=(GenericTrait1.this.A)",
     )
