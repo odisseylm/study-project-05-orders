@@ -1,16 +1,16 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection.tasty
 
-import scala.tasty.inspector.{ Tasty, TastyInspector }
 import scala.collection.immutable.Map
 import scala.jdk.CollectionConverters.*
+import scala.tasty.inspector.{Tasty, TastyInspector}
 //
-import org.junit.jupiter.api.{ Test, Disabled }
+import org.junit.jupiter.api.{ Test,Disabled }
 import org.assertj.core.api.SoftAssertions
 //
-import testclasses.StandardScalaModifiersTesClass
-import org.mvv.scala.tools.inspection.{ _MethodKey, _Modifier, _Type }
-import org.mvv.scala.tools.inspection._Class
+import org.mvv.scala.tools.inspection.{ _Class, _MethodKey, _Modifier, _Type, getValOrField, getMethod }
 import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
+import org.mvv.scala.tools.beans.testclasses.StandardScalaModifiersTesClass
+
 
 
 class ModifierTest {
@@ -63,15 +63,11 @@ class ModifierTest {
   }
 
   @Test
-  @Disabled("for manual testing since it depends on local file path")
   def testInheritingJavaPropAccessorModifierAfterOverriding(): Unit = {
-    import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
+    import scala.language.unsafeNulls
 
-    val userHome = System.getProperty("user.home")
-    val classesDir = s"$userHome/projects/study-project-05-orders/scala-map-struct-support/target/test-classes"
-    val tastyFile = s"$classesDir/org/mvv/mapstruct/scala/testclasses/InheritedFromJavaClass2.tasty"
-    //val tastyClassFullName = "com.mvv.scala.temp.tests.tasty.testclasses.InheritedFromJavaClass2"
+    val tastyFile = s"$testClassesDir/org/mvv/scala/tools/beans/testclasses/InheritedFromJavaClass2.tasty"
 
     val _class = ScalaBeansInspector().inspectTastyFile(tastyFile).head
 

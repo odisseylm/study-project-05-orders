@@ -1,22 +1,20 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection
 
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 import org.assertj.core.api.Assertions.assertThat
 //
-import org.mvv.scala.tools.inspection.{ _Type, _Visibility }
-import org.mvv.scala.tools.inspection.{ _FieldKey as fk, _MethodKey as mk }
-import org.mvv.scala.tools.inspection._Class
+import org.mvv.scala.tools.inspection.{_Class, _Type, _Visibility, _FieldKey as fk, _MethodKey as mk}
 import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
-import testclasses.{ AccessVisibilityTestClass, InheritedFromJavaClass2 }
+import org.mvv.scala.tools.beans.testclasses.{AccessVisibilityTestClass, InheritedFromJavaClass2}
 
 
 class VisibilityTest {
 
   @Test
   def testScala(): Unit = {
-    import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
+    import scala.language.unsafeNulls
 
     val inspector = ScalaBeansInspector()
     val _class: _Class = inspector.inspectClass(classOf[AccessVisibilityTestClass])
@@ -37,8 +35,8 @@ class VisibilityTest {
 
   @Test
   def testJavaClass(): Unit = {
-    import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
+    import scala.language.unsafeNulls
 
     val inspector = ScalaBeansInspector()
     val _class: _Class = inspector.inspectClass(classOf[InheritedFromJavaClass2])

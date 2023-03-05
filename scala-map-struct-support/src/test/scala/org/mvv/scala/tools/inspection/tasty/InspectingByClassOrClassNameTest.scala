@@ -1,16 +1,16 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection.tasty
 
 import scala.language.unsafeNulls
-import scala.compiletime.uninitialized
 import scala.jdk.CollectionConverters.*
+import scala.compiletime.uninitialized
 import java.nio.file.Path
 //
 import org.junit.jupiter.api.{ Test, Disabled }
 import org.assertj.core.api.Assertions.assertThat
 //
-import testclasses.ClassSampleInProductionSources
 import org.mvv.scala.tools.inspection.{ _Class, _MethodKey, _Modifier, _Type }
-import org.mvv.scala.tools.inspection.tasty.{JarClassSource, ScalaBeansInspector}
+import org.mvv.scala.tools.inspection.tasty.{ JarClassSource, ScalaBeansInspector }
+import org.mvv.scala.tools.beans.testclasses.ClassSampleInProductionSources
 
 
 
@@ -130,8 +130,9 @@ class InspectingByClassOrClassNameTest {
 
   @Test
   def inspectByClassName_loadingFromJar(): Unit =
-    import scala.language.unsafeNulls
     import org.mvv.scala.tools.inspection.tasty._ClassEx
+
+    import scala.language.unsafeNulls
 
     val _class: _Class = ScalaBeansInspector()
       .inspectClass(classOf[com.mvv.scala3.samples.InheritedFromJavaClass2].getName)

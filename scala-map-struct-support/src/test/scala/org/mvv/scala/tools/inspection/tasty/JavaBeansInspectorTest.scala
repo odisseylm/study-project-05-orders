@@ -1,9 +1,9 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection.tasty
 
 import scala.jdk.CollectionConverters.*
 //
-import org.assertj.core.api.SoftAssertions
 import org.junit.jupiter.api.Test
+import org.assertj.core.api.SoftAssertions
 
 
 class JavaBeansInspectorTest {

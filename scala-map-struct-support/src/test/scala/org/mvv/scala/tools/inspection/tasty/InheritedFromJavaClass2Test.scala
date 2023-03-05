@@ -1,16 +1,15 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection.tasty
 
-import scala.tasty.inspector.{ Tasty, TastyInspector }
 import scala.collection.immutable.Map
 import scala.jdk.CollectionConverters.*
+import scala.tasty.inspector.{ Tasty, TastyInspector }
 //
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
-import testclasses.{ InheritedFromJavaClass2, Trait1 }
-import org.mvv.scala.tools.inspection._MethodKey
-import org.mvv.scala.tools.inspection._Class
+import org.mvv.scala.tools.inspection.{ _Class, _MethodKey }
 import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
+import org.mvv.scala.tools.beans.testclasses.{ InheritedFromJavaClass2, Trait1 }
 
 
 
@@ -18,8 +17,8 @@ class InheritedFromJavaClass2Test {
 
   @Test
   def testTrait1(): Unit = {
-    import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
+    import scala.language.unsafeNulls
 
 
     val cls = classOf[Trait1]
@@ -59,8 +58,8 @@ class InheritedFromJavaClass2Test {
 
   @Test
   def inheritanceInheritedFromJavaClass2(): Unit = {
-    import scala.language.unsafeNulls
     import scala.jdk.CollectionConverters.*
+    import scala.language.unsafeNulls
 
     val cls = classOf[InheritedFromJavaClass2]
     val tastyClassFullName = cls.getName

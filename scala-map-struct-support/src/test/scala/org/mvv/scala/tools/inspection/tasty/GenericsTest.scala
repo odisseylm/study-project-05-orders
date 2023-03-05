@@ -1,4 +1,4 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection.tasty
 
 import scala.language.unsafeNulls
 import scala.jdk.CollectionConverters.*
@@ -6,9 +6,10 @@ import scala.jdk.CollectionConverters.*
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
-import testclasses.{ GenericClass2, JGenericClass2 }
 import org.mvv.scala.tools.nnArray
 import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
+import org.mvv.scala.tools.beans.testclasses.{GenericClass2, JGenericClass2}
+
 
 
 class GenericsTest {

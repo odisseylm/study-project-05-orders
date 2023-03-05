@@ -11,7 +11,7 @@ def getClassLocationUrl(fullClassName: String, classLoaders: ClassLoader*): URL 
   getClassLocationUrl(cls)
 
 
-private def getClassLocationUrl(cls: Class[?]): URL =
+def getClassLocationUrl(cls: Class[?]): URL =
   var asResource = s"${cls.nn.getSimpleName}.class"
   var thisClassUrl = cls.getResource(asResource)
   if thisClassUrl == null then // for local/member classes

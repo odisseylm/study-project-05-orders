@@ -1,18 +1,18 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection.tasty
 
 import scala.language.unsafeNulls
-import scala.jdk.CollectionConverters.*
 import java.beans.PropertyDescriptor
+import scala.jdk.CollectionConverters.*
 //
-import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
+import org.junit.jupiter.api.Test
 //
-import testclasses.InheritedFromJavaClass2
 import org.mvv.scala.tools.nnArray
-import org.mvv.scala.tools.inspection.{ _Class, BeanProperty, JavaBeanProperty }
-import org.mvv.scala.tools.inspection.{ _Field, _Method, _Visibility }
+import org.mvv.scala.tools.beans.toBeanProperties
+import org.mvv.scala.tools.inspection.*
 import org.mvv.scala.tools.inspection.tasty.ScalaBeansInspector
-import org.mvv.scala.tools.inspection.{ BeanProperty, InspectMode, _Type, _Modifier }
+import org.mvv.scala.tools.beans.ScalaBeanProps
+import org.mvv.scala.tools.beans.testclasses.InheritedFromJavaClass2
 
 
 

@@ -1,4 +1,4 @@
-package org.mvv.scala.tools.beans
+package org.mvv.scala.tools.inspection
 
 import org.mvv.scala.tools.inspection._Class
 import org.mvv.scala.tools.inspection.{ _Field, _FieldKey, _Method, _MethodKey }
