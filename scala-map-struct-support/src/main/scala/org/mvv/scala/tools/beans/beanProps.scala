@@ -4,7 +4,7 @@ import scala.collection.mutable
 //
 import java.lang.reflect.{ Method as JavaMethod, Field  as JavaField }
 //
-import org.mvv.scala.tools.{ Logger, nnArray, isNull, uncapitalize, tryDo }
+import org.mvv.scala.tools.{ Logger, nnArray, isNull, uncapitalize, tryDo, loadClass }
 import org.mvv.scala.tools.CollectionsOps.{ filterByType, findByType, asString, containsOneOf }
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
 import org.mvv.scala.tools.inspection.{ BeanProperty, InspectMode, _Field, _Method, _Type }
@@ -12,7 +12,7 @@ import org.mvv.scala.tools.inspection.{ isPublic, isGetterMethod, isSetterMethod
 import org.mvv.scala.tools.inspection.typeNameToRuntimeClassName
 import org.mvv.scala.tools.inspection._Class
 import org.mvv.scala.tools.inspection.{ BeanProperty, JavaBeanProperty }
-import org.mvv.scala.tools.inspection.tasty.{ _ClassEx, toJavaMethodName, loadClass }
+import org.mvv.scala.tools.inspection.tasty.{ _ClassEx, toJavaMethodName }
 
 
 //noinspection ScalaUnusedSymbol

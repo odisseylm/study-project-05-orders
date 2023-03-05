@@ -3,11 +3,11 @@ package org.mvv.scala.tools.inspection.tasty
 import scala.quoted.Quotes
 import scala.collection.mutable
 //
-import org.mvv.scala.tools.tryDo
+import org.mvv.scala.tools.{ tryDo, loadClass }
 import org.mvv.scala.tools.quotes.{ refName, isExprStatement, classFullPackageName }
 import org.mvv.scala.tools.inspection._Quotes.extractType
 import org.mvv.scala.tools.inspection.{ ClassKind, InspectMode, _Field, _Method, _Type }
-import org.mvv.scala.tools.inspection.tasty.{ FilePackageContainer, _ClassEx, loadClass }
+import org.mvv.scala.tools.inspection.tasty.{ FilePackageContainer, _ClassEx }
 
 
 

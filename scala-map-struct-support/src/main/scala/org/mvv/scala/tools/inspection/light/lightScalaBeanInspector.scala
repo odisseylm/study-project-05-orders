@@ -5,11 +5,12 @@ import scala.collection.concurrent
 import scala.quoted.Quotes
 import scala.tasty.inspector.{ Inspector, Tasty, TastyInspector }
 //
-import org.mvv.scala.tools.{ isOneOf, afterLastOrOrigin }
+import org.mvv.scala.tools.{ isOneOf, afterLastOrOrigin, getClassLocationUrl, jarUrlToJarPath, fileUrlToPath }
 import org.mvv.scala.tools.quotes.{ classSymbolDetails, classExists, getFullClassName, classFullPackageName }
 import org.mvv.scala.tools.quotes.{ asClassDef, asDefDef, asValDef }
 import org.mvv.scala.tools.inspection.{ _Class, _Type }
 import org.mvv.scala.tools.inspection._Quotes.{ toMethod, toField, classKind, extractTreeType }
+import org.mvv.scala.tools.quotes.dummy.DummyClass789456123
 
 
 
@@ -44,43 +45,25 @@ class ScalaBeanInspector :
   def inspectClass(fullClassName: String): _Class =
     toInspect = fullClassName
 
-    val tmpTastyFile =
-      "/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala3-samples/target/classes/com/mvv/scala3/samples/Trait1.tasty"
-      //"/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala3-samples/target/classes/com/mvv/scala3/samples/Scala3ClassWithMethods.tasty"
+    val dummyClassUrl = getClassLocationUrl(classOf[DummyClass789456123])
+    val dummyClassUrlStr = dummyClassUrl.toExternalForm.nn
 
     val invoker = InspectorImpl(fullClassName)
-    TastyInspector.inspectTastyFiles(List(tmpTastyFile))(invoker)
+    if dummyClassUrlStr.contains(".jar!") then
+      val jarPath = jarUrlToJarPath(dummyClassUrl)
+      TastyInspector.inspectTastyFilesInJar(jarPath.toString)(invoker)
+    else
+      val dummyClassFilePath = fileUrlToPath(dummyClassUrl)
+      TastyInspector.inspectTastyFiles(List(dummyClassFilePath.toString))(invoker)
+
     classesByFullName.getOrElse(fullClassName,
       throw ClassNotFoundException(s"Class [$fullClassName] is not found."))
 
 
-  /*
-  override def inspect(using q: Quotes)(beanTypes: List[Tasty[q.type]]): Unit =
-    import q.reflect.*
-
-    val bean = beanTypes.head
-    println(s"%%% ${bean.path}\nAST: ${bean.ast}")
-
-    val clsS = Symbol.classSymbol(toInspect)
-    println(s"%%% 4567 ${classSymbolDetails(toInspect)}")
-
-    // valMethod986
-    val methodMembers: List[Symbol] = clsS.methodMembers
-    methodMembers.filter(_.name.isOneOf("valMethod986", "method987", "methodWithMatch1"))
-      .foreach { ms =>
-        val mTree = ms.tree
-        println(s"%%% method $mTree")
-      }
-
-  //def inspectTastyFile(tastyOrClassFile: String): List[_Class] =
-  //  TastyInspector.inspectTastyFiles(List("/home/vmelnykov/projects/study-project-05-orders/hello-world-samples/scala3-samples/target/classes/com/mvv/scala3/samples/Trait1.tasty"))(this)
-  */
 
   private def processClassDef(using q: Quotes)(classDef: q.reflect.ClassDef): _Class =
     import q.reflect.*
     import org.mvv.scala.tools.inspection._Quotes.toMethod
-
-    println(s"%%% classDef: $classDef")
 
     val classDefParents: List[Tree /* Term | TypeTree */] = classDef.parents
     val parentTypes: List[_Type] = classDefParents.map(p => extractTreeType(p))

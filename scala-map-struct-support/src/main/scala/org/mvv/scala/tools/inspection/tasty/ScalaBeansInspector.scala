@@ -12,11 +12,12 @@ import java.nio.file.Path
 //
 import org.mvv.scala.tools.replaceSuffix
 import org.mvv.scala.tools.{ Logger, afterLastOr, afterLastOfAnyCharsOr, ifBlank }
+import org.mvv.scala.tools.{ loadClass, tryToLoadClass, getClassLocationUrl }
+import org.mvv.scala.tools.{ fileUrlToPath, jarUrlToJarPath }
 import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, classExists, classFullPackageName, fullPackageName, getFullClassName }
 import org.mvv.scala.tools.inspection.tasty.ClassSource.classKind
 import org.mvv.scala.tools.inspection._Quotes.extractType
 import org.mvv.scala.tools.inspection.{ ClassKind, InspectMode, _Type }
-import org.mvv.scala.tools.inspection.tasty.{ loadClass, tryToLoadClass, getClassLocationUrl }
 
 
 
