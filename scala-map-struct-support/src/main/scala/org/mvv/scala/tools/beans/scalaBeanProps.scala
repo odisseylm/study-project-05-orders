@@ -1,6 +1,6 @@
 package org.mvv.scala.tools.beans
 
-import org.mvv.scala.tools.inspection.tasty._ClassEx
+import org.mvv.scala.tools.inspection._Class
 import org.mvv.scala.tools.inspection.{ JavaBeanProperty, InspectMode }
 
 import java.awt.Image
@@ -8,12 +8,11 @@ import java.beans.{ BeanDescriptor, BeanInfo, EventSetDescriptor, MethodDescript
 import java.lang.reflect.Method as JavaMethod
 //
 import org.mvv.scala.tools.OptionOps.allAreDefined
-// TODO: use light ScalaBeansInspector
-import org.mvv.scala.tools.inspection.tasty.TastyScalaBeansInspector
+import org.mvv.scala.tools.inspection.light.ScalaBeanInspector
 
 
 
-class ScalaBeanProps private (_class: _ClassEx) extends java.beans.BeanInfo :
+class ScalaBeanProps private (_class: _Class) extends java.beans.BeanInfo :
   private val beanProps: BeanProperties = _class.toBeanProperties(InspectMode.AllSources)
   private val propertyDescriptors: List[PropertyDescriptor] = beanProps.toPropertyDescriptors
 
@@ -36,8 +35,7 @@ end ScalaBeanProps
 
 
 object ScalaBeanProps :
-  // TODO: use light ScalaBeansInspector
-  private val beansInspector = TastyScalaBeansInspector()
+  private val beansInspector = ScalaBeanInspector()
 
   def apply(cls: Class[?]): ScalaBeanProps =
     val _class = beansInspector.inspectClass(cls)
@@ -73,7 +71,7 @@ private def validateBeanProperties(props: Iterable[JavaBeanProperty]): Unit =
   props.foreach { prop =>
     val runtimeGetMethodExists = prop.runtimeGetMethods.exists(_.nonEmpty)
     if !runtimeGetMethodExists then
-      log.warn(s"Field [${prop.ownerClass.fullName}#${prop.runtimeField.get}] does not have getter method" +
+      log.warn(s"Field [${prop.ownerClass.fullName}#${prop.field}] does not have getter method" +
         s" and cannot be represented as standard java bean property.")
 
     require(allAreDefined(prop.runtimeOwnerClass, prop.runtimeGetMethods, prop.runtimeSetMethods),

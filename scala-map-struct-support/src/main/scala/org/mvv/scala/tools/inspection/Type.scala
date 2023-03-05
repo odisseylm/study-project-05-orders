@@ -20,6 +20,7 @@ def typeNameToRuntimeClassName(typeName: String): String =
   typeName
     .replacePrefix("_root_.scala.", "scala.")
     .stripAfter("[", ExcludeDelimiter)
+    .replace('#', '$').nn
 
 
 

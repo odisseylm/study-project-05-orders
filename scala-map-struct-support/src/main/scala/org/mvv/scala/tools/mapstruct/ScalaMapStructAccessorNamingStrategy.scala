@@ -1,7 +1,9 @@
 package org.mvv.scala.tools.mapstruct
 
+import org.mvv.scala.tools.inspection.ClassKind
+
 import javax.lang.model.`type`.TypeMirror
-import javax.lang.model.element.{ ExecutableElement, TypeElement, VariableElement }
+import javax.lang.model.element.{ExecutableElement, TypeElement, VariableElement}
 //
 import org.mapstruct.ap.spi.{ DefaultAccessorNamingStrategy, MapStructProcessingEnvironment }
 //
@@ -9,8 +11,8 @@ import org.mvv.scala.tools.{ Logger, ConsoleLogger, LogLevel, replaceSuffix }
 import org.mvv.scala.tools.beans.{ BeanProperties, toBeanProperties }
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
 import org.mvv.scala.tools.inspection.InspectMode
-// TODO: use light ScalaBeansInspector
-import org.mvv.scala.tools.inspection.tasty.{ TastyScalaBeansInspector, _ClassEx }
+import org.mvv.scala.tools.inspection._Class
+import org.mvv.scala.tools.inspection.light.ScalaBeanInspector
 
 
 
@@ -18,8 +20,7 @@ class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy
 
   //private val log = Logger(topClassOrModuleFullName)
   private val log = ConsoleLogger(topClassOrModuleFullName, LogLevel.TRACE)
-  // TODO: use light ScalaBeansInspector
-  private val scalaBeansInspector = TastyScalaBeansInspector()
+  private val scalaBeanInspector = ScalaBeanInspector()
 
   override def init(processingEnvironment: MapStructProcessingEnvironment): Unit = super.init(processingEnvironment)
 
@@ -27,39 +28,52 @@ class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy
     val mName = method.methodName
     log.trace(s"isGetterMethod ($mName) => ${method.asDump}")
 
-    if super.isGetterMethod(method) then
-      log.trace(s"isGetterMethod ($mName) => ${method.getEnclosingElement}.$method is getter [true] (by super).")
-      return true
-
     if method.paramCount != 0 then
       log.trace(s"isGetterMethod ($mName) => ${method.getEnclosingElement}.$method is getter [false] (by method.paramCount ${method.paramCount}).")
       return false
 
-    val beanProps: BeanProperties = getBeanPropertiesOfEnclosingClass(method)
-    val isScalaGetter = beanProps.isGetter(mName)
+    val classFullName = method.enclosingClassFullName
+    val _class: _Class = scalaBeanInspector.inspectClass(classFullName)
 
-    log.trace(s"isGetterMethod ($mName) => ${method.getEnclosingElement}.$method is getter [$isScalaGetter].")
-    isScalaGetter
+    val isGetter: Boolean = _class.classKind match
+      case ClassKind.Java =>
+        val isJavaGetter = super.isGetterMethod(method)
+        log.trace(s"isGetterMethod ($mName) for java class => ${method.getEnclosingElement}.$method is getter [$isJavaGetter] (by super).")
+        isJavaGetter
+      case _ =>
+        val beanProps: BeanProperties = getBeanPropertiesOfEnclosingClass(method)
+        val isScalaGetter = beanProps.isGetter(mName)
 
+        log.trace(s"isGetterMethod ($mName) => ${method.getEnclosingElement}.$method is getter [$isScalaGetter].")
+        isScalaGetter
+
+    isGetter
 
   override def isSetterMethod(method: ExecutableElement): Boolean =
     val mName = method.methodName
     log.trace(s"isSetterMethod ($mName) => ${method.asDump}")
 
-    if super.isSetterMethod(method) then
-      log.trace(s"isSetterMethod ($mName) => ${method.getEnclosingElement}.$method is setter [true] (by super).")
-      return true
-
     if method.paramCount != 1 then
       log.trace(s"isSetterMethod ($mName) => ${method.getEnclosingElement}.$method is setter [false] (by method.paramCount ${method.paramCount}).")
       return false
 
-    val beanProps: BeanProperties = getBeanPropertiesOfEnclosingClass(method)
-    val firstParamaTypeStr = method.firstParamTypeAsString
-    val isScalaSetter = beanProps.isSetterOneOf(allPossibleScalaSetterMethodNames(mName), firstParamaTypeStr)
+    val classFullName = method.enclosingClassFullName
+    val _class: _Class = scalaBeanInspector.inspectClass(classFullName)
 
-    log.trace(s"isSetterMethod ($mName) => ${method.getEnclosingElement}.$method is setter [$isScalaSetter].")
-    isScalaSetter
+    val isSetter: Boolean = _class.classKind match
+      case ClassKind.Java =>
+        val isJavaSetter = super.isSetterMethod(method)
+        log.trace(s"isSetterMethod ($mName) for java class => ${method.getEnclosingElement}.$method is setter [$isJavaSetter] (by super).")
+        isJavaSetter
+      case _ =>
+        val beanProps: BeanProperties = getBeanPropertiesOfEnclosingClass(method)
+        val firstParamaTypeStr = method.firstParamTypeAsString
+        val isScalaSetter = beanProps.isSetterOneOf(allPossibleScalaSetterMethodNames(mName), firstParamaTypeStr)
+
+        log.trace(s"isSetterMethod ($mName) => ${method.getEnclosingElement}.$method is setter [$isScalaSetter].")
+        isScalaSetter
+
+    isSetter
 
 
   override def isFluentSetter(method: ExecutableElement): Boolean = super.isFluentSetter(method)
@@ -71,7 +85,7 @@ class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy
     val beanProps: BeanProperties = getBeanPropertiesOfEnclosingClass(getterOrSetterMethod)
     val propNameOption = beanProps.getPropertyNameByOneOfMethods(
         allPossibleScalaSetterMethodNames(mName))
-    val propName = propNameOption.getOrElse(super.getPropertyName(getterOrSetterMethod).nn)
+    val propName = propNameOption .getOrElse(super.getPropertyName(getterOrSetterMethod).nn)
 
     log.trace(s"getPropertyName ($mName) => ${getterOrSetterMethod.getEnclosingElement}.$getterOrSetterMethod => $propName.")
     propName
@@ -82,8 +96,9 @@ class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy
   override def getElementName(adderMethod: ExecutableElement): String = super.getElementName(adderMethod).nn
 
   private def getBeanPropertiesOfEnclosingClass(method: ExecutableElement): BeanProperties =
-    val _class: _ClassEx = scalaBeansInspector.inspectClass(method.enclosingClassFullName)
-    _class.toBeanProperties(InspectMode.AllSources)
+    val _class: _Class = scalaBeanInspector.inspectClass(method.enclosingClassFullName)
+    // for MapStruct it is enough only InspectMode.ScalaAST
+    _class.toBeanProperties(InspectMode.ScalaAST)
 }
 
 

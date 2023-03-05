@@ -6,7 +6,7 @@ import scala.quoted.Quotes
 //
 import org.mvv.scala.tools.{ endsWithOneOf, tryDo }
 import org.mvv.scala.tools.CollectionsOps.containsOneOf
-import org.mvv.scala.tools.quotes.{ isNullType, asClassDef, asDefDef, activeSymbolFlags }
+import org.mvv.scala.tools.quotes.{ classNameOf, isNullType, asClassDef, asDefDef, activeSymbolFlags }
 import org.mvv.scala.tools.inspection._Quotes.{ extractType, classKind }
 import org.mvv.scala.tools.inspection.{ _Field, _Method, _Modifier, _Type, _Visibility }
 
@@ -108,6 +108,13 @@ object _Quotes :
       val javaSuperMethod: Option[Symbol] = allOverriddenSymbols.find(s => s.flags.is(Flags.JavaDefined))
       javaSuperMethod.nonEmpty
 
+    def hasJavaBeanPropertyAnnotations: Boolean =
+      import q.reflect.{ Symbol, Flags }
+      val annotationsNames: List[String] = defDef.symbol.annotations.map(_.tpe.show)
+      val hasJavaBeanProperty = annotationsNames.containsOneOf(
+        classNameOf[scala.beans.BeanProperty], classNameOf[scala.beans.BooleanBeanProperty])
+      hasJavaBeanProperty
+
 
     def isJavaDefined: Boolean =
       import q.reflect.Flags
@@ -137,7 +144,7 @@ object _Quotes :
       var modifiers: Set[_Modifier] = generalModifiers(defDef.symbol)
 
       if !_hasExtraParams && methodIsJavaPropertyAccessor(methodName, returnType, paramTypes.size)
-        && (defDef.isJavaDefined || defDef.isOverriddenFromJava)
+        && (defDef.isJavaDefined || defDef.isOverriddenFromJava || defDef.hasJavaBeanPropertyAnnotations)
         then modifiers += _Modifier.JavaPropertyAccessor
 
       if !modifiers.contains(_Modifier.ScalaStandardFieldAccessor) && !_hasExtraParams then
