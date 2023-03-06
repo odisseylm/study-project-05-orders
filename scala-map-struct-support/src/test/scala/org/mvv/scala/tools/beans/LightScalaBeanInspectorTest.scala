@@ -12,7 +12,7 @@ import org.mvv.scala.tools.beans.testclasses.BaseJavaClass2
 import org.mvv.scala.tools.Logger
 import org.mvv.scala.tools.quotes.{ classNameOf, topClassOrModuleFullName }
 import org.mvv.scala.tools.inspection._Type
-import org.mvv.scala.tools.inspection.light.ScalaBeanInspector
+import org.mvv.scala.tools.inspection.light.LightScalaBeanInspector as ScalaBeanInspector
 
 
 private val log: Logger = Logger(topClassOrModuleFullName)
@@ -41,13 +41,13 @@ class ScalaBeanInspectorTest {
 
         val inspector = ScalaBeanInspector()
 
-        log.info("--------------------------------------------------------------------")
+        printLine()
         inspector.inspectClass(classNameOf[Class123])
-        log.info("--------------------------------------------------------------------")
+        printLine()
         inspector.inspectClass(classNameOf[BaseJavaClass2])
-        log.info("--------------------------------------------------------------------")
+        printLine()
         inspector.inspectClass(classNameOf[InheritedFromJavaClass2])
-        log.info("--------------------------------------------------------------------")
+        printLine()
         inspector.inspectClass(classNameOf[Scala3ClassWithMethods])
     }
 
@@ -55,9 +55,9 @@ class ScalaBeanInspectorTest {
     def inspectClass2(): Unit = {
         val inspector = ScalaBeanInspector()
 
-        log.info("--------------------------------------------------------------------")
+        printLine()
         val _class = inspector.inspectClass(classNameOf[Class123])
-        log.info("--------------------------------------------------------------------")
+        printLine()
 
         val a = SoftAssertions()
 
@@ -68,4 +68,8 @@ class ScalaBeanInspectorTest {
 
         a.assertAll()
     }
+
+    private def printLine(): Unit =
+        log.trace("--------------------------------------------------------------------")
+
 }

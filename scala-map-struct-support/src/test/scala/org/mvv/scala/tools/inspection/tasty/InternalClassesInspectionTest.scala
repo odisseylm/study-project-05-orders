@@ -21,8 +21,8 @@ class InternalClassesInspectionTest {
     val allClassesFromKeys = inspectedClasses.keys
     val allClassesFromValues = inspectedClasses.values.map(_.fullName)
 
-    println(s"%%% allClassesFromKeys: " + allClassesFromKeys.mkString("\n", "\n", "\n"))
-    println(s"%%% allClassesFromValues: " + allClassesFromKeys.mkString("\n", "\n", "\n"))
+    //log.info(s"%%% allClassesFromKeys: " + allClassesFromKeys.mkString("\n", "\n", "\n"))
+    //log.info(s"%%% allClassesFromValues: " + allClassesFromKeys.mkString("\n", "\n", "\n"))
 
     val a = SoftAssertions()
 

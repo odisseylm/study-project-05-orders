@@ -22,7 +22,7 @@ object TopClass :
 //noinspection ScalaUnusedExpression
 @nowarn("msg=pure expression does nothing")
 class ClassWithBodyStatements :
-  println("LazyClass creation")
+  print("LazyClass creation\n")
 
   if 1 == System.currentTimeMillis then { }
 
@@ -31,7 +31,7 @@ class ClassWithBodyStatements :
     case 22 =>
     case _  =>
 
-  { println("") }
+  { print("") }
 
   // it is represented as Apply... (see full details below)
   for var345 <- List(1, 2) do { var345 }
@@ -75,4 +75,4 @@ class ClassWithThrowInBody :
   //      List(Literal(Constant(Some error.)))
   //   )))
   throw IllegalStateException("Some error.")
-  println("ClassWithThrowInBody")
+  print("ClassWithThrowInBody\n")

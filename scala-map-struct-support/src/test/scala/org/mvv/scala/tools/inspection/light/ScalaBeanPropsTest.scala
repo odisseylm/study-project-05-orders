@@ -9,9 +9,11 @@ import org.assertj.core.api.SoftAssertions
 //
 import org.mvv.scala.tools.nnArray
 import org.mvv.scala.tools.beans.toBeanProperties
-import org.mvv.scala.tools.inspection.*
 import org.mvv.scala.tools.beans.ScalaBeanProps
 import org.mvv.scala.tools.beans.testclasses.InheritedFromJavaClass2
+import org.mvv.scala.tools.inspection.{ _Class, BeanProperty, JavaBeanProperty, InspectMode }
+import org.mvv.scala.tools.inspection.{ _Type, _Visibility, _Method, _Field, _Modifier }
+import org.mvv.scala.tools.inspection.light.LightScalaBeanInspector as ScalaBeanInspector
 
 
 

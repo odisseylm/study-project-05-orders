@@ -9,14 +9,14 @@ import org.mvv.scala.tools.{ isOneOf, afterLastOrOrigin, replaceSuffix }
 import org.mvv.scala.tools.{ getClassLocationUrl, jarUrlToJarPath, fileUrlToPath }
 import org.mvv.scala.tools.quotes.{ classSymbolDetails, classExists, getFullClassName, classFullPackageName }
 import org.mvv.scala.tools.quotes.{ asClassDef, asDefDef, asValDef }
-import org.mvv.scala.tools.inspection.{ _Class, _Type }
+import org.mvv.scala.tools.inspection.{ _Class, _Type, ScalaBeanInspector, typeNameToRuntimeClassName }
 import org.mvv.scala.tools.inspection._Quotes.{ toMethod, toField, classKind, extractTreeType }
 import org.mvv.scala.tools.quotes.dummy.DummyClass789456123
 
 
 
 //noinspection ScalaFileName
-class ScalaBeanInspector :
+class LightScalaBeanInspector extends ScalaBeanInspector :
   private val classesByFullName: concurrent.Map[String, _Class] = concurrent.TrieMap()
 
   private class InspectorImpl (val classFullName: String) extends Inspector :
@@ -31,19 +31,24 @@ class ScalaBeanInspector :
         throw ClassNotFoundException(s"Class [$classFullName] is not found.")
 
       val _class = processClassDef(classSymbol.tree.asClassDef)
-      classesByFullName.put(_class.fullName, _class)
+
+      val possibleClassFullNames = List(
+        classFullName, _class.fullName,
+        typeNameToRuntimeClassName(classFullName), typeNameToRuntimeClassName(_class.fullName),
+      )
+      possibleClassFullNames.distinct.foreach( classesByFullName.put(_, _class) )
 
 
-  def classesDescr: Map[String, _Class] = Map.from(classesByFullName) // according to doc it is thread-safe
-  def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
+  override def classesDescr: Map[String, _Class] = Map.from(classesByFullName) // according to doc it is thread-safe
+  override def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
 
 
   private var toInspect: String = ""
 
-  def inspectClass(cls: Class[?]): _Class =
+  override def inspectClass(cls: Class[?]): _Class =
     inspectClass(cls.getName.nn)
 
-  def inspectClass(fullClassName: String): _Class =
+  override def inspectClass(fullClassName: String): _Class =
     toInspect = fullClassName
 
     val dummyClassUrl = getClassLocationUrl(classOf[DummyClass789456123])

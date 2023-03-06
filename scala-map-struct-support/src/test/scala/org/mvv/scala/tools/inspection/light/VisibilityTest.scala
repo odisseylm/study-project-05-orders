@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 //
 import org.mvv.scala.tools.inspection.{ _Class, _Type, _Visibility, _FieldKey as fk, _MethodKey as mk }
 import org.mvv.scala.tools.beans.testclasses.{ AccessVisibilityTestClass, InheritedFromJavaClass2 }
+import org.mvv.scala.tools.inspection.light.LightScalaBeanInspector as ScalaBeanInspector
 
 
 class VisibilityTest {

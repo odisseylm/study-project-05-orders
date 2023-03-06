@@ -9,6 +9,7 @@ import org.assertj.core.api.SoftAssertions
 //
 import org.mvv.scala.tools.inspection.{ _Class, _MethodKey }
 import org.mvv.scala.tools.beans.testclasses.{ InheritedFromJavaClass2, Trait1 }
+import org.mvv.scala.tools.inspection.light.LightScalaBeanInspector as ScalaBeanInspector
 
 
 

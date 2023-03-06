@@ -1,18 +1,21 @@
 package org.mvv.scala.tools.inspection.light
 
+
 import scala.language.unsafeNulls
 import scala.jdk.CollectionConverters.*
 //
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
-import org.mvv.scala.tools.nnArray
-import org.mvv.scala.tools.quotes.classNameOf
+import org.mvv.scala.tools.{ nnArray, Logger }
+import org.mvv.scala.tools.quotes.{ classNameOf, topClassOrModuleFullName }
 import org.mvv.scala.tools.beans.testclasses.{GenericClass2, JGenericClass2}
+import org.mvv.scala.tools.inspection.light.LightScalaBeanInspector as ScalaBeanInspector
 
 
 
 class GenericsTest {
+  private val log = Logger(topClassOrModuleFullName)
 
   @Test
   def test(): Unit = {
@@ -20,9 +23,9 @@ class GenericsTest {
     val inspector = ScalaBeanInspector()
     val _class =  inspector.inspectClass(classNameOf[GenericClass2])
 
-    println(_class.parentTypes.dump("Parent type names"))
-    println(_class.fields.keys.dump("Fields"))
-    println(_class.methods.keys.dump("Methods"))
+    log.info(_class.parentTypes.dump("Parent type names"))
+    log.info(_class.fields.keys.dump("Fields"))
+    log.info(_class.methods.keys.dump("Methods"))
 
     val a = SoftAssertions()
 
@@ -74,7 +77,7 @@ class GenericsTest {
   def showJavaImplMethods(): Unit = {
     val cls = classOf[JGenericClass2]
     val ms = cls.getMethods.nnArray
-    println(ms.mkString("\n"))
+    log.info(ms.mkString("\n"))
   }
 
   extension (collection: IterableOnce[?])

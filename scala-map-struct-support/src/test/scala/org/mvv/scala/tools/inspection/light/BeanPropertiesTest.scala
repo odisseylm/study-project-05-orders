@@ -9,6 +9,7 @@ import org.mvv.scala.tools.quotes.classNameOf
 import org.mvv.scala.tools.beans.{ BeanProperties, toBeanProperties }
 import org.mvv.scala.tools.inspection.InspectMode
 import org.mvv.scala.tools.beans.testclasses.InheritedFromJavaClass2
+import org.mvv.scala.tools.inspection.light.LightScalaBeanInspector as ScalaBeanInspector
 
 
 class BeanPropertiesTest {

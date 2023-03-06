@@ -8,7 +8,7 @@ import java.beans.{ BeanDescriptor, BeanInfo, EventSetDescriptor, MethodDescript
 import java.lang.reflect.Method as JavaMethod
 //
 import org.mvv.scala.tools.OptionOps.allAreDefined
-import org.mvv.scala.tools.inspection.light.ScalaBeanInspector
+import org.mvv.scala.tools.inspection.ScalaBeanInspector
 
 
 
@@ -35,7 +35,8 @@ end ScalaBeanProps
 
 
 object ScalaBeanProps :
-  private val beansInspector = ScalaBeanInspector()
+  // global thread-safe version
+  private val beansInspector = ScalaBeanInspector.createLight()
 
   def apply(cls: Class[?]): ScalaBeanProps =
     val _class = beansInspector.inspectClass(cls)

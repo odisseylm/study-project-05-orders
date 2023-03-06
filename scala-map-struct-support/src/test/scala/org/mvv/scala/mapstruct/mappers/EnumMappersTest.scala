@@ -7,7 +7,8 @@ import scala.language.unsafeNulls
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.SoftAssertions
 //
-import org.mvv.scala.tools.quotes.ClassSelectMode
+import org.mvv.scala.tools.Logger
+import org.mvv.scala.tools.quotes.{ ClassSelectMode, topClassOrModuleFullName }
 import org.mvv.scala.mapstruct.debug.dump.dumpExpr
 
 
@@ -37,6 +38,10 @@ enum TestEnumWithInheritance2 (intValue: Int) :
   def method2(): Unit = {}
   case TestEnumValue25 extends TestEnumWithInheritance2(25)
   case TestEnumValue26 extends TestEnumWithInheritance2(26)
+
+
+
+private val log = Logger(topClassOrModuleFullName)
 
 
 //noinspection ScalaUnnecessaryParentheses
@@ -231,7 +236,7 @@ class EnumMappersTest {
 
 def usingLocalClasses(): Unit = {
   val enumValue1 = EnumMappersTest.LocalTestEnum1.TestEnumValue1
-  println(s"enumValue1: $enumValue1")
+  log.info(s"enumValue1: $enumValue1")
 }
 
 

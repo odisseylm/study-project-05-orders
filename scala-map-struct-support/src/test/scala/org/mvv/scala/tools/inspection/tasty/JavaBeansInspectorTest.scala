@@ -15,7 +15,7 @@ class JavaBeansInspectorTest {
     val inspector = JavaBeansInspectorInternal()
 
     val _class = inspector.inspect(classOf[BaseJavaClass2])
-    println(s"_class: $_class")
+    log.info(s"_class: $_class")
 
     val a = SoftAssertions()
 

@@ -12,15 +12,15 @@ import org.mvv.scala.tools.beans.{ BeanProperties, toBeanProperties }
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
 import org.mvv.scala.tools.inspection.InspectMode
 import org.mvv.scala.tools.inspection._Class
-import org.mvv.scala.tools.inspection.light.ScalaBeanInspector
+import org.mvv.scala.tools.inspection.ScalaBeanInspector
 
 
 
 class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy {
 
-  //private val log = Logger(topClassOrModuleFullName)
-  private val log = ConsoleLogger(topClassOrModuleFullName, LogLevel.TRACE)
-  private val scalaBeanInspector = ScalaBeanInspector()
+  private val log = Logger(topClassOrModuleFullName)
+  //private val log = ConsoleLogger(topClassOrModuleFullName, LogLevel.TRACE)
+  private val scalaBeanInspector = ScalaBeanInspector.createLight()
 
   override def init(processingEnvironment: MapStructProcessingEnvironment): Unit = super.init(processingEnvironment)
 

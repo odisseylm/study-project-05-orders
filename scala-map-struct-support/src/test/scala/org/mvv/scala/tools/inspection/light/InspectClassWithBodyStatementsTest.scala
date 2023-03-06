@@ -9,6 +9,7 @@ import org.assertj.core.api.Assertions.{ assertThat, assertThatCode }
 import org.mvv.scala.tools.beans.toBeanProperties
 import org.mvv.scala.tools.inspection.{ InspectMode, _Class }
 import org.mvv.scala.tools.inspection.{ ClassWithBodyStatements, ClassWithThrowInBody }
+import org.mvv.scala.tools.inspection.light.LightScalaBeanInspector as ScalaBeanInspector
 
 
 
@@ -47,9 +48,8 @@ class InspectClassWithBodyStatementsTest {
 
   @Test
   def testClassWithThrowInBody(): Unit = {
-    assertThatCode {
+    assertThatCode { () =>
         ScalaBeanInspector().inspectClass(classOf[ClassWithThrowInBody])
-        return // needed since java lambda is required
       }
       .doesNotThrowAnyException()
   }

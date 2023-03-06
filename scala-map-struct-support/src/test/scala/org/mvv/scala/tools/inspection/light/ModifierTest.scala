@@ -12,6 +12,7 @@ import org.mvv.scala.testClassesDir
 import org.mvv.scala.tools.quotes.classNameOf
 import org.mvv.scala.tools.inspection.{ ClassKind, _Class, _MethodKey, _Modifier, _Type, getValOrField, getMethod }
 import org.mvv.scala.tools.beans.testclasses.{ StandardScalaModifiersTesClass, InheritedFromJavaClass2 }
+import org.mvv.scala.tools.inspection.light.LightScalaBeanInspector as ScalaBeanInspector
 
 
 

@@ -17,7 +17,7 @@ import org.mvv.scala.tools.{ fileUrlToPath, jarUrlToJarPath }
 import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, classExists, classFullPackageName, fullPackageName, getFullClassName }
 import org.mvv.scala.tools.inspection.tasty.ClassSource.classKind
 import org.mvv.scala.tools.inspection._Quotes.extractType
-import org.mvv.scala.tools.inspection.{ ClassKind, InspectMode, _Type }
+import org.mvv.scala.tools.inspection.{ ClassKind, InspectMode, _Type, ScalaBeanInspector }
 
 
 
@@ -25,7 +25,10 @@ private val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang
 private val log: Logger = Logger(topClassOrModuleFullName)
 
 
-class TastyScalaBeansInspector extends Inspector :
+/**
+ * It is a bit in draft state. Need to be simplified.
+ */
+class TastyScalaBeansInspector extends ScalaBeanInspector, Inspector :
 
   // it contains ONLY 'normal' classes from input tasty file
   private val classesByFullName:  concurrent.Map[String, _ClassEx] = concurrent.TrieMap()
@@ -35,10 +38,10 @@ class TastyScalaBeansInspector extends Inspector :
 
   private var classLoaders: concurrent.Map[String, ClassLoader] = concurrent.TrieMap()
 
-  def classesDescr: Map[String, _ClassEx] = Map.from(classesByFullName)
-  def classDescr(classFullName: String): Option[_ClassEx] = classesByFullName.get(classFullName)
+  override def classesDescr: Map[String, _ClassEx] = Map.from(classesByFullName)
+  override def classDescr(classFullName: String): Option[_ClassEx] = classesByFullName.get(classFullName)
 
-  def inspectClass(fullClassName: String): _ClassEx = inspectClass(fullClassName, Nil*)
+  override def inspectClass(fullClassName: String): _ClassEx = inspectClass(fullClassName, Nil*)
 
   def inspectClass(fullClassName: String, classLoaders: ClassLoader*): _ClassEx =
     addClassLoaders(classLoaders*)
@@ -69,7 +72,7 @@ class TastyScalaBeansInspector extends Inspector :
     thisCls
 
 
-  def inspectClass(cls: Class[?]): _ClassEx =
+  override def inspectClass(cls: Class[?]): _ClassEx =
     cls.classKind match
       case ClassKind.Java =>
         val res: _ClassEx = inspectJavaClass(cls)
@@ -99,7 +102,7 @@ class TastyScalaBeansInspector extends Inspector :
       import scala.language.unsafeNulls
       classLoaders.put(jarPath.toString, URLClassLoader(Array(jarPath.toUri.toURL)))
 
-  // TODO: use them
+  // T O D O: use them
   private def addClassLoaders(classLoaders: ClassLoader*): Unit =
     classLoaders.foreach { cl =>
       val alreadyAdded = this.classLoaders.values.exists(_ == cl)
@@ -217,7 +220,7 @@ class TastyScalaBeansInspector extends Inspector :
           val logPrefix = s"${this.simpleClassName}: "
           try
             tree match
-              case p @ PackageClause(pid: Ref, stats: List[Tree]) =>
+              case p @ PackageClause(pid: Ref, _) =>
                 log.debug(s"$logPrefix It is PackageClause ($pid): ${tree.shortContent}")
                 val packageTreeTraverser = PackageTreeTraverser(p, None)
                 packageTreeTraverser.traverseTree(p)(p.symbol)
@@ -262,7 +265,7 @@ class TastyScalaBeansInspector extends Inspector :
     allParentRuntimeFullClassNames
       .filter(className => !classesByFullName.contains(className))
       .foreach { parentClassFullName =>
-        // TODO: try to remove loading java class if/when it is possible
+        // T O D O: try to remove loading java class if/when it is possible
         val parentClass = loadClass(parentClassFullName, classLoaders.values)
         val toInspectParent: Boolean = toInspectParentClass(parentClass)
 

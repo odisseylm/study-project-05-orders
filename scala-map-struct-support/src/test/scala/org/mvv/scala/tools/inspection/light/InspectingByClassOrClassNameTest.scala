@@ -10,6 +10,7 @@ import org.assertj.core.api.Assertions.assertThat
 //
 import org.mvv.scala.tools.inspection.{ _Class, _MethodKey, _Modifier, _Type }
 import org.mvv.scala.tools.beans.testclasses.ClassSampleInProductionSources
+import org.mvv.scala.tools.inspection.light.LightScalaBeanInspector as ScalaBeanInspector
 
 
 
