@@ -8,6 +8,7 @@ import javax.lang.model.element.{ExecutableElement, TypeElement, VariableElement
 import org.mapstruct.ap.spi.{ DefaultAccessorNamingStrategy, MapStructProcessingEnvironment }
 //
 import org.mvv.scala.tools.{ Logger, ConsoleLogger, LogLevel, replaceSuffix }
+import org.mvv.scala.tools.CollectionsOps.containsOneOf
 import org.mvv.scala.tools.beans.{ BeanProperties, toBeanProperties }
 import org.mvv.scala.tools.quotes.topClassOrModuleFullName
 import org.mvv.scala.tools.inspection.InspectMode
@@ -15,6 +16,14 @@ import org.mvv.scala.tools.inspection._Class
 import org.mvv.scala.tools.inspection.ScalaBeanInspector
 
 
+
+private val toSkipGetters: Set[String] = Set(
+  "scala.Product.productIterator",
+  "scala.Product.productElementNames",
+  "productArity",
+  "productPrefix",
+  "toString",
+)
 
 class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy {
 
@@ -33,18 +42,31 @@ class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy
       return false
 
     val classFullName = method.enclosingClassFullName
+    val returnType = method.getReturnType.toString
     val _class: _Class = scalaBeanInspector.inspectClass(classFullName)
 
     val isGetter: Boolean = _class.classKind match
       case ClassKind.Java =>
         val isJavaGetter = super.isGetterMethod(method)
-        log.trace(s"isGetterMethod ($mName) for java class => ${method.getEnclosingElement}.$method is getter [$isJavaGetter] (by super).")
+
+        log.trace(s"isGetterMethod ($mName) for java class => ${method.getEnclosingElement}.$method ($returnType) is getter [$isJavaGetter] (by super).")
+        if isJavaGetter then
+          log.debug(s"isGetterMethod ($mName) for java class => ${method.getEnclosingElement}.$method ($returnType) is getter [$isJavaGetter] (by super).")
+
         isJavaGetter
       case _ =>
         val beanProps: BeanProperties = getBeanPropertiesOfEnclosingClass(method)
-        val isScalaGetter = beanProps.isGetter(mName)
+        val fullMethodName =s"${method.getEnclosingElement}.$mName"
 
-        log.trace(s"isGetterMethod ($mName) => ${method.getEnclosingElement}.$method is getter [$isScalaGetter].")
+        val toSkip = toSkipGetters.containsOneOf(mName, fullMethodName)
+          || mName.contains("$default$")
+          || method.isComponentMethod
+
+        val isScalaGetter = !toSkip && beanProps.isGetter(mName)
+
+        log.trace(s"isGetterMethod ($mName) => ${method.getEnclosingElement}.$method ($returnType) is getter [$isScalaGetter].")
+        if isScalaGetter then
+          log.debug(s"isGetterMethod ($mName) => ${method.getEnclosingElement}.$method ($returnType) is getter [$isScalaGetter].")
         isScalaGetter
 
     isGetter
@@ -59,18 +81,25 @@ class ScalaMapStructAccessorNamingStrategy extends DefaultAccessorNamingStrategy
 
     val classFullName = method.enclosingClassFullName
     val _class: _Class = scalaBeanInspector.inspectClass(classFullName)
+    val firstParamTypeStr = method.firstParamTypeAsString
 
     val isSetter: Boolean = _class.classKind match
       case ClassKind.Java =>
         val isJavaSetter = super.isSetterMethod(method)
+
         log.trace(s"isSetterMethod ($mName) for java class => ${method.getEnclosingElement}.$method is setter [$isJavaSetter] (by super).")
+        if isJavaSetter then
+          log.debug(s"isSetterMethod ($mName) for java class => ${method.getEnclosingElement}.$method is setter [$isJavaSetter] (by super).")
+
         isJavaSetter
       case _ =>
         val beanProps: BeanProperties = getBeanPropertiesOfEnclosingClass(method)
-        val firstParamaTypeStr = method.firstParamTypeAsString
-        val isScalaSetter = beanProps.isSetterOneOf(allPossibleScalaSetterMethodNames(mName), firstParamaTypeStr)
+        val isScalaSetter = beanProps.isSetterOneOf(allPossibleScalaSetterMethodNames(mName), firstParamTypeStr)
 
         log.trace(s"isSetterMethod ($mName) => ${method.getEnclosingElement}.$method is setter [$isScalaSetter].")
+        if isScalaSetter then
+          log.debug(s"isSetterMethod ($mName) => ${method.getEnclosingElement}.$method is setter [$isScalaSetter].")
+
         isScalaSetter
 
     isSetter
@@ -112,6 +141,9 @@ extension (method: ExecutableElement)
 
   def methodName: String = method.getSimpleName.nn.toString.nn
 
+  // like _1, _2, _3, etc
+  def isComponentMethod: Boolean = isComponentMethodName(method.methodName)
+
   def firstParamTypeAsString: String = method.getParameters.nn.get(0).nn.typeAsString
 
   def asDump: AnyRef = s"enclosing: ${method.getEnclosingElement}, method: $method }"
@@ -126,3 +158,12 @@ extension [P <: VariableElement](param: P)
 private def allPossibleScalaSetterMethodNames(baseSetterMethod: String): List[String] =
   List(baseSetterMethod, baseSetterMethod.replaceSuffix("_$eq", "_="), baseSetterMethod.replaceSuffix("_=", "_$eq"))
     .distinct
+
+
+// like _1, _2, _3, etc
+private def isComponentMethodName(methodName: String): Boolean =
+  if methodName.startsWith("_") then
+    val otherPart = methodName.substring(1)
+    try { Integer.parseInt(otherPart); true } catch case _: NumberFormatException => false
+  else
+    false

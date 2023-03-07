@@ -51,7 +51,7 @@ class ScalaMapStructAccessorNamingStrategy extends org.mapstruct.ap.spi.DefaultA
     val propNameOption = beanProps.getPropertyNameByMethod(getterOrSetterMethod.methodName)
     val propName = propNameOption.getOrElse(super.getPropertyName(getterOrSetterMethod).nn)
 
-    log.trace(s"getPropertyName => ${getterOrSetterMethod.getEnclosingElement}.$getterOrSetterMethod => $propName.")
+    log.trace(s"getPropertyName => ${getterOrSetterMethod.getEnclosingElement}.$getterOrSetterMethod => [$propName].")
     propName
 
 

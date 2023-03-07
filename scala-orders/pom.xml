@@ -148,6 +148,18 @@
       <version>${mapstruct.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+      <!--<version>2.0.2</version>-->
+    </dependency>
+    <dependency>
+      <groupId>jakarta.platform</groupId>
+      <artifactId>jakarta.jakartaee-api</artifactId>
+      <!--<version>9.1.0</version>-->
+    </dependency>
+
+
     <!-- With this approach scala compiler will pick up MapStruct processor during compiling java sources. -->
     <dependency>
       <groupId>org.mapstruct</groupId>
@@ -461,9 +473,16 @@
               <goal>testCompile</goal>
             </goals>
             <configuration>
+              <!-- Can be Mixed, JavaThenScala, or ScalaThenJava. -->
+              <!-- TODO: try to use ScalaThenJava -->
+              <compileOrder>Mixed</compileOrder>
               <jvmArgs>
                 <!--<arg>-Xdebug</arg><arg>-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8003</arg>-->
               </jvmArgs>
+              <!-- Debugging annotation processor. -->
+              <javacArgs>
+                <!--<arg>-J-Xdebug</arg><arg>-J-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8004</arg>-->
+              </javacArgs>
               <args>
                 <arg>-Yexplicit-nulls</arg>
                 <arg>-Ysafe-init</arg>
@@ -471,6 +490,8 @@
                 <arg>-source</arg><arg>future</arg>
                 <arg>-feature</arg>
                 <arg>-deprecation</arg>
+                <!-- Uncomment it for detailed macros stack-trace -->
+                <arg>-Ydebug</arg>
 
                 <!-- Seems ignored/unsupported :-( -->
                 <!--<arg>-Yjava-null</arg>-->

@@ -23,26 +23,6 @@ case class Email private (
   validateEmail(value)
   @Untainted override def toString: String = this.value
 
-/*
-@Untainted @Immutable
-class Email private (@(Tainted @param) @(Untainted @field @getter) val value: String)
-  extends Equals derives CanEqual :
-
-  validateEmail(value)
-
-  @Untainted
-  override def toString: String = this.value
-  override def hashCode: Int = this.value.hashCode
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[Email]
-  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
-  //override def equals(other: Any): Boolean = other match
-  //  case that: Email => that.canEqual(this) && this.value == that.value
-  //  case _ => false
-  override def equals(other: Any): Boolean =
-    // it is inlined and have resulting byte code similar to code with 'match'
-    equalImpl(this, other) { _.value == _.value }
-*/
-
 
 object Email extends NullableCanEqualGivens[Email] :
   def apply(@Tainted email: String): Email = new Email(email)
@@ -50,6 +30,23 @@ object Email extends NullableCanEqualGivens[Email] :
   // standard java methods to get from string. It can help to integrate with other java frameworks.
   def of(@Tainted email: String): Email = Email(email)
   def valueOf(@Tainted email: String): Email = Email(email)
+
+
+
+@Untainted @Immutable
+case class Phone private (
+  @(Tainted @param) @(Untainted @field @getter)
+  value: String) derives CanEqual :
+  validatePhone(value)
+  @Untainted override def toString: String = this.value
+
+
+object Phone extends NullableCanEqualGivens[Phone] :
+  def apply(@Tainted phone: String): Phone = new Phone(phone)
+
+  // standard java methods to get from string. It can help to integrate with other java frameworks.
+  def of(@Tainted phone: String): Phone = Phone(phone)
+  def valueOf(@Tainted phone: String): Phone = Phone(phone)
 
 
 
@@ -68,6 +65,6 @@ private def validateEmail(@Tainted email: String): Unit =
 // regex "^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{4}$"
 // regex "^(\\+\\d{1,3}( )?)?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?\\d{3,4}[- .]?\\d{4}$"
 private val phonePattern = Regex("^\\+?[1-9][0-9]{7,14}$")
-private def validatePhone(@Tainted email: String): Unit =
-  requireNotBlank(email, "Phone number cannot be null/blank.")
-  if !phonePattern.matches(email.nn) then throw IllegalArgumentException(s"Invalid phone number [${email.safe}].")
+private def validatePhone(@Tainted phone: String): Unit =
+  requireNotBlank(phone, "Phone number cannot be null/blank.")
+  if !phonePattern.matches(phone.nn) then throw IllegalArgumentException(s"Invalid phone number [${phone.safe}].")

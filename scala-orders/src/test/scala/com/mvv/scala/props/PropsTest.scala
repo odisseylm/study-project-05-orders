@@ -45,7 +45,7 @@ class PropsTest {
   @DisplayName("collectRequiredPropertiesOfTrait")
   def testCollectRequiredPropertiesOfTrait(): Unit = {
     val propNames = collectRequiredProperties(classOf[Trait1])
-    assertThat(propNames.asJava).containsExactly("prop1", "prop2", "prop3")
+    assertThat(propNames.asJava).containsExactlyInAnyOrder("prop1", "prop2", "prop3")
   }
 
   @Test

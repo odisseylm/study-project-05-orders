@@ -100,7 +100,7 @@ class CashLimitOrder private () extends AbstractCashOrder, LimitOrder[Currency, 
   private val limitOrderSupport = StopLimitOrderSupport[Currency, Quote](this,
       //::limitPrice,
       //::dailyExecutionType,
-      "limitPrice", () => limitPrice,
+      "limitPrice", () => limitPrice, // TODO: use read-only props
       "dailyExecutionType,", () => dailyExecutionType,
   )
 
@@ -128,7 +128,9 @@ class CashLimitOrder private () extends AbstractCashOrder, LimitOrder[Currency, 
 end CashLimitOrder
 
 
-object CashLimitOrder  extends NullableCanEqualGivens[CashLimitOrder]:
+object CashLimitOrder extends NullableCanEqualGivens[CashLimitOrder]:
+  def uninitialized(): CashLimitOrder = new CashLimitOrder()
+
   //noinspection DuplicatedCode
   def apply(
           base: AbstractCashOrder.Base,
@@ -176,6 +178,7 @@ class CashStopOrder private () extends AbstractCashOrder, StopOrder[Currency, Qu
 end CashStopOrder
 
 object CashStopOrder extends NullableCanEqualGivens[CashStopOrder] :
+  def uninitialized(): CashStopOrder = new CashStopOrder()
   //noinspection DuplicatedCode
   def apply(
       base: AbstractCashOrder.Base,
@@ -208,6 +211,7 @@ class CashMarketOrder private () extends AbstractCashOrder :
 
 
 object CashMarketOrder extends NullableCanEqualGivens[CashMarketOrder] :
+  def uninitialized(): CashMarketOrder = new CashMarketOrder()
   def apply(base: AbstractCashOrder.Base): CashMarketOrder =
     val order = new CashMarketOrder()
     base.copyToOrder(order)

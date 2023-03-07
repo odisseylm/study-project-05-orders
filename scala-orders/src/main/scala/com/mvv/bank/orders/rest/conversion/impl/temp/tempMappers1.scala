@@ -5,8 +5,13 @@ import scala.compiletime.uninitialized
 import org.mapstruct.Mapper
 
 
+//enum RestBuySellType1 (val ordinal: Int) /*extends java.lang.Enum[RestBuySellType1] */:
+//  case Buy extends RestBuySellType1(0)
+//  case Sell extends RestBuySellType1(1)
 enum RestBuySellType1 :
-  case Buy, Sell
+  case Buy
+  case Sell
+
 class RestOrder1 :
   var amount: BigDecimal = uninitialized
   var cur1: String = uninitialized
@@ -16,6 +21,14 @@ class RestOrder1 :
 
 enum DomainBuySellType1 :
   case Buy, Sell
+//enum DomainBuySellType1 extends java.lang.Enum[DomainBuySellType1] :
+//  //case Buy, Sell
+//  case Buy extends DomainBuySellType1
+//  case Sell extends DomainBuySellType1
+//enum DomainBuySellType1 (val ordinal: Int) extends java.lang.Enum[DomainBuySellType1] :
+//  //case Buy, Sell
+//  case Buy extends DomainBuySellType1(0)
+//  case Sell extends DomainBuySellType1(1)
 class DomainOrder1 :
   var amount: BigDecimal = uninitialized
   var cur1: String = uninitialized
@@ -35,7 +48,12 @@ def aaa(): Unit = {
   println(bp)
 }
 
-@Mapper
+//@Mapper
 trait Order1Mapper :
   def toRestOrder1(restOrder: DomainOrder1): RestOrder1
   def toDomainOrder1(domainOrder: RestOrder1): DomainOrder1
+
+  def toDomain(d: RestBuySellType1): DomainBuySellType1 = DomainBuySellType1.valueOf(d.toString)
+  def toRest(d: DomainBuySellType1): RestBuySellType1 = RestBuySellType1.valueOf(d.toString)
+
+//trait EnumMapperBy

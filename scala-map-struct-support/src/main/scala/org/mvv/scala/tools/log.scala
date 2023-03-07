@@ -47,7 +47,7 @@ private def getLogLevel(loggerName: String): LogLevel =
 final class ConsoleLogger (val loggerName: String, val logLevel: LogLevel) extends Logger :
   def this(loggerName: String) = this(loggerName, getLogLevel(loggerName))
 
-  private inline def isEnabled(logLevel: LogLevel): Boolean =
+  private inline def isEnabled(logLevel: LogLevel): Boolean = // SCALAMAPSTRUCT_LOGLEVEL
     logLevel.ordinal >= this.logLevel.ordinal
 
   def this(klass: Class[?]) = this(klass.getName.nn)

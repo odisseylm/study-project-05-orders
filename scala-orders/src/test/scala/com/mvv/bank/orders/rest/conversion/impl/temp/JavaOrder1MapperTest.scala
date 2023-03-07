@@ -18,7 +18,7 @@ class JavaOrder1MapperTest {
 
     val domainOrder = DomainOrder1()
     domainOrder.cur1 = "USD"
-    domainOrder.cur1 = "EUR"
+    domainOrder.cur2 = "EUR"
     domainOrder.amount = BigDecimal("234")
     domainOrder.buySellType = DomainBuySellType1.Sell
 
