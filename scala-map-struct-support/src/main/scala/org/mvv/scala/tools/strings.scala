@@ -61,7 +61,13 @@ extension (s: String)
   def ifBlank(alternativeValue: => String): String =
     if s.isBlank then alternativeValue else s
 
-
   def uncapitalize: String =
     if s.isNull || s.isEmpty || !s.charAt(0).isUpper then s
     else "" + s.charAt(0).toLower + s.substring(1)
+
+  def leftPadTo(length: Int, ch: Char): String =
+    if s.length >= length then s
+    else
+      val toPad = length - s.length
+      ch.toString.repeat(toPad).nn + s
+

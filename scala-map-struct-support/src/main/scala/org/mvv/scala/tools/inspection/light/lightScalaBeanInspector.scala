@@ -43,16 +43,16 @@ class LightScalaBeanInspector extends ScalaBeanInspector :
   override def classDescr(classFullName: String): Option[_Class] = classesByFullName.get(classFullName)
 
 
-  private var toInspect: String = ""
-
   override def inspectClass(cls: Class[?]): _Class =
     inspectClass(cls.getName.nn)
 
   override def inspectClass(fullClassName: String): _Class =
-    toInspect = fullClassName
 
     val dummyClassUrl = getClassLocationUrl(classOf[DummyClass789456123])
     val dummyClassUrlStr = dummyClassUrl.toExternalForm.nn
+
+    val alreadyProcessed = classesByFullName.get(fullClassName)
+    if alreadyProcessed.isDefined then return alreadyProcessed.get
 
     val invoker = InspectorImpl(fullClassName)
     if dummyClassUrlStr.contains(".jar!") then

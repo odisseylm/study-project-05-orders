@@ -22,3 +22,10 @@ extension (using q: Quotes)(tree: q.reflect.Tree)
     tree match
       case dd: q.reflect.DefDef => dd
       case _ => throw ClassCastException(s"Error of casting ${tree.getClass.nn.getName} to DefDef (tree: $tree).")
+
+  def asTerm: q.reflect.Term =
+    tree match
+      case t: q.reflect.Term => t
+      case _ => throw ClassCastException(s"Error of casting ${tree.getClass.nn.getName} to Term (tree: $tree).")
+  // use it instead of asTerm if you have name conflicts
+  def asTreeTerm: q.reflect.Term = tree.asTerm
