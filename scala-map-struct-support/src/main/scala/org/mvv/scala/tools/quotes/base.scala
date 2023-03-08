@@ -1,6 +1,6 @@
 package org.mvv.scala.tools.quotes
 
-import scala.quoted.Quotes
+import scala.quoted.{ Quotes, Expr }
 //
 import org.mvv.scala.tools.{ tryDo, stripAfter }
 import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
@@ -11,6 +11,14 @@ import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
 def macrosSource(using q: Quotes): Any =
   import q.reflect.Symbol
   tryDo { Symbol.spliceOwner.owner.tree }.getOrElse(Symbol.spliceOwner.owner.pos)
+
+
+
+def reportedFailedExprAsText(using q: Quotes)(expr: Expr[Any]): String =
+  import q.reflect.Position
+  Position.ofMacroExpansion.sourceCode
+    .map(sourceCode => s"${expr.show} used in $sourceCode")
+    .getOrElse(expr.show)
 
 
 
