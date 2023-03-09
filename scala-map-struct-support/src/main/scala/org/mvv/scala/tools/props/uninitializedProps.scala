@@ -1,16 +1,16 @@
 package org.mvv.scala.tools.props
 
 import scala.collection.mutable
-import scala.annotation.targetName
+import scala.annotation.{nowarn, targetName}
 import scala.compiletime.uninitialized
-import scala.quoted.{ Expr, Quotes, Type, Varargs }
+import scala.quoted.{Expr, Quotes, Type, Varargs}
 //
-import org.mvv.scala.tools.{ Logger, tryDo }
+import org.mvv.scala.tools.{ Logger, tryDo, beforeLastOr, equalImpl }
 import org.mvv.scala.tools.quotes.{ topClassOrModuleFullName, topMethodFullName, topMethodSimpleName }
-import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName, qClassNameOfCompiled, Param }
+import org.mvv.scala.tools.quotes.{ qClassNameOf, qClassName, qClassNameOfCompiled, Param, fullClassNameOf }
 import org.mvv.scala.tools.quotes.{ qStringLiteral, qFunction, qTuple2 }
 import org.mvv.scala.tools.quotes.{ classExists, getSimpleClassName, getFullClassName, getCompanionClass }
-import org.mvv.scala.tools.quotes.{ findSpliceOwnerClass, getClassThisScopeTypeRepr }
+import org.mvv.scala.tools.quotes.{ findSpliceOwnerClass, getClassThisScopeTypeRepr, symbolDetailsToString }
 
 
 /**
@@ -38,14 +38,13 @@ import org.mvv.scala.tools.quotes.{ findSpliceOwnerClass, getClassThisScopeTypeR
 type IsInitializedProps = List[(String, ()=>Boolean)]
 
 
+/** 'isInitialized' methods will be searched in companion. */
 inline def currentClassIsInitializedProps: IsInitializedProps =
   ${ currentClassIsInitializedPropsImpl( '{ Nil }, '{ "isInitialized" } ) }
 
 
 //noinspection ScalaUnusedSymbol
-inline def currentClassIsInitializedProps(
-  inline isInitializedMethodOwners: String*
-  ): IsInitializedProps =
+inline def currentClassIsInitializedProps(inline isInitializedMethodOwners: String*): IsInitializedProps =
   ${ currentClassIsInitializedPropsImpl('{ isInitializedMethodOwners }, '{ "isInitialized" }) }
 
 
@@ -57,9 +56,33 @@ inline def currentClassIsInitializedProps(
   ${ currentClassIsInitializedPropsImpl('{ isInitializedMethodOwners }, '{ isInitializedMethod }) }
 
 
-def currentClassIsInitializedPropsImpl(using q: Quotes)(
+/** 'isInitialized' methods will be searched in companion object 'IsInitializedPropsOwnerClass'.
+ *  !!! Object must also have class (to be companion, at least now) !!!
+ */
+//noinspection ScalaUnusedSymbol
+inline def currentClassIsInitializedPropsBy[IsInitializedPropsOwnerClass]: IsInitializedProps =
+  ${ currentClassIsInitializedPropsWithOwnerGenericTypeImpl[IsInitializedPropsOwnerClass] }
+
+
+//noinspection ScalaUnusedSymbol
+private def currentClassIsInitializedPropsWithOwnerGenericTypeImpl[T](using q: Quotes)(using Type[T]): Expr[IsInitializedProps] =
+  currentClassIsInitializedPropsImpl_(List(fullClassNameOf[T]), "isInitialized")
+
+
+//noinspection NoTailRecursionAnnotation , ScalaUnusedSymbol // there is no recursion
+private def currentClassIsInitializedPropsImpl(using Quotes)(
   isInitializedMethodOwnersExpr: Expr[Seq[String]],
   isInitializedMethodExpr: Expr[String],
+  ): Expr[IsInitializedProps] =
+
+  val isInitializedMethodName: String = isInitializedMethodExpr.valueOrAbort //.getOrElse("isInitialized")
+  val passedIsInitializedMethodOwnerClassNames: Seq[String] = isInitializedMethodOwnersExpr.valueOrAbort
+  currentClassIsInitializedPropsImpl_(passedIsInitializedMethodOwnerClassNames, isInitializedMethodName)
+
+
+private def currentClassIsInitializedPropsImpl_(using q: Quotes)(
+  passedIsInitializedMethodOwnerClassNames: Seq[String],
+  isInitializedMethodName: String,
   ): Expr[IsInitializedProps] =
   import q.reflect.{ Term, ClassDef, ValDef, Statement }
 
@@ -73,8 +96,6 @@ def currentClassIsInitializedPropsImpl(using q: Quotes)(
     .flatMap { case vd: ValDef => Option(vd); case _ => None }
     .filter(toCheckInitState)
 
-  val isInitializedMethodName: String = isInitializedMethodExpr.valueOrAbort //.getOrElse("isInitialized")
-  val passedIsInitializedMethodOwnerClassNames: Seq[String] = isInitializedMethodOwnersExpr.valueOrAbort
   val allIsInitializedMethodOwnerClassNames: List[String] =
     (passedIsInitializedMethodOwnerClassNames.toList :+ getFullClassName(classDef)).distinct
 
@@ -87,14 +108,13 @@ def currentClassIsInitializedPropsImpl(using q: Quotes)(
   val exprOfTupleList = Expr.ofList(tuplesExprs)
 
   log.info(s"$topMethodSimpleName: ${exprOfTupleList.show}\n$exprOfTupleList")
-
   exprOfTupleList
 
 
 
 private val SkipUninitializedCheckAnnotationNames: Set[String] = Set(
-  "SkipLateInitCheck", "SkipUninitializedCheck", "SkipInitializedCheck",
-  "skipLateInitCheck", "skipUninitializedCheck", "skipInitializedCheck",
+  "SkipLateInitCheck", "SkipUninitializedCheck", "SkipInitializedCheck", "SkipUninitCheck", "SkipInitCheck",
+  "skipLateInitCheck", "skipUninitializedCheck", "skipInitializedCheck", "skipUninitCheck", "skipInitCheck",
 )
 
 
@@ -115,7 +135,7 @@ def findIsInitializedFunction(using q: Quotes)
   (thisType: q.reflect.TypeRepr)
   (valDef: q.reflect.ValDef)
   (isInitializedFuncName: String, isInitializedOwners: String*)
-  : q.reflect.Term =
+  : MethodEntry[q.reflect.Symbol, q.reflect.DefDef] =
 
   import q.reflect.{ Select, DefDef, TypeDef, Symbol }
   import org.mvv.scala.tools.quotes.{ qMethodType, getClassThisScopeTypeRepr }
@@ -134,81 +154,107 @@ def findIsInitializedFunction(using q: Quotes)
 
   log.trace(s"$logPrefix isInitializedOwnersWithCompanions: $isInitializedOwnersWithCompanions")
 
-  val allIsInitializedMethods = gatherIsInitializedFunctions(isInitializedFuncName, isInitializedOwnersWithCompanions)
+  val allIsInitializedMethods: List[MethodEntry[Symbol, DefDef]] = gatherIsInitializedFunctions(
+    isInitializedFuncName, isInitializedOwnersWithCompanions)
 
-  val theBestMethod: DefDef = findTheBestOfOverloadedMethods(allIsInitializedMethods, valDef)
-  log.trace(s"$logPrefix valDef (${valDef.name}: ${valDef.tpt.tpe.show}), theBestMethod: ${theBestMethod.name}(${firstParamType(theBestMethod).show})")
+  val theBestMethod: MethodEntry[Symbol, DefDef] = findTheBestOfOverloadedMethod(allIsInitializedMethods, valDef)
+  log.trace(s"$logPrefix valDef (${valDef.name}: ${valDef.tpt.tpe.show})," +
+    s" theBestMethod: ${theBestMethod.method.name}(${firstParamType(theBestMethod.method).show})")
 
-  val theBestMethodOwner = theBestMethod.symbol.owner.fullName
-  val funSelect = Select( qClassName(theBestMethodOwner.stripSuffix("$")), theBestMethod.symbol)
-
-  log.trace(s"$logPrefix funSelect: $funSelect")
-  funSelect
+  theBestMethod
 
 
 
 private def gatherIsInitializedFunctions(using q: Quotes)
   (isInitializedFuncName: String, funcOwners: List[q.reflect.Symbol])
-  : List[q.reflect.DefDef] =
-  import q.reflect.DefDef
+  : List[MethodEntry[q.reflect.Symbol, q.reflect.DefDef]] =
+  import q.reflect.{ Symbol, DefDef }
   import org.mvv.scala.tools.quotes.symbolDetailsToString
 
   val log = Logger(topMethodFullName)
   val logPrefix = topMethodSimpleName
 
-  val functions = funcOwners.distinct
+  val functions: List[MethodEntry[Symbol, DefDef]] = funcOwners.distinct
     // I do not know how to filter/distinguish ?incorrect? object/class method owner
     // since these incorrect symbols return isType/isClassDef/exists,
     // only flags=EmptyFlags but it is not reliable sign
     // for that reason I have to use there try/catch (tryDo)
     .filter(s => !s.isNoSymbol)
     .map { s => log.trace(s"$logPrefix funcOwner ${symbolDetailsToString(s)}"); s }
-    .flatMap(s => tryDo{ s.methodMembers } .getOrElse(Nil))
-    .filter(_.isDefDef) .map(_.tree match { case m: DefDef => m })
-    .filter(_.name == isInitializedFuncName)
-    .filter(defDef => isSimpleBoolMethodWithOneParamOfAnyType(defDef))
+    .flatMap(s => tryDo{ s.methodMembers } .getOrElse(Nil).map( (s, _) ))
+    .filter(_._2.isDefDef) .map((s, methodSymbol) => MethodEntry[Symbol, DefDef](s, methodSymbol.tree match { case m: DefDef => m }) )
+    .filter(me => me.method.name == isInitializedFuncName)
+    .filter(me => isSimpleBoolMethodWithOneParamOfAnyType(me.method))
     .toList
+
+  functions.foreach { me =>
+    log.trace(s"gatherIsInitializedFunctions resulting func: ${me.ownerClass.fullName}" +
+      s" # ${symbolDetailsToString(me.method.symbol)}") }
+
   functions
 
 
+private def methodsTosStrings(using q: Quotes)
+  (methods: Iterable[MethodEntry[q.reflect.Symbol, q.reflect.DefDef]]): Iterable[String] =
+  val methodsAsStr: Iterable[String] = methods.map(me => s"${me.ownerClass.fullName}.${me.method.name}(${firstParamType(me.method).show})")
+  methodsAsStr
 
-private def findTheBestOfOverloadedMethods(using q: Quotes)(
-  allIsInitializedMethods: List[q.reflect.DefDef], valDef: q.reflect.ValDef): q.reflect.DefDef =
-  import q.reflect.{ TypeRepr, DefDef, report }
+private def methodsTosString(using q: Quotes)
+  (methods: Iterable[MethodEntry[q.reflect.Symbol, q.reflect.DefDef]]): String =
+  methodsTosStrings(methods).mkString("\n  ", "\n  ", "\n  ")
+
+
+private def findTheBestOfOverloadedMethod(using q: Quotes)(
+  allIsInitializedMethods: List[MethodEntry[q.reflect.Symbol, q.reflect.DefDef]],
+  valDef: q.reflect.ValDef,
+  ): MethodEntry[q.reflect.Symbol, q.reflect.DefDef] =
+  import q.reflect.{ TypeRepr, DefDef, Symbol, report }
 
   val classOwnerName = valDef.symbol.owner.fullName
   val valueType = valDef.tpt.tpe
 
-  require(allIsInitializedMethods.nonEmpty, "allIsInitializedMethods are empty." +
-    " Please specify isInitializedMethodOwners in 'currentClassIsInitializedProps' macros" +
-    s" or add isInitialized to $classOwnerName class or companion.")
+  require(allIsInitializedMethods.nonEmpty, "allIsInitializedMethods are empty."
+    + s" Please specify isInitializedMethodOwners in 'currentClassIsInitializedProps' macros"
+    + s" or add isInitialized to $classOwnerName class or companion.")
 
-  val methodsWithSuitableTypes = allIsInitializedMethods
-    .filter(m =>
-      val mParamType: TypeRepr = firstParamType(m)
+  val valueTypeStr = valueType.show
+  val isInitMethName = allIsInitializedMethods.head.method.name
+
+  val methodsWithSuitableTypes: List[MethodEntry[Symbol,DefDef]] = allIsInitializedMethods
+    .filter(me =>
+      val mParamType: TypeRepr = firstParamType(me.method)
       val isSuitable = valueType <:< mParamType
       isSuitable
     )
 
-  val withSuperTypes = mutable.Set[DefDef]()
+  if methodsWithSuitableTypes.isEmpty then
+    throw IllegalStateException(s"No suitable methods [$isInitMethName] for type [$valueTypeStr]"
+      + s"\n allIsInitializedMethods: ${methodsTosString(allIsInitializedMethods)}"
+    )
+
+  val withSuperTypes = mutable.Set[MethodEntry[Symbol,DefDef]]()
 
   for m1 <- methodsWithSuitableTypes
       m2 <- methodsWithSuitableTypes
     do
       if m1 != m2 then
-        val m1ParamType: TypeRepr = firstParamType(m1)
-        val m2ParamType: TypeRepr = firstParamType(m2)
+        val m1ParamType: TypeRepr = firstParamType(m1.method)
+        val m2ParamType: TypeRepr = firstParamType(m2.method)
 
         if m1ParamType <:< m2ParamType then withSuperTypes.addOne(m2)
         if m2ParamType <:< m1ParamType then withSuperTypes.addOne(m1)
 
   val withoutSuperTypes = methodsWithSuitableTypes.toSet -- withSuperTypes
-  require(withoutSuperTypes.nonEmpty, s"Strange, all methods for type ${valueType.show} have type which are super-type of others...")
+
+  if withoutSuperTypes.isEmpty then
+    throw IllegalStateException(s"Impossible to find single method for [$valueTypeStr]"
+      + s" from ${methodsTosString(methodsWithSuitableTypes)}"
+      + s"\n methodsWithSuitableTypes: ${methodsTosString(methodsWithSuitableTypes)}"
+      + s"\n allIsInitializedMethods: ${methodsTosString(allIsInitializedMethods)}"
+    )
 
   if withoutSuperTypes.sizeIs != 1 then
-    val valStr = s"${valueType.show}"
-    val methodsAsStr = withoutSuperTypes.map(m => s"${m.symbol.fullName}(${firstParamType(m).show})")
-    report.errorAndAbort(s"Ambiguous methods for $valStr $methodsAsStr")
+    report.errorAndAbort(s"Ambiguous methods ${methodsTosString(withoutSuperTypes)} for [$valueTypeStr]")
 
   withoutSuperTypes.head
 
@@ -261,17 +307,18 @@ private def qCreateIsInitTupleEntry(using q: Quotes)
   (classFullName: String, valDef: q.reflect.ValDef)
   (isInitializedFuncName: String, isInitializedOwners: String*)
   : q.reflect.Term =
-  import q.reflect.{ Symbol, Tree, Term, Select, Apply, Lambda, MethodType, This, TypeRepr, asTerm }
+  import q.reflect.{ Symbol, Tree, Term, Select, Apply, Lambda, DefDef, MethodType, This, TypeRepr, asTerm }
   import org.mvv.scala.tools.quotes.{ qMethodType, getClassThisScopeTypeRepr }
 
   val classSymbol = Symbol.classSymbol(classFullName)
   val valSelect = Select.unique(This(classSymbol), valDef.name)
 
   val _this = getClassThisScopeTypeRepr(classSymbol)
-  val isInitializedF: Term = findIsInitializedFunction(_this)(valDef)
+  val isInitializedDefDef: MethodEntry[Symbol,DefDef] = findIsInitializedFunction(_this)(valDef)
     (isInitializedFuncName, isInitializedOwners*)
 
-  val isInitializedApply = Apply(isInitializedF, List(valSelect))
+  val isInitializedFSelect = Select(qClassName(isInitializedDefDef.ownerClass.fullName.stripSuffix("$")), isInitializedDefDef.method.symbol)
+  val isInitializedApply = Apply(isInitializedFSelect, List(valSelect))
 
   val rhsFn: (Symbol, List[Tree]) => Tree = (_: Symbol, _: List[Tree]) => { isInitializedApply }
   val isInitializedAnonFunLambda = Lambda(
@@ -281,3 +328,46 @@ private def qCreateIsInitTupleEntry(using q: Quotes)
   )
 
   qTuple2[String, ()=>Boolean](qStringLiteral(valDef.name), isInitializedAnonFunLambda)
+
+
+
+private class MethodEntry[O,M] (
+  /** It is needed because we need to have type of class but methods may be declared in base class/trait. */
+  val ownerClass: O, val method: M) extends Equals derives CanEqual :
+  override def hashCode: Int =
+    var hash = 7
+    hash = 31 * hash + ownerClass.hashCode
+    hash = 31 * hash + method.hashCode
+    hash
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MethodEntry[?,?]]
+  // in scala3 equals with 'match' causes warning "pattern selector should be an instance of Matchable"
+  override def equals(other: Any): Boolean =
+    // 'equalImpl' is inlined and have resulting byte code similar to code with 'match'
+    equalImpl[MethodEntry[?,?]](this, other) { (v1, v2) => v1.ownerClass == v2.ownerClass && v1.method == v2.method }
+
+
+
+/*
+It does not work, as expected to not work (((
+private class MethodEntry(using val q: Quotes)(
+  /** It is needed because we need to have type of class but methods may be declared in base class/trait. */
+  val ownerClass: q.reflect.Symbol,
+  val method: q.reflect.DefDef,
+  ) extends Equals derives CanEqual :
+  override def hashCode: Int =
+    var hash = 7
+    hash = 31 * hash + q.hashCode
+    hash = 31 * hash + ownerClass.hashCode
+    hash = 31 * hash + method.hashCode
+    hash
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MethodEntry]
+
+  // in scala3 equals with 'match' causes warning "pattern selector should be an instance of Matchable"
+  override def equals(other: Any): Boolean =
+    // 'equalImpl' is inlined and have resulting byte code similar to code with 'match'
+    equalImpl(this, other) { (v1, v2) =>
+      v1.q == v2.q && v1.ownerClass == v2.ownerClass && v1.method == v2.method
+    }
+*/

@@ -1,5 +1,6 @@
 package org.mvv.scala.mapstruct.debug.dump
 
+import scala.annotation.nowarn
 import scala.quoted.*
 //
 import org.mvv.scala.tools.{ unwrapOption, getByReflection }
@@ -170,6 +171,7 @@ extension (el: AnyRef)
   def isUnitConstant: Boolean = el.isImplClass("UnitConstant")
   def isNullConstant: Boolean = el.isImplClass("NullConstant")
   def isClassOfConstant: Boolean = el.isImplClass("ClassOfConstant")
+  @nowarn("msg=is deprecated: use scala matching")
   //noinspection ScalaDeprecation
   def isConstant: Boolean = org.mvv.scala.tools.quotes.isConstantByClassName(el)
 

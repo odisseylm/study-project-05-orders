@@ -4,7 +4,6 @@ import java.nio.file.{Files, Path}
 import scala.annotation.{nowarn, targetName}
 
 
-@nowarn("msg=cannot be checked at runtime")
 inline def equalImpl[T <: Equals](thisV: T, other: Any|Null)(inline comparing: (T, T)=>Boolean): Boolean =
   import scala.language.unsafeNulls
   if other == null || !other.isInstanceOf[T] then false
@@ -25,3 +24,9 @@ extension [T](l: List[T])
     l.nonEmpty && l.tail == Nil
   def isSingleItemList(v: T): Boolean =
     l.nonEmpty && l.tail == Nil && l.head == v
+
+extension [T](x: T|Null)
+  inline def !! : T = nn(x)
+  inline def ifNull(action: =>T): T =
+    //import com.mvv.nullables.AnyCanEqualGivens.given
+    if x == null then action else x

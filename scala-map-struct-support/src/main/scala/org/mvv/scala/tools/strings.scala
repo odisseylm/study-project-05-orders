@@ -35,6 +35,15 @@ extension (s: String)
     val firstIndex = s.indexOf(delimiter)
     if firstIndex == -1 then None else Option(s.substring(firstIndex + delimiter.length).nn)
 
+  def beforeLastOr(delimiter: String): Option[String] =
+    val lastIndex = s.lastIndexOf(delimiter)
+    if lastIndex == -1 then None else Option(s.substring(0, lastIndex).nn)
+  inline def beforeLastOr(delimiter: String, altStr: String): String =
+    s.beforeLastOr(delimiter).getOrElse(altStr)
+  inline def beforeLastOrOrigin(delimiter: String): String =
+    s.beforeLastOr(delimiter, s)
+
+
 
   //def beforeFirstOr(delimiter: Char): Option[String] =
   //  val firstIndex = s.indexOf(delimiter)
@@ -71,3 +80,8 @@ extension (s: String)
       val toPad = length - s.length
       ch.toString.repeat(toPad).nn + s
 
+
+
+extension (s: String|Null)
+  def isNullOrEmpty: Boolean =
+    s == null || s.isEmpty

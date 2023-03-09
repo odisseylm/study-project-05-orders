@@ -5,7 +5,7 @@ import org.mvv.scala.tools.Logger
 import scala.annotation.targetName
 import scala.quoted.Quotes
 //
-import org.mvv.scala.tools.tryDo
+import org.mvv.scala.tools.{ tryDo, safe }
 import org.mvv.scala.tools.quotes.{ activeSymbolFlagEntries, areFlagEntriesEmpty }
 
 
@@ -122,10 +122,12 @@ def symbolToString(using q: Quotes)(symbol: q.reflect.Symbol, details: SymbolDet
 
 extension (using q: Quotes)(str: StringBuilder)
   private def appendNonEmptyNames
-    (symbols: IterableOnce[q.reflect.Symbol], label: String): StringBuilder =
-    if symbols.iterator.nonEmpty then
-      if str.nonEmpty then str.append(",\n")
-      str.append(" ").append(label).append(": ").append(symbols.iterator.map(s => tryDo(s.name).getOrElse("?Unknown?")).mkString(", "))
+    (symbols: => IterableOnce[q.reflect.Symbol], label: String): StringBuilder =
+    tryDo {
+      if symbols.iterator.nonEmpty then
+        if str.nonEmpty then str.append(",\n")
+        str.append(" ").append(label).append(": ").append(symbols.iterator.map(s => tryDo(s.name).getOrElse("?Unknown?")).mkString(", "))
+    }
     str
 
 
@@ -163,7 +165,7 @@ extension (using q: Quotes)(str: StringBuilder)
     tryDo(child).foreach { ss =>
       if str.nonEmpty then str.append(",\n")
       val asStr = tryDo(child.toString).getOrElse("?Unknown?")
-      str.append(label).append(": ").append(asStr) }
+      str.append(label).append(": ").append(asStr.safe(100)) }
     str
 
 
