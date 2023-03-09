@@ -7,7 +7,7 @@ import org.mvv.scala.tools.isNotNull
 //noinspection ScalaFileName
 trait DefaultIsInitializedMethods :
   def isInitialized(v: AnyRef): Boolean = v.isNotNull
-  def isInitialized(v: LateInitProp[Any]): Boolean = v.isInitialized
+  def isInitialized(v: PropertyValue[Any]): Boolean = v.isInitialized
 
 
 
