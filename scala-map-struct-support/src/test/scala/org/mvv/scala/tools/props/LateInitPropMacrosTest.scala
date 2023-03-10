@@ -23,6 +23,9 @@ class LateInitPropMacrosClass :
   //noinspection TypeAnnotation
   val _propVal4_ = lateInitProp[String]
 
+  //noinspection TypeAnnotation
+  val _propVal5 = lateInitOptionProp[String]
+
 
 class LateInitPropMacrosTest {
   import scala.language.unsafeNulls
@@ -81,7 +84,7 @@ class LateInitPropMacrosTest {
 
     a.assertThat(obj._propVal4_.asNullableValue).isNull
 
-    a.assertThatCode { () => obj._propVal4_.value; () }
+    a.assertThatCode { () => obj._propVal4_.value }
       .hasMessage("Property [propVal4] is not initialized yet.")
       .isExactlyInstanceOf(classOf[UninitializedPropertyAccessException])
 
@@ -89,6 +92,51 @@ class LateInitPropMacrosTest {
 
     a.assertThat(obj._propVal4_.asNullableValue).isEqualTo("strVal4")
     a.assertThat(obj._propVal4_.value).isEqualTo("strVal4")
+
+    a.assertThatCode { () => obj._propVal4_.value = "strVal5" }
+      .hasMessage("Not allowed to change property [propVal4] (from [strVal4] to [strVal5]).")
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+    a.assertThat(obj._propVal4_.value).isEqualTo("strVal4")
+
+    // setting the same value
+    a.assertThatCode { () => obj._propVal4_.value = "strVal4" } .doesNotThrowAnyException()
+    a.assertThat(obj._propVal4_.value).isEqualTo("strVal4")
+
+    a.assertAll()
+  }
+
+  @Test
+  def lateInitOptionPropIsNotChangeable(): Unit = {
+    val a = SoftAssertions()
+    val obj = LateInitPropMacrosClass()
+
+    a.assertThat(obj._propVal5.name).isEqualTo("propVal5")
+    a.assertThat(obj._propVal5.changeable).isFalse
+
+    a.assertThat(obj._propVal5.asNullableValue).isNotNull.isEqualTo(None)
+
+    a.assertThatCode { () => obj._propVal5.value }
+      .hasMessage("Property [propVal5] is not initialized yet.")
+      .isExactlyInstanceOf(classOf[UninitializedPropertyAccessException])
+
+    a.assertThatCode { () => obj._propVal5.value = null.asInstanceOf[Option[String]] }
+      .hasMessage("Not allowed to change property [propVal5] (from [None] to [null]).")
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+    a.assertThat(obj._propVal5.asNullableValue).isNotNull.isEqualTo(None)
+
+    obj._propVal5.value = Option("strVal4")
+
+    a.assertThat(obj._propVal5.asNullableValue).isEqualTo(Option("strVal4"))
+    a.assertThat(obj._propVal5.value).isEqualTo(Option("strVal4"))
+
+    a.assertThatCode { () => obj._propVal5.value = Option("strVal5") }
+      .hasMessage("Not allowed to change property [propVal5] (from [Some(strVal4)] to [Some(strVal5)]).")
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+    a.assertThat(obj._propVal5.value).isEqualTo(Option("strVal4"))
+
+    // setting the same value
+    a.assertThatCode { () => obj._propVal5.value = Option("strVal4") } .doesNotThrowAnyException()
+    a.assertThat(obj._propVal5.value).isEqualTo(Option("strVal4"))
 
     a.assertAll()
   }

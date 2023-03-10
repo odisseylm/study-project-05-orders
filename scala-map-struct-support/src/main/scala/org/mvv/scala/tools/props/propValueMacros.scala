@@ -34,6 +34,20 @@ inline def lateInitProp[T](v: T): PropertyValue[T] =
   PropertyValue[T](strippedLhsMacroVarName, v, changeable = false)
 
 
+/** Creates late-init prop with 'prop name' of left variable */
+inline def lateInitOptionProp[T]: PropertyValue[Option[T]] =
+  PropertyValue[Option[T]](strippedLhsMacroVarName, None, uninitializedValue = None, changeable = false)
+
+
+/** Creates late-init prop with 'prop name' of left variable.
+ *
+ *  It is mainly designed for easy testing because there is no big sense to use late-int property
+ *  if you initially know variable value.
+ */
+inline def lateInitOptionProp[T](v: Option[T]): PropertyValue[Option[T]] =
+  PropertyValue[Option[T]](strippedLhsMacroVarName, v, uninitializedValue = None, changeable = false)
+
+
 private def lhsMacroVarNameImpl(using q: Quotes): Expr[String] =
   qStringLiteral( getLeftVarNameOfMacrosImpl(false) ).asExprOf[String]
 

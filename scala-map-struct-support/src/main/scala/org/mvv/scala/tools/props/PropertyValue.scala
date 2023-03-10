@@ -20,10 +20,12 @@ private def noOpChangingF[T]: ChangingValueFunc[T] = {(_:T,_:T|Null)=>}
 class PropertyValue[T] (
   override val name: String,
   _value: T|Null = null,
+  uninitializedValue: T|Null = null,
 
   val changeable: Boolean = true,
 
   /** !!! Message should have exactly ${prev} and ${new} (not short forms like $prev and $new) */
+  // There Option (right design) is not used to make using class more comfortable.
   val changeErrorMessage: String|Null = null,
 
   val validate:   ChangingValueFunc[T] = noOpChangingF,
@@ -33,17 +35,24 @@ class PropertyValue[T] (
 
   private var internalValue: T|Null = _value
 
+  // T O D O: find better name (but seems 'uninitializable' is misprint)
+  /** Returns unsafe/nullable/uninitialized value
+   *  (nullable/unsafe in case if if 'uninitializedValue' is null). */
   //noinspection ScalaWeakerAccess
   def asNullableValue: T|Null = internalValue
 
   @throws(classOf[UninitializedPropertyAccessException])
   override def value: T =
     val finalValueRef = internalValue
-    if finalValueRef != null
-    then finalValueRef.nn
-    else throw UninitializedPropertyAccessException(s"Property [$name] is not initialized yet.")
+    if _isInitialized(finalValueRef) then finalValueRef.nn
+      else throw UninitializedPropertyAccessException(s"Property [$name] is not initialized yet.")
 
-  def isInitialized: Boolean = internalValue != null
+  def isInitialized: Boolean =
+    val finalValueRef = internalValue
+    _isInitialized(finalValueRef)
+
+  private def _isInitialized(valueRef: T|Null): Boolean =
+    valueRef != null && valueRef != uninitializedValue
 
   override def value_=(v: T): Unit =
     val prev = this.internalValue
@@ -55,17 +64,20 @@ class PropertyValue[T] (
     postUpdate(v, prev)
 
   private def validateNonChangeable(newValue: T, prevValue: T|Null): Unit =
-    if !changeable && prevValue != null && newValue != prevValue then
+    if !changeable &&
+      (  (prevValue != uninitializedValue && newValue != prevValue)
+      || (uninitializedValue != null && newValue == null) )
+      then
       val msg = changeErrorMessage.ifNull(defaultChangeErrorMessage)
-          .replace("${prev}", prevValue.safe.toString())
-          .nn.replace("${new}", newValue.safe.toString())
-      throw IllegalStateException(msg)
+          .replace("${prev}", String.valueOf(prevValue.safe))
+          .nn.replace("${new}", String.valueOf(newValue.safe))
+      throw IllegalArgumentException(msg)
 
 
   private def defaultChangeErrorMessage: String =
     if name.isNullOrEmpty
     then "Not allowed to change property (from [${prev}] to [${new}])."
-    else "Not allowed to change property '$propName' (from [${prev}] to [${new}])."
+    else s"Not allowed to change property [$name] (from [$${prev}] to [$${new}])."
 
 
   override def toString: String = s"$internalValue"
