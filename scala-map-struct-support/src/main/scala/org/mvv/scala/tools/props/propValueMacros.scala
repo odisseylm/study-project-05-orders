@@ -1,7 +1,7 @@
 package org.mvv.scala.tools.props
 
-import scala.quoted.{ Quotes, Expr }
-import org.mvv.scala.tools.quotes.{ qStringLiteral, asValDef }
+import scala.quoted.{Expr, Quotes, Type }
+import org.mvv.scala.tools.quotes.{asValDef, qStringLiteral}
 
 
 
@@ -21,8 +21,34 @@ inline def strippedLhsMacroVarName: String =
 
 
 /** Creates late-init prop with 'prop name' of left variable */
-inline def lateInitProp[T]: PropertyValue[T] =
+inline def lateInitGeneralProp[T]: PropertyValue[T] =
   PropertyValue[T](strippedLhsMacroVarName, changeable = false)
+
+/*
+
+def aaa[X](): Unit = {
+
+  type Elem[X] = X match
+    case String => Char
+    case Array[t] => t
+    case Iterable[t] => t
+}
+
+
+enum DbType :
+  case DbInt
+  case DbString
+
+private def getDbType(using q: Quotes)(typeRepr: q.reflect.TypeRepr): DbType =
+  import q.reflect.*
+  import scala.quoted.Type
+  typeRepr.asType match {
+    case '[Int] => DbType.DbInt // (1)
+    case '[String] => DbType.DbString
+    case '[unknown] => // (2)
+      q.reflect.report.errorAndAbort("Unsupported type as DB column " + Type.show[unknown])
+}
+*/
 
 
 /** Creates late-init prop with 'prop name' of left variable.
@@ -30,7 +56,7 @@ inline def lateInitProp[T]: PropertyValue[T] =
  *  It is mainly designed for easy testing because there is no big sense to use late-int property
  *  if you initially know variable value.
  */
-inline def lateInitProp[T](v: T): PropertyValue[T] =
+inline def lateInitGeneralProp[T](v: T): PropertyValue[T] =
   PropertyValue[T](strippedLhsMacroVarName, v, changeable = false)
 
 
@@ -46,6 +72,26 @@ inline def lateInitOptionProp[T]: PropertyValue[Option[T]] =
  */
 inline def lateInitOptionProp[T](v: Option[T]): PropertyValue[Option[T]] =
   PropertyValue[Option[T]](strippedLhsMacroVarName, v, uninitializedValue = None, changeable = false)
+
+
+inline def uninitializedValueOf[T]: T = inline if isOptionType[T] then None.asInstanceOf[T] else null
+
+/** Universal version for usual types and Option  */
+inline def lateInitProp[T]: PropertyValue[T] =
+  PropertyValue[T](strippedLhsMacroVarName, uninitializedValue = uninitializedValueOf[T], changeable = false)
+
+/** Universal version for usual types and Option  */
+inline def lateInitProp[T](v: T): PropertyValue[T] =
+  PropertyValue[T](strippedLhsMacroVarName, v, uninitializedValue = uninitializedValueOf[T], changeable = false)
+
+
+private inline def isOptionType[T]: Boolean =
+  ${ isOptionTypeImpl[T] }
+
+private def isOptionTypeImpl[T](using q: Quotes)(using Type[T]): Expr[Boolean] =
+  import q.reflect.TypeRepr
+  val isBool = TypeRepr.of[T] <:< TypeRepr.of[Option[?]]
+  if isBool then '{ true } else '{ false }
 
 
 private def lhsMacroVarNameImpl(using q: Quotes): Expr[String] =

@@ -33,7 +33,7 @@ class PropertyValue[T] (
   val postUpdate: ChangingValueFunc[T] = noOpChangingF,
 ) extends WritableProp[T] with Equals derives CanEqual :
 
-  private var internalValue: T|Null = _value
+  private var internalValue: T|Null = if _value == null then uninitializedValue else _value
 
   // T O D O: find better name (but seems 'uninitializable' is misprint)
   /** Returns unsafe/nullable/uninitialized value
