@@ -74,7 +74,7 @@ inline def lateInitOptionProp[T](v: Option[T]): PropertyValue[Option[T]] =
   PropertyValue[Option[T]](strippedLhsMacroVarName, v, uninitializedValue = None, changeable = false)
 
 
-inline def uninitializedValueOf[T]: T = inline if isOptionType[T] then None.asInstanceOf[T] else null
+private inline def uninitializedValueOf[T]: T|Null = inline if isOptionType[T] then None.asInstanceOf[T] else null
 
 /** Universal version for usual types and Option  */
 inline def lateInitProp[T]: PropertyValue[T] =
