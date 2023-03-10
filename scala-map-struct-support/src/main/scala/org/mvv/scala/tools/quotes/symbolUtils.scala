@@ -22,6 +22,11 @@ extension (str: String)
   def nonEmptySymbolName: Boolean = !str.isEmptySymbolName
 
 
+extension (using q: Quotes)(symbolFlags: q.reflect.Flags)
+  def isOneOf(flags: q.reflect.Flags*): Boolean =
+    flags.exists(f => symbolFlags.is(f))
+
+
 def activeSymbolFlags(using q: Quotes)(symbol: q.reflect.Symbol): Set[q.reflect.Flags] =
   activeSymbolFlagEntries(symbol).map(_._2).toSet
 def activeSymbolFlagEntries(using q: Quotes)(symbol: q.reflect.Symbol): List[(String, q.reflect.Flags)] =

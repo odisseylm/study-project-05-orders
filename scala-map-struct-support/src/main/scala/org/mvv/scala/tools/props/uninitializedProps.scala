@@ -107,7 +107,7 @@ private def currentClassIsInitializedPropsImpl_(using q: Quotes)(
   val tuplesExprs = tuples.map(_.asExprOf[(String,()=>Boolean)])
   val exprOfTupleList = Expr.ofList(tuplesExprs)
 
-  log.info(s"$topMethodSimpleName: ${exprOfTupleList.show}\n$exprOfTupleList")
+  log.debug(s"$topMethodSimpleName: ${exprOfTupleList.show}\n$exprOfTupleList")
   exprOfTupleList
 
 

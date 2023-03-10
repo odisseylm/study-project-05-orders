@@ -1,8 +1,13 @@
 package org.mvv.scala.tools.props
 
-import org.mvv.scala.tools.{ equalImpl, isNullOrEmpty, ifNull, safe }
+import scala.language.implicitConversions
+import org.mvv.scala.tools.{equalImpl, ifNull, isNullOrEmpty, safe}
+
+import scala.annotation.targetName
 
 
+
+implicit inline def fromPropertyValue[T](propValue: PropertyValue[T]): T = propValue.value
 
 /** 1st param - new non-null value, 2nd param - previous/initial nullable value. */
 // // T O D O: use these below with param names like (newValue: T, prevValue: T|Null)=>Unit
@@ -81,8 +86,9 @@ class PropertyValue[T] (
     val finalSafeRef = this.internalValue
     if finalSafeRef == null then 42.hashCode else finalSafeRef.hashCode
 
-  //def apply(value: T): Unit = set(value)
-  //def `=` (value: T): Unit = set(value)
+  def apply(value: T): Unit = value_=(value)
+  @targetName("assignOp")
+  infix def `=` (value: T): Unit = value_=(value)
 
 end PropertyValue
 
