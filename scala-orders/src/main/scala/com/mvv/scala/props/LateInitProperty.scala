@@ -1,5 +1,11 @@
 package com.mvv.scala.props
 
+//noinspection ScalaUnusedSymbol
+def temp894758454795748(): Unit = {}
+//noinspection ScalaUnusedSymbol
+def temp894758454795749(): Unit = {}
+
+/*
 import scala.annotation.nowarn
 //
 import com.mvv.log.safe
@@ -40,7 +46,7 @@ trait ReadWriteProperty[/*in*/ T, V] extends ReadOnlyProperty[T, V] :
 // This class is designed because kotlin does not support 'late init' props with custom getter/setter
 class LateInitProperty[T, Owner] (
     value: T|Null = null,
-    val propName: String|Null = null, // TODO: maybe Option ???
+    val propName: String|Null = null, // T O D O: maybe Option ???
 
     val changeable: Boolean = true,
     // !!! Message should have exactly ${prev} and ${new} (not short forms like $prev and $new)
@@ -49,7 +55,7 @@ class LateInitProperty[T, Owner] (
     val validate:   (T, T|Null)=>Unit = {(n:T,p:T|Null)=>},
     val preUpdate:  (T, T|Null)=>Unit = {(n:T,p:T|Null)=>},
     val postUpdate: (T, T|Null)=>Unit = {(n:T,p:T|Null)=>},
-    // TODO: use these below with param names
+    // T O D O: use these below with param names
     //val validate:   (newValue: T, prevValue: T|Null)=>Unit = {(n,p)=>},
     //val preUpdate:  (newValue: T, prevValue: T|Null)=>Unit = {(n,p)=>},
     //val postUpdate: (newValue: T, prevValue: T|Null)=>Unit = {(n,p)=>},
@@ -112,3 +118,4 @@ class LateInitProperty[T, Owner] (
 //  given aaa: scala.Conversion[T, LateInitProperty[T, ?]] = {
 //    def apply(x: T): U
 //  }
+*/

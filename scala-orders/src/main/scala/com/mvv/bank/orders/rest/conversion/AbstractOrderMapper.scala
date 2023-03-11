@@ -36,31 +36,6 @@ import com.mvv.bank.orders.rest.entities.{
 type DomainBaseOrder = com.mvv.bank.orders.domain.Order[?,?]
 
 abstract class AbstractOrderMapper :
-  /*
-  It causes errors:
-  error: Can't generate mapping method with no input arguments.
-  error: Can't generate mapping method with return type void.
-
-  // with no input arguments.
-  name = {SharedNameTable$NameImpl@5375} "marketProvider"
-  type = {Type$MethodType@5376} "()com.mvv.bank.orders.domain.MarketProvider"
-  owner = {Symbol$ClassSymbol@5377} "com.mvv.bank.orders.rest.conversion.AbstractOrderMapper"
-
-  // with return type void
-  name = {SharedNameTable$NameImpl@5402} "marketProvider_$eq"
-  type = {Type$MethodType@5403} "(com.mvv.bank.orders.domain.MarketProvider)void"
-  owner = {Symbol$ClassSymbol@5377} "com.mvv.bank.orders.rest.conversion.AbstractOrderMapper"
-
-  name = {SharedNameTable$NameImpl@5415} "companyProvider"
-  type = {Type$MethodType@5416} "()com.mvv.bank.orders.domain.CompanyProvider"
-  owner = {Symbol$ClassSymbol@5377} "com.mvv.bank.orders.rest.conversion.AbstractOrderMapper"
-
-  name = {SharedNameTable$NameImpl@5429} "companyProvider_$eq"
-  type = {Type$MethodType@5430} "(com.mvv.bank.orders.domain.CompanyProvider)void"
-  owner = {Symbol$ClassSymbol@5377} "com.mvv.bank.orders.rest.conversion.AbstractOrderMapper"
-
-
-  */
   // TODO: try to make it working with 'protected'
   @Inject
   private /*lateinit*/ var marketProvider: MarketProvider = uninitialized

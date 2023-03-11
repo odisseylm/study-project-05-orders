@@ -13,4 +13,4 @@ import org.mapstruct.Mapper;
     }
     //config = JDomainPrimitiveMappersAsConfig.class
 )
-abstract class JCashOrderMapper extends CashOrderMapper { }
+public abstract class JCashOrderMapper extends CashOrderMapper { }

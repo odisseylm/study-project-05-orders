@@ -1,7 +1,6 @@
 //noinspection ScalaUnusedSymbol // T O D O: remove after adding test and so on
 package com.mvv.bank.orders.domain
 
-
 import scala.language.strictEquality
 //
 import scala.reflect.ClassTag
@@ -10,10 +9,15 @@ import scala.compiletime.uninitialized
 import java.time.ZonedDateTime
 //
 import com.mvv.utils.{ newInstance, check, checkId, checkNotNull, checkNotBlank, require, requireNotBlank }
-import com.mvv.utils.{ removePrefix, uncapitalize}
+import com.mvv.utils.uncapitalize
 import com.mvv.log.{safe, Logger, LoggerMixin}
-import com.mvv.nullables.{ isNull, NullableCanEqualGivens }
-import com.mvv.scala.props.{ checkRequiredPropsAreInitialized, checkPropertyInitialized, BeanProp, KProperty, LateInitProperty }
+import com.mvv.nullables.{ isNull, isNotNull, NullableCanEqualGivens }
+import com.mvv.props.checkPropInitialized
+
+import org.mvv.scala.tools.props.{ namedValue, PropertyValue, fromPropertyValue, lateInitProp }
+import org.mvv.scala.tools.props.{ currentClassIsInitializedPropsBy, DefaultIsInitializedMethods }
+import org.mvv.scala.tools.quotes.classNameOf
+import com.mvv.scala.props.checkRequiredPropsAreInitialized
 
 
 
@@ -73,57 +77,68 @@ inline def createOrder[T <: BaseOrder](init: T => Unit)(implicit ct: ClassTag[T]
 //sealed
 abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Order[Product, Quote] with LoggerMixin {
 
-  // This class mainly is introduced to avoid 'duplicate code' warning
-  //@Suppress("ClassName") // It is named from '_' (as internal) because I cannot do it protected
+  import scala.language.implicitConversions
 
-  protected var _id: Option[Long] = None
+  private val _id = lateInitProp[Option[Long]]
   def id: Option[Long] = _id
+  def id_=(id: Option[Long]): Unit = _id(id)
 
-  protected var _user: User = uninitialized
+  private val _user = lateInitProp[User] // uninitialized
   def user: User = _user
+  def user_=(user: User): Unit = _user(user)
 
-  private val _side = LateInitProperty[Side, AnyRef](
-    changeable = false,
-    changeErrorMessage = "Changing order side is not allowed (from ${prev} to ${new}).", // !!! ordinal string !!!
-  )
-  def side: Side = _side.getValue(this, KProperty.simpleProperty[Side]("side"))
-  protected def side_= (side: Side): Unit = _side.set(side)
+  private val _side = lateInitProp[Side]
+  def side: Side = _side.value
+  def side_= (side: Side): Unit = _side.value = side
 
-  protected var _product: Product = uninitialized
+  private val _product = lateInitProp[Product] // uninitialized
   def product: Product = _product
+  protected def product_=(product: Product): Unit = _product(product)
 
-  protected var _volume: BigDecimal = uninitialized
+  private val _volume = lateInitProp[BigDecimal] // uninitialized
   def volume: BigDecimal = _volume
+  def volume_=(volume: BigDecimal): Unit = _volume(volume)
 
-  protected var _market: Market = uninitialized
+  private val _market = lateInitProp[Market] // uninitialized
   def market: Market = _market
+  def market_=(market: Market): Unit = _market(market)
 
-  protected var _buySellType: BuySellType = uninitialized
+  private val _buySellType= lateInitProp[BuySellType] // uninitialized
   def buySellType: BuySellType = _buySellType
+  def buySellType_=(buySellType: BuySellType): Unit = _buySellType(buySellType)
 
   protected var _orderState: OrderState = OrderState.UNKNOWN
   def orderState: OrderState = _orderState
+  def orderState_=(orderState: OrderState): Unit = _orderState = orderState
 
   // probably it would be better to use Instant? But I do not see advantages of Instant comparing with ZonedDateTime
-  protected var _placedAt:   Option[ZonedDateTime] = None
+  private val _placedAt = lateInitProp[Option[ZonedDateTime]]
   def placedAt: Option[ZonedDateTime] = _placedAt
+  def placedAt_=(placedAt: Option[ZonedDateTime]): Unit = _placedAt(placedAt)
 
-  protected var _executedAt: Option[ZonedDateTime] = None
+  private val _executedAt = lateInitProp[Option[ZonedDateTime]]
   def executedAt: Option[ZonedDateTime] = _executedAt
+  def executedAt_=(executedAt: Option[ZonedDateTime]): Unit = _executedAt(executedAt)
 
-  protected var _canceledAt: Option[ZonedDateTime] = None
+  private val _canceledAt = lateInitProp[Option[ZonedDateTime]]
   def canceledAt: Option[ZonedDateTime] = _canceledAt
+  def canceledAt_=(canceledAt: Option[ZonedDateTime]): Unit = _canceledAt(canceledAt)
 
-  protected var _expiredAt:  Option[ZonedDateTime] = None
+  private val _expiredAt = lateInitProp[Option[ZonedDateTime]]
   def expiredAt:  Option[ZonedDateTime] = _expiredAt
+  def expiredAt_=(expiredAt: Option[ZonedDateTime]): Unit = _expiredAt(expiredAt)
 
-  protected var _resultingPrice: Option[Amount] = None
+  private val _resultingPrice = lateInitProp[Option[Amount]]
   def resultingPrice: Option[Amount] = _resultingPrice
+  def resultingPrice_=(resultingPrice: Option[Amount]): Unit = _resultingPrice(resultingPrice)
 
   // it is optional/temporary (mainly for debugging; most probably after loading order from database it will be lost)
-  private var _resultingQuote: Option[Quote] = None
+  private val _resultingQuote = lateInitProp[Option[Quote]]
   def resultingQuote: Option[Quote] = _resultingQuote
-  protected def resultingQuote_= (quote: Option[Quote]): Unit = _resultingQuote = quote
+  protected def resultingQuote_= (quote: Option[Quote]): Unit = _resultingQuote(quote)
+
+  protected def currentIsInitProps: List[(String, ()=>Boolean)] =
+    currentClassIsInitializedPropsBy[OrderIsInitializedMethods]
 
 
   override def changeOrderState(nextOrderState: OrderState)(using context: OrderContext): Unit = {
@@ -144,17 +159,17 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
       case OrderState.TO_BE_PLACED => // Nothing to do
       case OrderState.PLACED =>
         // it is used if it is done locally (instead of real server)
-        this._placedAt = Some(context.now())
-        this._market = context.market
+        this.placedAt = Some(context.now())
+        this.market = context.market
       case OrderState.EXECUTED =>
         // it is used if it is done locally there (instead of real server)
-        this._executedAt = context.now()
+        this.executedAt = context.now()
       case OrderState.CANCELED =>
         // it is used if it is done locally there (instead of real server)
-        this._canceledAt = context.now()
+        this.canceledAt = context.now()
       case OrderState.EXPIRED =>
         // it is used if it is done locally there (instead of real server)
-        this._expiredAt = context.now()
+        this.expiredAt = context.now()
     }
   }
 
@@ -164,19 +179,20 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
       return
     }
 
-    checkRequiredPropsAreInitialized(this)
+    // TODO: fix
+    //checkRequiredPropsAreInitialized(this, currentIsInitProps)
     check(side == Side.CLIENT, s"Currently only client side orders are supported.")
 
     /*
-    checkPropertyInitialized(::orderType)
-    checkPropertyInitialized(::side)
+    checkPropInitialized(::orderType)
+    checkPropInitialized(::side)
     check(side == Side.CLIENT) { "Currently only client side orders are supported." }
-    checkPropertyInitialized(::volume)
-    checkPropertyInitialized(::buySellType)
-    checkPropertyInitialized(::orderState)
+    checkPropInitialized(::volume)
+    checkPropInitialized(::buySellType)
+    checkPropInitialized(::orderState)
 
-    checkPropertyInitialized(::product)
-    checkPropertyInitialized(::market)
+    checkPropInitialized(::product)
+    checkPropInitialized(::market)
     */
 
     orderState match {
@@ -187,23 +203,24 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
       case OrderState.PLACED =>
         checkId(id)
       case OrderState.EXECUTED =>
-        checkId(id)
-        checkPropertyInitialized(BeanProp(placedAt))
-        checkPropertyInitialized(BeanProp(resultingPrice))
-        checkPropertyInitialized(BeanProp(resultingQuote))
+        checkId(id) //??
+        checkPropInitialized(namedValue(placedAt))
+        checkPropInitialized(namedValue(resultingPrice))
+        checkPropInitialized(namedValue(resultingQuote))
       case OrderState.EXPIRED =>
         checkId(id)
-        checkPropertyInitialized(BeanProp(expiredAt))
+        checkPropInitialized(namedValue(expiredAt))
       case OrderState.CANCELED =>
         checkId(id)
-        checkPropertyInitialized(BeanProp(canceledAt))
+        checkPropInitialized(namedValue(canceledAt))
     }
   }
 
   override def validateNextState(nextState: OrderState): Unit = {
     if (nextState == OrderState.UNKNOWN) { return }
 
-    checkRequiredPropsAreInitialized(this)
+    // TODO: fix
+    //checkRequiredPropsAreInitialized(this, currentIsInitProps)
 
     /*
     checkInitialized(::orderType)
@@ -259,27 +276,31 @@ object AbstractOrder :
     val expiredAt: Option[ZonedDateTime]
 
     protected def copyToOrder(order: OrderType): Unit =
-      order._id = id
-      order._user = user
+      order.id = id
+      order.user = user
 
-      order._side(side)
-      order._buySellType = buySellType
-      order._volume = volume
+      order.side = side
+      order.buySellType = buySellType
+      order.volume = volume
 
-      order._market = market
+      order.market = market
 
-      order._orderState = orderState
+      order.orderState = orderState
 
-      order._placedAt = placedAt
-      order._executedAt = executedAt
-      order._canceledAt = canceledAt
-      order._expiredAt = expiredAt
+      order.placedAt = placedAt
+      order.executedAt = executedAt
+      order.canceledAt = canceledAt
+      order.expiredAt = expiredAt
 
-      order._resultingPrice = resultingPrice
-      order._resultingQuote = resultingQuote
+      order.resultingPrice = resultingPrice
+      order.resultingQuote = resultingQuote
     end copyToOrder
     val resultingPrice: Option[Amount]
 
     val resultingQuote: Option[Q]
   end _BaseAttrs
 
+
+class OrderIsInitializedMethods
+
+object OrderIsInitializedMethods extends DefaultIsInitializedMethods

@@ -6,26 +6,27 @@ import scala.compiletime.uninitialized
 //
 import java.time.ZonedDateTime
 //
-import com.mvv.scala.props.LateInitProperty
+import org.mvv.scala.tools.props.PropertyValue
 import com.mvv.nullables.NullableCanEqualGivens
 import com.mvv.utils.check
 
 
 sealed abstract class AbstractStockOrder extends AbstractOrder[CompanySymbol, StockQuote] {
 
-    private val _company = LateInitProperty[Company, Any](
-        changeable = false,
-        postUpdate = { (newV, _) => _product = newV.symbol },
-    )
-    def company: Company = _company.asNonNullableValue
+  private val _company = PropertyValue[Company](
+    "company",
+    changeable = false,
+    postUpdate = { (newV, _) => product = newV.symbol },
+  )
+  def company: Company = _company.value
 
-    //private var _resultingQuote: Option[StockQuote] = None
-    //override def resultingQuote: Option[StockQuote] = _resultingQuote
-    //override def resultingQuote: Option[Quote] = _resultingQuote
-    override def resultingQuote_= (quote: Option[StockQuote]): Unit =
-      super.resultingQuote_= (quote)
-      if (quote.isDefined && resultingPrice.isEmpty)
-          _resultingPrice = quote.map(_.asPrice(buySellType))
+  //private var _resultingQuote: Option[StockQuote] = None
+  //override def resultingQuote: Option[StockQuote] = _resultingQuote
+  //override def resultingQuote: Option[Quote] = _resultingQuote
+  override def resultingQuote_= (quote: Option[StockQuote]): Unit =
+    super.resultingQuote_= (quote)
+    if quote.isDefined && resultingPrice.isEmpty then
+      resultingPrice = quote.map(_.asPrice(buySellType))
 }
 
 
@@ -52,7 +53,7 @@ object AbstractStockOrder extends NullableCanEqualGivens[AbstractStockOrder] :
   ) extends AbstractOrder._BaseAttrs[CompanySymbol, StockQuote, AbstractStockOrder] :
     override def copyToOrder(order: AbstractStockOrder): Unit =
       super.copyToOrder(order)
-      order._company(company)
+      order._company.value = company
 
 
 class StockLimitOrder extends AbstractStockOrder, LimitOrder[CompanySymbol, StockQuote] {

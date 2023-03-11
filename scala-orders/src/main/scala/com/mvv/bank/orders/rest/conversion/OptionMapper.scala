@@ -1,6 +1,7 @@
 package com.mvv.bank.orders.rest.conversion
 
-import org.mapstruct.Mapper
+import org.mapstruct.{ Mapper, ObjectFactory }
+
 
 
 private def optionToValueOrNull[T](v: Option[T]): T =
@@ -13,11 +14,16 @@ private def optionToValueOrNull[T](v: Option[T]): T =
 trait OptionMapper :
   def mapOptionToLong(source: Option[Long]): Long = optionToValueOrNull(source)
   def mapOptionToInt(source: Option[Int]): Int = optionToValueOrNull(source)
-  def mapOptionTo[T](source: Option[T]): T = optionToValueOrNull(source)
+  //def mapOptionTo[T](source: Option[T]): T = optionToValueOrNull(source)
   // T O D O: add other required ones
 
   def mapLongToOption(source: Int): Option[Long] = Option(source)
   def mapLongToOption(source: Short): Option[Long] = Option(source)
   def mapLongToOption(source: Long): Option[Long] = Option(source)
-  def mapToOption[T](source: T): Option[T] = Option(source)
+  //def mapToOption[T](source: T): Option[T] = Option(source)
   // T O D O: add other required ones
+
+  //@ObjectFactory
+  //def optionOf[T](v: T): Option[T] = Option(v)
+  //@ObjectFactory
+  //def unwrap[T](v: Option[T]): T = v.get

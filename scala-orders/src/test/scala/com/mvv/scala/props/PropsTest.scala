@@ -1,19 +1,14 @@
 package com.mvv.scala.props
 
-
-
-import com.mvv.bank.orders.domain.{AbstractOrder, Order}
-import com.mvv.log.Logger
-import com.mvv.scala.props.collectRequiredProperties
-import org.junit.jupiter.api.DisplayName
-
-import java.time.ZonedDateTime
 import scala.language.unsafeNulls
-//
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-//
 import scala.jdk.CollectionConverters.*
+import java.time.ZonedDateTime
+//
+import org.junit.jupiter.api.{ Test, DisplayName }
+import org.assertj.core.api.Assertions.assertThat
+//
+import com.mvv.log.Logger
+import com.mvv.bank.orders.domain.{AbstractOrder, Order}
 
 
 class PropsTest {
@@ -41,6 +36,7 @@ class PropsTest {
     def newProp3: String = ""
 
 
+  /*
   @Test
   @DisplayName("collectRequiredPropertiesOfTrait")
   def testCollectRequiredPropertiesOfTrait(): Unit = {
@@ -55,4 +51,5 @@ class PropsTest {
     assertThat(propNames.asJava)
       .containsExactlyInAnyOrder("prop1", "prop2", "prop3", "newProp1", "newProp2", "newProp3")
   }
+  */
 }

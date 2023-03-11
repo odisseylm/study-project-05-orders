@@ -1,6 +1,7 @@
 package com.mvv.nullables
 
 import scala.language.unsafeNulls
+import scala.annotation.targetName
 //
 import org.apache.commons.lang3.StringUtils
 
@@ -17,6 +18,9 @@ import org.apache.commons.lang3.StringUtils
 extension [T](v: T|Null)
   inline def isNull: Boolean = v.asInstanceOf[AnyRef] == null
   inline def isNotNull: Boolean = v.asInstanceOf[AnyRef] != null
+  inline def isNotNone: Boolean =
+    given CanEqual[T|Null, Option[?]] = CanEqual.derived
+    v != None
 
 
 extension [T](x: T|Null)
@@ -30,3 +34,14 @@ extension [T](x: T|Null)
 // from https://stackoverflow.com/questions/48713965/scala-how-to-determine-if-a-type-is-nullable
 def isNullablePureType[T](arg: T)(implicit sn: Null <:< T = null, sar: T <:< AnyRef = null): Boolean =
   sn != null && sar != null
+
+
+extension [T](v: Array[T|Null]|Null)
+  @targetName("castArrayToNonNullable")
+  //noinspection ScalaUnusedSymbol
+  inline def nnArray: Array[T] = v.nn.asInstanceOf[Array[T]]
+
+extension [T](v: Array[T]|Null)
+  @targetName("castArrayToNonNullableAlt")
+  //noinspection ScalaUnusedSymbol
+  inline def nnArray: Array[T] = v.nn.asInstanceOf[Array[T]]

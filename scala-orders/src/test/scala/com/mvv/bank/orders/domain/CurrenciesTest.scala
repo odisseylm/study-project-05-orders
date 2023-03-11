@@ -1,12 +1,39 @@
 package com.mvv.bank.orders.domain
 
 import scala.language.unsafeNulls
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.{ Assertions, SoftAssertions }
 import org.assertj.core.api.Assertions.{assertThat, assertThatCode}
-import org.junit.jupiter.api.{Disabled, Test}
+import org.junit.jupiter.api.{ Test, Disabled }
 
 
 class CurrenciesTest {
+
+  @Test
+  def temp33(): Unit = {
+    assertThat(Currency("USD")).isEqualTo(Currency.USD)
+
+    val a = SoftAssertions()
+
+    a.assertThatCode(() => Currency(null))
+      .hasMessage("Invalid currency [null].")
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+
+    a.assertThatCode { () => Currency(null) }
+      .hasMessage("Invalid currency [null].")
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+
+    /*
+    a.assertThatCode(() => Currency(null))
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+      .hasMessage("Invalid currency [null].")
+
+    a.assertThatCode { () => Currency(null) }
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+      .hasMessage("Invalid currency [null].")
+    */
+
+    a.assertAll()
+  }
 
   @Test
   def currency(): Unit = {

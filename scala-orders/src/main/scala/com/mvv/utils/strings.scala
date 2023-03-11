@@ -7,8 +7,16 @@ extension (string: CharSequence)
   def isBlank: Boolean = StringUtils.isBlank(string)
 
 
-extension (string: String)
-  // TODO: remove ones which are present in scala StringOps
-  def removePrefix(prefix: String): String = StringUtils.removeStart(string, prefix).nn
-  def removeSuffix(prefix: String): String = StringUtils.removeEnd(string, prefix).nn
-  def uncapitalize: String = StringUtils.uncapitalize(string).nn
+extension (s: String)
+  def uncapitalize: String = StringUtils.uncapitalize(s).nn
+
+  def afterLastOr(delimiter: String): Option[String] =
+    val lastIndex = s.lastIndexOf(delimiter)
+    if lastIndex == -1 then None else Option(s.substring(lastIndex + delimiter.length).nn)
+  inline def afterLastOr(delimiter: String, altStr: String): String =
+    s.afterLastOr(delimiter).getOrElse(altStr)
+  inline def afterLastOrOrigin(delimiter: String): String =
+    s.afterLastOr(delimiter, s)
+
+
+

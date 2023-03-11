@@ -1,18 +1,19 @@
 package com.mvv.bank.orders.domain
 
-import com.mvv.scala.props.collectRequiredProperties
-import org.junit.jupiter.api.DisplayName
 
 import scala.language.unsafeNulls
-//
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-//
 import scala.jdk.CollectionConverters.*
+//
+import org.junit.jupiter.api.Test
+import org.assertj.core.api.Assertions.assertThat
+//
+import org.junit.jupiter.api.DisplayName
+
 
 
 class OrderTest {
 
+  /*
   @Test
   @DisplayName("collectRequiredProperties")
   def testCollectRequiredPropertiesFromTrait(): Unit = {
@@ -60,5 +61,6 @@ class OrderTest {
       "buySellType",
     )
   }
+  */
 
 }

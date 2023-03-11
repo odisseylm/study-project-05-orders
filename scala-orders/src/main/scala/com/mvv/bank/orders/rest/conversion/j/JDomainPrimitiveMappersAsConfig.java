@@ -5,7 +5,6 @@ import org.mapstruct.MapperConfig;
 
 
 @MapperConfig (
-    //componentModel = MAP_STRUCT_COMPONENT_MODEL,
     uses = {
         JDomainMappers.class,
         JEnumMappers.class,

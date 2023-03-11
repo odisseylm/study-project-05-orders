@@ -10,53 +10,62 @@ import java.time.ZonedDateTime
 import com.mvv.log.safe
 import com.mvv.utils.{ requireNotNull, check }
 import com.mvv.nullables.NullableCanEqualGivens
-import com.mvv.scala.props.{ checkPropertyInitialized, BeanProp }
+import com.mvv.props.checkPropInitialized
+import org.mvv.scala.tools.props.{ namedValue, currentClassIsInitializedProps, lateInitProp }
+import org.mvv.scala.tools.props.currentClassIsInitializedPropsBy
 
 
 sealed abstract class AbstractCashOrder extends AbstractOrder[Currency, Quote] {
+  import org.mvv.scala.tools.props.fromPropertyValue
 
-  private var _buyCurrency: Currency = uninitialized
+  private val _buyCurrency = lateInitProp[Currency] // uninitialized
   def buyCurrency: Currency = _buyCurrency
+  def buyCurrency_=(buyCurrency: Currency): Unit = _buyCurrency(buyCurrency)
 
-  protected var _sellCurrency: Currency = uninitialized
+
+  private val _sellCurrency = lateInitProp[Currency] // uninitialized
   def sellCurrency: Currency = _sellCurrency
+  def sellCurrency_=(sellCurrency: Currency): Unit = _sellCurrency(sellCurrency)
+
 
   // It also can be used to set resultingPrice/resultingQuote from FX rate during order execution (if they are not set).
   // It is optional/temporary (mainly for debugging; most probably after loading order from database it will be lost).
-  private var _resultingRate: Option[FxRate] = None
+  private val _resultingRate = lateInitProp[Option[FxRate]]
   def resultingRate: Option[FxRate] = _resultingRate
   // TODO: make it protected
   def resultingRate_= (value: Option[FxRate]): Unit = {
     requireNotNull(value)
 
-    _resultingRate = value
+    _resultingRate(value)
     import com.mvv.nullables.AnyCanEqualGivens.given
 
-    if (value.isDefined)
+    if value.nonEmpty then
       if resultingPrice.isEmpty then
-        _resultingPrice = value.map(_.asPrice(priceCurrency, buySellType)) // TODO: test with inverted rate
+        resultingPrice = value.map(_.asPrice(priceCurrency, buySellType)) // TODO: test with inverted rate
       if resultingQuote.isEmpty then
         resultingQuote = value.map(FxRateAsQuote(_, priceCurrency)) // TODO: test with inverted rate
   }
 
   def priceCurrency: Currency = buySellType match
     // opposite
-    //null -> null
     case BuySellType.BUY  => sellCurrency
     case BuySellType.SELL => buyCurrency
 
   @Deprecated("Better to use buyCurrency/sellCurrency directly if you access/config cash order by direct FxCashOrder typed variable.")
   override def product: Currency = buySellType match
-    //null -> null
     case BuySellType.BUY  => buyCurrency
     case BuySellType.SELL => sellCurrency
 
-  def product_= (value: Currency): Unit =
+  override def product_= (value: Currency): Unit =
      val buySellType = this.buySellType
-     checkPropertyInitialized(BeanProp(buySellType), s"buySellType should be set before setting product.")
+     checkPropInitialized(namedValue(buySellType), s"buySellType should be set before setting product.")
      buySellType match
-       case BuySellType.BUY  => _buyCurrency  = value
-       case BuySellType.SELL => _sellCurrency = value
+       case BuySellType.BUY  => _buyCurrency(value)
+       case BuySellType.SELL => _sellCurrency(value)
+
+  override protected def currentIsInitProps: List[(String, () => Boolean)] =
+    currentClassIsInitializedPropsBy[OrderIsInitializedMethods] ++ super.currentIsInitProps
+
 
   def toExecute(rate: FxRate): Boolean = toExecute(FxRateAsQuote(rate, priceCurrency))
 }
@@ -89,13 +98,14 @@ object AbstractCashOrder :
 
     override def copyToOrder(order: AbstractCashOrder): Unit =
       super.copyToOrder(order)
-      order._buyCurrency = buyCurrency
-      order._sellCurrency = sellCurrency
+      order.buyCurrency = buyCurrency
+      order.sellCurrency = sellCurrency
       order.resultingRate = resultingRate
   end Base
 
 
 class CashLimitOrder private () extends AbstractCashOrder, LimitOrder[Currency, Quote] :
+  import org.mvv.scala.tools.props.fromPropertyValue
 
   private val limitOrderSupport = StopLimitOrderSupport[Currency, Quote](this,
       //::limitPrice,
@@ -106,11 +116,16 @@ class CashLimitOrder private () extends AbstractCashOrder, LimitOrder[Currency, 
 
   override val orderType: OrderType = OrderType.LIMIT_ORDER
 
-  private var _limitPrice: Amount = uninitialized
+  private val _limitPrice = lateInitProp[Amount] // uninitialized
   override def limitPrice: Amount = _limitPrice
+  def limitPrice_=(limitPrice: Amount): Unit = _limitPrice(limitPrice)
 
-  private var _dailyExecutionType: DailyExecutionType = uninitialized
+  private val _dailyExecutionType = lateInitProp[DailyExecutionType] // uninitialized
   override def dailyExecutionType: DailyExecutionType = _dailyExecutionType
+  def dailyExecutionType_=(dailyExecutionType: DailyExecutionType): Unit = _dailyExecutionType(dailyExecutionType)
+
+  override protected def currentIsInitProps: List[(String, () => Boolean)] =
+    currentClassIsInitializedPropsBy[OrderIsInitializedMethods] ++ super.currentIsInitProps
 
   override def validateCurrentState(): Unit =
     super.validateCurrentState()
@@ -140,8 +155,8 @@ object CashLimitOrder extends NullableCanEqualGivens[CashLimitOrder]:
     val order = new CashLimitOrder()
     base.copyToOrder(order)
 
-    order._limitPrice = limitPrice
-    order._dailyExecutionType = dailyExecutionType
+    order.limitPrice = limitPrice
+    order.dailyExecutionType = dailyExecutionType
 
     order.validateCurrentState()
     order
@@ -149,6 +164,7 @@ object CashLimitOrder extends NullableCanEqualGivens[CashLimitOrder]:
 
 
 class CashStopOrder private () extends AbstractCashOrder, StopOrder[Currency, Quote] :
+  import org.mvv.scala.tools.props.fromPropertyValue
 
   private val stopOrderSupport = StopLimitOrderSupport[Currency, Quote](
     this, "stoPrice", () => stopPrice, "dailyExecutionType", () => dailyExecutionType)
@@ -156,11 +172,16 @@ class CashStopOrder private () extends AbstractCashOrder, StopOrder[Currency, Qu
 
   override val orderType: OrderType = OrderType.STOP_ORDER
 
-  private var _stopPrice: Amount = uninitialized
+  private val _stopPrice = lateInitProp[Amount] // uninitialized
   override def stopPrice: Amount = _stopPrice
+  def stopPrice_=(stopPrice: Amount): Unit = _stopPrice(stopPrice)
 
-  private var _dailyExecutionType: DailyExecutionType = uninitialized
+  private val _dailyExecutionType = lateInitProp[DailyExecutionType] // uninitialized
   override def dailyExecutionType: DailyExecutionType = _dailyExecutionType
+  def dailyExecutionType_=(dailyExecutionType: DailyExecutionType): Unit = _dailyExecutionType(dailyExecutionType)
+
+  override protected def currentIsInitProps: List[(String, () => Boolean)] =
+    currentClassIsInitializedPropsBy[OrderIsInitializedMethods] ++ super.currentIsInitProps
 
   override def validateCurrentState(): Unit =
     super.validateCurrentState()
@@ -188,8 +209,8 @@ object CashStopOrder extends NullableCanEqualGivens[CashStopOrder] :
       val order = new CashStopOrder()
       base.copyToOrder(order)
 
-      order._stopPrice = stopPrice
-      order._dailyExecutionType = dailyExecutionType
+      order.stopPrice = stopPrice
+      order.dailyExecutionType = dailyExecutionType
 
       order.validateCurrentState()
       order
@@ -200,6 +221,9 @@ end CashStopOrder
 
 class CashMarketOrder private () extends AbstractCashOrder :
   override val orderType: OrderType = OrderType.MARKET_ORDER
+
+  override protected def currentIsInitProps: List[(String, () => Boolean)] =
+    currentClassIsInitializedPropsBy[OrderIsInitializedMethods] ++ super.currentIsInitProps
 
   override def toExecute(quote: Quote): Boolean =
     val rateCurrencyPair = CurrencyPair(Currency (quote.product), quote.bid.currency)
@@ -217,4 +241,3 @@ object CashMarketOrder extends NullableCanEqualGivens[CashMarketOrder] :
     base.copyToOrder(order)
     order.validateCurrentState()
     order
-

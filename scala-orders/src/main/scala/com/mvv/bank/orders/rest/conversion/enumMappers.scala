@@ -16,12 +16,8 @@ import com.mvv.bank.orders.rest.entities.{
 }
 import org.mapstruct.Mapper
 import org.mvv.scala.mapstruct.mappers.enumMappingFunc
+import org.mvv.scala.tools.quotes.underlyingSimpleTypeNameOf
 
-
-
-def aaa() = {
-  val orderTypeToDto: (com.mvv.bank.orders.domain.OrderType => com.mvv.bank.orders.rest.entities.OrderType) = enumMappingFunc[com.mvv.bank.orders.domain.OrderType, com.mvv.bank.orders.rest.entities.OrderType]()
-}
 
 
 //noinspection ScalaUnusedSymbol,ScalaFileName
@@ -43,8 +39,14 @@ trait EnumMappers :
 
   def DailyExecutionTypeToDto(source: DomainDailyExecutionType): DtoDailyExecutionType =
     enumMappingFunc[DomainDailyExecutionType, DtoDailyExecutionType]()(source)
-  def DailyExecutionTypeDomain(source: DtoDailyExecutionType): DomainDailyExecutionType =
+  def DailyExecutionTypeToOptDto(source: DomainDailyExecutionType): Option[DtoDailyExecutionType] = Option(DailyExecutionTypeToDto(source))
+  //noinspection ScalaWeakerAccess
+  def DailyExecutionTypeToDomain(source: DtoDailyExecutionType): DomainDailyExecutionType =
     enumMappingFunc[DtoDailyExecutionType, DomainDailyExecutionType]()(source)
+  def optionDailyExecutionTypeToDomain(source: Option[DtoDailyExecutionType]): DomainDailyExecutionType =
+    source.map(s => DailyExecutionTypeToDomain(s))
+      .getOrElse(throw IllegalStateException(s"Order DTO does not contain ${underlyingSimpleTypeNameOf(source)}."))
+
 
   def SideToDto(source: DomainSide): DtoSide =
     enumMappingFunc[DomainSide, DtoSide]()(source)

@@ -482,6 +482,11 @@
               <!-- Debugging annotation processor. -->
               <javacArgs>
                 <!--<arg>-J-Xdebug</arg><arg>-J-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8004</arg>-->
+                <arg>-Amapstruct.verbose=true</arg>
+                <!--<arg>-Amapstruct.defaultInjectionStrategy=spring,default,cdi,jakarta,jsr330</arg>-->
+                <arg>-Amapstruct.defaultComponentModel=spring,default,cdi,jakarta,jsr330</arg>
+                <arg>-Amapstruct.unmappedTargetPolicy=ERROR</arg>
+                <arg>-Amapstruct.unmappedSourcePolicy=ERROR</arg>
               </javacArgs>
               <args>
                 <arg>-Yexplicit-nulls</arg>
