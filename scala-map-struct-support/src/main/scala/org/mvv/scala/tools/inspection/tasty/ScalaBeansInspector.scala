@@ -21,7 +21,7 @@ import org.mvv.scala.tools.inspection.{ ClassKind, InspectMode, _Type, ScalaBean
 
 
 
-//private val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang.Comparable"))
+private val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang.Comparable"))
 private val log: Logger = Logger(topClassOrModuleFullName)
 
 

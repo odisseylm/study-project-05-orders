@@ -3,7 +3,6 @@ package org.mvv.scala.mapstruct.debug.dump
 import scala.quoted.Quotes
 
 import org.mvv.scala.tools.{ isSingleItemList, tryDo }
-import org.mvv.scala.tools.quotes.QuotesCanEqualGivens.given
 
 
 // Symbol <: AnyRef
