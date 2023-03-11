@@ -6,7 +6,7 @@ import scala.compiletime.uninitialized
 //
 import java.time.ZonedDateTime
 //
-import org.mvv.scala.tools.props.PropertyValue
+import org.mvv.scala.tools.props.{ PropertyValue, readOnlyProp, lateInitProp }
 import com.mvv.nullables.NullableCanEqualGivens
 import com.mvv.utils.check
 
@@ -58,13 +58,6 @@ object AbstractStockOrder extends NullableCanEqualGivens[AbstractStockOrder] :
 
 class StockLimitOrder extends AbstractStockOrder, LimitOrder[CompanySymbol, StockQuote] {
 
-  private val limitOrderSupport = StopLimitOrderSupport(this,
-    "limitPrice", () => limitPrice,
-    "dailyExecutionType", () => dailyExecutionType,
-    //::limitPrice, // TODO: use this approach
-    //::dailyExecutionType,
-  )
-
   override val orderType: OrderType = OrderType.LIMIT_ORDER
 
   private var _limitPrice: Amount = uninitialized
@@ -72,6 +65,11 @@ class StockLimitOrder extends AbstractStockOrder, LimitOrder[CompanySymbol, Stoc
 
   private var _dailyExecutionType: DailyExecutionType = uninitialized
   override def dailyExecutionType: DailyExecutionType = _dailyExecutionType
+
+  private val limitOrderSupport = StopLimitOrderSupport(this,
+    readOnlyProp(limitPrice),
+    readOnlyProp(dailyExecutionType),
+  )
 
   override def validateCurrentState(): Unit =
     super.validateCurrentState()
@@ -103,13 +101,6 @@ object StockLimitOrder extends NullableCanEqualGivens[StockLimitOrder] :
 
 class StockStopOrder extends AbstractStockOrder, StopOrder[CompanySymbol, StockQuote] :
 
-  private val stopOrderSupport = StopLimitOrderSupport(this,
-    "stopPrice", () => stopPrice,
-    "dailyExecutionType", () => dailyExecutionType,
-    //::stopPrice, // TODO: use this approach
-    //::dailyExecutionType,
-  )
-
   override val orderType: OrderType = OrderType.STOP_ORDER
 
   private var _stopPrice: Amount = uninitialized
@@ -117,6 +108,11 @@ class StockStopOrder extends AbstractStockOrder, StopOrder[CompanySymbol, StockQ
 
   private var _dailyExecutionType: DailyExecutionType = uninitialized
   override def dailyExecutionType: DailyExecutionType = _dailyExecutionType
+
+  private val stopOrderSupport = StopLimitOrderSupport(this,
+    readOnlyProp(stopPrice),
+    readOnlyProp(dailyExecutionType),
+  )
 
   override def validateCurrentState(): Unit =
     super.validateCurrentState()

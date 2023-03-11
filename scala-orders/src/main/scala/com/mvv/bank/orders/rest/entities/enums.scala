@@ -1,25 +1,25 @@
 package com.mvv.bank.orders.rest.entities
 
-enum OrderType :
+enum OrderType derives CanEqual :
   case MARKET_ORDER
      , LIMIT_ORDER
      , STOP_ORDER
 
 
-enum Side :
+enum Side derives CanEqual :
   case CLIENT, BANK_MARKET
 
 
-enum BuySellType :
+enum BuySellType derives CanEqual :
   case BUY, SELL
 
 
-enum DailyExecutionType :
+enum DailyExecutionType derives CanEqual :
   case DAY_ONLY
      , GTC
 
 
-enum OrderState :
+enum OrderState derives CanEqual :
   case UNKNOWN
      , TO_BE_PLACED
      , PLACED

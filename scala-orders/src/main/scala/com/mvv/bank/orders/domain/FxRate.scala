@@ -18,8 +18,8 @@ import com.mvv.nullables.NullableCanEqualGivens
 //  bid - price of client 'sell' (and dealer/bank 'buy') (lower price from pair),
 //  ask - price of client 'buy'  (and dealer/bank 'sell')
 //
-// TODO: how to deal with inverted rates???
-// TODO: 'bid < ask' rule should be applied for which counterCurrency???
+// T O D O: inverted rates, to test
+// T O D O: inverted rates, if 'bid < ask' rule should be applied for which counterCurrency???
 //
 case class FxRate (
   market: MarketSymbol,
@@ -56,7 +56,7 @@ object FxRate extends NullableCanEqualGivens[FxRate] :
 
   extension (rate: FxRate)
     def spread: BigDecimal = rate.ask - rate.bid
-    // TODO: should we swap bid and ask ???
+    // T O D O: inverted rates, should we swap bid and ask ???
     def inverted: FxRate = rate.copy(currencyPair = rate.currencyPair.inverted, bid = invertRate(rate.bid), ask = invertRate(rate.ask))
     def containsCurrency(currency: Currency): Boolean = rate.currencyPair.containsCurrency(currency)
 
@@ -86,10 +86,10 @@ case class FxRateAsQuote (
   override def marketTime: LocalTime = rate.marketTime
   override def timestamp: ZonedDateTime = rate.timestamp
   override def bid: Amount = Amount(
-    // TODO: should be invertRate(rate.bid) or invertRate(rate.ask)
+    // T O D O: inverted rates, should be invertRate(rate.bid) or invertRate(rate.ask)?
     if (priceCurrency == rate.currencyPair.counter) rate.bid else invertRate(rate.bid), priceCurrency)
   override val ask: Amount = Amount(
-    // TODO: should be invertRate(rate.ask) or invertRate(rate.bid)
+    // T O D O: inverted rates, should be invertRate(rate.ask) or invertRate(rate.bid)
     if (priceCurrency == rate.currencyPair.counter) rate.ask else invertRate(rate.ask), priceCurrency)
 
 

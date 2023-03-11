@@ -38,7 +38,6 @@ object YearMonthCanEqualGivens extends NullableCanEqualGivens[java.time.YearMont
 object ZonedDateTimeCanEqualGivens extends NullableCanEqualGivens[java.time.ZonedDateTime]
 object ZoneIdCanEqualGivens extends NullableCanEqualGivens[java.time.ZoneId]
 object ZoneOffsetCanEqualGivens extends NullableCanEqualGivens[java.time.ZoneOffset]
-//object ZoneRegionCanEqualGivens extends NullableCanEqualGivens[java.time.ZoneRegion] ??? TODO: ???
 
 
 // T O D O: how to reexport if it is possible

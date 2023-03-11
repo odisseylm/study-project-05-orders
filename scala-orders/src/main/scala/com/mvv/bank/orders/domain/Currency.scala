@@ -23,23 +23,6 @@ case class Currency private (
   @Untainted override def toString: String = this.value
 
 
-/*
-@Untainted @Immutable
-class Currency private (value: String) extends Equals derives CanEqual :
-  validateCurrency(value)
-  @Untainted
-  override def toString: String = this.value
-  override def hashCode: Int = this.value.hashCode
-  infix override def canEqual(other: Any): Boolean = other.isInstanceOf[Currency]
-  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
-  //override def equals(other: Any): Boolean = other match
-  //  case that: Currency => that.canEqual(this) && this.value == that.value
-  //  case _ => false
-  override def equals(other: Any): Boolean =
-    // it is inlined and have resulting byte code similar to code with 'match'
-    equalImpl(this, other) { _.value == _.value }
-*/
-
 
 object Currency extends NullableCanEqualGivens[Currency]:
   val MIN_LENGTH: Int = 3
@@ -64,8 +47,6 @@ object Currency extends NullableCanEqualGivens[Currency]:
 private val CURRENCY_PAIR_SEPARATOR: Char = '_'
 
 
-//noinspection ScalaUnusedSymbol // TODO: add tests and remove this comment
-
 @Untainted @Immutable
 case class CurrencyPair private (
   base: Currency,
@@ -74,32 +55,6 @@ case class CurrencyPair private (
   @Untainted private val asString = s"$base$CURRENCY_PAIR_SEPARATOR$counter"
   @Untainted override def toString: String = asString
 
-/*
-@Untainted @Immutable
-class CurrencyPair private (
-  val base: Currency,
-  val counter: Currency,
-  ) extends Equals derives CanEqual :
-  @Untainted
-  private val asString = s"$base$CURRENCY_PAIR_SEPARATOR$counter"
-  @Untainted
-  override def toString: String = asString
-
-  override def hashCode: Int = asString.hashCode
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[CurrencyPair]
-  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
-  //override def equals(other: Any): Boolean = other match
-  //  case that: CurrencyPair => that.canEqual(this) && this.asString == that.asString
-  //  case _ => false
-  override def equals(other: Any): Boolean =
-    // it is inlined and have resulting byte code similar to code with 'match'
-    equalImpl(this, other) { (v1, v2) => v1.base == v2.base && v1.counter == v2.counter }
-
-  def copy(
-    base: Currency = this.base,
-    counter: Currency = this.counter,
-  ): CurrencyPair = CurrencyPair.of(base, counter)
-*/
 
 
 object CurrencyPair extends NullableCanEqualGivens[CurrencyPair] :
@@ -182,23 +137,4 @@ private def parseCurrencyPair(@Tainted stringCurrencyPair: String): CurrencyPair
 
   try { CurrencyPair(Currency(curList(0)), Currency(curList(1))) }
   catch { case ex: Exception => throw IllegalArgumentException(s"Invalid currency pair [${str.safe}].", ex) }
-}
-
-
-private def testOfEqualWithNull(): Unit = {
-  val cur = Currency("USD")
-  val curOrNull1: Currency|Null = Currency("USD")
-  val curOrNull2: Currency|Null = null
-
-  if (cur == null) println("1")
-  if (null == cur) println("2")
-
-  if (curOrNull1 == null) println("1")
-  if (null == curOrNull1) println("2")
-
-  if (curOrNull2 == null) println("1")
-  if (null == curOrNull2) println("2")
-
-  if (curOrNull2 == cur) println("1")
-  if (cur == curOrNull2) println("2")
 }

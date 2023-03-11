@@ -94,10 +94,10 @@ object User extends NullableCanEqualGivens[User] :
 
 
 /*
-// TODO: probably should be object which can be read only once
+// T O D O: probably should be object which can be read only once
 class Password (val value: String) {
     init {
-        // TODO: add validation
+        // T O D O: add validation
     }
 }
 */

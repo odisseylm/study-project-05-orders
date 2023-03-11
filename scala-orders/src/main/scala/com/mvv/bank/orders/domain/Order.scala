@@ -9,14 +9,14 @@ import scala.compiletime.uninitialized
 import java.time.ZonedDateTime
 //
 import com.mvv.utils.{ newInstance, check, checkId, checkNotNull, checkNotBlank, require, requireNotBlank }
-import com.mvv.utils.uncapitalize
-import com.mvv.log.{safe, Logger, LoggerMixin}
+import com.mvv.utils.{ uncapitalize, isUninitializedId }
+import com.mvv.log.{ safe, Logger, LoggerMixin }
 import com.mvv.nullables.{ isNull, isNotNull, NullableCanEqualGivens }
-import com.mvv.props.checkPropInitialized
+import com.mvv.props.{ checkPropInitialized, checkNamedValueInitialized }
 
 import org.mvv.scala.tools.props.{ namedValue, PropertyValue, fromPropertyValue, lateInitProp }
 import org.mvv.scala.tools.props.{ currentClassIsInitializedPropsBy, DefaultIsInitializedMethods }
-import org.mvv.scala.tools.quotes.classNameOf
+import org.mvv.scala.tools.quotes.{ classNameOf, simpleTypeNameOf }
 import com.mvv.scala.props.checkRequiredPropsAreInitialized
 
 
@@ -59,7 +59,7 @@ trait Order[Product, Quote <: BaseQuote] :
   def toExecute(quote: Quote): Boolean
 end Order
 
-object Order // extends NullableCanEqualGivens[Order] // TODO: why compile error
+object Order // extends NullableCanEqualGivens[Order] // T O D O: why compile error
 
 trait OrderNaturalKey
   // T O D O: implement
@@ -179,21 +179,8 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
       return
     }
 
-    // TODO: fix
-    //checkRequiredPropsAreInitialized(this, currentIsInitProps)
+    checkRequiredPropsAreInitialized(simpleTypeNameOf(this), currentIsInitProps)
     check(side == Side.CLIENT, s"Currently only client side orders are supported.")
-
-    /*
-    checkPropInitialized(::orderType)
-    checkPropInitialized(::side)
-    check(side == Side.CLIENT) { "Currently only client side orders are supported." }
-    checkPropInitialized(::volume)
-    checkPropInitialized(::buySellType)
-    checkPropInitialized(::orderState)
-
-    checkPropInitialized(::product)
-    checkPropInitialized(::market)
-    */
 
     orderState match {
       case OrderState.UNKNOWN => // nothing to do
@@ -203,38 +190,30 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
       case OrderState.PLACED =>
         checkId(id)
       case OrderState.EXECUTED =>
-        checkId(id) //??
-        checkPropInitialized(namedValue(placedAt))
-        checkPropInitialized(namedValue(resultingPrice))
-        checkPropInitialized(namedValue(resultingQuote))
+        checkId(id)
+        checkNamedValueInitialized(placedAt)
+        // or
+        //checkPropInitialized(_placedAt)
+        checkPropInitialized(_resultingPrice)
+        checkPropInitialized(_resultingQuote)
       case OrderState.EXPIRED =>
         checkId(id)
-        checkPropInitialized(namedValue(expiredAt))
+        checkPropInitialized(_expiredAt)
       case OrderState.CANCELED =>
         checkId(id)
-        checkPropInitialized(namedValue(canceledAt))
+        checkPropInitialized(_canceledAt)
     }
   }
 
   override def validateNextState(nextState: OrderState): Unit = {
     if (nextState == OrderState.UNKNOWN) { return }
 
-    // TODO: fix
-    //checkRequiredPropsAreInitialized(this, currentIsInitProps)
-
-    /*
-    checkInitialized(::orderType)
-    checkInitialized(::product)
-    checkInitialized(::volume)
-    checkInitialized(::market)
-    checkInitialized(::buySellType)
-    checkInitialized(::orderState)
-    */
+    checkRequiredPropsAreInitialized(simpleTypeNameOf(this), currentIsInitProps)
 
     nextState match {
       case OrderState.UNKNOWN => // nothing to do
       case OrderState.TO_BE_PLACED =>
-        check(id.isNull, s"Seems order $id is already placed.")
+        check(isUninitializedId(id), s"Seems order $id is already placed.")
         check(this.orderState == OrderState.UNKNOWN,
           s"Impossible to to place order with status ${this.orderState.safe}.")
       case OrderState.PLACED =>

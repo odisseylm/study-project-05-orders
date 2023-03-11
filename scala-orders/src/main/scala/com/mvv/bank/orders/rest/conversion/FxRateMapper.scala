@@ -6,9 +6,6 @@ import com.mvv.bank.orders.domain.{CurrencyPair as DomainCurrencyPair, MarketSym
 import com.mvv.bank.orders.rest.entities.FxRate as DtoFxRate
 
 
-// TODO: Unmapped target property: "currencyPair". Occured at 'FxRate fxRateToDomain(FxRate source)' in 'FxRateMapper'
-// TODO: Unmapped target properties: "cur1, cur2". Occured at 'FxRate fxRateToDto(FxRate source)' in 'FxRateMapper'
-
 
 //@Mapper
 trait FxRateMapper :
@@ -24,13 +21,11 @@ trait FxRateMapper :
       bid = source.bid,
       ask = source.ask,
     )
-  //def fxRateCurrencyPair(source: DtoFxRate): DomainCurrencyPair =
-  //  DomainCurrencyPair(source.cur1, source.cur2)
+  //def fxRateCurrencyPair(source: DtoFxRate): DomainCurrencyPair = DomainCurrencyPair(source.cur1, source.cur2)
   def fxRateToDomain(source: Option[DtoFxRate]): Option[DomainFxRate] = source.map(fxRateToDomain)
 
   @Mapping(target = "cur1", source = "currencyPair.base")
   @Mapping(target = "cur2", source = "currencyPair.counter")
-  //@Mapping(target = "mid", ignore = true)
   @BeanMapping(ignoreUnmappedSourceProperties = Array("mid"))
   def fxRateToDto(source: DomainFxRate): DtoFxRate
   def fxRateToDto(source: Option[DomainFxRate]): Option[DtoFxRate] =

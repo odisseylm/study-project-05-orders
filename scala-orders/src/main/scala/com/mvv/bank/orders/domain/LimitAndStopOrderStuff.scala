@@ -1,16 +1,16 @@
 package com.mvv.bank.orders.domain
 
-import org.mvv.scala.tools.props.{ ReadOnlyProp, NamedValue, namedValue }
-
 import scala.language.strictEquality
 //
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 //
 import com.mvv.utils.check
-import com.mvv.props.checkPropInitialized
+import com.mvv.props.{ checkPropInitialized, checkPropValueInitialized }
 import com.mvv.bank.orders.domain.Quote as BaseQuote
 import com.mvv.bank.orders.domain.Order
+import org.mvv.scala.tools.props.{ ReadOnlyProp, NamedValue, namedValue }
+
 
 
 trait LimitOrder[Product, Quote <: BaseQuote] extends Order[Product, Quote] :
@@ -25,34 +25,19 @@ trait StopOrder[Product, Quote <: BaseQuote] extends Order[Product, Quote] :
 
 /** Since java does not support multiple class inheritance common logic for limit and stop orders are put there. */
 final class StopLimitOrderSupport[Product, Quote <: BaseQuote] (
-
   private val order: Order[Product, Quote],
-
-  // TODO: replace with ReadOnlyProp
-  private val limitStopPricePropName: String,
-  private val limitStopPrice: () => Amount,
-
-  // TODO: replace with ReadOnlyProp
-  private val dailyExecutionTypePropName: String = "dailyExecutionType",
-  private val dailyExecutionType: () => DailyExecutionType,
-
+  private val limitStopPriceProp: ReadOnlyProp[Amount],
+  private val dailyExecutionTypeProp: ReadOnlyProp[DailyExecutionType],
   ) :
 
   type OrderType = com.mvv.bank.orders.domain.Order[Product, Quote]
 
-  def this (
-   order: com.mvv.bank.orders.domain.Order[Product, Quote],
-   limitStopPrice: ReadOnlyProp[Amount],
-   dailyExecutionType: ReadOnlyProp[DailyExecutionType],
-  ) =
-  this(order, limitStopPrice.name, () => limitStopPrice.value, dailyExecutionType.name, () => dailyExecutionType.value)
-
   def toExecute(quote: BaseQuote): Boolean =
     val buySellType = order.buySellType
-    val limitPrice = limitStopPrice()
+    val limitPrice = limitStopPriceProp.value
 
-    checkPropInitialized(namedValue(buySellType), s"Buy/Sell type is not set for order [${order.id}].")
-    checkPropInitialized(namedValue(limitPrice), s"Limit price is not set for order [${order.id}].")
+    checkPropValueInitialized(buySellType, s"Buy/Sell type is not set for order [${order.id}].")
+    checkPropValueInitialized(limitPrice, s"Limit price is not set for order [${order.id}].")
 
     check(limitPrice.currency == quote.bid.currency,
         s"Quote $quote has incorrect currency ${quote.bid.currency}.")
@@ -96,7 +81,7 @@ final class StopLimitOrderSupport[Product, Quote <: BaseQuote] (
   private def validateCurrentStopLimitAttributes(): Unit =
     if (order.orderState == OrderState.UNKNOWN) { return }
 
-    checkPropInitialized(NamedValue(limitStopPricePropName, limitStopPrice))
-    checkPropInitialized(NamedValue(dailyExecutionTypePropName, dailyExecutionType))
+    checkPropInitialized(limitStopPriceProp)
+    checkPropInitialized(dailyExecutionTypeProp)
 
 end StopLimitOrderSupport

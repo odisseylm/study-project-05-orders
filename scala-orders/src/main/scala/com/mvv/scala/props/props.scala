@@ -45,9 +45,6 @@ case class BeanProp[T](value: T, propName: String = "")
 */
 
 
-// TODO: add support of Option too
-
-
 
 def checkRequiredPropsAreInitialized[T](obj: T, isInitProps: List[(String, () => Boolean)])(implicit classTag: ClassTag[T]): Unit =
   val uninitializedPropNames: Seq[String] = isInitProps.filter(!_._2()).map(_._1).sorted

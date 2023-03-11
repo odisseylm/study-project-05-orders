@@ -12,25 +12,10 @@ import com.mvv.bank.orders.rest.entities.{
   OrderType as DtoOrderType,
 }
 
-// temp TODO: find better way
-import com.mvv.nullables.AnyCanEqualGivens.givenCanEqual_Type_Type
-import com.mvv.nullables.AnyCanEqualGivens.givenCanEqual_Type_TypeNull
-import com.mvv.nullables.AnyCanEqualGivens.givenCanEqual_TypeNull_Type
-import com.mvv.nullables.AnyCanEqualGivens.givenCanEqual_TypeNull_TypeNull
-import com.mvv.nullables.AnyRefCanEqualGivens.givenCanEqual_Type_Type
-import com.mvv.nullables.AnyRefCanEqualGivens.givenCanEqual_Type_TypeNull
-import com.mvv.nullables.AnyRefCanEqualGivens.givenCanEqual_TypeNull_Type
-import com.mvv.nullables.AnyRefCanEqualGivens.givenCanEqual_TypeNull_TypeNull
 
-
-
-// error: Unmapped target properties: "limitPrice, stopPrice, dailyExecutionType".
-// Occured at 'CashOrder toDto(AbstractCashOrder source)' in 'CashOrderMapper'.
 
 abstract class CashOrderMapper extends AbstractOrderMapper :
 
-  // error: Unmapped source properties: "log, resultingPrice, resultingQuote, priceCurrency, product".
-  // Occured at 'CashOrder limitOrderToDto(CashLimitOrder source)' in 'CashOrderMapper'.
   @Mapping(target = "stopPrice", ignore = true)
   @BeanMapping(ignoreUnmappedSourceProperties = Array("log", "product", "resultingQuote"))
   def limitOrderToDto(source: DomainLimitOrder): DtoCashOrder

@@ -12,16 +12,13 @@ enum OrderType (
   val stockDomainType: Class[? <: AbstractStockOrder],
   ) {
   case MARKET_ORDER extends OrderType(classOf[CashMarketOrder], classOf[StockMarketOrder])
-  case LIMIT_ORDER extends OrderType(classOf[CashLimitOrder], classOf[StockLimitOrder])
-  case STOP_ORDER extends OrderType(classOf[CashStopOrder], classOf[StockStopOrder])
+  case LIMIT_ORDER  extends OrderType(classOf[CashLimitOrder],  classOf[StockLimitOrder])
+  case STOP_ORDER   extends OrderType(classOf[CashStopOrder],   classOf[StockStopOrder])
 }
 object OrderType extends NullableCanEqualGivens[OrderType]
 
 
-enum BuySellType extends Enum[BuySellType] {
-  //case
-  //  BUY,
-  //  SELL // TODO: why we cannot use ',' at the end
+enum BuySellType  derives CanEqual /* extends Enum[BuySellType]*/ {
   case
       BUY
     , SELL
@@ -29,7 +26,7 @@ enum BuySellType extends Enum[BuySellType] {
 object BuySellType extends NullableCanEqualGivens[BuySellType]
 
 
-enum DailyExecutionType (val humanName: String) :
+enum DailyExecutionType (val humanName: String) derives CanEqual :
   case DAY_ONLY extends DailyExecutionType("Day Only")
   case GTC      extends DailyExecutionType("Good 'til Canceled")
 object DailyExecutionType extends NullableCanEqualGivens[DailyExecutionType]
@@ -40,7 +37,7 @@ object DailyExecutionType extends NullableCanEqualGivens[DailyExecutionType]
  * I am not 100% sure that is the same as Buy-Side/Sell-Side, but seems so :-)
  * https://corporatefinanceinstitute.com/resources/career/buy-side-vs-sell-side/
  */
-enum Side :
+enum Side derives CanEqual :
   case
     /**
      * Trade/orders for clients.
@@ -63,7 +60,7 @@ enum Side :
 object Side extends NullableCanEqualGivens[Side]
 
 
-enum OrderState :
+enum OrderState derives CanEqual :
   case
       UNKNOWN
     , TO_BE_PLACED

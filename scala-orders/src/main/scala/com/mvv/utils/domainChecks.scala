@@ -11,18 +11,33 @@ def checkId(id: => Long|Option[Long]|Null, msg: =>String): Long = checkIdImpl(id
 def checkId(id: => Long|Option[Long]|Null): Long = checkId(id, s"Id is not set or incorrect [${id.safeValue}].")
 
 
-private def checkIdImpl(idExpr: => Long|Option[Long]|Null, msg: =>String): Long =
-  import com.mvv.nullables.AnyCanEqualGivens.given
 
+private def getIdValueOrNull(idExpr: => Long|Option[Long]|Null): Long|Null =
+  import com.mvv.nullables.AnyCanEqualGivens.given
   val _id = if idExpr.isPropInitialized then idExpr else null
-  val id: Long|Null = _id match
+  val id: Long | Null = _id match
     case null => null
     case vv: Long => vv
     case Some(vv) => vv
     case None => null
+  id
 
-  check(id != null && id != 0 && id != -1 && id != None, msg)
+
+def isValidId(idExpr: => Long|Option[Long]|Null): Boolean =
+  import com.mvv.nullables.AnyCanEqualGivens.given
+  val id = getIdValueOrNull(idExpr)
+  val idIsSet = id != null && id != 0 && id != -1 && id != None
+  idIsSet
+
+
+def isUninitializedId(idExpr: => Long|Option[Long]|Null): Boolean =
+  import com.mvv.nullables.AnyCanEqualGivens.given
+  val id = getIdValueOrNull(idExpr)
+  val _isUninitializedId = id == null || id == 0 || id == -1 || id == None
+  _isUninitializedId
+
+
+private def checkIdImpl(idExpr: => Long|Option[Long]|Null, msg: =>String): Long =
+  val id = getIdValueOrNull(idExpr)
+  check(isValidId(id), msg)
   id.nn
-
-private def isValidIdValue(id: Long): Boolean =
-  id != 0 && id != -1
