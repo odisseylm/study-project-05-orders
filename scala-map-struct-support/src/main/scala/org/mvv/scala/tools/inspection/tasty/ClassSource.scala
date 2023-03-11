@@ -14,6 +14,7 @@ import org.mvv.scala.tools.{ loadClass, getClassLocationUrl, fileUrlToPath, jarU
 sealed class ClassSource
 object ClassSource :
   def of(cls: Class[?]): ClassSource =
+    import org.mvv.scala.tools.StringCanEqualGivens.given
     val classUrl = getClassLocationUrl(cls)
     classUrl.getProtocol match
       case "file" => DirectoryClassSource(cls)

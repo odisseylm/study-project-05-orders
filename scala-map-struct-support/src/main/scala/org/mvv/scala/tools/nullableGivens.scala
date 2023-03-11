@@ -1,7 +1,8 @@
+package org.mvv.scala.tools
+
+
+
 //noinspection ScalaFileName
-package com.mvv.nullables
-
-
 trait NullableCanEqualGivens[T] :
   given givenCanEqual_Type_Type: CanEqual[T, T] = CanEqual.derived
   given givenCanEqual_Type_Null: CanEqual[T, Null] = CanEqual.derived

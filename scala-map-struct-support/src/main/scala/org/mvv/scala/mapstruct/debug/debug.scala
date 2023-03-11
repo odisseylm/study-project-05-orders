@@ -57,6 +57,8 @@ def printSymbolInfo(using q: Quotes)(symbol: Option[q.reflect.Symbol]): Unit =
 
 def printSymbolInfo(using q: Quotes)(symbol: q.reflect.Symbol): Unit =
   import q.reflect.Symbol
+  //noinspection ScalaUnusedSymbol
+  given CanEqual[Symbol, Symbol] = CanEqual.derived
 
   var str = ""
   str += s"name: ${symbol.name}\n"

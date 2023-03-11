@@ -105,6 +105,8 @@ private def getLeftVarNameOfMacrosImpl(using q: Quotes)(toStripUnderscoreSuffixP
   import q.reflect.{ Symbol, Flags, report }
   import q.reflect.Symbol.noSymbol
   import org.mvv.scala.tools.quotes.{ isOneOf, symbolDetailsToString }
+  //noinspection ScalaUnusedSymbol
+  given CanEqual[Symbol, Symbol] = CanEqual.derived
 
   var s = Symbol.spliceOwner
   var valDefSymbol = noSymbol

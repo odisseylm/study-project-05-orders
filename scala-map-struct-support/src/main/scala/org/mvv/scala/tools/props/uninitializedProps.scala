@@ -237,6 +237,9 @@ private def findTheBestOfOverloadedMethod(using q: Quotes)(
   for m1 <- methodsWithSuitableTypes
       m2 <- methodsWithSuitableTypes
     do
+      //noinspection ScalaUnusedSymbol
+      given CanEqual[MethodEntry[Symbol,DefDef], MethodEntry[Symbol,DefDef]] = CanEqual.derived
+
       if m1 != m2 then
         val m1ParamType: TypeRepr = firstParamType(m1.method)
         val m2ParamType: TypeRepr = firstParamType(m2.method)
@@ -343,6 +346,7 @@ private class MethodEntry[O,M] (
   override def canEqual(other: Any): Boolean = other.isInstanceOf[MethodEntry[?,?]]
   // in scala3 equals with 'match' causes warning "pattern selector should be an instance of Matchable"
   override def equals(other: Any): Boolean =
+    import org.mvv.scala.tools.AnyCanEqualGivens.given
     // 'equalImpl' is inlined and have resulting byte code similar to code with 'match'
     equalImpl[MethodEntry[?,?]](this, other) { (v1, v2) => v1.ownerClass == v2.ownerClass && v1.method == v2.method }
 

@@ -12,6 +12,7 @@ extension (using q: Quotes)(symbol: q.reflect.Symbol)
   //noinspection ScalaUnusedSymbol
   def isEmptySymbol: Boolean =
     import q.reflect.Symbol
+    given CanEqual[Symbol, Symbol] = CanEqual.derived
     symbol == Symbol.noSymbol // || symbol.name.isEmptySymbolName
   def nonEmptySymbol: Boolean = !symbol.isEmptySymbol
 
@@ -35,9 +36,9 @@ def activeSymbolFlagEntries(using q: Quotes)(symbol: q.reflect.Symbol): List[(St
 
 
 def areFlagsEmpty(using q: Quotes)(flags: Iterable[q.reflect.Flags]) =
-  flags.isEmpty || (flags.sizeIs == 1 && flags.head == q.reflect.Flags.EmptyFlags)
+  flags.isEmpty || (flags.sizeIs == 1 && flags.head.is(q.reflect.Flags.EmptyFlags))
 def areFlagEntriesEmpty(using q: Quotes)(flags: List[(String, q.reflect.Flags)]) =
-  flags.isEmpty || (flags.sizeIs == 1 && flags.head._2 == q.reflect.Flags.EmptyFlags)
+  flags.isEmpty || (flags.sizeIs == 1 && flags.head._2.is(q.reflect.Flags.EmptyFlags))
 
 
 

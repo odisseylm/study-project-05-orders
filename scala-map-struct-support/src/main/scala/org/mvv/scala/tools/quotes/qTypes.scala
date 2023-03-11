@@ -8,6 +8,9 @@ import org.mvv.scala.tools.isOneOf
 extension (using q: Quotes)(typeRepr: q.reflect.TypeRepr)
   def isBool: Boolean =
     import q.reflect.TypeRepr
+    //noinspection ScalaUnusedSymbol
+    given CanEqual[TypeRepr, TypeRepr] = CanEqual.derived
+
     val scalaBoolean = TypeRepr.of[Boolean]
     val javaBoolean  = TypeRepr.of[java.lang.Boolean]
 
@@ -16,6 +19,9 @@ extension (using q: Quotes)(typeRepr: q.reflect.TypeRepr)
 
   def isNullType: Boolean =
     import q.reflect.TypeRepr
+    //noinspection ScalaUnusedSymbol
+    given CanEqual[TypeRepr, TypeRepr] = CanEqual.derived
+
     val scalaNullType = TypeRepr.of[Null]
     (typeRepr == scalaNullType) || (typeRepr =:= scalaNullType)
 

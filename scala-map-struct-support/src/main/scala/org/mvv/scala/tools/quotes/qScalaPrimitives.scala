@@ -6,7 +6,7 @@ import org.mvv.scala.tools.afterLastOr
 
 
 
-enum QResult :
+enum QResult derives CanEqual :
   case AsIs, AsInlined
 
 

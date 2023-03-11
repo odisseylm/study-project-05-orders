@@ -15,6 +15,8 @@ def fullPackageName(using q: Quotes)(packageClause: q.reflect.PackageClause): St
 
 def classFullPackageName(using q: Quotes)(classDef: q.reflect.ClassDef): String =
   import q.reflect.{ Symbol, PackageClause }
+  //noinspection ScalaUnusedSymbol
+  given CanEqual[Symbol, Symbol] = CanEqual.derived
 
   var s = classDef.symbol
   while s != Symbol.noSymbol && !s.isPackageDef do
@@ -60,6 +62,8 @@ def qPackage (using q: Quotes) (_package: String): q.reflect.Term =
 
 def qCurrentExprPackage(using q: Quotes): String =
   import q.reflect.{ Symbol, report }
+  //noinspection ScalaUnusedSymbol
+  given CanEqual[Symbol, Symbol] = CanEqual.derived
 
   var s = Symbol.spliceOwner
   while s != Symbol.noSymbol && !s.isPackageDef do

@@ -2,7 +2,8 @@ package org.mvv.scala.mapstruct.debug.dump
 
 import scala.quoted.Quotes
 
-import org.mvv.scala.tools. { isSingleItemList, tryDo }
+import org.mvv.scala.tools.{ isSingleItemList, tryDo }
+import org.mvv.scala.tools.quotes.QuotesCanEqualGivens.given
 
 
 // Symbol <: AnyRef
@@ -28,7 +29,8 @@ enum SymbolDetails :
 extension (using quotes: Quotes)(symbol: quotes.reflect.Symbol)
   //noinspection ScalaUnusedSymbol
   def nonEmptySymbol: Boolean =
-    import quotes.reflect.*
+    import quotes.reflect.Symbol
+    given CanEqual[Symbol, Symbol] = CanEqual.derived
     symbol == Symbol.noSymbol
 
 
@@ -171,7 +173,8 @@ def flagsToString(using quotes: Quotes)(flags: quotes.reflect.Flags): String =
   flagsToString(flagsToEntries(flags))
 
 private def isFlagsEmpty(using quotes: Quotes)(flags: List[(String, quotes.reflect.Flags)]) =
-  flags.isEmpty || (flags.isSingleItemList && flags.head._2 == quotes.reflect.Flags.EmptyFlags)
+  import quotes.reflect.{ Symbol, Flags }
+  flags.isEmpty || (flags.sizeIs == 1 && flags.head._2.is(Flags.EmptyFlags))
 
 
 def allPossibleFlags(using quotes: Quotes): List[ (String, quotes.reflect.Flags) ] =

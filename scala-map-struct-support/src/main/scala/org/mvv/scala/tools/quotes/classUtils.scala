@@ -34,6 +34,8 @@ def findClassThisScopeTypeRepr(using q: Quotes)(symbol: q.reflect.Symbol): Optio
 
 def findSpliceOwnerClass(using q: Quotes)(): Option[q.reflect.ClassDef] =
   import q.reflect.{ Symbol, ClassDef }
+  //noinspection ScalaUnusedSymbol
+  given CanEqual[Symbol, Symbol] = CanEqual.derived
 
   var s: Symbol = Symbol.spliceOwner
   while s != Symbol.noSymbol && !s.isClassDef do

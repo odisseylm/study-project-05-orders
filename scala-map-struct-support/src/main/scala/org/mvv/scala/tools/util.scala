@@ -6,7 +6,7 @@ import scala.annotation.{nowarn, targetName}
 
 inline def equalImpl[T <: Equals](thisV: T, other: Any|Null)(inline comparing: (T, T)=>Boolean): Boolean =
   import scala.language.unsafeNulls
-  if other == null || !other.isInstanceOf[T] then false
+  if other.isNull || !other.isInstanceOf[T] then false
     else comparing(thisV, other.asInstanceOf[T])
 
 
@@ -20,13 +20,13 @@ extension [T](v: T)
     values.contains(v)
 
 extension [T](l: List[T])
-  def isSingleItemList: Boolean =
-    l.nonEmpty && l.tail == Nil
   def isSingleItemList(v: T): Boolean =
-    l.nonEmpty && l.tail == Nil && l.head == v
+    //noinspection ScalaUnusedSymbol
+    given CanEqual[T, T] = CanEqual.derived
+    l.sizeIs == 1 && l.head == v
 
 extension [T](x: T|Null)
   inline def !! : T = nn(x)
   inline def ifNull(action: =>T): T =
-    //import com.mvv.nullables.AnyCanEqualGivens.given
+    import org.mvv.scala.tools.AnyCanEqualGivens.given
     if x == null then action else x

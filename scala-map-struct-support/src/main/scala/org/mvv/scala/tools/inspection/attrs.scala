@@ -14,19 +14,19 @@ import org.mvv.scala.tools.inspection.tasty._ClassEx
 
 
 
-enum _Visibility :
+enum _Visibility derives CanEqual :
   case Private, Package, Protected, Public, Other
 
 
 
-enum _Modifier :
+enum _Modifier derives CanEqual :
   case ScalaStandardFieldAccessor, ScalaCustomFieldAccessor, JavaPropertyAccessor,
        // not really used now
        ParamAccessor, ExtensionMethod, Transparent, Macro, Static
 
 
 
-enum ClassKind :
+enum ClassKind derives CanEqual :
   case
       /** Inspected by reflection (any java class can be inspected separately even in jar file) */
       Java
@@ -49,7 +49,7 @@ enum ClassKind :
 
 
 
-enum InspectMode :
+enum InspectMode derives CanEqual :
   case
        /** Scala AST/Tasty + Java reflection (runtime types/classes will be inspected) */
        AllSources
@@ -156,6 +156,3 @@ object JavaBeanProperty :
    runtimeGetMethods: Option[List[JavaMethod]] = None,
    runtimeSetMethods: Option[List[JavaMethod]] = None,
  ) extends JavaBeanProperty
-
-
-

@@ -262,6 +262,7 @@
               </jvmArgs>
               <args>
                 <arg>-Yexplicit-nulls</arg>
+                <arg>-language:strictEquality</arg>
                 <!--<arg>-Ysafe-init</arg>-->
                 <arg>-source</arg><arg>future</arg>
                 <arg>-feature</arg>

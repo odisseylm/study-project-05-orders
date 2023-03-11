@@ -1,7 +1,7 @@
 package org.mvv.scala.tools.props
 
 import scala.language.implicitConversions
-import org.mvv.scala.tools.{equalImpl, ifNull, isNullOrEmpty, safe}
+import org.mvv.scala.tools.{ equalImpl, isNull, isNotNull, isNullOrEmpty, ifNull, safe }
 
 import scala.annotation.targetName
 
@@ -33,7 +33,7 @@ class PropertyValue[T] (
   val postUpdate: ChangingValueFunc[T] = noOpChangingF,
 ) extends WritableProp[T] with Equals derives CanEqual :
 
-  private var internalValue: T|Null = if _value == null then uninitializedValue else _value
+  private var internalValue: T|Null = if _value.isNull then uninitializedValue else _value
 
   // T O D O: find better name (but seems 'uninitializable' is misprint)
   /** Returns unsafe/nullable/uninitialized value
@@ -52,7 +52,9 @@ class PropertyValue[T] (
     _isInitialized(finalValueRef)
 
   private def _isInitialized(valueRef: T|Null): Boolean =
-    valueRef != null && valueRef != uninitializedValue
+    //noinspection ScalaUnusedSymbol
+    given CanEqual[T|Null, T|Null] = CanEqual.derived
+    valueRef.isNotNull && valueRef != uninitializedValue
 
   override def value_=(v: T): Unit =
     val prev = this.internalValue
@@ -64,6 +66,11 @@ class PropertyValue[T] (
     postUpdate(v, prev)
 
   private def validateNonChangeable(newValue: T, prevValue: T|Null): Unit =
+    //noinspection ScalaUnusedSymbol
+    given CanEqual[T|Null, T|Null] = CanEqual.derived
+    //noinspection ScalaUnusedSymbol
+    given CanEqual[T, T|Null] = CanEqual.derived
+
     if !changeable &&
       (  (prevValue != uninitializedValue && newValue != prevValue)
       || (uninitializedValue != null && newValue == null) )
@@ -83,12 +90,9 @@ class PropertyValue[T] (
   override def toString: String = s"$internalValue"
   override def canEqual(other: Any): Boolean = other.isInstanceOf[PropertyValue[?]]
 
-  // it causes warning "pattern selector should be an instance of Matchable" with Scala 3
-  //override def equals(other: Any): Boolean = (other : @unchecked) match
-  //    case that: LateInitProperty[T,Owner] => that.canEqual(this) && that.asNullableValue == this.asNullableValue
-  //    case _ => false
-
+  // in scala3 equals with 'match' causes warning "pattern selector should be an instance of Matchable"
   override def equals(other: Any): Boolean =
+    import org.mvv.scala.tools.AnyCanEqualGivens.given
     // it is inlined and have resulting byte code similar to code with 'match'
     equalImpl[PropertyValue[?]](this, other) { _.asNullableValue == _.asNullableValue }
 
@@ -96,11 +100,11 @@ class PropertyValue[T] (
   //noinspection HashCodeUsesVar
   override def hashCode: Int =
     val finalSafeRef = this.internalValue
-    if finalSafeRef == null then 42.hashCode else finalSafeRef.hashCode
+    if finalSafeRef.isNull then 42.hashCode else finalSafeRef.hashCode
 
   def apply(value: T): Unit = value_=(value)
-  @targetName("assignOp")
-  infix def `=` (value: T): Unit = value_=(value)
+  //@targetName("assignOp")
+  //infix def `=` (value: T): Unit = value_=(value)
 
 end PropertyValue
 

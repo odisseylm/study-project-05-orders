@@ -71,6 +71,8 @@ private def generalModifiers(member: java.lang.reflect.Member): Set[_Modifier] =
 
 // T O D O: try to rewrite using recursion
 private def getClassesAndInterfacesImpl(cls: Class[?], interfaces: Array[Class[?]]): List[Class[?]] =
+  import org.mvv.scala.tools.ClassCanEqualGivens.given
+
   val all = mutable.ArrayBuffer[Class[?]]()
   import scala.language.unsafeNulls
   var c: Class[?]|Null = cls
@@ -105,6 +107,8 @@ def typeExists(_type: _Type): Boolean =
 def findJavaField(cls: Class[?], name: String): Option[java.lang.reflect.Field] =
   try return Option(cls.getField(name).nn) catch case _: Exception => { }
 
+  import org.mvv.scala.tools.ClassCanEqualGivens.given
+
   var f: Option[java.lang.reflect.Field] = None
   var c: Class[?]|Null = cls
   while f.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
@@ -119,6 +123,8 @@ def findJavaMethod(cls: Class[?], name: String): Option[java.lang.reflect.Method
 
 private def findJavaMethodImpl(cls: Class[?], name: String): Option[java.lang.reflect.Method] =
   try return Option(cls.getMethod(name).nn) catch case _: Exception => { }
+
+  import org.mvv.scala.tools.ClassCanEqualGivens.given
 
   var m: Option[java.lang.reflect.Method] = None
   var c: Class[?]|Null = cls
@@ -136,6 +142,8 @@ private def findJavaMethodWithOneParamImpl(cls: Class[?], name: String): Option[
   var m = findMethodWithOneParamFrom(cls.getMethods, name)
   if m.isDefined then return m
 
+  import org.mvv.scala.tools.ClassCanEqualGivens.given
+
   var c: Class[?]|Null = cls
   while m.isEmpty && c.isNotNull && c != classOf[Object] && c != classOf[AnyRef] do
     m = findMethodWithOneParamFrom(cls.getDeclaredMethods, name)
@@ -144,6 +152,7 @@ private def findJavaMethodWithOneParamImpl(cls: Class[?], name: String): Option[
 
 
 private def findMethodWithOneParamFrom(methods: Array[java.lang.reflect.Method|Null]|Null, methodName: String): Option[java.lang.reflect.Method] =
+  import org.mvv.scala.tools.StringCanEqualGivens.given
   val methodsWithOneParam = methods.nnArray.iterator
     .filter(m => m.getParameterCount == 1)
     .filter(_.getName == methodName)

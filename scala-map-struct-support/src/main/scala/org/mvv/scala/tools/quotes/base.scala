@@ -25,6 +25,7 @@ def reportedFailedExprAsText(using q: Quotes)(expr: Expr[Any]): String =
 /** It is designed ONLY for logging */
 def qTopClassOrModuleFullName(using q: Quotes): String =
   import q.reflect.Symbol
+  given CanEqual[Symbol, Symbol] = CanEqual.derived
 
   var lastNonPackageFullName = ""
 
@@ -40,6 +41,7 @@ def qTopClassOrModuleFullName(using q: Quotes): String =
 /** It is designed ONLY for logging */
 def qTopMethodFullName(using q: Quotes): String =
   import q.reflect.Symbol
+  given CanEqual[Symbol, Symbol] = CanEqual.derived
 
   var lastMethodFullName = ""
 

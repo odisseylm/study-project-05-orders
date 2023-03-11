@@ -15,6 +15,7 @@ def fullName(parentName: String, name: String) =
 extension (el: Any)
   // internal
   def isImplClass( className: String): Boolean =
+    import org.mvv.scala.tools.StringCanEqualGivens.given
     el.isInstanceOf[Product] &&
     (el.asInstanceOf[Product].productPrefix == className || el.getClass.nn.getSimpleName == className)
 

@@ -8,7 +8,7 @@ import org.mvv.scala.tools.KeepDelimiter.ExcludeDelimiter
 
 
 
-enum ClassSelectMode :
+enum ClassSelectMode derives CanEqual :
   case
     /** Recursive quotes 'Select' is used for every part of package/className/enumValue. */
     ByFullClassName

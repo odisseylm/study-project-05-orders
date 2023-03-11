@@ -3,7 +3,7 @@ package org.mvv.scala.tools
 import java.lang.Math.min
 
 
-enum KeepDelimiter :
+enum KeepDelimiter derives CanEqual :
   case IncludeDelimiter, ExcludeDelimiter
 
 
@@ -84,4 +84,5 @@ extension (s: String)
 
 extension (s: String|Null)
   def isNullOrEmpty: Boolean =
-    s == null || s.isEmpty
+    import StringCanEqualGivens.given
+    s == null || s.nn.isEmpty

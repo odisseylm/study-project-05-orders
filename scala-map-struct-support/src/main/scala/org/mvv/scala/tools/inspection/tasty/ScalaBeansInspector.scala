@@ -21,7 +21,7 @@ import org.mvv.scala.tools.inspection.{ ClassKind, InspectMode, _Type, ScalaBean
 
 
 
-private val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang.Comparable"))
+//private val classesToIgnore: Set[_Type] = Set(_Type.ObjectType, _Type("java.lang.Comparable"))
 private val log: Logger = Logger(topClassOrModuleFullName)
 
 
@@ -36,7 +36,7 @@ class TastyScalaBeansInspector extends ScalaBeanInspector, Inspector :
   // used as 'set'
   private val processedJars: concurrent.TrieMap[Path, Path] = concurrent.TrieMap()
 
-  private var classLoaders: concurrent.Map[String, ClassLoader] = concurrent.TrieMap()
+  private val classLoaders: concurrent.Map[String, ClassLoader] = concurrent.TrieMap()
 
   override def classesDescr: Map[String, _ClassEx] = Map.from(classesByFullName)
   override def classDescr(classFullName: String): Option[_ClassEx] = classesByFullName.get(classFullName)
@@ -84,6 +84,7 @@ class TastyScalaBeansInspector extends ScalaBeanInspector, Inspector :
         classesByFullName.put(cls.getName.nn, res)
         res
       case ClassKind.Scala3 =>
+        import org.mvv.scala.tools.StringCanEqualGivens.given
         val classLocation = getClassLocationUrl(cls)
         classLocation.getProtocol match
           case "file" => inspectTastyFile(fileUrlToPath(classLocation.toExternalForm.nn).toString).head
@@ -104,6 +105,7 @@ class TastyScalaBeansInspector extends ScalaBeanInspector, Inspector :
 
   // T O D O: use them
   private def addClassLoaders(classLoaders: ClassLoader*): Unit =
+    import org.mvv.scala.tools.ClassLoaderCanEqualGivens.given
     classLoaders.foreach { cl =>
       val alreadyAdded = this.classLoaders.values.exists(_ == cl)
       if !alreadyAdded then
@@ -166,6 +168,12 @@ class TastyScalaBeansInspector extends ScalaBeanInspector, Inspector :
       val _package: FilePackageContainer = FilePackageContainer(fullPackageName(packageClause))
 
       override def traverseTree(tree: Tree)(owner: Symbol): Unit =
+
+        //noinspection ScalaUnusedSymbol
+        given CanEqual[Ident, Ref] = CanEqual.derived
+        //noinspection ScalaUnusedSymbol
+        given CanEqual[PackageClause, Tree] = CanEqual.derived
+
         val logPrefix = s"${this.simpleClassName}: "
         try
           tree match
@@ -341,7 +349,7 @@ def toInspectParentClass(_class: Class[?]): Boolean =
   _class.classKind match
     case ClassKind.Java   => true
     case ClassKind.Scala2 => true
-    case ClassKind.Scala3 => getClassLocationUrl(_class).getProtocol != "jar"
+    case ClassKind.Scala3 => getClassLocationUrl(_class).getProtocol.nn != "jar"
 
 
 

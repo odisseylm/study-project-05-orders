@@ -7,7 +7,7 @@ private val defaultSafeLength: Int = 512
 def asSafeStr(obj: Any|Null): String|Null = asSafeStr(obj, defaultSafeLength)
 
 def asSafeStr(obj: Any|Null, safeLength: Int): String|Null =
-  if obj == null then return null
+  if obj.isNull then return null
 
   val str = obj.toString
 
