@@ -13,6 +13,7 @@ extension (inline v: Any|Null)
     // If prop is uninitialized LateInit instance it will throw UninitializedPropertyAccessException by itself
     // For that reason lateInitToValueOrNull is used.
     try v catch case _: UninitializedPropertyAccessException => null
+
   @targetName("isPropValueInitialized")
   inline def isPropInitialized: Boolean =
     val _safeValue = v.safeValue
