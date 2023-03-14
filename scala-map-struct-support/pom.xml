@@ -269,6 +269,9 @@
                 <arg>-deprecation</arg>
                 <!-- Uncomment it for detailed macros stack-trace -->
                 <arg>-Ydebug</arg>
+                <arg>-Xcheck-macros</arg>
+                <!-- With build is always OK even if tests failing -->
+                <!--<arg>-Ycheck:all</arg>-->
 
                 <!--<arg>-Ymacro</arg>-->
                 <!--<arg>-Yissue</arg>-->

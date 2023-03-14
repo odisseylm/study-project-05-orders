@@ -28,18 +28,21 @@ class LateInitPropMacrosClassUsingDifferentMacros :
 
 
 
+//noinspection TypeAnnotation
 class LateInitPropMacrosClassUsingUniversalMacros :
   val vv = 2
 
-  val propVal1: PropertyValue[String] = lateInitProp[String]
-  val _propVal2: PropertyValue[String] = lateInitProp
-  //noinspection TypeAnnotation
+  val propVal1: PropertyValue[String] = lateInitUnchangeableProp[String]
+  val _propVal2: PropertyValue[String] = lateInitUnchangeableProp
   val propVal3_ = lateInitProp[String]
-  //noinspection TypeAnnotation
-  val _propVal4_ = lateInitProp[String]
+  val _propVal4_ = lateInitUnchangeableProp[String]
 
-  //noinspection TypeAnnotation
-  val _propVal5 = lateInitProp[Option[String]]
+  val _propVal5 = lateInitUnchangeableProp[Option[String]]
+
+  val propVal6 = lateInitProp[String]                            // changeable
+
+  val propVal7 = unchangeableProp[String]("123")
+  val propVal8 = unchangeableProp[Option[String]](None)
 
 
 
@@ -102,7 +105,7 @@ class LeftVarNameOfMacrosTest {
     a.assertThat(obj._propVal4_.asNullableValue).isNull
 
     a.assertThatCode { () => obj._propVal4_.value }
-      .hasMessage("Property [propVal4] is not initialized yet.")
+      .hasMessage("Property [propVal4] is not initialized.")
       .isExactlyInstanceOf(classOf[UninitializedPropertyAccessException])
 
     obj._propVal4_.value = "strVal4"
@@ -133,7 +136,7 @@ class LeftVarNameOfMacrosTest {
     a.assertThat(obj._propVal5.asNullableValue).isNotNull.isEqualTo(None)
 
     a.assertThatCode { () => obj._propVal5.value }
-      .hasMessage("Property [propVal5] is not initialized yet.")
+      .hasMessage("Property [propVal5] is not initialized.")
       .isExactlyInstanceOf(classOf[UninitializedPropertyAccessException])
 
     a.assertThatCode { () => obj._propVal5.value = null.asInstanceOf[Option[String]] }
@@ -171,7 +174,7 @@ class LeftVarNameOfMacrosTest {
     a.assertThat(obj._propVal2.changeable).isFalse
 
     a.assertThat(obj.propVal3_.name).isEqualTo("propVal3")
-    a.assertThat(obj.propVal3_.changeable).isFalse
+    a.assertThat(obj.propVal3_.changeable).isTrue
 
     a.assertThat(obj._propVal4_.name).isEqualTo("propVal4")
     a.assertThat(obj._propVal4_.changeable).isFalse
@@ -183,7 +186,7 @@ class LeftVarNameOfMacrosTest {
   }
 
   @Test
-  def lateInitUniversalPropForGeneralTypeIsNotChangeable(): Unit = {
+  def lateInitUnchangeablePropForGeneralTypeIsNotChangeable(): Unit = {
     val a = SoftAssertions()
     val obj = LateInitPropMacrosClassUsingUniversalMacros()
 
@@ -193,7 +196,7 @@ class LeftVarNameOfMacrosTest {
     a.assertThat(obj._propVal4_.asNullableValue).isNull
 
     a.assertThatCode { () => obj._propVal4_.value }
-      .hasMessage("Property [propVal4] is not initialized yet.")
+      .hasMessage("Property [propVal4] is not initialized.")
       .isExactlyInstanceOf(classOf[UninitializedPropertyAccessException])
 
     obj._propVal4_.value = "strVal4"
@@ -214,7 +217,7 @@ class LeftVarNameOfMacrosTest {
   }
 
   @Test
-  def lateInitUniversalPropForOptionIsNotChangeable(): Unit = {
+  def lateInitUnchangeablePropForOptionIsNotChangeable(): Unit = {
     val a = SoftAssertions()
     val obj = LateInitPropMacrosClassUsingUniversalMacros()
 
@@ -224,7 +227,7 @@ class LeftVarNameOfMacrosTest {
     a.assertThat(obj._propVal5.asNullableValue).isNotNull.isEqualTo(None)
 
     a.assertThatCode { () => obj._propVal5.value }
-      .hasMessage("Property [propVal5] is not initialized yet.")
+      .hasMessage("Property [propVal5] is not initialized.")
       .isExactlyInstanceOf(classOf[UninitializedPropertyAccessException])
 
     a.assertThatCode { () => obj._propVal5.value = null.asInstanceOf[Option[String]] }
@@ -245,6 +248,72 @@ class LeftVarNameOfMacrosTest {
     // setting the same value
     a.assertThatCode { () => obj._propVal5.value = Option("strVal4") } .doesNotThrowAnyException()
     a.assertThat(obj._propVal5.value).isEqualTo(Option("strVal4"))
+
+    a.assertAll()
+  }
+
+  @Test
+  def unchangeablePropForNonOptionIsChangeable(): Unit = {
+    val a = SoftAssertions()
+    val obj = LateInitPropMacrosClassUsingUniversalMacros()
+
+    a.assertThat(obj.propVal7.name).isEqualTo("propVal7")
+    a.assertThat(obj.propVal7.changeable).isFalse
+
+    a.assertThat(obj.propVal7.asNullableValue).isNotNull.isEqualTo("123")
+    a.assertThat(obj.propVal7.value).isNotNull.isEqualTo("123")
+
+    a.assertThatCode { () => obj.propVal7.value = null.asInstanceOf[String] }
+      .hasMessage("Not allowed to change property [propVal7] (from [123] to [null]).")
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+    a.assertThat(obj.propVal7.asNullableValue).isNotNull.isEqualTo("123")
+
+    a.assertThatCode { () => obj.propVal7.value = "strVal4" }
+      .hasMessage("Not allowed to change property [propVal7] (from [123] to [strVal4]).")
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+
+    a.assertThat(obj.propVal7.asNullableValue).isNotNull.isEqualTo("123")
+    a.assertThat(obj.propVal7.value).isEqualTo("123")
+
+    // setting the same value
+    a.assertThatCode { () => obj.propVal7.value = "123" } .doesNotThrowAnyException()
+    a.assertThat(obj.propVal7.value).isEqualTo("123")
+
+    a.assertAll()
+  }
+
+  @Test
+  def unchangeablePropForOptionIsChangeableForOption(): Unit = {
+    val a = SoftAssertions()
+    val obj = LateInitPropMacrosClassUsingUniversalMacros()
+
+    a.assertThat(obj.propVal8.name).isEqualTo("propVal8")
+    a.assertThat(obj.propVal8.changeable).isFalse
+
+    a.assertThat(obj.propVal8.asNullableValue).isNotNull.isEqualTo(None)
+    a.assertThat(obj.propVal8.value).isNotNull.isEqualTo(None)
+
+    a.assertThatCode { () => obj.propVal8.value = None }
+      .doesNotThrowAnyException()
+
+    a.assertThatCode { () => obj.propVal8.value = null.asInstanceOf[Option[String]] }
+      .hasMessage("Not allowed to change property [propVal8] (from [None] to [null]).")
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+    a.assertThat(obj.propVal8.asNullableValue).isNotNull.isEqualTo(None)
+
+    obj.propVal8.value = Option("strVal4")
+
+    a.assertThat(obj.propVal8.asNullableValue).isEqualTo(Option("strVal4"))
+    a.assertThat(obj.propVal8.value).isEqualTo(Option("strVal4"))
+
+    a.assertThatCode { () => obj.propVal8.value = Option("strVal5") }
+      .hasMessage("Not allowed to change property [propVal8] (from [Some(strVal4)] to [Some(strVal5)]).")
+      .isExactlyInstanceOf(classOf[IllegalArgumentException])
+    a.assertThat(obj.propVal8.value).isEqualTo(Option("strVal4"))
+
+    // setting the same value
+    a.assertThatCode { () => obj.propVal8.value = Option("strVal4") } .doesNotThrowAnyException()
+    a.assertThat(obj.propVal8.value).isEqualTo(Option("strVal4"))
 
     a.assertAll()
   }

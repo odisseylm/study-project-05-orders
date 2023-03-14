@@ -6,6 +6,9 @@ import org.mvv.scala.tools.{ equalImpl, isNull, isNotNull, isNullOrEmpty, ifNull
 import scala.annotation.targetName
 
 
+enum PropType derives CanEqual :
+  case Regular, LateInit
+
 
 implicit inline def fromPropertyValue[T](propValue: PropertyValue[T]): T = propValue.value
 
@@ -18,6 +21,7 @@ private def noOpChangingF[T]: ChangingValueFunc[T] = {(_:T,_:T|Null)=>}
 
 // This class is designed because kotlin does not support 'late init' props with custom getter/setter
 class PropertyValue[T] (
+  val propType: PropType,
   override val name: String,
   _value: T|Null = null,
   uninitializedValue: T|Null = null,
@@ -44,8 +48,13 @@ class PropertyValue[T] (
   @throws(classOf[UninitializedPropertyAccessException])
   override def value: T =
     val finalValueRef = internalValue
-    if _isInitialized(finalValueRef) then finalValueRef.nn
-      else throw UninitializedPropertyAccessException(s"Property [$name] is not initialized yet.")
+    val isValidToReturn = propType match
+      case PropType.Regular  => finalValueRef.isNotNull
+      case PropType.LateInit => _isInitialized(finalValueRef)
+
+    if isValidToReturn then finalValueRef.nn
+    else throw UninitializedPropertyAccessException(s"Property [$name] is not initialized.")
+
 
   def isInitialized: Boolean =
     val finalValueRef = internalValue
@@ -71,14 +80,19 @@ class PropertyValue[T] (
     //noinspection ScalaUnusedSymbol
     given CanEqual[T, T|Null] = CanEqual.derived
 
-    if !changeable &&
-      (  (prevValue != uninitializedValue && newValue != prevValue)
-      || (uninitializedValue != null && newValue == null) )
-      then
-      val msg = changeErrorMessage.ifNull(defaultChangeErrorMessage)
-          .replace("${prev}", String.valueOf(prevValue.safe))
-          .nn.replace("${new}", String.valueOf(newValue.safe))
-      throw IllegalArgumentException(msg)
+    if newValue == prevValue then { return }
+
+    def errMsg = changeErrorMessage.ifNull(defaultChangeErrorMessage)
+      .replace("${prev}", String.valueOf(prevValue.safe))
+      .nn.replace("${new}", String.valueOf(newValue.safe))
+
+    // we do not allow to set value to null if it was already initialized/set to non-null value (for both Regular or LateInit)
+    if newValue.isNull && prevValue.isNotNull
+      then throw IllegalArgumentException(errMsg)
+
+    //seems there is no difference between Regular and LateInit
+    if !changeable && prevValue != uninitializedValue
+      then throw IllegalArgumentException(errMsg)
 
 
   private def defaultChangeErrorMessage: String =
@@ -102,7 +116,7 @@ class PropertyValue[T] (
     val finalSafeRef = this.internalValue
     if finalSafeRef.isNull then 42.hashCode else finalSafeRef.hashCode
 
-  def apply(value: T): Unit = value_=(value)
+  def apply(value: T): PropertyValue[T] = { value_=(value); this }
   //@targetName("assignOp")
   //infix def `=` (value: T): Unit = value_=(value)
 

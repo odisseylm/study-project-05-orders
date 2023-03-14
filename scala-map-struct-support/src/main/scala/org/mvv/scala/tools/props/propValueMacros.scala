@@ -1,6 +1,8 @@
 package org.mvv.scala.tools.props
 
-import scala.quoted.{Expr, Quotes, Type }
+import org.mvv.scala.tools.Logger
+
+import scala.quoted.{Expr, Quotes, Type}
 import org.mvv.scala.tools.quotes.{asValDef, qStringLiteral}
 
 
@@ -22,7 +24,7 @@ inline def strippedLhsMacroVarName: String =
 
 /** Creates late-init prop with 'prop name' of left variable */
 inline def lateInitGeneralProp[T]: PropertyValue[T] =
-  PropertyValue[T](strippedLhsMacroVarName, changeable = false)
+  PropertyValue[T](PropType.LateInit, strippedLhsMacroVarName, changeable = false)
 
 /*
 
@@ -57,12 +59,12 @@ private def getDbType(using q: Quotes)(typeRepr: q.reflect.TypeRepr): DbType =
  *  if you initially know variable value.
  */
 inline def lateInitGeneralProp[T](v: T): PropertyValue[T] =
-  PropertyValue[T](strippedLhsMacroVarName, v, changeable = false)
+  PropertyValue[T](PropType.LateInit, strippedLhsMacroVarName, v, changeable = false)
 
 
 /** Creates late-init prop with 'prop name' of left variable */
 inline def lateInitOptionProp[T]: PropertyValue[Option[T]] =
-  PropertyValue[Option[T]](strippedLhsMacroVarName, None, uninitializedValue = None, changeable = false)
+  PropertyValue[Option[T]](PropType.LateInit, strippedLhsMacroVarName, None, uninitializedValue = None, changeable = false)
 
 
 /** Creates late-init prop with 'prop name' of left variable.
@@ -71,18 +73,40 @@ inline def lateInitOptionProp[T]: PropertyValue[Option[T]] =
  *  if you initially know variable value.
  */
 inline def lateInitOptionProp[T](v: Option[T]): PropertyValue[Option[T]] =
-  PropertyValue[Option[T]](strippedLhsMacroVarName, v, uninitializedValue = None, changeable = false)
+  PropertyValue[Option[T]](PropType.LateInit, strippedLhsMacroVarName, v, uninitializedValue = None, changeable = false)
 
 
 private inline def uninitializedValueOf[T]: T|Null = inline if isOptionType[T] then None.asInstanceOf[T] else null
 
 /** Universal version for usual types and Option  */
 inline def lateInitProp[T]: PropertyValue[T] =
-  PropertyValue[T](strippedLhsMacroVarName, uninitializedValue = uninitializedValueOf[T], changeable = false)
+  PropertyValue[T](PropType.LateInit, strippedLhsMacroVarName, uninitializedValue = uninitializedValueOf[T], changeable = true)
+inline def lateInitUnchangeableProp[T]: PropertyValue[T] =
+  PropertyValue[T](PropType.LateInit, strippedLhsMacroVarName, uninitializedValue = uninitializedValueOf[T], changeable = false)
 
 /** Universal version for usual types and Option  */
 inline def lateInitProp[T](v: T): PropertyValue[T] =
-  PropertyValue[T](strippedLhsMacroVarName, v, uninitializedValue = uninitializedValueOf[T], changeable = false)
+  PropertyValue[T](PropType.LateInit, strippedLhsMacroVarName, v, uninitializedValue = uninitializedValueOf[T], changeable = true)
+inline def lateInitUnchangeableProp[T](v: T): PropertyValue[T] =
+  PropertyValue[T](PropType.LateInit, strippedLhsMacroVarName, v, uninitializedValue = uninitializedValueOf[T], changeable = false)
+
+/**
+ *  There 'unchangeable' means that it is not allowed to change value if it already set
+ *  to some 'uninitialized' value.
+ *  But comparing with unchangeable lateInit 'value' getter will not throw exception if current 'value' is set to
+ *  uninitialized non-null value.
+ */
+inline def unchangeableProp[T]: PropertyValue[T] =
+  import org.mvv.scala.tools.quotes.typeNameOf
+  if !isOptionType[T] then
+    val log = Logger("unchangeableProp")
+    // We can remove this warning when it makes sense to use 'unchangeableProp' for non Option types.
+    log.warn(s"unchangeableProp[${typeNameOf[T]}] is used for non Option type. Probably you wanted to use lateInitProp[T]?")
+  PropertyValue[T](PropType.Regular, strippedLhsMacroVarName, uninitializedValueOf[T], uninitializedValue = uninitializedValueOf[T], changeable = false)
+
+inline def unchangeableProp[T](v: T): PropertyValue[T] =
+  PropertyValue[T](PropType.Regular, strippedLhsMacroVarName, v, uninitializedValue = uninitializedValueOf[T], changeable = false)
+
 
 
 private inline def isOptionType[T]: Boolean =
