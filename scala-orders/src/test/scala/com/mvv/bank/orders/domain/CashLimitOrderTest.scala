@@ -182,7 +182,7 @@ class CashLimitOrderTest {
                     dailyExecutionType = DailyExecutionType.GTC,
                 )
             }
-            .hasMessage("Id is not set or incorrect [null].")
+            .hasMessage("Id is not set or incorrect [None].")
             .isExactlyInstanceOf(classOf[IllegalStateException])
     }
 

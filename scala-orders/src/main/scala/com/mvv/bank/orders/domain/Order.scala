@@ -8,16 +8,16 @@ import scala.compiletime.uninitialized
 //
 import java.time.ZonedDateTime
 //
-import com.mvv.utils.{ newInstance, check, checkId, checkNotNull, checkNotBlank, require, requireNotBlank }
+import com.mvv.utils.{ newInstance, check, checkId, checkIdNotSet, checkNotNull, checkNotBlank, require, requireNotBlank }
 import com.mvv.utils.{ uncapitalize, isUninitializedId }
 import com.mvv.log.{ safe, Logger, LoggerMixin }
 import com.mvv.nullables.{ isNull, isNotNull, NullableCanEqualGivens }
 import com.mvv.props.{ checkPropInitialized, checkNamedValueInitialized }
 
-import org.mvv.scala.tools.props.{ namedValue, PropertyValue, fromPropertyValue, lateInitProp }
+import org.mvv.scala.tools.props.{ namedValue, PropertyValue, fromPropertyValue }
+import org.mvv.scala.tools.props.{ lateInitUnchangeableProp as lateInitUnchProp, unchangeableProp }
 import org.mvv.scala.tools.props.{ currentClassIsInitializedPropsBy, DefaultIsInitializedMethods }
 import org.mvv.scala.tools.quotes.{ classNameOf, simpleTypeNameOf }
-import com.mvv.scala.props.checkRequiredPropsAreInitialized
 
 
 
@@ -79,31 +79,31 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
 
   import scala.language.implicitConversions
 
-  private val _id = lateInitProp[Option[Long]]
+  private val _id = unchangeableProp[Option[Long]](None)
   def id: Option[Long] = _id
   def id_=(id: Option[Long]): Unit = _id(id)
 
-  private val _user = lateInitProp[User] // uninitialized
+  private val _user = lateInitUnchProp[User] // uninitialized
   def user: User = _user
   def user_=(user: User): Unit = _user(user)
 
-  private val _side = lateInitProp[Side]
+  private val _side = lateInitUnchProp[Side]
   def side: Side = _side.value
   def side_= (side: Side): Unit = _side.value = side
 
-  private val _product = lateInitProp[Product] // uninitialized
+  private val _product = lateInitUnchProp[Product] // uninitialized
   def product: Product = _product
   protected def product_=(product: Product): Unit = _product(product)
 
-  private val _volume = lateInitProp[BigDecimal] // uninitialized
+  private val _volume = lateInitUnchProp[BigDecimal] // uninitialized
   def volume: BigDecimal = _volume
   def volume_=(volume: BigDecimal): Unit = _volume(volume)
 
-  private val _market = lateInitProp[Market] // uninitialized
+  private val _market = lateInitUnchProp[Market] // uninitialized
   def market: Market = _market
   def market_=(market: Market): Unit = _market(market)
 
-  private val _buySellType= lateInitProp[BuySellType] // uninitialized
+  private val _buySellType= lateInitUnchProp[BuySellType] // uninitialized
   def buySellType: BuySellType = _buySellType
   def buySellType_=(buySellType: BuySellType): Unit = _buySellType(buySellType)
 
@@ -112,28 +112,28 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
   def orderState_=(orderState: OrderState): Unit = _orderState = orderState
 
   // probably it would be better to use Instant? But I do not see advantages of Instant comparing with ZonedDateTime
-  private val _placedAt = lateInitProp[Option[ZonedDateTime]]
+  private val _placedAt = unchangeableProp[Option[ZonedDateTime]]
   def placedAt: Option[ZonedDateTime] = _placedAt
   def placedAt_=(placedAt: Option[ZonedDateTime]): Unit = _placedAt(placedAt)
 
-  private val _executedAt = lateInitProp[Option[ZonedDateTime]]
+  private val _executedAt = unchangeableProp[Option[ZonedDateTime]]
   def executedAt: Option[ZonedDateTime] = _executedAt
   def executedAt_=(executedAt: Option[ZonedDateTime]): Unit = _executedAt(executedAt)
 
-  private val _canceledAt = lateInitProp[Option[ZonedDateTime]]
+  private val _canceledAt = unchangeableProp[Option[ZonedDateTime]]
   def canceledAt: Option[ZonedDateTime] = _canceledAt
   def canceledAt_=(canceledAt: Option[ZonedDateTime]): Unit = _canceledAt(canceledAt)
 
-  private val _expiredAt = lateInitProp[Option[ZonedDateTime]]
+  private val _expiredAt = unchangeableProp[Option[ZonedDateTime]]
   def expiredAt:  Option[ZonedDateTime] = _expiredAt
   def expiredAt_=(expiredAt: Option[ZonedDateTime]): Unit = _expiredAt(expiredAt)
 
-  private val _resultingPrice = lateInitProp[Option[Amount]]
+  private val _resultingPrice = unchangeableProp[Option[Amount]]
   def resultingPrice: Option[Amount] = _resultingPrice
   def resultingPrice_=(resultingPrice: Option[Amount]): Unit = _resultingPrice(resultingPrice)
 
   // it is optional/temporary (mainly for debugging; most probably after loading order from database it will be lost)
-  private val _resultingQuote = lateInitProp[Option[Quote]]
+  private val _resultingQuote = unchangeableProp[Option[Quote]]
   def resultingQuote: Option[Quote] = _resultingQuote
   protected def resultingQuote_= (quote: Option[Quote]): Unit = _resultingQuote(quote)
 
@@ -173,20 +173,22 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
     }
   }
 
+  def checkRequiredPropsAreInitialized(): Unit =
+    com.mvv.scala.props.checkRequiredPropsAreInitialized(this, currentIsInitProps)
+
   override def validateCurrentState(): Unit = {
     if (orderState == OrderState.UNKNOWN) {
       //log.warn(s"Attempt to validate current state of order with status ${orderState.safe}.")
       return
     }
 
-    checkRequiredPropsAreInitialized(simpleTypeNameOf(this), currentIsInitProps)
+    checkRequiredPropsAreInitialized()
     check(side == Side.CLIENT, s"Currently only client side orders are supported.")
 
     orderState match {
       case OrderState.UNKNOWN => // nothing to do
       case OrderState.TO_BE_PLACED =>
-        import com.mvv.nullables.AnyCanEqualGivens.given
-        check(id == null)
+        checkIdNotSet(id)
       case OrderState.PLACED =>
         checkId(id)
       case OrderState.EXECUTED =>
@@ -208,7 +210,7 @@ abstract class AbstractOrder[Product <: AnyRef, Quote <: BaseQuote] extends Orde
   override def validateNextState(nextState: OrderState): Unit = {
     if (nextState == OrderState.UNKNOWN) { return }
 
-    checkRequiredPropsAreInitialized(simpleTypeNameOf(this), currentIsInitProps)
+    checkRequiredPropsAreInitialized()
 
     nextState match {
       case OrderState.UNKNOWN => // nothing to do

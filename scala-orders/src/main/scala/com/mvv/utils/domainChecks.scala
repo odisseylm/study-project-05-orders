@@ -5,10 +5,11 @@ import com.mvv.props.{ safeValue, isPropInitialized }
 
 
 
-@targetName("checkIdOption")
 def checkId(id: => Long|Option[Long]|Null, msg: =>String): Long = checkIdImpl(id, msg)
-@targetName("checkIdOption")
 def checkId(id: => Long|Option[Long]|Null): Long = checkId(id, s"Id is not set or incorrect [${id.safeValue}].")
+
+def checkIdNotSet(id: => Long|Option[Long]|Null, msg: =>String): Unit = checkIdNotSetImpl(id, msg)
+def checkIdNotSet(id: => Long|Option[Long]|Null): Unit = checkIdNotSet(id, s"Id is not set or incorrect [${id.safeValue}].")
 
 
 
@@ -41,3 +42,8 @@ private def checkIdImpl(idExpr: => Long|Option[Long]|Null, msg: =>String): Long 
   val id = getIdValueOrNull(idExpr)
   check(isValidId(id), msg)
   id.nn
+
+
+private def checkIdNotSetImpl(idExpr: => Long|Option[Long]|Null, msg: =>String): Unit =
+  val id = getIdValueOrNull(idExpr)
+  check(isUninitializedId(id), msg)

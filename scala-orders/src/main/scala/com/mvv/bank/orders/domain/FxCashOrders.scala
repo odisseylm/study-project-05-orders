@@ -10,26 +10,27 @@ import com.mvv.log.safe
 import com.mvv.utils.{ requireNotNull, check }
 import com.mvv.nullables.NullableCanEqualGivens
 import com.mvv.props.{ checkPropInitialized, checkPropValueInitialized }
-import org.mvv.scala.tools.props.{ namedValue, readOnlyProp, currentClassIsInitializedProps, lateInitProp }
+import org.mvv.scala.tools.props.{ namedValue, readOnlyProp, currentClassIsInitializedProps }
+import org.mvv.scala.tools.props.{ lateInitUnchangeableProp as lateInitUnchProp, unchangeableProp }
 import org.mvv.scala.tools.props.currentClassIsInitializedPropsBy
 
 
 sealed abstract class AbstractCashOrder extends AbstractOrder[Currency, Quote] {
   import org.mvv.scala.tools.props.fromPropertyValue
 
-  private val _buyCurrency = lateInitProp[Currency] // uninitialized
+  private val _buyCurrency = lateInitUnchProp[Currency] // uninitialized
   def buyCurrency: Currency = _buyCurrency
   def buyCurrency_=(buyCurrency: Currency): Unit = _buyCurrency(buyCurrency)
 
 
-  private val _sellCurrency = lateInitProp[Currency] // uninitialized
+  private val _sellCurrency = lateInitUnchProp[Currency] // uninitialized
   def sellCurrency: Currency = _sellCurrency
   def sellCurrency_=(sellCurrency: Currency): Unit = _sellCurrency(sellCurrency)
 
 
   // It also can be used to set resultingPrice/resultingQuote from FX rate during order execution (if they are not set).
   // It is optional/temporary (mainly for debugging; most probably after loading order from database it will be lost).
-  private val _resultingRate = lateInitProp[Option[FxRate]]
+  private val _resultingRate = unchangeableProp[Option[FxRate]]
   def resultingRate: Option[FxRate] = _resultingRate
   def resultingRate_= (value: Option[FxRate]): Unit = {
     requireNotNull(value)
@@ -107,11 +108,11 @@ class CashLimitOrder private () extends AbstractCashOrder, LimitOrder[Currency, 
 
   override val orderType: OrderType = OrderType.LIMIT_ORDER
 
-  private val _limitPrice = lateInitProp[Amount] // uninitialized
+  private val _limitPrice = lateInitUnchProp[Amount] // uninitialized
   override def limitPrice: Amount = _limitPrice
   def limitPrice_=(limitPrice: Amount): Unit = _limitPrice(limitPrice)
 
-  private val _dailyExecutionType = lateInitProp[DailyExecutionType] // uninitialized
+  private val _dailyExecutionType = lateInitUnchProp[DailyExecutionType] // uninitialized
   override def dailyExecutionType: DailyExecutionType = _dailyExecutionType
   def dailyExecutionType_=(dailyExecutionType: DailyExecutionType): Unit = _dailyExecutionType(dailyExecutionType)
 
@@ -164,11 +165,11 @@ class CashStopOrder private () extends AbstractCashOrder, StopOrder[Currency, Qu
 
   override val orderType: OrderType = OrderType.STOP_ORDER
 
-  private val _stopPrice = lateInitProp[Amount] // uninitialized
+  private val _stopPrice = lateInitUnchProp[Amount] // uninitialized
   override def stopPrice: Amount = _stopPrice
   def stopPrice_=(stopPrice: Amount): Unit = _stopPrice(stopPrice)
 
-  private val _dailyExecutionType = lateInitProp[DailyExecutionType] // uninitialized
+  private val _dailyExecutionType = lateInitUnchProp[DailyExecutionType] // uninitialized
   override def dailyExecutionType: DailyExecutionType = _dailyExecutionType
   def dailyExecutionType_=(dailyExecutionType: DailyExecutionType): Unit = _dailyExecutionType(dailyExecutionType)
 
@@ -183,7 +184,7 @@ class CashStopOrder private () extends AbstractCashOrder, StopOrder[Currency, Qu
     stopOrderSupport.validateCurrentState()
 
     check(stopPrice.currency == priceCurrency,
-      "Stop price currency (${stopPrice.currency.safe}) differs from price currency (${priceCurrency.safe}).")
+      s"Stop price currency (${stopPrice.currency.safe}) differs from price currency (${priceCurrency.safe}).")
 
   override def validateNextState(nextState: OrderState): Unit =
     super.validateNextState(nextState)

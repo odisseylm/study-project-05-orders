@@ -1,12 +1,14 @@
 package com.mvv.bank.orders.domain
 
+import org.mvv.scala.tools.props.PropType
+
 import scala.language.strictEquality
 //
 import scala.compiletime.uninitialized
 //
 import java.time.ZonedDateTime
 //
-import org.mvv.scala.tools.props.{ PropertyValue, readOnlyProp, lateInitProp }
+import org.mvv.scala.tools.props.{ PropertyValue, readOnlyProp }
 import com.mvv.nullables.NullableCanEqualGivens
 import com.mvv.utils.check
 
@@ -14,6 +16,7 @@ import com.mvv.utils.check
 sealed abstract class AbstractStockOrder extends AbstractOrder[CompanySymbol, StockQuote] {
 
   private val _company = PropertyValue[Company](
+    PropType.LateInit,
     "company",
     changeable = false,
     postUpdate = { (newV, _) => product = newV.symbol },
