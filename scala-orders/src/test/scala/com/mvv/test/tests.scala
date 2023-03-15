@@ -17,6 +17,7 @@ object Tests :
 
 def initField(obj: AnyRef, fieldName: String, value: Any): Unit =
   findClassField(obj.getClass.nn, fieldName)
+    .orElse(findClassField(obj.getClass.nn, "_" + fieldName))
     .orElse(throw IllegalArgumentException(s"Class [${obj.getClass.nn.getName}] does not have field [$fieldName]."))
     .foreach(f =>
       f.trySetAccessible()

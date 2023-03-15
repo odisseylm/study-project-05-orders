@@ -155,6 +155,7 @@ abstract class CashOrderMapper extends AbstractOrderMapper, Cloneable :
 
   @ObjectFactory
   def createDomainCashOrder(source: DtoBaseOrder): DomainBaseOrder =
+    // T O D O: please make it easier (without injecting EnumMappers) if you know ho to do it...
     val _enumMappers: EnumMappers =
       enumMappers.ifNull( getScalaMapStructMapper[EnumMappers]() )
     createDomainOrderFor(_enumMappers.OrderTypeToDomain(source.orderType))

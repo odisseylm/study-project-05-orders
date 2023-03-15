@@ -3,7 +3,11 @@ package com.mvv.bank.orders.rest.conversion
 import org.mapstruct.{ Mapper, ObjectFactory }
 import com.mvv.bank.orders.domain.{
   CompanySymbol, Email, MarketSymbol, Phone, UserNaturalKey,
-  Amount as DomainAmount, Currency as DomainCurrency, User as DomainUser,
+  Market as DomainMarket,
+  Amount as DomainAmount,
+  Company as DomainCompany,
+  Currency as DomainCurrency,
+  User as DomainUser,
 }
 import com.mvv.bank.orders.rest.entities.Amount as DtoAmount
 
@@ -18,7 +22,9 @@ trait DomainMappers :
   def userToDomain(source: String): DomainUser = DomainUser(source)
 
   def marketSymbolToDto(marketSymbol: MarketSymbol): String = marketSymbol.value
-  def marketSymbolToDomain(marketSymbol: String): MarketSymbol = MarketSymbol(marketSymbol)
+  def marketToDto(market: DomainMarket): String = market.symbol.value
+  def marketToSymbol(market: DomainMarket): MarketSymbol = market.symbol
+  def marketSymbolToDomainSymbol(marketSymbol: String): MarketSymbol = MarketSymbol(marketSymbol)
 
   //noinspection ScalaWeakerAccess
   def amountToDto(source: DomainAmount): DtoAmount = DtoAmount(source.value, source.currency.value)
@@ -45,7 +51,10 @@ trait DomainMappers :
   def userNaturalKeyToDomain(userNaturalKey: String): UserNaturalKey = UserNaturalKey(userNaturalKey)
 
   def companySymbolToDto(companySymbol: CompanySymbol): String = companySymbol.value
-  def companySymbolToDomain(companySymbol: String): CompanySymbol = CompanySymbol(companySymbol)
+  def companySymbolToDomainSymbol(companySymbol: String): CompanySymbol = CompanySymbol(companySymbol)
+  def companyToDto(company: DomainCompany): String = company.symbol.value
+  def companyToSymbol(company: DomainCompany): CompanySymbol = company.symbol
+
 
   def emailToDto(email: Email): String = email.value
   def emailToDomain(email: String): Email = Email(email)

@@ -57,7 +57,7 @@ class CashOrderMapperTest {
     private val testUser = TestPredefinedUsers.USER1
 
     private val orderMapper: CashOrderMapper = getScalaMapStructMapper[CashOrderMapper]().clone()
-         .also { it => initField(it, "_marketProvider", TestPredefinedMarkets) }
+         .also { it => initField(it, "marketProvider", TestPredefinedMarkets) }
          .asInstanceOf[CashOrderMapper]
 
 
