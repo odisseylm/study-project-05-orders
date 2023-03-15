@@ -21,6 +21,8 @@ import com.mvv.nullables.{ isNotNull, ifNull }
 import com.mvv.utils.require
 import com.mvv.scala.mapstruct.getScalaMapStructMapper
 
+import scala.annotation.unused
+
 
 
 abstract class CashOrderMapper extends AbstractOrderMapper, Cloneable :
@@ -153,11 +155,10 @@ abstract class CashOrderMapper extends AbstractOrderMapper, Cloneable :
         s"Market price cannot have daily execution type (${source.dailyExecutionType.underlyingSafe}).")
 
 
-  @ObjectFactory
+  @ObjectFactory  @unused
   def createDomainCashOrder(source: DtoBaseOrder): DomainBaseOrder =
     // T O D O: please make it easier (without injecting EnumMappers) if you know ho to do it...
-    val _enumMappers: EnumMappers =
-      enumMappers.ifNull( getScalaMapStructMapper[EnumMappers]() )
+    val _enumMappers: EnumMappers = enumMappers.ifNull( getScalaMapStructMapper[EnumMappers]() )
     createDomainOrderFor(_enumMappers.OrderTypeToDomain(source.orderType))
 
   override def clone(): CashOrderMapper = super.clone().asInstanceOf[CashOrderMapper]
