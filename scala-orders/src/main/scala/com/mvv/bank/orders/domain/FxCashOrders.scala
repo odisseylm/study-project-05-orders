@@ -237,3 +237,11 @@ object CashMarketOrder extends NullableCanEqualGivens[CashMarketOrder] :
     base.copyToOrder(order)
     order.validateCurrentState()
     order
+
+
+
+def createCashOrderFor(orderType: OrderType): AbstractCashOrder =
+  orderType match
+    case OrderType.STOP_ORDER => CashStopOrder.uninitialized()
+    case OrderType.LIMIT_ORDER => CashLimitOrder.uninitialized()
+    case OrderType.MARKET_ORDER => CashMarketOrder.uninitialized()

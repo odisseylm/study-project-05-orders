@@ -36,17 +36,27 @@ import com.mvv.bank.orders.rest.entities.{
 type DomainBaseOrder = com.mvv.bank.orders.domain.Order[?,?]
 
 abstract class AbstractOrderMapper :
-  // TODO: try to make it working with 'protected'
-  @Inject
-  private /*lateinit*/ var marketProvider: MarketProvider = uninitialized
-  @Inject
-  private /*lateinit*/ var companyProvider: CompanyProvider = uninitialized
-//  @Inject
-//  protected /*lateinit*/ var marketProvider: MarketProvider
-//  @Inject
-//  protected /*lateinit*/ var companyProvider: CompanyProvider
 
-  // Ideally it should be put into separate MarketMapper but easy pure unit testing it is there now
+  //noinspection VarCouldBeVal // TODO: try to use constructor
+  // We do not use there protected var because scala generates setter method for it
+  // and MapStruct fails trying to use this setter as mapping function
+  @Inject
+  private var _marketProvider: MarketProvider = uninitialized
+  //noinspection ScalaWeakerAccess
+  protected def marketProvider: MarketProvider = _marketProvider
+
+  //noinspection VarCouldBeVal
+  //@Inject
+  //private var _companyProvider: CompanyProvider = uninitialized
+  //noinspection ScalaWeakerAccess,ScalaUnusedSymbol
+  //protected def companyProvider: CompanyProvider = _companyProvider
+
+  //noinspection VarCouldBeVal
+  @Inject
+  private var _enumMappers: EnumMappers = uninitialized
+  protected def enumMappers: EnumMappers = _enumMappers
+
+  // Ideally it should be put into separate MarketMapper but to make easy unit testing it is put there now
   // (to avoid injection sub-dependencies into dependencies)
   def marketToDto(market: DomainMarket): String = market.symbol.value
   def marketToDomain(marketSymbol: String): DomainMarket =
@@ -56,25 +66,13 @@ abstract class AbstractOrderMapper :
 
   // Ideally it should be put into separate MarketMapper but easy pure unit testing it is there now
   // (to avoid injection sub-dependencies into dependencies)
-  def companyToDto(company: DomainCompany): String = company.symbol.value
-  def companyToDomain(companySymbol: String): DomainCompany =
-    companyToDomain(CompanySymbol(companySymbol))
-  def companyToDomain(companySymbol: CompanySymbol): DomainCompany =
-    companyProvider.companyBySymbol(companySymbol)
+  //def companyToDto(company: DomainCompany): String = company.symbol.value
+  //def companyToDomain(companySymbol: String): DomainCompany =
+  //  companyToDomain(CompanySymbol(companySymbol))
+  //def companyToDomain(companySymbol: CompanySymbol): DomainCompany =
+  //  companyProvider.companyBySymbol(companySymbol)
 
-  //@Suppress("UNCHECKED_CAST")
-  //protected def <T> newOrderInstance(type: KClass<*>): T = internalNewInstance(type) as T
-  //protected def newOrderInstance[T](_type: ClassTag[T]): T = ??? //internalNewInstance(_type).asInstanceOf[T]
-
+  //noinspection ScalaUnusedSymbol
   @AfterMapping
-  /*open*/ def validateDomainOrderAfterCreation(source: Any, @MappingTarget target: DomainBaseOrder): Unit =
+  def validateDomainOrderAfterCreation(source: Any, @MappingTarget target: DomainBaseOrder): Unit =
       target.validateCurrentState()
-  
-  // It is designed to choose cash or stock order.
-  //abstract def chooseOrderTypeClass(orderType: DomainOrderType): KClass<*>
-  /*abstract*/ //def chooseOrderTypeClass(orderType: DomainOrderType): ClassTag[?]
-
-  //def temp: String = "gfg"
-
-
-

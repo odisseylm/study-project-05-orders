@@ -3,7 +3,7 @@ package com.mvv.test
 import java.lang.reflect.Field as JField
 import org.assertj.core.api.SoftAssertions
 import com.mvv.utils.isNotOneOf
-import com.mvv.nullables.nnArray
+import com.mvv.nullables.{ isNotNull, nnArray }
 
 
 //noinspection ScalaFileName
@@ -12,7 +12,6 @@ object SoftAssertions :
     inline def runTests(action: SoftAssertions=>Unit): SoftAssertions = { action(assertions); assertions }
 object Tests :
   // just to reuse kotlin test with minimal changes
-  //def run(action: ()=>Unit): Unit = action()
   def run(action: =>Unit): Unit = action
 
 
@@ -25,9 +24,12 @@ def initField(obj: AnyRef, fieldName: String, value: Any): Unit =
     )
 
 
-def findClassField(klass: Class[?], name: String): Option[JField] =
+def findClassField(klass: Class[?], name: String): Option[JField] = findClassFieldImpl(klass, name)
+
+def findClassFieldImpl(klass: Class[?]|Null, name: String): Option[JField] =
   List(klass)
-    .filter(_.isNotOneOf(classOf[Object], classOf[AnyRef]))
+    .filter(cls => cls.isNotNull && cls.isNotOneOf(classOf[Object], classOf[AnyRef]))
+    .map(_.nn)
     .flatMap(_.getDeclaredFields.nnArray)
     .find(_.getName.nn == name)
-    .orElse(findClassField(klass.getSuperclass.nn, name))
+    .orElse { Option(klass).flatMap(cls => findClassFieldImpl(cls.nn.getSuperclass, name)) }

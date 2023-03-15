@@ -4,6 +4,7 @@ import org.mapstruct.{
   Mapper, Mapping, ObjectFactory, BeanMapping, MappingTarget, InheritConfiguration, BeforeMapping
 }
 import com.mvv.bank.orders.domain.{
+  createCashOrderFor as createDomainOrderFor,
   OrderType         as DomainOrderType,
   AbstractCashOrder as DomainBaseOrder,
   CashLimitOrder    as DomainLimitOrder,
@@ -16,7 +17,9 @@ import com.mvv.bank.orders.rest.entities.{
   OrderType as DtoOrderType,
 }
 import com.mvv.log.{ safe, underlyingSafe }
+import com.mvv.nullables.{ isNotNull, ifNull }
 import com.mvv.utils.require
+import com.mvv.scala.mapstruct.getScalaMapStructMapper
 
 
 
@@ -77,12 +80,11 @@ abstract class CashOrderMapper extends AbstractOrderMapper, Cloneable :
   @BeanMapping(ignoreUnmappedSourceProperties = Array("log", "product", "resultingQuote"))
   def marketOrderToDto(source: DomainMarketOrder): DtoCashOrder
 
-  // TODO: temp
   def toDto(source: DomainBaseOrder): DtoCashOrder =
-    source.orderType match
-      case DomainOrderType.STOP_ORDER   => stopOrderToDto(source.asInstanceOf[DomainStopOrder])
-      case DomainOrderType.LIMIT_ORDER  => limitOrderToDto(source.asInstanceOf[DomainLimitOrder])
-      case DomainOrderType.MARKET_ORDER => marketOrderToDto(source.asInstanceOf[DomainMarketOrder])
+    source match
+      case stopOrder: DomainStopOrder => stopOrderToDto(stopOrder)
+      case limitOrder: DomainLimitOrder => limitOrderToDto(limitOrder)
+      case marketOrder: DomainMarketOrder => marketOrderToDto(marketOrder)
 
 
 
@@ -138,7 +140,6 @@ abstract class CashOrderMapper extends AbstractOrderMapper, Cloneable :
 
     // But we will use simple validation to have better error message.
     // (error/exception will be thrown in any case)
-    //checkLateInitPropsAreInitialized(source)
     source.checkRequiredPropsAreInitialized()
 
 
@@ -153,12 +154,9 @@ abstract class CashOrderMapper extends AbstractOrderMapper, Cloneable :
 
 
   @ObjectFactory
-  // fun <T : DomainBaseOrder> createDomainOrder(source: DtoBaseOrder): T =
-  //def createDomainCashOrder[T <: DomainBaseOrder](source: DtoCashOrder): T =
-  def createDomainCashOrder(source: DtoCashOrder): DomainBaseOrder =
-    source.orderType match
-      case DtoOrderType.STOP_ORDER   => DomainStopOrder.uninitialized()
-      case DtoOrderType.LIMIT_ORDER  => DomainLimitOrder.uninitialized()
-      case DtoOrderType.MARKET_ORDER => DomainMarketOrder.uninitialized()
+  def createDomainCashOrder(source: DtoBaseOrder): DomainBaseOrder =
+    val _enumMappers: EnumMappers =
+      enumMappers.ifNull( getScalaMapStructMapper[EnumMappers]() )
+    createDomainOrderFor(_enumMappers.OrderTypeToDomain(source.orderType))
 
   override def clone(): CashOrderMapper = super.clone().asInstanceOf[CashOrderMapper]

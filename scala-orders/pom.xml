@@ -497,6 +497,16 @@
                 <arg>-deprecation</arg>
                 <!-- Uncomment it for detailed macros stack-trace -->
                 <arg>-Ydebug</arg>
+                <arg>-Xcheck-macros</arg>
+                <!-- If we use '-Ycheck:all', build is always OK even if tests should fail. -->
+                <!--<arg>-Ycheck:all</arg>-->
+
+
+                <!-- Use -Wconf:help -->
+                <!-- See https://gist.github.com/lrytz/b0cd674c30e141cb71cc35ce212c43b1 -->
+                <!-- To treat any warning as error. -->
+                <!--<arg>-Wconf:any:error</arg>-->
+                <arg>-Wconf:msg=match may not be exhaustive:error</arg>
 
                 <!-- Seems ignored/unsupported :-( -->
                 <!--<arg>-Yjava-null</arg>-->

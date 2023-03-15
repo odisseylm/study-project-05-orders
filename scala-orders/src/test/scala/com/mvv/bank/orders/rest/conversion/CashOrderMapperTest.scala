@@ -2,13 +2,14 @@ package com.mvv.bank.orders.rest.conversion
 
 import scala.language.unsafeNulls
 import scala.math.BigDecimal as bd
-import java.time.{ LocalDate, LocalDateTime, LocalTime, ZonedDateTime }
+import java.time.{LocalDate, LocalDateTime, LocalTime, ZonedDateTime}
 import org.mapstruct.factory.Mappers
 //
 import org.junit.jupiter.api.Test
 
 import com.mvv.bank.orders.domain.AbstractCashOrder.Base
 import com.mvv.bank.orders.domain.test.predefined.{ TestPredefinedMarkets, TestPredefinedUsers }
+import com.mvv.scala.mapstruct.getScalaMapStructMapper
 
 import com.mvv.bank.orders.domain.{
   FxRateAsQuote,
@@ -55,8 +56,8 @@ class CashOrderMapperTest {
     private val testTimestamp = ZonedDateTime.of(testDateTime, testMarket.zoneId)
     private val testUser = TestPredefinedUsers.USER1
 
-    private val orderMapper: CashOrderMapper = Mappers.getMapper(classOf[JCashOrderMapper]).clone()
-         .also { it => initField(it, "marketProvider", TestPredefinedMarkets) }
+    private val orderMapper: CashOrderMapper = getScalaMapStructMapper[CashOrderMapper]().clone()
+         .also { it => initField(it, "_marketProvider", TestPredefinedMarkets) }
          .asInstanceOf[CashOrderMapper]
 
 
